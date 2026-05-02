@@ -3,513 +3,353 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DUNGEON · Seek Entry</title>
+  <title>DUNGEON</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=IM+Fell+English:ital@0;1&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --stone:    #0e0d0b;
-      --stone2:   #161410;
-      --stone3:   #1f1c17;
-      --crack:    rgba(255, 220, 140, 0.07);
-      --crack2:   rgba(255, 220, 140, 0.14);
-      --torch:    #c8922a;
-      --torch2:   #e8b84b;
-      --torch3:   #f5d070;
-      --ash:      rgba(230, 215, 185, 0.55);
-      --parchment:rgba(230, 215, 185, 0.88);
-      --blood:    #7a1f1f;
-      --blood2:   #a02828;
+      --black:  #000000;
+      --panel:  #0d0c09;
+      --gold:   #a07840;
+      --gold2:  #c8a050;
+      --bone:   #c8b898;
+      --dim:    #5a5040;
+      --dimmer: #2e2820;
+      --blood:  #6a1a1a;
+      --line:   rgba(160,120,64,0.2);
+      --line2:  rgba(160,120,64,0.35);
     }
 
-    html { scroll-behavior: smooth; }
+    html, body {
+      min-height: 100vh;
+      background: var(--black);
+      color: var(--bone);
+      font-family: 'Cinzel', 'Palatino Linotype', Palatino, Georgia, serif;
+    }
 
     body {
-      font-family: 'IM Fell English', Georgia, serif;
-      background: var(--stone);
-      color: var(--parchment);
-      min-height: 100vh;
-      position: relative;
-      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    /* Stone texture via noise */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.6;
-    }
-
-    /* Torch vignette */
     body::after {
       content: '';
       position: fixed; inset: 0;
-      background: radial-gradient(
-        ellipse 80% 80% at 50% 0%,
-        rgba(200, 146, 42, 0.06) 0%,
-        transparent 60%
-      ),
-      radial-gradient(
-        ellipse 100% 100% at 50% 100%,
-        rgba(0,0,0,0.6) 0%,
-        transparent 70%
-      );
+      background: radial-gradient(ellipse 120% 120% at 50% 50%, transparent 40%, rgba(0,0,0,0.65) 100%);
       pointer-events: none;
       z-index: 0;
     }
 
-    /* Masonry lines */
-    .masonry {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background-image:
-        linear-gradient(var(--crack) 1px, transparent 1px),
-        linear-gradient(90deg, var(--crack) 1px, transparent 1px);
-      background-size: 120px 80px;
-      opacity: 1;
-    }
-
-    /* Torch flicker */
-    @keyframes flicker {
-      0%,100% { opacity: 1; }
-      5%       { opacity: .94; }
-      10%      { opacity: 1; }
-      50%      { opacity: .97; }
-      55%      { opacity: .91; }
-      60%      { opacity: 1; }
-      80%      { opacity: .96; }
-    }
-
-    .torch {
-      position: fixed; top: 0;
-      width: 1px; height: 180px;
-      animation: flicker 4s ease-in-out infinite;
-      pointer-events: none;
-      z-index: 1;
-    }
-    .torch-l { left: 60px; background: linear-gradient(var(--torch2), transparent); box-shadow: 0 0 40px 20px rgba(200,146,42,0.18); }
-    .torch-r { right: 60px; background: linear-gradient(var(--torch2), transparent); box-shadow: 0 0 40px 20px rgba(200,146,42,0.18); animation-delay: 1.3s; }
-
-    /* Layout */
-    .wrap {
-      position: relative; z-index: 10;
-      max-width: 620px;
-      margin: 0 auto;
-      padding: 0 32px 80px;
+    .page {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 500px;
+      padding: 0 28px 80px;
     }
 
     /* Header */
     header {
-      position: relative; z-index: 10;
-      padding: 40px 32px 0;
-      max-width: 620px;
-      margin: 0 auto;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
+      padding: 56px 0 0;
+      margin-bottom: 52px;
+      text-align: center;
     }
 
     .site-name {
-      font-family: 'UnifrakturMaguntia', cursive;
-      font-size: 48px;
-      color: var(--torch2);
-      line-height: 1;
-      text-shadow: 0 0 30px rgba(200,146,42,0.4);
-      letter-spacing: 0.02em;
-    }
-
-    .nav-link {
-      font-family: 'Courier Prime', monospace;
-      font-size: 11px;
-      letter-spacing: 0.12em;
+      font-size: 10px;
+      letter-spacing: 0.55em;
       text-transform: uppercase;
-      color: var(--ash);
-      text-decoration: none;
-      border-bottom: 1px solid var(--crack2);
-      padding-bottom: 1px;
-      transition: color 0.2s, border-color 0.2s;
-      margin-top: 8px;
+      color: var(--gold);
+      font-weight: 400;
+      margin-bottom: 14px;
     }
-    .nav-link:hover { color: var(--torch2); border-color: var(--torch); }
 
-    /* Divider rune */
-    .rune-divider {
-      text-align: center;
-      margin: 32px 0 40px;
-      font-family: 'Courier Prime', monospace;
-      font-size: 11px;
-      letter-spacing: 0.3em;
-      color: var(--torch);
-      opacity: 0.6;
+    .gold-rule {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold2), transparent);
+    }
+
+    .gold-rule-sm {
+      width: 48px; height: 1px;
+      background: var(--gold);
+      opacity: 0.5;
+      margin: 0 auto;
     }
 
     /* Hero */
-    .hero { margin-bottom: 48px; }
-
-    .hero-eyebrow {
-      font-family: 'Courier Prime', monospace;
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--torch);
-      margin-bottom: 16px;
-      display: flex; align-items: center; gap: 10px;
+    .hero {
+      text-align: center;
+      margin-bottom: 52px;
     }
 
-    .hero-eyebrow::before {
-      content: '';
-      width: 24px; height: 1px;
-      background: var(--torch);
-      opacity: 0.5;
+    .eyebrow {
+      font-size: 8px;
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 16px;
     }
 
     h1 {
-      font-family: 'IM Fell English', Georgia, serif;
-      font-size: clamp(36px, 6vw, 54px);
-      line-height: 1.1;
-      color: var(--parchment);
+      font-size: clamp(26px, 5vw, 36px);
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--bone);
+      line-height: 1.25;
       margin-bottom: 20px;
-      font-weight: normal;
-    }
-
-    h1 em {
-      font-style: italic;
-      color: var(--torch2);
     }
 
     .hero-sub {
-      font-family: 'IM Fell English', Georgia, serif;
-      font-style: italic;
-      font-size: 15px;
-      color: var(--ash);
-      line-height: 1.8;
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--dim);
+      line-height: 2.1;
     }
 
     /* Form */
-    .scroll-form {
-      background: var(--stone2);
-      border: 1px solid var(--crack2);
-      padding: 40px;
-      position: relative;
-    }
+    .form-section { margin-bottom: 32px; }
 
-    /* Corner runes */
-    .scroll-form::before,
-    .scroll-form::after {
-      font-family: 'Courier Prime', monospace;
-      font-size: 14px;
-      color: var(--torch);
-      opacity: 0.35;
-      position: absolute;
-    }
-    .scroll-form::before { content: '⌘'; top: 12px; left: 14px; }
-    .scroll-form::after  { content: '⌘'; bottom: 12px; right: 14px; }
-
-    .form-heading {
-      font-family: 'Courier Prime', monospace;
-      font-size: 10px;
-      letter-spacing: 0.18em;
+    .section-label {
+      font-size: 8px;
+      letter-spacing: 0.45em;
       text-transform: uppercase;
-      color: var(--torch);
-      margin-bottom: 28px;
-      display: flex; align-items: center; gap: 12px;
+      color: var(--gold);
+      font-weight: 400;
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 22px;
     }
 
-    .form-heading::after {
-      content: '';
-      flex: 1; height: 1px;
-      background: linear-gradient(90deg, var(--crack2), transparent);
+    .section-label::before,
+    .section-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: var(--line2);
     }
 
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media(max-width:480px) { .form-row { grid-template-columns: 1fr; } }
+    .field { margin-bottom: 18px; }
 
-    .form-group { margin-bottom: 20px; }
+    .field-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    @media(max-width:420px) { .field-row { grid-template-columns: 1fr; } }
 
     label {
       display: block;
-      font-family: 'Courier Prime', monospace;
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--ash);
-      margin-bottom: 8px;
+      font-size: 8px; letter-spacing: 0.35em; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 8px; font-weight: 400;
     }
-
-    label .req { color: var(--blood2); }
+    label .req { color: var(--blood); margin-left: 3px; }
 
     input, select, textarea {
       width: 100%;
-      background: var(--stone3);
-      border: 1px solid var(--crack2);
-      border-bottom: 1px solid rgba(200,146,42,0.2);
-      color: var(--parchment);
-      font-family: 'Courier Prime', monospace;
-      font-size: 13px;
-      padding: 11px 14px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--line2);
+      color: var(--bone);
+      font-family: 'Cinzel', Palatino, Georgia, serif;
+      font-size: 12px; letter-spacing: 0.05em;
+      padding: 9px 0;
       outline: none;
-      transition: border-color 0.2s, background 0.2s;
-      border-radius: 0;
-      appearance: none;
+      transition: border-color 0.2s;
+      border-radius: 0; appearance: none;
     }
 
     input:focus, select:focus, textarea:focus {
-      border-color: var(--torch);
-      background: rgba(200,146,42,0.04);
+      border-bottom-color: var(--gold2);
     }
 
     input::placeholder, textarea::placeholder {
-      color: rgba(230,215,185,0.2);
-      font-style: italic;
+      color: var(--dimmer); font-size: 11px;
     }
 
     select {
       cursor: pointer;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(200,146,42,0.5)'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(160,120,64,0.5)'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 32px;
+      background-position: right 2px center;
+      padding-right: 18px;
     }
+    select option { background: #0d0c09; }
 
-    select option { background: #161410; }
-    textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
-
-    .rule {
-      border: none;
-      border-top: 1px solid var(--crack2);
-      margin: 32px 0;
-      position: relative;
-    }
-
-    .rule::after {
-      content: '✦';
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--stone2);
-      padding: 0 10px;
-      font-size: 10px;
-      color: var(--torch);
-      opacity: 0.5;
-    }
-
-    /* Submit */
-    .submit-btn {
-      width: 100%;
-      background: transparent;
-      border: 1px solid rgba(200,146,42,0.4);
-      color: var(--torch2);
-      font-family: 'Courier Prime', monospace;
-      font-size: 12px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      padding: 16px;
-      cursor: pointer;
-      transition: all 0.25s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .submit-btn::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: rgba(200,146,42,0.07);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.3s ease;
-    }
-
-    .submit-btn:hover { border-color: var(--torch2); color: var(--torch3); }
-    .submit-btn:hover::before { transform: scaleX(1); }
-    .submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
-    /* Success */
-    .success-state {
-      display: none; text-align: center; padding: 56px 24px;
-    }
-
-    .success-glyph {
-      font-family: 'UnifrakturMaguntia', cursive;
-      font-size: 64px;
-      color: var(--torch2);
-      display: block;
-      margin-bottom: 20px;
-      text-shadow: 0 0 30px rgba(200,146,42,0.5);
-    }
-
-    .success-title {
-      font-family: 'IM Fell English', Georgia, serif;
-      font-size: 26px;
-      margin-bottom: 14px;
-      color: var(--parchment);
-    }
-
-    .success-sub {
-      font-family: 'IM Fell English', Georgia, serif;
-      font-style: italic;
-      font-size: 14px;
-      color: var(--ash);
-      line-height: 1.8;
-    }
+    textarea { resize: none; height: 68px; line-height: 1.7; }
 
     /* Errors */
     .error-banner {
       display: none;
-      border: 1px solid rgba(122,31,31,0.5);
-      background: rgba(122,31,31,0.1);
-      color: #c46060;
-      font-family: 'Courier Prime', monospace;
-      font-size: 12px;
-      padding: 10px 14px;
-      margin-bottom: 20px;
-      letter-spacing: 0.04em;
+      font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--blood); text-align: center; margin-bottom: 20px;
     }
 
     .field-error input,
     .field-error select,
-    .field-error textarea { border-color: rgba(160,40,40,0.6); }
+    .field-error textarea { border-bottom-color: var(--blood); }
 
     .err-msg {
       display: none;
-      font-family: 'Courier Prime', monospace;
-      font-size: 10px;
-      color: #c46060;
-      margin-top: 5px;
-      letter-spacing: 0.06em;
+      font-size: 8px; letter-spacing: 0.15em; color: var(--blood);
+      margin-top: 5px; text-transform: uppercase;
     }
-
     .field-error .err-msg { display: block; }
 
-    /* Footer */
+    /* Submit */
+    .submit-wrap { margin-top: 40px; text-align: center; }
+
+    .submit-btn {
+      background: transparent; border: none;
+      border-bottom: 1px solid var(--gold);
+      color: var(--gold2);
+      font-family: 'Cinzel', Palatino, serif;
+      font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase;
+      padding: 10px 0; width: 100%;
+      cursor: pointer; transition: color 0.2s, border-color 0.2s;
+      font-weight: 400;
+    }
+    .submit-btn:hover { color: var(--bone); border-bottom-color: var(--bone); }
+    .submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* Success */
+    .success-state {
+      display: none; text-align: center; padding: 56px 0;
+    }
+
+    .success-eyebrow {
+      font-size: 8px; letter-spacing: 0.5em; text-transform: uppercase;
+      color: var(--gold); display: block; margin-bottom: 24px;
+    }
+
+    .success-title {
+      font-size: 16px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--bone); margin-bottom: 24px; font-weight: 400;
+    }
+
+    .success-sub {
+      font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--dim); line-height: 2.2;
+    }
+
+    /* Nav */
+    .nav-link {
+      position: fixed; top: 24px; right: 24px;
+      font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--dimmer); text-decoration: none;
+      transition: color 0.2s; z-index: 10;
+    }
+    .nav-link:hover { color: var(--gold); }
+
     footer {
-      position: relative; z-index: 10;
+      padding: 24px 0 0;
       text-align: center;
-      padding: 28px;
-      border-top: 1px solid var(--crack);
     }
-
     footer p {
-      font-family: 'Courier Prime', monospace;
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: rgba(230,215,185,0.2);
+      font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--dimmer);
     }
-
-    footer a { color: rgba(200,146,42,0.4); text-decoration: none; }
-    footer a:hover { color: var(--torch); }
+    footer a { color: var(--dimmer); text-decoration: none; }
+    footer a:hover { color: var(--gold); }
   </style>
 </head>
 <body>
 
-<div class="masonry"></div>
-<div class="torch torch-l"></div>
-<div class="torch torch-r"></div>
+<a href="/admin.html" class="nav-link">Warden ↗</a>
 
-<header>
-  <div class="site-name">Dungeon</div>
-  <a href="/admin.html" class="nav-link">Warden's Gate ↗</a>
-</header>
+<div class="page">
 
-<div class="wrap">
-  <div class="rune-divider">— ᚦ ᚢ ᚾ ᚷ ᛖ ᚩ ᚾ —</div>
+  <header>
+    <div class="site-name">Dungeon</div>
+    <div class="gold-rule"></div>
+  </header>
 
   <div class="hero">
-    <div class="hero-eyebrow">Invitation Only</div>
-    <h1>Seek Entry<br>to the <em>Vault</em></h1>
+    <div class="eyebrow">Invitation Only</div>
+    <h1>Seek Entry</h1>
+    <div class="gold-rule-sm" style="margin-bottom: 20px;"></div>
     <p class="hero-sub">
-      Complete the scroll below. The keeper shall prepare thy passage and outfit thee with the full arsenal — no further toil required on thy part.
+      Complete the scroll below.<br>
+      The keeper shall prepare thy passage.
     </p>
   </div>
 
-  <div class="scroll-form">
-    <div id="formContent">
-      <div class="error-banner" id="errorBanner"></div>
+  <div id="formContent">
+    <div class="error-banner" id="errorBanner"></div>
 
-      <div class="form-heading">Identity</div>
+    <div class="form-section">
+      <div class="section-label">Identity</div>
 
-      <div class="form-row">
-        <div class="form-group" id="grp-first_name">
-          <label>Given name <span class="req">*</span></label>
-          <input type="text" id="first_name" placeholder="Aldric" autocomplete="given-name" />
+      <div class="field-row">
+        <div class="field" id="grp-first_name">
+          <label>Given Name <span class="req">*</span></label>
+          <input type="text" id="first_name" placeholder="—" autocomplete="given-name" />
           <div class="err-msg">Required</div>
         </div>
-        <div class="form-group" id="grp-last_name">
-          <label>Family name <span class="req">*</span></label>
-          <input type="text" id="last_name" placeholder="Voss" autocomplete="family-name" />
+        <div class="field" id="grp-last_name">
+          <label>Family Name <span class="req">*</span></label>
+          <input type="text" id="last_name" placeholder="—" autocomplete="family-name" />
           <div class="err-msg">Required</div>
         </div>
       </div>
 
-      <div class="form-group" id="grp-email">
-        <label>Courier address (email) <span class="req">*</span></label>
+      <div class="field" id="grp-email">
+        <label>Email <span class="req">*</span></label>
         <input type="email" id="email" placeholder="name@realm.com" autocomplete="email" />
-        <div class="err-msg">A valid courier address is required</div>
+        <div class="err-msg">A valid address is required</div>
       </div>
 
-      <div class="form-group">
-        <label>Crystal (phone)</label>
-        <input type="tel" id="phone" placeholder="+1 (555) 000-0000" autocomplete="tel" />
+      <div class="field">
+        <label>Phone</label>
+        <input type="tel" id="phone" placeholder="—" autocomplete="tel" />
       </div>
+    </div>
 
-      <hr class="rule" />
-      <div class="form-heading">Preferences</div>
+    <div class="form-section">
+      <div class="section-label">Preferences</div>
 
-      <div class="form-group">
-        <label>Tongue (subtitle / audio language)</label>
+      <div class="field">
+        <label>Subtitle Language</label>
         <select id="language">
-          <option value="">— Name thy tongue —</option>
-          <option>English</option>
-          <option>Spanish</option>
-          <option>French</option>
-          <option>Portuguese</option>
-          <option>German</option>
-          <option>Italian</option>
-          <option>Arabic</option>
-          <option>Chinese (Simplified)</option>
-          <option>Japanese</option>
-          <option>Korean</option>
-          <option>Hindi</option>
+          <option value="">— Select —</option>
+          <option>English</option><option>Spanish</option><option>French</option>
+          <option>Portuguese</option><option>German</option><option>Italian</option>
+          <option>Arabic</option><option>Chinese (Simplified)</option>
+          <option>Japanese</option><option>Korean</option><option>Hindi</option>
           <option>Other</option>
         </select>
       </div>
 
-      <div class="form-group">
-        <label>Who vouches for thee?</label>
-        <input type="text" id="referral" placeholder="e.g. the blacksmith, your kin" />
+      <div class="field">
+        <label>Who Referred You</label>
+        <input type="text" id="referral" placeholder="—" />
       </div>
 
-      <div class="form-group">
-        <label>Petition to the keeper</label>
-        <textarea id="notes" placeholder="Any special requirements… 4K only, children's content, etc."></textarea>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="notes" placeholder="Special requirements…"></textarea>
       </div>
-
-      <hr class="rule" />
-
-      <button class="submit-btn" id="submitBtn" onclick="submitForm()">
-        ✦ &nbsp; Present Scroll &nbsp; ✦
-      </button>
     </div>
 
-    <div class="success-state" id="successState">
-      <span class="success-glyph">✦</span>
-      <div class="success-title">Thy scroll has been received.</div>
-      <p class="success-sub">
-        The keeper has been summoned. Await word at thy courier address —
-        thy passage shall be prepared within a day or two.
-      </p>
+    <div class="gold-rule"></div>
+
+    <div class="submit-wrap">
+      <button class="submit-btn" id="submitBtn" onclick="submitForm()">Present Scroll</button>
     </div>
   </div>
-</div>
 
-<footer>
-  <p>Dungeon &mdash; <a href="/admin.html">Warden's Gate</a></p>
-</footer>
+  <div class="success-state" id="successState">
+    <span class="success-eyebrow">— Received —</span>
+    <div class="success-title">Thy Scroll Has Been Delivered</div>
+    <div class="gold-rule-sm" style="margin-bottom: 24px;"></div>
+    <p class="success-sub">
+      The keeper has been summoned.<br>
+      Await word at thy courier address.
+    </p>
+  </div>
+
+  <footer>
+    <p>Dungeon &mdash; <a href="/admin.html">Warden's Gate</a></p>
+  </footer>
+
+</div>
 
 <script>
   function validate() {
@@ -535,7 +375,7 @@
     const btn    = document.getElementById('submitBtn');
     const banner = document.getElementById('errorBanner');
     btn.disabled = true;
-    btn.textContent = '⧗  Delivering scroll…';
+    btn.textContent = 'Delivering…';
     banner.style.display = 'none';
 
     const body = {
@@ -559,16 +399,16 @@
         document.getElementById('formContent').style.display = 'none';
         document.getElementById('successState').style.display = 'block';
       } else {
-        banner.textContent = data.error || 'The scroll was rejected. Try again.';
+        banner.textContent = data.error || 'The scroll was rejected.';
         banner.style.display = 'block';
         btn.disabled = false;
-        btn.innerHTML = '✦ &nbsp; Present Scroll &nbsp; ✦';
+        btn.textContent = 'Present Scroll';
       }
     } catch {
-      banner.textContent = 'The ravens failed. Check thy connection and try again.';
+      banner.textContent = 'Connection lost. Try again.';
       banner.style.display = 'block';
       btn.disabled = false;
-      btn.innerHTML = '✦ &nbsp; Present Scroll &nbsp; ✦';
+      btn.textContent = 'Present Scroll';
     }
   }
 
