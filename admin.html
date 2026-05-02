@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DUNGEON · Warden's Gate</title>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=IM+Fell+English:ital@0;1&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --stone:     #0e0d0b;
+      --stone2:    #161410;
+      --stone3:    #1f1c17;
+      --crack:     rgba(255,220,140,0.07);
+      --crack2:    rgba(255,220,140,0.14);
+      --torch:     #c8922a;
+      --torch2:    #e8b84b;
+      --torch3:    #f5d070;
+      --ash:       rgba(230,215,185,0.55);
+      --parchment: rgba(230,215,185,0.88);
+      --blood:     #7a1f1f;
+      --blood2:    #a02828;
+      --green:     #4a7c4e;
+      --green2:    #6aad70;
+    }
+
+    body {
+      font-family: 'IM Fell English', Georgia, serif;
+      background: var(--stone);
+      color: var(--parchment);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.6;
+    }
+
+    .masonry {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: linear-gradient(var(--crack) 1px, transparent 1px), linear-gradient(90deg, var(--crack) 1px, transparent 1px);
+      background-size: 120px 80px;
+    }
+
+    @keyframes flicker {
+      0%,100%{opacity:1} 5%{opacity:.93} 10%{opacity:1} 55%{opacity:.9} 60%{opacity:1}
+    }
+
+    .torch { position: fixed; top: 0; width: 1px; height: 140px; pointer-events: none; z-index: 1; animation: flicker 4s ease-in-out infinite; }
+    .torch-l { left: 40px; background: linear-gradient(var(--torch2), transparent); box-shadow: 0 0 40px 18px rgba(200,146,42,0.14); }
+    .torch-r { right: 40px; background: linear-gradient(var(--torch2), transparent); box-shadow: 0 0 40px 18px rgba(200,146,42,0.14); animation-delay: 1.7s; }
+
+    /* ── Lock ─────────────────────────────────────────────── */
+    #lockScreen {
+      position: fixed; inset: 0; z-index: 200;
+      background: var(--stone);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .lock-stone {
+      width: 380px;
+      background: var(--stone2);
+      border: 1px solid var(--crack2);
+      padding: 52px 48px;
+      text-align: center;
+      position: relative;
+    }
+
+    .lock-stone::before,
+    .lock-stone::after {
+      content: '✦';
+      font-size: 12px;
+      color: var(--torch);
+      opacity: 0.4;
+      position: absolute;
+    }
+    .lock-stone::before { top: 14px; left: 16px; }
+    .lock-stone::after  { bottom: 14px; right: 16px; }
+
+    .lock-title {
+      font-family: 'UnifrakturMaguntia', cursive;
+      font-size: 52px;
+      color: var(--torch2);
+      text-shadow: 0 0 30px rgba(200,146,42,0.4);
+      margin-bottom: 6px;
+    }
+
+    .lock-sub {
+      font-family: 'Courier Prime', monospace;
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ash);
+      margin-bottom: 40px;
+      opacity: 0.7;
+    }
+
+    .lock-input {
+      width: 100%;
+      background: var(--stone3);
+      border: 1px solid var(--crack2);
+      border-bottom: 1px solid rgba(200,146,42,0.25);
+      color: var(--parchment);
+      font-family: 'Courier Prime', monospace;
+      font-size: 20px;
+      padding: 14px 16px;
+      text-align: center;
+      letter-spacing: 0.3em;
+      outline: none;
+      margin-bottom: 16px;
+      border-radius: 0;
+      transition: border-color 0.2s;
+    }
+    .lock-input:focus { border-color: var(--torch); }
+
+    .lock-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid rgba(200,146,42,0.35);
+      color: var(--torch2);
+      font-family: 'Courier Prime', monospace;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lock-btn:hover { border-color: var(--torch2); color: var(--torch3); background: rgba(200,146,42,0.05); }
+
+    .lock-error {
+      margin-top: 14px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 11px;
+      color: #c46060;
+      letter-spacing: 0.06em;
+      display: none;
+    }
+
+    /* ── App ──────────────────────────────────────────────── */
+    #adminApp { display: none; position: relative; z-index: 10; }
+
+    /* Header */
+    header {
+      background: var(--stone2);
+      border-bottom: 1px solid var(--crack2);
+      padding: 0 32px;
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .logo {
+      font-family: 'UnifrakturMaguntia', cursive;
+      font-size: 30px;
+      color: var(--torch2);
+      text-shadow: 0 0 20px rgba(200,146,42,0.3);
+      line-height: 1;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 20px; }
+
+    .warden-badge {
+      font-family: 'Courier Prime', monospace;
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      border: 1px solid rgba(200,146,42,0.35);
+      color: var(--torch);
+      padding: 3px 10px;
+    }
+
+    .hlink {
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ash);
+      text-decoration: none;
+      background: none; border: none; cursor: pointer;
+      transition: color 0.2s;
+    }
+    .hlink:hover { color: var(--torch2); }
+
+    /* Stats */
+    .ledger {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--crack);
+      border-bottom: 1px solid var(--crack2);
+    }
+
+    .ledger-cell {
+      background: var(--stone2);
+      padding: 22px 28px;
+    }
+
+    .ledger-label {
+      font-family: 'Courier Prime', monospace;
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ash);
+      margin-bottom: 6px;
+      opacity: 0.7;
+    }
+
+    .ledger-value {
+      font-family: 'UnifrakturMaguntia', cursive;
+      font-size: 38px;
+      line-height: 1;
+      color: var(--parchment);
+    }
+
+    /* Main */
+    .main { padding: 32px; }
+
+    .scroll-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .scroll-label {
+      font-family: 'Courier Prime', monospace;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--torch);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .scroll-label::before { content: '—'; opacity: 0.5; }
+
+    .filter-row { display: flex; gap: 3px; }
+
+    .filter-btn {
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 5px 13px;
+      border: 1px solid var(--crack2);
+      background: transparent;
+      color: var(--ash);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { color: var(--parchment); border-color: var(--torch); }
+    .filter-btn.active { background: rgba(200,146,42,0.1); border-color: var(--torch); color: var(--torch2); }
+
+    /* Cards */
+    .petition-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .petition {
+      background: var(--stone2);
+      border: 1px solid var(--crack2);
+      padding: 22px 24px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: start;
+      transition: border-color 0.15s;
+    }
+    .petition:hover { border-color: rgba(200,146,42,0.2); }
+
+    .pet-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+
+    .pet-sigil {
+      width: 36px; height: 36px;
+      border: 1px solid var(--crack2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Courier Prime', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--torch);
+      flex-shrink: 0;
+    }
+
+    .pet-name { font-size: 16px; font-weight: normal; color: var(--parchment); }
+    .pet-email { font-family: 'Courier Prime', monospace; font-size: 12px; color: var(--ash); margin-top: 2px; }
+
+    .pet-fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 8px 24px;
+    }
+
+    .pet-field-label {
+      font-family: 'Courier Prime', monospace;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(230,215,185,0.3);
+      margin-bottom: 2px;
+    }
+
+    .pet-field-val {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 13px;
+      color: var(--parchment);
+    }
+
+    /* Status rune */
+    .status-rune {
+      font-family: 'Courier Prime', monospace;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border: 1px solid;
+    }
+    .status-rune.pending { border-color: rgba(200,146,42,0.4); color: var(--torch2); }
+    .status-rune.done    { border-color: rgba(74,124,78,0.5);  color: var(--green2); }
+    .status-rune.skipped { border-color: var(--crack2);        color: var(--ash); }
+
+    /* Actions */
+    .pet-actions { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+
+    .act-btn {
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      border: 1px solid var(--crack2);
+      background: transparent;
+      color: var(--ash);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .act-btn:hover { color: var(--parchment); border-color: rgba(230,215,185,0.25); }
+    .act-btn.green { color: var(--green2); border-color: rgba(74,124,78,0.4); }
+    .act-btn.green:hover { background: rgba(74,124,78,0.07); }
+    .act-btn.red   { color: #c46060; border-color: rgba(122,31,31,0.4); }
+    .act-btn.red:hover { background: rgba(122,31,31,0.08); }
+
+    .pet-date {
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      color: rgba(230,215,185,0.2);
+      margin-top: 6px;
+      text-align: right;
+    }
+
+    /* Empty */
+    .empty {
+      text-align: center; padding: 72px 24px; color: var(--ash);
+    }
+
+    .empty-glyph {
+      font-family: 'UnifrakturMaguntia', cursive;
+      font-size: 56px; color: var(--torch); opacity: 0.25;
+      display: block; margin-bottom: 16px;
+    }
+
+    .empty-title {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 22px; margin-bottom: 8px; color: var(--parchment);
+    }
+
+    .empty-sub {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-style: italic; font-size: 14px; color: var(--ash);
+    }
+
+    /* Modal */
+    .modal-veil {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: none; align-items: center; justify-content: center;
+      z-index: 50;
+    }
+    .modal-veil.open { display: flex; }
+
+    .modal-stone {
+      background: var(--stone2);
+      border: 1px solid var(--crack2);
+      padding: 36px;
+      width: 500px; max-width: 95vw;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-stone::before,.modal-stone::after {
+      content: '✦'; font-size: 10px; color: var(--torch); opacity: 0.4; position: absolute;
+    }
+    .modal-stone::before { top: 12px; left: 14px; }
+    .modal-stone::after  { bottom: 12px; right: 14px; }
+
+    .modal-title {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 22px; margin-bottom: 24px; color: var(--parchment);
+    }
+
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 28px; }
+
+    .decree {
+      background: rgba(200,146,42,0.05);
+      border: 1px solid rgba(200,146,42,0.15);
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      font-family: 'IM Fell English', Georgia, serif;
+      font-style: italic;
+      font-size: 13px;
+      color: var(--ash);
+      line-height: 1.7;
+    }
+    .decree strong { color: var(--parchment); font-style: normal; }
+
+    .copy-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+    .copy-row input {
+      flex: 1;
+      background: var(--stone3);
+      border: 1px solid var(--crack2);
+      color: var(--parchment);
+      font-family: 'Courier Prime', monospace;
+      font-size: 12px;
+      padding: 9px 12px;
+      outline: none;
+      border-radius: 0;
+    }
+
+    .copy-mini {
+      font-family: 'Courier Prime', monospace;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 9px 12px;
+      border: 1px solid var(--crack2);
+      background: transparent;
+      color: var(--ash);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .copy-mini:hover { color: var(--parchment); }
+    .copy-mini.copied { color: var(--green2); border-color: rgba(74,124,78,0.4); }
+
+    .steps {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 13px; color: var(--ash); line-height: 2.1;
+    }
+    .steps strong { color: var(--parchment); }
+    .steps a { color: var(--torch2); text-decoration: none; }
+    .steps a:hover { text-decoration: underline; }
+
+    .pw-line {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 18px;
+    }
+    .pw-label { font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ash); }
+    .pw-val { font-family: 'Courier Prime', monospace; font-size: 13px; background: var(--stone3); border: 1px solid var(--crack2); padding: 5px 12px; color: var(--parchment); }
+  </style>
+</head>
+<body>
+
+<div class="masonry"></div>
+<div class="torch torch-l"></div>
+<div class="torch torch-r"></div>
+
+<!-- Lock -->
+<div id="lockScreen">
+  <div class="lock-stone">
+    <div class="lock-title">Dungeon</div>
+    <div class="lock-sub">Warden's Gate &mdash; Speak the word</div>
+    <input class="lock-input" type="password" id="pinInput" placeholder="· · · · · ·"
+      onkeydown="if(event.key==='Enter')unlock()" />
+    <button class="lock-btn" onclick="unlock()">✦ &nbsp; Enter &nbsp; ✦</button>
+    <div class="lock-error" id="lockError">The gate does not yield.</div>
+  </div>
+</div>
+
+<!-- Admin -->
+<div id="adminApp">
+  <header>
+    <div class="logo">Dungeon</div>
+    <div class="header-right">
+      <div class="warden-badge">Warden</div>
+      <a href="/" class="hlink">← The Gate</a>
+      <button class="hlink" onclick="logout()">Bar the Gate</button>
+    </div>
+  </header>
+
+  <div class="ledger">
+    <div class="ledger-cell">
+      <div class="ledger-label">Total Petitions</div>
+      <div class="ledger-value" id="statTotal">—</div>
+    </div>
+    <div class="ledger-cell">
+      <div class="ledger-label">Awaiting</div>
+      <div class="ledger-value" id="statPending" style="color:var(--torch2)">—</div>
+    </div>
+    <div class="ledger-cell">
+      <div class="ledger-label">Granted</div>
+      <div class="ledger-value" id="statDone" style="color:var(--green2)">—</div>
+    </div>
+    <div class="ledger-cell">
+      <div class="ledger-label">Turned Away</div>
+      <div class="ledger-value" id="statSkipped" style="color:var(--ash)">—</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="scroll-header">
+      <div class="scroll-label">The Petition Ledger</div>
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+        <button class="filter-btn" onclick="setFilter('pending',this)">Awaiting</button>
+        <button class="filter-btn" onclick="setFilter('done',this)">Granted</button>
+        <button class="filter-btn" onclick="setFilter('skipped',this)">Turned Away</button>
+      </div>
+    </div>
+    <div class="petition-list" id="petitionList"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-veil" id="setupModal">
+  <div class="modal-stone">
+    <div class="modal-title">Grant Entry</div>
+    <div id="setupContent"></div>
+    <div class="modal-actions">
+      <button class="act-btn" onclick="closeModal()">Dismiss</button>
+      <button class="act-btn green" onclick="markDone()">✦ Mark as Granted</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentFilter = 'all';
+  let activeId = null;
+
+  async function unlock() {
+    const pw = document.getElementById('pinInput').value;
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ password: pw }),
+      });
+      if (res.ok) {
+        document.getElementById('lockScreen').style.display = 'none';
+        document.getElementById('adminApp').style.display = 'block';
+        loadAll();
+      } else {
+        const d = await res.json();
+        document.getElementById('lockError').textContent = d.error || 'The gate does not yield.';
+        document.getElementById('lockError').style.display = 'block';
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinInput').focus();
+      }
+    } catch {
+      document.getElementById('lockError').textContent = 'The gate is unreachable.';
+      document.getElementById('lockError').style.display = 'block';
+    }
+  }
+
+  async function logout() {
+    await fetch('/api/logout', { method: 'POST' });
+    document.getElementById('lockScreen').style.display = 'flex';
+    document.getElementById('adminApp').style.display = 'none';
+    document.getElementById('pinInput').value = '';
+    document.getElementById('lockError').style.display = 'none';
+  }
+
+  fetch('/api/me').then(r=>r.json()).then(d=>{
+    if (d.authenticated) {
+      document.getElementById('lockScreen').style.display = 'none';
+      document.getElementById('adminApp').style.display = 'block';
+      loadAll();
+    } else {
+      document.getElementById('pinInput').focus();
+    }
+  });
+
+  async function loadAll() {
+    await Promise.all([loadStats(), loadPetitions()]);
+  }
+
+  async function loadStats() {
+    const d = await fetch('/api/stats').then(r=>r.json());
+    document.getElementById('statTotal').textContent   = d.total;
+    document.getElementById('statPending').textContent = d.pending;
+    document.getElementById('statDone').textContent    = d.done;
+    document.getElementById('statSkipped').textContent = d.skipped;
+  }
+
+  async function loadPetitions() {
+    const url = currentFilter === 'all' ? '/api/requests' : `/api/requests?status=${currentFilter}`;
+    const rows = await fetch(url).then(r=>r.json());
+    renderPetitions(rows);
+  }
+
+  function setFilter(f, el) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active');
+    loadPetitions();
+  }
+
+  function fmt(dt) {
+    if (!dt) return '';
+    return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+
+  function initials(r) {
+    return ((r.first_name||'')[0]+(r.last_name||'')[0]).toUpperCase();
+  }
+
+  function escJs(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+  const STATUS_LABEL = { pending: 'Awaiting', done: 'Granted', skipped: 'Turned Away' };
+
+  function renderPetitions(rows) {
+    const el = document.getElementById('petitionList');
+    if (!rows.length) {
+      el.innerHTML = `<div class="empty">
+        <span class="empty-glyph">✦</span>
+        <div class="empty-title">${currentFilter==='all' ? 'No petitions yet.' : 'None here.'}</div>
+        <div class="empty-sub">${currentFilter==='all' ? 'Share the gate with thy people.' : 'No '+STATUS_LABEL[currentFilter]?.toLowerCase()+' petitions.'}</div>
+      </div>`;
+      return;
+    }
+
+    el.innerHTML = rows.map(r => `
+      <div class="petition" id="card-${r.id}">
+        <div>
+          <div class="pet-top">
+            <div class="pet-sigil">${initials(r)}</div>
+            <div>
+              <div class="pet-name">${r.first_name} ${r.last_name}</div>
+              <div class="pet-email">${r.email}</div>
+            </div>
+            <span class="status-rune ${r.status}">${STATUS_LABEL[r.status]||r.status}</span>
+          </div>
+          <div class="pet-fields">
+            ${r.phone ? `<div><div class="pet-field-label">Crystal</div><div class="pet-field-val">${r.phone}</div></div>` : ''}
+            ${r.language ? `<div><div class="pet-field-label">Tongue</div><div class="pet-field-val">${r.language}</div></div>` : ''}
+            ${r.referral ? `<div><div class="pet-field-label">Vouched by</div><div class="pet-field-val">${r.referral}</div></div>` : ''}
+            ${r.notes ? `<div style="grid-column:1/-1"><div class="pet-field-label">Petition</div><div class="pet-field-val">${r.notes}</div></div>` : ''}
+          </div>
+        </div>
+        <div class="pet-actions">
+          ${r.status === 'pending' ? `
+            <button class="act-btn green" onclick="openSetup('${r.id}','${escJs(r.first_name)}','${escJs(r.last_name)}','${escJs(r.email)}','${escJs(r.language)}','${escJs(r.notes)}')">⚡ Grant Entry</button>
+            <button class="act-btn" onclick="setStatus('${r.id}','skipped')">Turn Away</button>
+          ` : r.status === 'done' ? `
+            <button class="act-btn" onclick="setStatus('${r.id}','pending')">Reopen</button>
+          ` : `
+            <button class="act-btn green" onclick="openSetup('${r.id}','${escJs(r.first_name)}','${escJs(r.last_name)}','${escJs(r.email)}','${escJs(r.language)}','${escJs(r.notes)}')">⚡ Grant Entry</button>
+            <button class="act-btn" onclick="setStatus('${r.id}','pending')">Reopen</button>
+          `}
+          <button class="act-btn red" onclick="deletePetition('${r.id}')">Expunge</button>
+          <div class="pet-date">${fmt(r.created_at)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function setStatus(id, status) {
+    await fetch(`/api/requests/${id}/status`, {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ status }),
+    });
+    loadAll();
+  }
+
+  async function deletePetition(id) {
+    if (!confirm('Expunge this petition from the ledger?')) return;
+    await fetch(`/api/requests/${id}`, { method: 'DELETE' });
+    loadAll();
+  }
+
+  function genPassword(firstName) {
+    const base = (firstName||'Vault').charAt(0).toUpperCase() + (firstName||'vault').slice(1).toLowerCase();
+    return base + Math.floor(Math.random()*900+100) + ['!','@','#','$','&'][Math.floor(Math.random()*5)];
+  }
+
+  function openSetup(id, firstName, lastName, email, language, notes) {
+    activeId = id;
+    const pw = genPassword(firstName);
+    document.getElementById('setupContent').innerHTML = `
+      <div class="decree">
+        Prepare passage for <strong>${firstName} ${lastName}</strong>. Create their account, then outfit it with thy full arsenal of addons.
+      </div>
+
+      <div class="copy-row">
+        <input readonly value="${email}" />
+        <button class="copy-mini" onclick="copyMini(this,'${escJs(email)}')">Copy</button>
+      </div>
+
+      <div class="pw-line">
+        <span class="pw-label">Suggested passphrase:</span>
+        <span class="pw-val">${pw}</span>
+        <button class="copy-mini" onclick="copyMini(this,'${pw}')">Copy</button>
+      </div>
+
+      <div class="steps">
+        <strong>The ritual:</strong><br>
+        I. <a href="https://www.stremio.com/register" target="_blank">Forge the account on Stremio ↗</a> using the courier address above<br>
+        II. Enter <a href="https://web.stremio.com" target="_blank">web.stremio.com ↗</a> under thine own name → Settings → Addons<br>
+        III. Note thy addon sigils, then enter as <strong>${firstName}</strong> and install the same<br>
+        ${language ? `IV. Set their tongue to <strong>${language}</strong><br>` : ''}
+        ${notes ? `<div style="margin-top:12px;padding:10px 14px;background:rgba(200,146,42,0.05);border:1px solid rgba(200,146,42,0.15);font-style:italic"><strong style="font-style:normal">Their petition:</strong> ${notes}</div>` : ''}
+      </div>
+    `;
+    document.getElementById('setupModal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('setupModal').classList.remove('open');
+    activeId = null;
+  }
+
+  function markDone() {
+    if (activeId) { setStatus(activeId, 'done'); closeModal(); }
+  }
+
+  function copyMini(btn, text) {
+    navigator.clipboard.writeText(text).catch(()=>{});
+    const orig = btn.textContent;
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent=orig; btn.classList.remove('copied'); }, 1500);
+  }
+
+  document.getElementById('setupModal').addEventListener('click', function(e){
+    if (e.target === this) closeModal();
+  });
+
+  document.getElementById('pinInput').focus();
+</script>
+</body>
+</html>
