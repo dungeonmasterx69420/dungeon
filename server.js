@@ -53,26 +53,26 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'change-me-in-production',
+  secret: process.env.SESSION_SECRET || 'dungeon-secret-change-me',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // set to true only if you're on HTTPS and it works
     httpOnly: true,
-    maxAge: 8 * 60 * 60 * 1000,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
   },
 }));
 
 const submitLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 5,
+  max: 10,
   message: { error: 'Too many requests. Please try again later.' },
 });
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: { error: 'Too many login attempts. Try again in 15 minutes.' },
+  max: 20,
+  message: { error: 'Too many login attempts. Try again later.' },
 });
 
 function requireAuth(req, res, next) {
@@ -83,18 +83,25 @@ function requireAuth(req, res, next) {
 // ── Auth ──────────────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ ok: true }));
 
-app.post('/api/login', loginLimiter, async (req, res) => {
+app.post('/api/login', loginLimiter, (req, res) => {
   const { password } = req.body;
-  const adminHash = process.env.ADMIN_PASSWORD_HASH;
-  if (!adminHash) {
-    const plain = process.env.ADMIN_PASSWORD || 'admin123';
-    if (password !== plain) return res.status(401).json({ error: 'Incorrect password' });
-  } else {
-    const match = await bcrypt.compare(password, adminHash);
-    if (!match) return res.status(401).json({ error: 'Incorrect password' });
+  const adminPassword = (process.env.ADMIN_PASSWORD || 'p00p').trim();
+  const submitted = (password || '').trim();
+
+  console.log(`Login attempt. Expected: "${adminPassword}" Got: "${submitted}" Match: ${submitted === adminPassword}`);
+
+  if (submitted !== adminPassword) {
+    return res.status(401).json({ error: 'Incorrect password' });
   }
+
   req.session.authenticated = true;
-  res.json({ ok: true });
+  req.session.save((err) => {
+    if (err) {
+      console.error('Session save error:', err);
+      return res.status(500).json({ error: 'Session error' });
+    }
+    res.json({ ok: true });
+  });
 });
 
 app.post('/api/logout', (req, res) => {
@@ -146,7 +153,6 @@ app.delete('/api/applicants/:id', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
-// Promote applicant → member (saves their Stremio credentials too)
 app.post('/api/applicants/:id/promote', requireAuth, (req, res) => {
   const applicant = db.prepare('SELECT * FROM applicants WHERE id=?').get(req.params.id);
   if (!applicant) return res.status(404).json({ error: 'Not found' });
@@ -174,9 +180,8 @@ app.get('/api/members', requireAuth, (req, res) => {
 
 app.patch('/api/members/:id', requireAuth, (req, res) => {
   const { stremio_email, stremio_pass, notes } = req.body;
-  db.prepare(`
-    UPDATE members SET stremio_email=?, stremio_pass=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?
-  `).run(stremio_email||'', stremio_pass||'', notes||'', req.params.id);
+  db.prepare(`UPDATE members SET stremio_email=?, stremio_pass=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?`)
+    .run(stremio_email||'', stremio_pass||'', notes||'', req.params.id);
   res.json({ ok: true });
 });
 
@@ -199,4 +204,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => console.log(`Dungeon running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Dungeon running on port ${PORT}`);
+  console.log(`Admin password: "${(process.env.ADMIN_PASSWORD || 'p00p').trim()}"`);
+});

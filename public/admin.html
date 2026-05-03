@@ -3,704 +3,870 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StreamHub · Admin</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet" />
+  <title>DUNGEON · Warden</title>
+  <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #080c10;
-      --surface: #0f1419;
-      --surface2: #161d25;
-      --border: rgba(255,255,255,0.06);
-      --border2: rgba(255,255,255,0.12);
-      --accent: #e8412a;
-      --text: #eef2f7;
-      --muted: rgba(238,242,247,0.45);
-      --muted2: rgba(238,242,247,0.22);
-      --green: #3ecf8e;
-      --amber: #f5a623;
-      --blue: #4a9eff;
+      --black:   #000000;
+      --deep:    #0c0808;
+      --red:     #8b1a1a;
+      --red2:    #b22222;
+      --red3:    #cc3333;
+      --ember:   #c8601a;
+      --bone:    #d4c4a8;
+      --bone2:   #e8dcc8;
+      --dim:     #6a5a4a;
+      --dimmer:  #3a2a20;
+      --line:    rgba(180,50,50,0.2);
+      --line2:   rgba(180,50,50,0.4);
+      --green:   #4a8a4a;
+      --green2:  #6abf6a;
     }
 
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
+    html, body {
       min-height: 100vh;
+      background: var(--black);
+      color: var(--bone);
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 15px;
     }
 
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background: repeating-linear-gradient(
-        0deg, transparent, transparent 2px,
-        rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
-      );
-      pointer-events: none; z-index: 999;
+    .red-rule {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--red2), transparent);
     }
 
-    /* ── Lock screen ─────────────────────────────────────── */
+    /* ── 8-bit barbarian canvas ──────────────────────── */
+    #barb-canvas {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: 160px;
+      height: 160px;
+      image-rendering: pixelated;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    /* ── Lock screen ─────────────────────────────────── */
     #lockScreen {
-      position: fixed; inset: 0;
-      background: var(--bg);
+      position: fixed; inset: 0; z-index: 200;
+      background: var(--black);
       display: flex; align-items: center; justify-content: center;
-      z-index: 100;
     }
 
-    .lock-card {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      padding: 40px 48px;
-      width: 360px;
-      position: relative;
-      text-align: center;
-    }
+    .lock-wrap { width: 340px; text-align: center; }
 
-    .lock-card::before, .lock-card::after {
-      content: ''; position: absolute;
-      width: 14px; height: 14px;
-      border-color: var(--accent); border-style: solid;
-    }
-    .lock-card::before { top:-1px; left:-1px; border-width: 2px 0 0 2px; }
-    .lock-card::after  { bottom:-1px; right:-1px; border-width: 0 2px 2px 0; }
-
-    .lock-logo {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 28px; letter-spacing: 0.1em;
-      margin-bottom: 8px;
-    }
-
-    .lock-logo span { color: var(--accent); }
-
-    .lock-sub {
-      font-size: 12px; color: var(--muted);
-      font-family: 'Space Mono', monospace;
-      letter-spacing: 0.06em;
-      margin-bottom: 32px;
-    }
-
-    .lock-input {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border2);
-      color: var(--text);
-      font-family: 'Space Mono', monospace;
-      font-size: 16px;
-      padding: 14px 16px;
-      outline: none;
-      text-align: center;
-      letter-spacing: 0.2em;
-      margin-bottom: 16px;
-      transition: border-color 0.2s;
-    }
-    .lock-input:focus { border-color: var(--accent); }
-
-    .lock-btn {
-      width: 100%;
-      background: var(--accent);
-      border: none; color: #fff;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 18px; letter-spacing: 0.12em;
-      padding: 14px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .lock-btn:hover { background: #c7341f; }
-
-    .lock-error {
-      margin-top: 12px;
-      font-size: 12px; color: var(--accent);
-      font-family: 'Space Mono', monospace;
-      display: none;
-    }
-
-    /* ── Main layout ─────────────────────────────────────── */
-    #adminApp { display: none; }
-
-    header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 32px;
-      height: 60px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-
-    .logo {
-      display: flex; align-items: center; gap: 12px;
-    }
-
-    .logo-mark {
-      width: 34px; height: 34px;
-      border: 1.5px solid var(--accent);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 16px; color: var(--accent);
-    }
-
-    .logo-name {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 20px; letter-spacing: 0.1em;
-    }
-    .logo-name span { color: var(--accent); }
-
-    .header-right {
-      display: flex; align-items: center; gap: 16px;
-    }
-
-    .admin-badge {
-      font-family: 'Space Mono', monospace;
-      font-size: 10px; letter-spacing: 0.08em;
-      border: 1px solid rgba(232,65,42,0.4);
-      color: var(--accent);
-      padding: 4px 10px;
-    }
-
-    .header-link {
-      font-size: 12px; color: var(--muted); text-decoration: none;
-      letter-spacing: 0.05em; transition: color 0.2s;
-    }
-    .header-link:hover { color: var(--text); }
-
-    /* ── Stats bar ───────────────────────────────────────── */
-    .stats-bar {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1px;
-      background: var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .stat {
-      background: var(--surface);
-      padding: 20px 28px;
-    }
-
-    .stat-label {
-      font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--muted); font-weight: 500;
-      font-family: 'Space Mono', monospace;
+    .lock-title {
+      font-family: 'Cinzel', serif;
+      font-size: 28px; font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--red3);
+      text-shadow: 0 0 30px rgba(180,40,40,0.5);
       margin-bottom: 6px;
     }
 
-    .stat-value {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 32px; letter-spacing: 0.04em;
+    .lock-sub {
+      font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 40px;
     }
 
-    /* ── Main content ────────────────────────────────────── */
-    .main { padding: 32px; }
+    .lock-input {
+      width: 100%; background: transparent; border: none;
+      border-bottom: 1px solid var(--line2);
+      color: var(--bone2); font-family: 'Cinzel', serif;
+      font-size: 20px; letter-spacing: 0.3em; text-align: center;
+      padding: 14px 0; outline: none; margin-bottom: 32px;
+      transition: border-color 0.2s; border-radius: 0;
+    }
+    .lock-input:focus { border-bottom-color: var(--red3); }
 
-    .section-header {
+    .lock-btn {
+      background: transparent; border: 1px solid var(--red2);
+      color: var(--red3); font-family: 'Cinzel', serif;
+      font-size: 13px; letter-spacing: 0.4em; text-transform: uppercase;
+      padding: 14px 0; width: 100%; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lock-btn:hover { background: rgba(180,34,34,0.1); color: var(--bone2); border-color: var(--red3); }
+
+    .lock-error {
+      margin-top: 16px; font-size: 12px; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--red3); display: none;
+    }
+
+    /* ── App ─────────────────────────────────────────── */
+    #adminApp { display: none; position: relative; z-index: 1; min-height: 100vh; }
+
+    /* Topbar */
+    .topbar {
+      border-bottom: 1px solid var(--line);
+      padding: 18px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .topbar-name {
+      font-size: 20px; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--red3);
+      text-shadow: 0 0 20px rgba(180,40,40,0.4);
+    }
+
+    .topbar-right { display: flex; align-items: center; gap: 28px; }
+
+    .topbar-link {
+      font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--dim); text-decoration: none; background: none; border: none;
+      cursor: pointer; font-family: 'Cinzel', serif; transition: color 0.2s;
+    }
+    .topbar-link:hover { color: var(--red3); }
+
+    /* Stats */
+    .ledger {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .ledger-cell {
+      padding: 24px 32px; border-right: 1px solid var(--line);
+    }
+    .ledger-cell:last-child { border-right: none; }
+
+    .ledger-label {
+      font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 8px;
+    }
+
+    .ledger-val {
+      font-size: 42px; letter-spacing: 0.05em;
+      color: var(--bone2); line-height: 1; font-weight: 400;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex; border-bottom: 1px solid var(--line); padding: 0 40px;
+    }
+
+    .tab-btn {
+      font-family: 'Cinzel', serif;
+      font-size: 13px; letter-spacing: 0.25em; text-transform: uppercase;
+      background: none; border: none; border-bottom: 2px solid transparent;
+      color: var(--dim); cursor: pointer; padding: 18px 0;
+      margin-right: 40px; transition: color 0.2s, border-color 0.2s;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: var(--bone); }
+    .tab-btn.active { color: var(--red3); border-bottom-color: var(--red2); }
+
+    /* Main */
+    .main { padding: 36px 40px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* List header */
+    .list-header {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 24px;
     }
 
-    .section-title {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--muted);
+    .list-label {
+      font-size: 11px; letter-spacing: 0.35em; text-transform: uppercase;
+      color: var(--red2);
+    }
+
+    .filters { display: flex; gap: 4px; }
+
+    .filter-btn {
+      font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.18em;
+      text-transform: uppercase; padding: 6px 14px;
+      background: transparent; border: 1px solid transparent;
+      color: var(--dim); cursor: pointer; transition: all 0.15s;
+    }
+    .filter-btn:hover { color: var(--bone); border-color: var(--line2); }
+    .filter-btn.active { color: var(--red3); border-color: var(--line2); }
+
+    /* Rows */
+    .row-list { display: flex; flex-direction: column; }
+
+    .app-row {
+      border-bottom: 1px solid var(--line);
+      padding: 22px 0;
+      display: grid; grid-template-columns: 1fr auto;
+      gap: 20px; align-items: start;
+    }
+    .app-row:last-child { border-bottom: none; }
+
+    .row-name {
+      font-size: 17px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--bone2); margin-bottom: 5px; font-weight: 700;
+    }
+
+    .row-email {
+      font-size: 13px; letter-spacing: 0.05em; color: var(--dim); margin-bottom: 12px;
+    }
+
+    .row-meta { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; }
+
+    .meta-lbl {
+      font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--dimmer); margin-bottom: 3px;
+    }
+
+    .meta-val { font-size: 13px; color: var(--dim); }
+
+    .row-notes {
+      margin-top: 10px; font-size: 13px; color: var(--dim); font-style: italic;
+    }
+
+    .status-mark { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; font-weight: 700; }
+    .status-mark.pending  { color: var(--ember); }
+    .status-mark.approved { color: var(--green2); }
+    .status-mark.denied   { color: var(--dimmer); }
+
+    .row-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+    .act {
+      font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.2em;
+      text-transform: uppercase; background: none; border: none;
+      border-bottom: 1px solid transparent; color: var(--dim);
+      cursor: pointer; padding: 2px 0; transition: color 0.15s, border-color 0.15s;
+    }
+    .act:hover { color: var(--bone); border-bottom-color: var(--line2); }
+    .act.red   { color: var(--red2); }
+    .act.red:hover   { color: var(--red3); border-bottom-color: var(--red2); }
+    .act.green { color: var(--green2); }
+    .act.green:hover { border-bottom-color: var(--green2); }
+    .act.blood { color: #7a2020; }
+    .act.blood:hover { color: #aa3030; border-bottom-color: #7a2020; }
+
+    .row-date {
+      font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--dimmer); margin-top: 4px;
+    }
+
+    /* Members */
+    .mem-row {
+      border-bottom: 1px solid var(--line);
+      padding: 22px 0;
+      display: grid; grid-template-columns: 1fr auto;
+      gap: 20px; align-items: start;
+    }
+    .mem-row:last-child { border-bottom: none; }
+
+    .mem-creds { margin-top: 12px; display: flex; gap: 32px; flex-wrap: wrap; }
+
+    .cred-lbl {
+      font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--dimmer); margin-bottom: 5px;
+    }
+
+    .cred-val {
+      font-size: 14px; color: var(--bone); letter-spacing: 0.04em;
       display: flex; align-items: center; gap: 10px;
     }
 
-    .section-title::before {
-      content: '';
-      width: 3px; height: 14px;
-      background: var(--accent);
+    .pw-dots { color: var(--dim); letter-spacing: 3px; font-size: 16px; }
+
+    .show-btn, .copy-btn {
+      font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em;
+      text-transform: uppercase; background: none; border: none;
+      border-bottom: 1px solid var(--line2); color: var(--dimmer);
+      cursor: pointer; padding: 1px 0; transition: color 0.15s;
     }
+    .show-btn:hover, .copy-btn:hover { color: var(--red3); }
+    .copy-btn.copied { color: var(--green2); }
 
-    .filter-tabs {
-      display: flex; gap: 4px;
-    }
-
-    .tab {
-      padding: 6px 14px;
-      font-size: 12px; font-weight: 500;
-      border: 1px solid var(--border2);
-      background: transparent; color: var(--muted);
-      cursor: pointer; transition: all 0.15s;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .tab:hover { color: var(--text); background: var(--surface2); }
-    .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-
-    /* ── Request cards ───────────────────────────────────── */
-    .request-list { display: flex; flex-direction: column; gap: 12px; }
-
-    .request-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 22px 24px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 16px;
-      align-items: start;
-      transition: border-color 0.15s;
-    }
-
-    .request-card:hover { border-color: var(--border2); }
-
-    .req-top {
-      display: flex; align-items: center; gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .req-avatar {
-      width: 38px; height: 38px;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Space Mono', monospace;
-      font-size: 12px; font-weight: 700;
-      flex-shrink: 0;
-      border: 1px solid var(--border2);
-      color: var(--muted);
-    }
-
-    .req-name {
-      font-size: 16px; font-weight: 500;
-    }
-
-    .req-email {
-      font-size: 13px; color: var(--muted);
-      font-family: 'Space Mono', monospace;
-    }
-
-    .req-fields {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 8px 24px;
-    }
-
-    .req-field {
-      font-size: 12px;
-    }
-
-    .req-field-label {
-      color: var(--muted2);
-      font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-
-    .req-field-value {
-      color: var(--text);
-    }
-
-    /* Status badge */
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 10px;
-      font-size: 11px; font-weight: 500;
-      font-family: 'Space Mono', monospace;
-      letter-spacing: 0.04em;
-    }
-
-    .status-badge::before {
-      content: ''; width: 5px; height: 5px; border-radius: 50%;
-    }
-
-    .status-badge.pending  { border:1px solid rgba(245,166,35,0.4); color: var(--amber); }
-    .status-badge.pending::before { background: var(--amber); }
-    .status-badge.done     { border:1px solid rgba(62,207,142,0.4); color: var(--green); }
-    .status-badge.done::before   { background: var(--green); }
-    .status-badge.skipped  { border:1px solid var(--border2); color: var(--muted); }
-    .status-badge.skipped::before { background: var(--muted); }
-
-    /* Action buttons */
-    .req-actions {
-      display: flex; flex-direction: column; gap: 6px;
-      align-items: flex-end;
-    }
-
-    .action-btn {
-      padding: 7px 14px;
-      font-size: 12px; font-weight: 500;
-      border: 1px solid var(--border2);
-      background: transparent; color: var(--muted);
-      cursor: pointer; transition: all 0.15s;
-      font-family: 'DM Sans', sans-serif;
-      white-space: nowrap;
-    }
-
-    .action-btn:hover { color: var(--text); background: var(--surface2); }
-    .action-btn.green { color: var(--green); border-color: rgba(62,207,142,0.35); }
-    .action-btn.green:hover { background: rgba(62,207,142,0.08); }
-    .action-btn.red { color: var(--accent); border-color: rgba(232,65,42,0.35); }
-    .action-btn.red:hover { background: rgba(232,65,42,0.08); }
-
-    .req-date {
-      font-size: 11px; color: var(--muted2);
-      font-family: 'Space Mono', monospace;
-      margin-top: 8px; text-align: right;
-    }
-
-    /* Empty state */
-    .empty {
-      text-align: center; padding: 64px 24px;
-      color: var(--muted);
-    }
-
-    .empty-icon {
-      font-size: 40px; margin-bottom: 16px; opacity: 0.4;
-    }
-
+    /* Empty */
+    .empty { text-align: center; padding: 64px 0; }
     .empty-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 28px; letter-spacing: 0.08em;
-      color: var(--text); margin-bottom: 8px;
+      font-size: 16px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 10px;
+    }
+    .empty-sub {
+      font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--dimmer);
     }
 
     /* Modal */
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.75);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 50;
-      display: none;
+    .veil {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.92);
+      display: none; align-items: center; justify-content: center;
     }
+    .veil.open { display: flex; }
 
     .modal {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      padding: 32px;
-      width: 480px; max-width: 95vw;
-      position: relative;
+      width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+      background: var(--deep); border: 1px solid var(--line2); padding: 40px;
     }
-
-    .modal::before, .modal::after {
-      content: ''; position: absolute;
-      width: 12px; height: 12px;
-      border-color: var(--accent); border-style: solid;
-    }
-    .modal::before { top:-1px; left:-1px; border-width: 2px 0 0 2px; }
-    .modal::after  { bottom:-1px; right:-1px; border-width: 0 2px 2px 0; }
 
     .modal-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 24px; letter-spacing: 0.08em;
-      margin-bottom: 20px;
+      font-size: 16px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--red3); margin-bottom: 8px; font-weight: 700;
     }
 
-    .modal-body { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 24px; }
-    .modal-body strong { color: var(--text); }
+    .modal-rule { margin-bottom: 28px; }
 
-    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .modal-sub {
+      font-size: 14px; letter-spacing: 0.04em; color: var(--dim);
+      line-height: 1.8; margin-bottom: 28px;
+    }
+    .modal-sub strong { color: var(--bone2); font-weight: 400; }
 
-    /* Stremio link helper */
-    .stremio-help {
-      background: rgba(232,65,42,0.07);
-      border: 1px solid rgba(232,65,42,0.2);
-      padding: 14px 16px;
-      margin-bottom: 20px;
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--muted);
+    .m-label {
+      font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 8px; display: block;
     }
 
-    .stremio-help a { color: #ff6b52; text-decoration: none; }
-    .stremio-help a:hover { text-decoration: underline; }
-
-    .copy-field {
-      display: flex; gap: 8px; align-items: center;
-      margin-bottom: 12px;
+    .m-input {
+      width: 100%; background: transparent; border: none;
+      border-bottom: 1px solid var(--line2); color: var(--bone2);
+      font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: 0.05em;
+      padding: 10px 0; outline: none; margin-bottom: 24px;
+      transition: border-color 0.2s; border-radius: 0;
     }
+    .m-input:focus { border-bottom-color: var(--red3); }
+    .m-input::placeholder { color: var(--dimmer); }
 
-    .copy-field input {
-      flex: 1;
-      background: var(--surface2);
-      border: 1px solid var(--border2);
-      color: var(--text);
-      font-family: 'Space Mono', monospace;
-      font-size: 12px;
-      padding: 9px 12px;
-      outline: none;
+    .modal-actions {
+      display: flex; justify-content: flex-end; gap: 24px;
+      margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line);
     }
-
-    .copy-mini {
-      padding: 9px 14px;
-      background: var(--surface2);
-      border: 1px solid var(--border2);
-      color: var(--muted);
-      font-size: 12px;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      transition: all 0.15s; white-space: nowrap;
-    }
-    .copy-mini:hover { color: var(--text); }
-    .copy-mini.copied { color: var(--green); border-color: rgba(62,207,142,0.4); }
   </style>
 </head>
 <body>
 
-<!-- Lock Screen -->
+<!-- 8-bit barbarian canvas -->
+<canvas id="barb-canvas" width="160" height="160"></canvas>
+
+<!-- Lock -->
 <div id="lockScreen">
-  <div class="lock-card">
-    <div class="lock-logo">STREAM<span>HUB</span></div>
-    <div class="lock-sub">// ADMIN ACCESS</div>
-    <input class="lock-input" type="password" id="pinInput" placeholder="••••••" maxlength="20"
-      onkeydown="if(event.key==='Enter') unlock()" />
-    <button class="lock-btn" onclick="unlock()">ENTER</button>
-    <div class="lock-error" id="lockError">Incorrect password</div>
+  <div class="lock-wrap">
+    <div class="lock-title">Dungeon</div>
+    <div class="red-rule" style="margin-bottom:14px"></div>
+    <div class="lock-sub">Warden's Gate</div>
+    <input class="lock-input" type="password" id="pinInput" placeholder="· · · · · ·"
+      onkeydown="if(event.key==='Enter')unlock()" />
+    <button class="lock-btn" onclick="unlock()">Enter</button>
+    <div class="lock-error" id="lockError">The gate does not yield.</div>
   </div>
 </div>
 
-<!-- Admin App -->
+<!-- Admin -->
 <div id="adminApp">
-  <header>
-    <div class="logo">
-      <div class="logo-mark">S</div>
-      <div class="logo-name">STREAM<span>HUB</span></div>
+  <div class="topbar">
+    <div class="topbar-name">Dungeon</div>
+    <div class="topbar-right">
+      <a href="/" class="topbar-link">← The Gate</a>
+      <button class="topbar-link" onclick="logout()">Bar the Gate</button>
     </div>
-    <div class="header-right">
-      <div class="admin-badge">ADMIN</div>
-      <a href="index.html" class="header-link">← Request form</a>
-      <a href="#" class="header-link" onclick="logout()">Lock</a>
-    </div>
-  </header>
+  </div>
 
-  <div class="stats-bar">
-    <div class="stat">
-      <div class="stat-label">Total requests</div>
-      <div class="stat-value" id="statTotal">0</div>
+  <div class="ledger">
+    <div class="ledger-cell">
+      <div class="ledger-label">Applicants</div>
+      <div class="ledger-val" id="statApplicants">—</div>
     </div>
-    <div class="stat">
-      <div class="stat-label">Pending</div>
-      <div class="stat-value" id="statPending" style="color:var(--amber)">0</div>
+    <div class="ledger-cell">
+      <div class="ledger-label">Pending</div>
+      <div class="ledger-val" id="statPending" style="color:var(--ember)">—</div>
     </div>
-    <div class="stat">
-      <div class="stat-label">Completed</div>
-      <div class="stat-value" id="statDone" style="color:var(--green)">0</div>
+    <div class="ledger-cell">
+      <div class="ledger-label">Members</div>
+      <div class="ledger-val" id="statMembers" style="color:var(--green2)">—</div>
     </div>
-    <div class="stat">
-      <div class="stat-label">Skipped</div>
-      <div class="stat-value" id="statSkipped" style="color:var(--muted)">0</div>
+    <div class="ledger-cell">
+      <div class="ledger-label">Denied</div>
+      <div class="ledger-val" id="statDenied" style="color:var(--dimmer)">—</div>
     </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('applicants',this)">Applicants</button>
+    <button class="tab-btn" onclick="switchTab('members',this)">Members</button>
   </div>
 
   <div class="main">
-    <div class="section-header">
-      <div class="section-title">Account Requests</div>
-      <div class="filter-tabs">
-        <button class="tab active" onclick="setFilter('all', this)">All</button>
-        <button class="tab" onclick="setFilter('pending', this)">Pending</button>
-        <button class="tab" onclick="setFilter('done', this)">Done</button>
-        <button class="tab" onclick="setFilter('skipped', this)">Skipped</button>
+
+    <div class="tab-panel active" id="panel-applicants">
+      <div class="list-header">
+        <div class="list-label">Petitions</div>
+        <div class="filters">
+          <button class="filter-btn active" onclick="setAppFilter('all',this)">All</button>
+          <button class="filter-btn" onclick="setAppFilter('pending',this)">Pending</button>
+          <button class="filter-btn" onclick="setAppFilter('approved',this)">Approved</button>
+          <button class="filter-btn" onclick="setAppFilter('denied',this)">Denied</button>
+        </div>
       </div>
+      <div class="red-rule"></div>
+      <div class="row-list" id="applicantList"></div>
     </div>
 
-    <div class="request-list" id="requestList"></div>
+    <div class="tab-panel" id="panel-members">
+      <div class="list-header">
+        <div class="list-label">The Roster</div>
+      </div>
+      <div class="red-rule"></div>
+      <div class="row-list" id="memberList"></div>
+    </div>
+
   </div>
 </div>
 
-<!-- Setup modal -->
-<div class="modal-overlay" id="setupModal">
+<!-- Approve modal -->
+<div class="veil" id="approveModal">
   <div class="modal">
-    <div class="modal-title">Create Stremio Account</div>
-
-    <div id="setupContent"></div>
-
+    <div class="modal-title">Grant Entry</div>
+    <div class="red-rule modal-rule"></div>
+    <div class="modal-sub" id="approveDesc"></div>
+    <label class="m-label">Stremio Email</label>
+    <input class="m-input" id="approveStremioEmail" type="email" placeholder="their@stremio.com" />
+    <label class="m-label">Stremio Password</label>
+    <input class="m-input" id="approveStremioPass" type="text" placeholder="password" />
     <div class="modal-actions">
-      <button class="action-btn" onclick="closeModal()">Cancel</button>
-      <button class="action-btn green" onclick="markDone()">✓ Mark as done</button>
+      <button class="act" onclick="closeModal('approveModal')">Dismiss</button>
+      <button class="act green" onclick="confirmApprove()">Grant Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="veil" id="editModal">
+  <div class="modal">
+    <div class="modal-title">Edit Member</div>
+    <div class="red-rule modal-rule"></div>
+    <div class="modal-sub" id="editDesc"></div>
+    <label class="m-label">Stremio Email</label>
+    <input class="m-input" id="editStremioEmail" type="email" placeholder="their@stremio.com" />
+    <label class="m-label">Stremio Password</label>
+    <input class="m-input" id="editStremioPass" type="text" placeholder="password" />
+    <label class="m-label">Notes</label>
+    <input class="m-input" id="editNotes" type="text" placeholder="—" />
+    <div class="modal-actions">
+      <button class="act" onclick="closeModal('editModal')">Dismiss</button>
+      <button class="act green" onclick="confirmEdit()">Save</button>
     </div>
   </div>
 </div>
 
 <script>
-  // ── Config ──────────────────────────────────────────────
-  const ADMIN_PASSWORD = 'admin123'; // Change this to your own password!
-  // ────────────────────────────────────────────────────────
+// ── 8-bit barbarian + campfire ─────────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('barb-canvas');
+  const ctx = canvas.getContext('2d');
+  const S = 8; // pixel size
 
-  let currentFilter = 'all';
-  let activeRequestId = null;
+  // Color palette
+  const C = {
+    _: null,           // transparent
+    K: '#0a0806',      // near black
+    R: '#8b1a1a',      // dark red (armor)
+    r: '#b22222',      // red
+    B: '#4a3020',      // dark brown (skin shadow)
+    b: '#7a5030',      // brown skin
+    s: '#c8a878',      // light skin
+    G: '#3a3028',      // dark grey (fur)
+    g: '#6a6050',      // grey fur
+    W: '#d4c4a8',      // bone/white
+    Y: '#c8801a',      // fire orange
+    y: '#f0c020',      // fire yellow
+    O: '#e05010',      // fire red-orange
+    T: '#2a1a10',      // ground dark
+  };
 
-  function unlock() {
-    const pin = document.getElementById('pinInput').value;
-    if (pin === ADMIN_PASSWORD) {
+  // Barbarian sprite (20x16 pixels, 2 frames for animation)
+  // Frame 1 — standing
+  const f1 = [
+    '_______WWWWW_______________',
+    '______WWRWWWW______________',
+    '_____WWRRbsWW______________',
+    '_____WggssbWW______________',
+    '______ggsssb_______________',
+    '_______ssss________________',
+    '______RssssR_______________',
+    '_____RRssssRR______________',
+    '____RRRRRRRRRg_____________',
+    '___gRRRRRRRRRg_____________',
+    '___gRRRRRRRRggg____________',
+    '____RRR__RRR_______________',
+    '____RRR__RRR_______________',
+    '____bbb__bbb_______________',
+    '____BBB__BBB_______________',
+    '___________________________',
+  ];
+
+  // Frame 2 — slight shift (raise arm)
+  const f2 = [
+    '_______WWWWW_______________',
+    '______WWRWWWW______________',
+    '_____WWRRbsWW______________',
+    '_____WggssbWW______________',
+    '______ggsssb_______________',
+    '_______ssss________________',
+    '______RssssR_______________',
+    '_____RRssssRR______________',
+    '____RRRRRRRRRg_____________',
+    '___gRRRRRRRRRg_____________',
+    '___gRRRRRRRRggg____________',
+    '____RRR__RRR_______________',
+    '____RRb__RRR_______________',
+    '____bBb__bbb_______________',
+    '____BBB__BBB_______________',
+    '___________________________',
+  ];
+
+  // Campfire (right side, animated flames)
+  // x offset: 13 columns, y offset: 8 rows
+  const fireFrames = [
+    // flame frame A
+    [
+      '______',
+      '___y__',
+      '__yYy_',
+      '_yOYy_',
+      '_OOYY_',
+      '_OOOO_',
+      '_TTTT_',
+      '_TTTT_',
+    ],
+    // flame frame B
+    [
+      '____y_',
+      '__yY__',
+      '__YOy_',
+      '_yYOO_',
+      '_OYYO_',
+      '_OOOO_',
+      '_TTTT_',
+      '_TTTT_',
+    ],
+    // flame frame C
+    [
+      '__y___',
+      '__yO__',
+      '_yYOy_',
+      '_OYYy_',
+      '_OOYY_',
+      '_OOOO_',
+      '_TTTT_',
+      '_TTTT_',
+    ],
+  ];
+
+  function drawSprite(grid, ox, oy) {
+    grid.forEach((row, ry) => {
+      [...row].forEach((ch, rx) => {
+        const color = C[ch];
+        if (!color) return;
+        ctx.fillStyle = color;
+        ctx.fillRect((ox + rx) * S, (oy + ry) * S, S, S);
+      });
+    });
+  }
+
+  let frame = 0;
+  let tick  = 0;
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Ground line
+    ctx.fillStyle = '#1a0e08';
+    ctx.fillRect(0, 15 * S, canvas.width, S);
+
+    // Barbarian (col 0, row 0)
+    const barbFrame = (tick % 60 < 30) ? f1 : f2;
+    drawSprite(barbFrame, 0, 0);
+
+    // Campfire (col 13, row 8)
+    const fireFrame = fireFrames[frame % fireFrames.length];
+    drawSprite(fireFrame, 13, 8);
+
+    // Fire glow on ground
+    ctx.fillStyle = 'rgba(200,96,26,0.15)';
+    ctx.fillRect(12 * S, 14 * S, 6 * S, S);
+  }
+
+  function loop() {
+    tick++;
+    if (tick % 8 === 0) frame++;
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+})();
+
+// ── App logic ──────────────────────────────────────────────────────────────────
+let appFilter = 'all';
+let activeApplicantId = null;
+let activeMemberId = null;
+let showPasswords = {};
+
+async function unlock() {
+  const pw = document.getElementById('pinInput').value;
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ password: pw }),
+    });
+    if (res.ok) {
       document.getElementById('lockScreen').style.display = 'none';
       document.getElementById('adminApp').style.display = 'block';
-      renderAll();
+      loadAll();
     } else {
+      const d = await res.json();
+      document.getElementById('lockError').textContent = d.error || 'The gate does not yield.';
       document.getElementById('lockError').style.display = 'block';
       document.getElementById('pinInput').value = '';
       document.getElementById('pinInput').focus();
     }
+  } catch {
+    document.getElementById('lockError').textContent = 'The gate is unreachable.';
+    document.getElementById('lockError').style.display = 'block';
   }
+}
 
-  function logout() {
-    document.getElementById('lockScreen').style.display = 'flex';
-    document.getElementById('adminApp').style.display = 'none';
-    document.getElementById('pinInput').value = '';
-    document.getElementById('lockError').style.display = 'none';
+async function logout() {
+  await fetch('/api/logout', { method: 'POST' });
+  document.getElementById('lockScreen').style.display = 'flex';
+  document.getElementById('adminApp').style.display = 'none';
+  document.getElementById('pinInput').value = '';
+  document.getElementById('lockError').style.display = 'none';
+}
+
+fetch('/api/me').then(r => r.json()).then(d => {
+  if (d.authenticated) {
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('adminApp').style.display = 'block';
+    loadAll();
+  } else {
+    document.getElementById('pinInput').focus();
   }
+});
 
-  function getRequests() {
-    return JSON.parse(localStorage.getItem('stremio_requests') || '[]');
+function switchTab(name, el) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'members') loadMembers();
+}
+
+async function loadAll() {
+  await Promise.all([loadStats(), loadApplicants(), loadMembers()]);
+}
+
+async function loadStats() {
+  const d = await fetch('/api/stats').then(r => r.json());
+  document.getElementById('statApplicants').textContent = d.applicants;
+  document.getElementById('statPending').textContent    = d.pending;
+  document.getElementById('statMembers').textContent    = d.members;
+  document.getElementById('statDenied').textContent     = d.denied;
+}
+
+async function loadApplicants() {
+  const url = appFilter === 'all' ? '/api/applicants' : `/api/applicants?status=${appFilter}`;
+  const rows = await fetch(url).then(r => r.json());
+  renderApplicants(rows);
+}
+
+function setAppFilter(f, el) {
+  appFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  loadApplicants();
+}
+
+const STATUS = { pending: 'Pending', approved: 'Approved', denied: 'Denied' };
+
+function fmt(dt) {
+  if (!dt) return '';
+  return new Date(dt).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+}
+
+function renderApplicants(rows) {
+  const el = document.getElementById('applicantList');
+  if (!rows.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-title">No Petitions</div><div class="empty-sub">None have sought entry.</div></div>`;
+    return;
   }
-
-  function saveRequests(r) {
-    localStorage.setItem('stremio_requests', JSON.stringify(r));
-  }
-
-  function initials(r) {
-    return ((r.first_name||'')[0] + (r.last_name||'')[0]).toUpperCase();
-  }
-
-  function setFilter(f, el) {
-    currentFilter = f;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-    renderList();
-  }
-
-  function renderAll() {
-    renderStats();
-    renderList();
-  }
-
-  function renderStats() {
-    const reqs = getRequests();
-    document.getElementById('statTotal').textContent = reqs.length;
-    document.getElementById('statPending').textContent = reqs.filter(r => r.status === 'pending').length;
-    document.getElementById('statDone').textContent = reqs.filter(r => r.status === 'done').length;
-    document.getElementById('statSkipped').textContent = reqs.filter(r => r.status === 'skipped').length;
-  }
-
-  function renderList() {
-    const all = getRequests();
-    const reqs = currentFilter === 'all' ? all : all.filter(r => r.status === currentFilter);
-    const el = document.getElementById('requestList');
-
-    if (!reqs.length) {
-      el.innerHTML = `<div class="empty">
-        <div class="empty-icon">📭</div>
-        <div class="empty-title">${currentFilter === 'all' ? 'No requests yet' : 'Nothing here'}</div>
-        <p>${currentFilter === 'all' ? 'Share the request form link with friends &amp; family.' : 'No ' + currentFilter + ' requests.'}</p>
-      </div>`;
-      return;
-    }
-
-    el.innerHTML = reqs.map(r => `
-      <div class="request-card" id="card-${r.id}">
-        <div>
-          <div class="req-top">
-            <div class="req-avatar">${initials(r)}</div>
-            <div>
-              <div class="req-name">${r.from_name}</div>
-              <div class="req-email">${r.email}</div>
-            </div>
-            <span class="status-badge ${r.status}">${r.status}</span>
-          </div>
-          <div class="req-fields">
-            ${r.phone && r.phone !== 'Not provided' ? `<div class="req-field"><div class="req-field-label">Phone</div><div class="req-field-value">${r.phone}</div></div>` : ''}
-            ${r.language && r.language !== 'Not specified' ? `<div class="req-field"><div class="req-field-label">Language</div><div class="req-field-value">${r.language}</div></div>` : ''}
-            ${r.referral && r.referral !== 'Not provided' ? `<div class="req-field"><div class="req-field-label">Referred by</div><div class="req-field-value">${r.referral}</div></div>` : ''}
-            ${r.notes && r.notes !== 'None' ? `<div class="req-field" style="grid-column:1/-1"><div class="req-field-label">Notes</div><div class="req-field-value">${r.notes}</div></div>` : ''}
-          </div>
+  el.innerHTML = rows.map(r => `
+    <div class="app-row" id="app-${r.id}">
+      <div>
+        <div class="row-name">${r.first_name} ${r.last_name}</div>
+        <div class="row-email">${r.email}</div>
+        <div class="row-meta">
+          <span class="status-mark ${r.status}">${STATUS[r.status]||r.status}</span>
+          ${r.phone    ? `<div><div class="meta-lbl">Phone</div><div class="meta-val">${r.phone}</div></div>` : ''}
+          ${r.language ? `<div><div class="meta-lbl">Language</div><div class="meta-val">${r.language}</div></div>` : ''}
+          ${r.referral ? `<div><div class="meta-lbl">Referred By</div><div class="meta-val">${r.referral}</div></div>` : ''}
         </div>
-        <div class="req-actions">
-          ${r.status === 'pending' ? `
-            <button class="action-btn green" onclick="openSetup('${r.id}')">⚡ Setup account</button>
-            <button class="action-btn" onclick="setStatus('${r.id}', 'skipped')">Skip</button>
-          ` : r.status === 'done' ? `
-            <button class="action-btn" onclick="setStatus('${r.id}', 'pending')">Reopen</button>
-          ` : `
-            <button class="action-btn green" onclick="openSetup('${r.id}')">⚡ Setup</button>
-            <button class="action-btn" onclick="setStatus('${r.id}', 'pending')">Reopen</button>
-          `}
-          <button class="action-btn red" onclick="deleteRequest('${r.id}')">Delete</button>
-          <div class="req-date">${r.submitted_at || ''}</div>
-        </div>
+        ${r.notes ? `<div class="row-notes">${r.notes}</div>` : ''}
       </div>
-    `).join('');
-  }
-
-  function setStatus(id, status) {
-    const reqs = getRequests();
-    const r = reqs.find(x => x.id === id);
-    if (r) { r.status = status; saveRequests(reqs); renderAll(); }
-  }
-
-  function deleteRequest(id) {
-    if (!confirm('Delete this request?')) return;
-    saveRequests(getRequests().filter(x => x.id !== id));
-    renderAll();
-  }
-
-  function openSetup(id) {
-    const reqs = getRequests();
-    const r = reqs.find(x => x.id === id);
-    if (!r) return;
-    activeRequestId = id;
-
-    const stremioSignupUrl = `https://www.stremio.com/register`;
-    const addonUrl = `https://stremio-addons.netlify.app/`;
-
-    document.getElementById('setupContent').innerHTML = `
-      <div class="stremio-help">
-        Use the details below to create <strong>${r.from_name}</strong>'s Stremio account, then clone your addons onto it.
+      <div class="row-actions">
+        ${r.status === 'pending' ? `
+          <button class="act red" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Entry</button>
+          <button class="act" onclick="setAppStatus('${r.id}','denied')">Deny</button>
+        ` : r.status === 'approved' ? `
+          <button class="act" onclick="setAppStatus('${r.id}','pending')">Reopen</button>
+        ` : `
+          <button class="act red" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Entry</button>
+          <button class="act" onclick="setAppStatus('${r.id}','pending')">Reopen</button>
+        `}
+        <button class="act blood" onclick="deleteApplicant('${r.id}')">Expunge</button>
+        <div class="row-date">${fmt(r.created_at)}</div>
       </div>
+    </div>
+  `).join('');
+}
 
-      <div style="margin-bottom:20px">
-        <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Account details to use</div>
-        <div class="copy-field">
-          <input readonly value="${r.email}" />
-          <button class="copy-mini" onclick="copyMini(this,'${r.email}')">Copy email</button>
-        </div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
-          Suggested password: <code style="font-family:'Space Mono',monospace;color:var(--text);background:var(--surface2);padding:2px 8px;">${generatePassword(r.first_name)}</code>
-          <button class="copy-mini" style="margin-left:8px" onclick="copyMini(this,'${generatePassword(r.first_name)}')">Copy</button>
-        </div>
-      </div>
-
-      <div style="font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:20px">
-        <strong style="color:var(--text);display:block;margin-bottom:6px">Steps:</strong>
-        1. <a href="${stremioSignupUrl}" target="_blank" style="color:#ff6b52;text-decoration:none">Create account on Stremio ↗</a> using the email above<br>
-        2. Log in to <a href="https://web.stremio.com" target="_blank" style="color:#ff6b52;text-decoration:none">web.stremio.com ↗</a> with your own account<br>
-        3. Go to <strong style="color:var(--text)">Settings → Addons</strong> and export your addon list<br>
-        4. Log in as <strong style="color:var(--text)">${r.from_name}</strong> and import the same addons<br>
-        ${r.language && r.language !== 'Not specified' ? `5. Set subtitle language to <strong style="color:var(--text)">${r.language}</strong>` : ''}
-      </div>
-
-      ${r.notes && r.notes !== 'None' ? `<div class="stremio-help"><strong>Their notes:</strong> ${r.notes}</div>` : ''}
-    `;
-
-    document.getElementById('setupModal').style.display = 'flex';
-  }
-
-  function closeModal() {
-    document.getElementById('setupModal').style.display = 'none';
-    activeRequestId = null;
-  }
-
-  function markDone() {
-    if (activeRequestId) {
-      setStatus(activeRequestId, 'done');
-      closeModal();
-    }
-  }
-
-  function generatePassword(firstName) {
-    const base = (firstName || 'Stream').charAt(0).toUpperCase() + (firstName || 'stream').slice(1).toLowerCase();
-    const nums = Math.floor(Math.random() * 900 + 100);
-    const syms = ['!', '@', '#', '$', '&'];
-    return base + nums + syms[Math.floor(Math.random() * syms.length)];
-  }
-
-  function copyMini(btn, text) {
-    navigator.clipboard.writeText(text).catch(() => {});
-    const orig = btn.textContent;
-    btn.textContent = 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
-  }
-
-  // Close modal on overlay click
-  document.getElementById('setupModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
+async function setAppStatus(id, status) {
+  await fetch(`/api/applicants/${id}/status`, {
+    method: 'PATCH', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ status }),
   });
+  loadAll();
+}
 
-  // Focus pin on load
-  document.getElementById('pinInput').focus();
+async function deleteApplicant(id) {
+  if (!confirm('Expunge this petition?')) return;
+  await fetch(`/api/applicants/${id}`, { method: 'DELETE' });
+  loadAll();
+}
+
+function openApprove(id, firstName, lastName, email) {
+  activeApplicantId = id;
+  document.getElementById('approveDesc').innerHTML =
+    `Create the Stremio account for <strong>${firstName} ${lastName}</strong> (${email}), then enter the credentials below.`;
+  document.getElementById('approveStremioEmail').value = email;
+  document.getElementById('approveStremioPass').value = '';
+  document.getElementById('approveModal').classList.add('open');
+}
+
+async function confirmApprove() {
+  const stremio_email = document.getElementById('approveStremioEmail').value.trim();
+  const stremio_pass  = document.getElementById('approveStremioPass').value.trim();
+  await fetch(`/api/applicants/${activeApplicantId}/promote`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ stremio_email, stremio_pass }),
+  });
+  closeModal('approveModal');
+  loadAll();
+  document.querySelectorAll('.tab-btn')[1].click();
+}
+
+async function loadMembers() {
+  const rows = await fetch('/api/members').then(r => r.json());
+  renderMembers(rows);
+}
+
+function renderMembers(rows) {
+  const el = document.getElementById('memberList');
+  if (!rows.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-title">No Members Yet</div><div class="empty-sub">Grant entry to an applicant to add them here.</div></div>`;
+    return;
+  }
+  el.innerHTML = rows.map(r => {
+    const shown = showPasswords[r.id];
+    return `
+      <div class="mem-row" id="mem-${r.id}">
+        <div>
+          <div class="row-name">${r.first_name} ${r.last_name}</div>
+          <div class="row-email">${r.email}</div>
+          <div class="mem-creds">
+            <div>
+              <div class="cred-lbl">Stremio Email</div>
+              <div class="cred-val">
+                ${r.stremio_email || '—'}
+                ${r.stremio_email ? `<button class="copy-btn" id="cpe-${r.id}" onclick="copyVal('${esc(r.stremio_email)}','cpe-${r.id}')">Copy</button>` : ''}
+              </div>
+            </div>
+            <div>
+              <div class="cred-lbl">Stremio Password</div>
+              <div class="cred-val">
+                <span id="pw-${r.id}">${shown ? (r.stremio_pass||'—') : '········'}</span>
+                ${r.stremio_pass ? `
+                  <button class="show-btn" onclick="togglePw('${r.id}')">${shown?'Hide':'Show'}</button>
+                  <button class="copy-btn" id="cpp-${r.id}" onclick="copyVal('${esc(r.stremio_pass)}','cpp-${r.id}')">Copy</button>
+                ` : ''}
+              </div>
+            </div>
+            ${r.language ? `<div><div class="cred-lbl">Language</div><div class="cred-val">${r.language}</div></div>` : ''}
+          </div>
+          ${r.notes ? `<div class="row-notes">${r.notes}</div>` : ''}
+        </div>
+        <div class="row-actions">
+          <button class="act red" onclick="openEdit('${r.id}','${esc(r.stremio_email)}','${esc(r.stremio_pass)}','${esc(r.notes)}','${esc(r.first_name)}','${esc(r.last_name)}')">Edit</button>
+          <button class="act blood" onclick="deleteMember('${r.id}')">Remove</button>
+          <div class="row-date">Since ${fmt(r.created_at)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function togglePw(id) {
+  showPasswords[id] = !showPasswords[id];
+  loadMembers();
+}
+
+function copyVal(text, btnId) {
+  navigator.clipboard.writeText(text).catch(() => {});
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = 'Copied';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+}
+
+function openEdit(id, stremio_email, stremio_pass, notes, firstName, lastName) {
+  activeMemberId = id;
+  document.getElementById('editDesc').innerHTML = `Update credentials for <strong>${firstName} ${lastName}</strong>.`;
+  document.getElementById('editStremioEmail').value = stremio_email;
+  document.getElementById('editStremioPass').value  = stremio_pass;
+  document.getElementById('editNotes').value        = notes;
+  document.getElementById('editModal').classList.add('open');
+}
+
+async function confirmEdit() {
+  await fetch(`/api/members/${activeMemberId}`, {
+    method: 'PATCH', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      stremio_email: document.getElementById('editStremioEmail').value.trim(),
+      stremio_pass:  document.getElementById('editStremioPass').value.trim(),
+      notes:         document.getElementById('editNotes').value.trim(),
+    }),
+  });
+  closeModal('editModal');
+  loadMembers();
+}
+
+async function deleteMember(id) {
+  if (!confirm('Remove this member from the roster?')) return;
+  await fetch(`/api/members/${id}`, { method: 'DELETE' });
+  loadAll();
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  activeApplicantId = null;
+  activeMemberId = null;
+}
+
+document.querySelectorAll('.veil').forEach(v => {
+  v.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+});
+
+document.getElementById('pinInput').focus();
 </script>
 </body>
 </html>

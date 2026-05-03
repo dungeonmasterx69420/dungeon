@@ -3,540 +3,468 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stream Access · Request an Account</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <title>DUNGEON</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #080c10;
-      --surface: #0f1419;
-      --surface2: #161d25;
-      --border: rgba(255,255,255,0.06);
-      --border2: rgba(255,255,255,0.12);
-      --accent: #e8412a;
-      --accent2: #ff6b52;
-      --text: #eef2f7;
-      --muted: rgba(238,242,247,0.45);
-      --muted2: rgba(238,242,247,0.25);
+      --black:  #000000;
+      --deep:   #0c0808;
+      --red:    #8b1a1a;
+      --red2:   #b22222;
+      --red3:   #cc3333;
+      --ember:  #c8601a;
+      --bone:   #d4c4a8;
+      --bone2:  #e8dcc8;
+      --dim:    #6a5a4a;
+      --dimmer: #3a2a20;
+      --line:   rgba(180,50,50,0.2);
+      --line2:  rgba(180,50,50,0.4);
+      --blood:  #6a1a1a;
     }
 
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
+    html, body {
       min-height: 100vh;
-      overflow-x: hidden;
+      background: var(--black);
+      color: var(--bone);
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 15px;
     }
 
-    /* Scanline overlay */
-    body::before {
+    body { display: flex; flex-direction: column; align-items: center; }
+
+    body::after {
       content: '';
       position: fixed; inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.03) 2px,
-        rgba(0,0,0,0.03) 4px
-      );
-      pointer-events: none;
-      z-index: 999;
-    }
-
-    /* Grid background */
-    .bg-grid {
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(232,65,42,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(232,65,42,0.04) 1px, transparent 1px);
-      background-size: 60px 60px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .bg-glow {
-      position: fixed;
-      width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(232,65,42,0.12) 0%, transparent 70%);
-      top: -200px; right: -200px;
+      background: radial-gradient(ellipse 120% 120% at 50% 50%, transparent 40%, rgba(0,0,0,0.65) 100%);
       pointer-events: none; z-index: 0;
+    }
+
+    /* 8-bit barbarian */
+    #barb-canvas {
+      position: fixed; bottom: 0; right: 0;
+      width: 160px; height: 160px;
+      image-rendering: pixelated;
+      z-index: 50; pointer-events: none;
+    }
+
+    .red-rule {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--red2), transparent);
+    }
+
+    .red-rule-sm {
+      width: 60px; height: 1px;
+      background: var(--red2); opacity: 0.6; margin: 0 auto;
+    }
+
+    .page {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 540px;
+      padding: 0 28px 100px;
     }
 
     /* Header */
     header {
-      position: relative; z-index: 10;
-      padding: 28px 40px;
-      display: flex; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .logo {
-      display: flex; align-items: center; gap: 14px;
-    }
-
-    .logo-mark {
-      width: 40px; height: 40px;
-      border: 1.5px solid var(--accent);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 18px; color: var(--accent);
-      letter-spacing: 0.05em;
-      position: relative;
-    }
-
-    .logo-mark::after {
-      content: '';
-      position: absolute;
-      inset: 3px;
-      background: var(--accent);
-      opacity: 0.12;
-    }
-
-    .logo-name {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px; letter-spacing: 0.12em;
-      color: var(--text);
-    }
-
-    .logo-name span { color: var(--accent); }
-
-    .nav-link {
-      font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--muted); text-decoration: none;
-      transition: color 0.2s;
-      font-weight: 500;
-    }
-    .nav-link:hover { color: var(--text); }
-
-    /* Hero */
-    .hero {
-      position: relative; z-index: 10;
-      padding: 80px 40px 60px;
-      max-width: 680px;
-      margin: 0 auto;
+      padding: 52px 0 0;
+      margin-bottom: 48px;
       text-align: center;
     }
 
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      border: 1px solid rgba(232,65,42,0.35);
-      background: rgba(232,65,42,0.08);
-      padding: 5px 14px; border-radius: 2px;
-      font-family: 'Space Mono', monospace;
-      font-size: 10px; letter-spacing: 0.1em; color: var(--accent2);
-      margin-bottom: 28px;
+    .site-name {
+      font-size: 36px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--red3);
+      text-shadow: 0 0 40px rgba(180,40,40,0.45);
+      margin-bottom: 16px;
     }
 
-    .hero-badge::before {
-      content: '';
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--accent);
-      animation: pulse 2s ease-in-out infinite;
-    }
+    /* Hero */
+    .hero { text-align: center; margin-bottom: 52px; }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
+    .eyebrow {
+      font-size: 11px; letter-spacing: 0.4em; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 18px;
     }
 
     h1 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(52px, 9vw, 88px);
-      line-height: 0.92;
-      letter-spacing: 0.04em;
-      margin-bottom: 24px;
-    }
-
-    h1 em {
-      font-style: normal;
-      color: var(--accent);
-      display: block;
+      font-size: clamp(28px, 5vw, 40px); font-weight: 400;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--bone2); line-height: 1.25; margin-bottom: 22px;
     }
 
     .hero-sub {
-      font-size: 16px; color: var(--muted);
-      line-height: 1.7; max-width: 480px; margin: 0 auto 48px;
-      font-weight: 300;
+      font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--dim); line-height: 2.2;
     }
 
-    /* Form card */
-    .form-wrap {
-      position: relative; z-index: 10;
-      max-width: 620px; margin: 0 auto;
-      padding: 0 24px 80px;
+    /* Form */
+    .form-section { margin-bottom: 32px; }
+
+    .section-label {
+      font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
+      color: var(--red2); font-weight: 400;
+      display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+    }
+    .section-label::before, .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--line2);
     }
 
-    .form-card {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      padding: 40px;
-      position: relative;
-      animation: slideUp 0.6s ease both;
-    }
+    .field { margin-bottom: 20px; }
 
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Corner accents */
-    .form-card::before,
-    .form-card::after {
-      content: '';
-      position: absolute;
-      width: 16px; height: 16px;
-      border-color: var(--accent);
-      border-style: solid;
-    }
-
-    .form-card::before {
-      top: -1px; left: -1px;
-      border-width: 2px 0 0 2px;
-    }
-
-    .form-card::after {
-      bottom: -1px; right: -1px;
-      border-width: 0 2px 2px 0;
-    }
-
-    .form-section-title {
-      font-family: 'Space Mono', monospace;
-      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 24px;
-      display: flex; align-items: center; gap: 10px;
-    }
-
-    .form-section-title::after {
-      content: ''; flex: 1; height: 1px;
-      background: linear-gradient(90deg, var(--border2), transparent);
-    }
-
-    .form-group { margin-bottom: 20px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-    @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:440px) { .field-row { grid-template-columns: 1fr; } }
 
     label {
-      display: block;
-      font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--muted); font-weight: 500;
-      margin-bottom: 8px;
+      display: block; font-size: 10px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--dim); margin-bottom: 9px;
     }
-
-    label .req { color: var(--accent); margin-left: 2px; }
+    label .req { color: var(--red2); margin-left: 3px; }
 
     input, select, textarea {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border2);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      padding: 12px 16px;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      border-radius: 0;
-      appearance: none;
+      width: 100%; background: transparent; border: none;
+      border-bottom: 1px solid var(--line2);
+      color: var(--bone2); font-family: 'Cinzel', Georgia, serif;
+      font-size: 14px; letter-spacing: 0.05em; padding: 10px 0;
+      outline: none; transition: border-color 0.2s; border-radius: 0; appearance: none;
     }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(232,65,42,0.1);
-    }
+    input:focus, select:focus, textarea:focus { border-bottom-color: var(--red3); }
+    input::placeholder, textarea::placeholder { color: var(--dimmer); font-size: 13px; }
 
     select {
       cursor: pointer;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(238,242,247,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      padding-right: 36px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(180,50,50,0.6)'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 2px center; padding-right: 18px;
     }
+    select option { background: #0c0808; }
 
-    select option { background: #1a1a2e; }
+    textarea { resize: none; height: 72px; line-height: 1.7; }
 
-    textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
-
-    input::placeholder, textarea::placeholder { color: var(--muted2); }
-
-    .divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 32px 0;
-    }
-
-    .submit-btn {
-      width: 100%;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 16px;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 20px;
-      letter-spacing: 0.14em;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .submit-btn:hover { background: #c7341f; }
-    .submit-btn:active { transform: scale(0.995); }
-
-    .submit-btn::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
-      transform: translateX(-100%);
-      transition: transform 0.5s;
-    }
-
-    .submit-btn:hover::after { transform: translateX(100%); }
-
-    .submit-btn:disabled {
-      opacity: 0.5; cursor: not-allowed;
-    }
-
-    /* Success state */
-    .success-state {
-      display: none;
-      text-align: center;
-      padding: 48px 24px;
-    }
-
-    .success-icon {
-      width: 64px; height: 64px;
-      border: 2px solid var(--accent);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 24px;
-      font-size: 24px;
-    }
-
-    .success-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 36px; letter-spacing: 0.08em;
-      color: var(--text); margin-bottom: 12px;
-    }
-
-    .success-sub {
-      font-size: 14px; color: var(--muted); line-height: 1.6;
-    }
-
-    /* Footer */
-    footer {
-      position: relative; z-index: 10;
-      text-align: center;
-      padding: 24px;
-      border-top: 1px solid var(--border);
-      font-size: 12px; color: var(--muted2);
-    }
-
-    footer a { color: var(--muted); text-decoration: none; }
-    footer a:hover { color: var(--accent); }
-
-    /* Error */
-    .error-msg {
-      display: none;
-      color: #ff6b52;
-      font-size: 12px;
-      margin-top: 6px;
-      font-family: 'Space Mono', monospace;
+    /* Errors */
+    .error-banner {
+      display: none; font-size: 11px; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--red3);
+      text-align: center; margin-bottom: 20px;
     }
 
     .field-error input,
     .field-error select,
-    .field-error textarea {
-      border-color: rgba(232,65,42,0.5);
+    .field-error textarea { border-bottom-color: var(--red2); }
+
+    .err-msg {
+      display: none; font-size: 10px; letter-spacing: 0.15em;
+      color: var(--red2); margin-top: 5px; text-transform: uppercase;
+    }
+    .field-error .err-msg { display: block; }
+
+    /* Submit */
+    .submit-wrap { margin-top: 40px; text-align: center; }
+
+    .submit-btn {
+      background: transparent; border: 1px solid var(--red2);
+      color: var(--red3); font-family: 'Cinzel', Georgia, serif;
+      font-size: 13px; letter-spacing: 0.4em; text-transform: uppercase;
+      padding: 16px 0; width: 100%; cursor: pointer; transition: all 0.2s;
+    }
+    .submit-btn:hover { background: rgba(180,34,34,0.1); color: var(--bone2); border-color: var(--red3); }
+    .submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* Success */
+    .success-state { display: none; text-align: center; padding: 60px 0; }
+
+    .success-eyebrow {
+      font-size: 10px; letter-spacing: 0.5em; text-transform: uppercase;
+      color: var(--red2); display: block; margin-bottom: 24px;
     }
 
-    .field-error .error-msg { display: block; }
+    .success-title {
+      font-size: 20px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--bone2); margin-bottom: 24px; font-weight: 400;
+    }
+
+    .success-sub {
+      font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--dim); line-height: 2.2;
+    }
+
+    /* Nav */
+    .nav-link {
+      position: fixed; top: 24px; right: 24px;
+      font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--dimmer); text-decoration: none; transition: color 0.2s; z-index: 10;
+    }
+    .nav-link:hover { color: var(--red3); }
+
+    footer {
+      padding: 24px 0 0; text-align: center;
+    }
+    footer p {
+      font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dimmer);
+    }
+    footer a { color: var(--dimmer); text-decoration: none; }
+    footer a:hover { color: var(--red3); }
   </style>
 </head>
 <body>
 
-<div class="bg-grid"></div>
-<div class="bg-glow"></div>
+<canvas id="barb-canvas" width="160" height="160"></canvas>
+<a href="/admin.html" class="nav-link">Warden ↗</a>
 
-<header>
-  <div class="logo">
-    <div class="logo-mark">S</div>
-    <div class="logo-name">STREAM<span>HUB</span></div>
+<div class="page">
+
+  <header>
+    <div class="site-name">Dungeon</div>
+    <div class="red-rule"></div>
+  </header>
+
+  <div class="hero">
+    <div class="eyebrow">Invitation Only</div>
+    <h1>Seek Entry</h1>
+    <div class="red-rule-sm" style="margin-bottom:22px"></div>
+    <p class="hero-sub">
+      Complete the scroll below.<br>
+      The keeper shall prepare thy passage.
+    </p>
   </div>
-  <a href="admin.html" class="nav-link">Admin ↗</a>
-</header>
 
-<section class="hero">
-  <div class="hero-badge">Invite-only · Friends &amp; Family</div>
-  <h1>Request<em>Access</em></h1>
-  <p class="hero-sub">
-    Fill out the form below and you'll get a fully configured Stremio account — addons already set up, ready to stream.
-  </p>
-</section>
+  <div id="formContent">
+    <div class="error-banner" id="errorBanner"></div>
 
-<div class="form-wrap">
-  <div class="form-card">
-
-    <div id="formContent">
-      <div class="form-section-title">Your info</div>
-
-      <div class="form-row">
-        <div class="form-group" id="grp-firstName">
-          <label>First name <span class="req">*</span></label>
-          <input type="text" id="firstName" placeholder="Sarah" autocomplete="given-name" />
-          <div class="error-msg">Required</div>
+    <div class="form-section">
+      <div class="section-label">Identity</div>
+      <div class="field-row">
+        <div class="field" id="grp-first_name">
+          <label>Given Name <span class="req">*</span></label>
+          <input type="text" id="first_name" placeholder="—" autocomplete="given-name" />
+          <div class="err-msg">Required</div>
         </div>
-        <div class="form-group" id="grp-lastName">
-          <label>Last name <span class="req">*</span></label>
-          <input type="text" id="lastName" placeholder="Johnson" autocomplete="family-name" />
-          <div class="error-msg">Required</div>
+        <div class="field" id="grp-last_name">
+          <label>Family Name <span class="req">*</span></label>
+          <input type="text" id="last_name" placeholder="—" autocomplete="family-name" />
+          <div class="err-msg">Required</div>
         </div>
       </div>
-
-      <div class="form-group" id="grp-email">
-        <label>Email address <span class="req">*</span></label>
-        <input type="email" id="email" placeholder="sarah@example.com" autocomplete="email" />
-        <div class="error-msg">Enter a valid email</div>
+      <div class="field" id="grp-email">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" id="email" placeholder="name@realm.com" autocomplete="email" />
+        <div class="err-msg">A valid address is required</div>
       </div>
-
-      <div class="form-group" id="grp-phone">
-        <label>Phone number</label>
-        <input type="tel" id="phone" placeholder="+1 (555) 000-0000" autocomplete="tel" />
+      <div class="field">
+        <label>Phone</label>
+        <input type="tel" id="phone" placeholder="—" autocomplete="tel" />
       </div>
+    </div>
 
-      <hr class="divider" />
-      <div class="form-section-title">Preferences</div>
-
-      <div class="form-group">
-        <label>Preferred subtitle / audio language</label>
+    <div class="form-section">
+      <div class="section-label">Preferences</div>
+      <div class="field">
+        <label>Subtitle Language</label>
         <select id="language">
-          <option value="">— Select a language —</option>
-          <option>English</option>
-          <option>Spanish</option>
-          <option>French</option>
-          <option>Portuguese</option>
-          <option>German</option>
-          <option>Italian</option>
-          <option>Arabic</option>
-          <option>Chinese (Simplified)</option>
-          <option>Japanese</option>
-          <option>Korean</option>
-          <option>Hindi</option>
+          <option value="">— Select —</option>
+          <option>English</option><option>Spanish</option><option>French</option>
+          <option>Portuguese</option><option>German</option><option>Italian</option>
+          <option>Arabic</option><option>Chinese (Simplified)</option>
+          <option>Japanese</option><option>Korean</option><option>Hindi</option>
           <option>Other</option>
         </select>
       </div>
-
-      <div class="form-group">
-        <label>Who referred you?</label>
-        <input type="text" id="referral" placeholder="e.g. Mike, your cousin" />
+      <div class="field">
+        <label>Who Referred You</label>
+        <input type="text" id="referral" placeholder="—" />
       </div>
-
-      <div class="form-group">
-        <label>Notes / special requests</label>
-        <textarea id="notes" placeholder="Anything else? e.g. 4K only, need kids content, etc."></textarea>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="notes" placeholder="Special requirements…"></textarea>
       </div>
-
-      <hr class="divider" />
-
-      <button class="submit-btn" id="submitBtn" onclick="submitForm()">
-        SEND MY REQUEST
-      </button>
     </div>
 
-    <div class="success-state" id="successState">
-      <div class="success-icon">✓</div>
-      <div class="success-title">Request Sent!</div>
-      <p class="success-sub">
-        Your request has been received. You'll get an email once your Stremio account is ready — usually within a day or two.
-      </p>
-    </div>
+    <div class="red-rule"></div>
 
+    <div class="submit-wrap">
+      <button class="submit-btn" id="submitBtn" onclick="submitForm()">Present Scroll</button>
+    </div>
   </div>
+
+  <div class="success-state" id="successState">
+    <span class="success-eyebrow">— Received —</span>
+    <div class="success-title">Thy Scroll Has Been Delivered</div>
+    <div class="red-rule-sm" style="margin-bottom:24px"></div>
+    <p class="success-sub">
+      The keeper has been summoned.<br>
+      Await word at thy courier address.
+    </p>
+  </div>
+
+  <footer>
+    <p>Dungeon &mdash; <a href="/admin.html">Warden's Gate</a></p>
+  </footer>
 </div>
 
-<footer>
-  <p>StreamHub &mdash; <a href="admin.html">Admin panel</a></p>
-</footer>
-
 <script>
-  // ─── EmailJS config ───────────────────────────────────────────────
-  // Replace these with your own EmailJS credentials (see setup guide)
-  const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';
-  const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';
-  const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
-  const ADMIN_EMAIL         = 'dungeonmasterx69420@gmail.com';
-  // ─────────────────────────────────────────────────────────────────
+// ── 8-bit barbarian + campfire ─────────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('barb-canvas');
+  const ctx = canvas.getContext('2d');
+  const S = 8;
 
-  emailjs.init(EMAILJS_PUBLIC_KEY);
+  const C = {
+    _: null,
+    K: '#0a0806',
+    R: '#8b1a1a',
+    r: '#b22222',
+    B: '#4a3020',
+    b: '#7a5030',
+    s: '#c8a878',
+    G: '#3a3028',
+    g: '#6a6050',
+    W: '#d4c4a8',
+    Y: '#c8801a',
+    y: '#f0c020',
+    O: '#e05010',
+    T: '#2a1a10',
+  };
 
-  function validate() {
-    let ok = true;
+  const f1 = [
+    '_______WWWWW_______________',
+    '______WWRWWWW______________',
+    '_____WWRRbsWW______________',
+    '_____WggssbWW______________',
+    '______ggsssb_______________',
+    '_______ssss________________',
+    '______RssssR_______________',
+    '_____RRssssRR______________',
+    '____RRRRRRRRRg_____________',
+    '___gRRRRRRRRRg_____________',
+    '___gRRRRRRRRggg____________',
+    '____RRR__RRR_______________',
+    '____RRR__RRR_______________',
+    '____bbb__bbb_______________',
+    '____BBB__BBB_______________',
+    '___________________________',
+  ];
 
-    const fields = {
-      firstName: { el: document.getElementById('firstName'), check: v => v.trim().length > 0 },
-      lastName:  { el: document.getElementById('lastName'),  check: v => v.trim().length > 0 },
-      email:     { el: document.getElementById('email'),     check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
-    };
+  const f2 = [
+    '_______WWWWW_______________',
+    '______WWRWWWW______________',
+    '_____WWRRbsWW______________',
+    '_____WggssbWW______________',
+    '______ggsssb_______________',
+    '_______ssss________________',
+    '______RssssR_______________',
+    '_____RRssssRR______________',
+    '____RRRRRRRRRg_____________',
+    '___gRRRRRRRRRg_____________',
+    '___gRRRRRRRRggg____________',
+    '____RRR__RRR_______________',
+    '____RRb__RRR_______________',
+    '____bBb__bbb_______________',
+    '____BBB__BBB_______________',
+    '___________________________',
+  ];
 
-    for (const [key, { el, check }] of Object.entries(fields)) {
-      const grp = document.getElementById('grp-' + key);
-      if (!check(el.value)) {
-        grp.classList.add('field-error');
-        ok = false;
-      } else {
-        grp.classList.remove('field-error');
-      }
-    }
+  const fireFrames = [
+    ['______','___y__','__yYy_','_yOYy_','_OOYY_','_OOOO_','_TTTT_','_TTTT_'],
+    ['____y_','__yY__','__YOy_','_yYOO_','_OYYO_','_OOOO_','_TTTT_','_TTTT_'],
+    ['__y___','__yO__','_yYOy_','_OYYy_','_OOYY_','_OOOO_','_TTTT_','_TTTT_'],
+  ];
 
-    return ok;
-  }
-
-  function submitForm() {
-    if (!validate()) return;
-
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.textContent = 'SENDING...';
-
-    const params = {
-      to_email:  ADMIN_EMAIL,
-      from_name: document.getElementById('firstName').value.trim() + ' ' + document.getElementById('lastName').value.trim(),
-      first_name: document.getElementById('firstName').value.trim(),
-      last_name:  document.getElementById('lastName').value.trim(),
-      email:      document.getElementById('email').value.trim(),
-      phone:      document.getElementById('phone').value.trim() || 'Not provided',
-      language:   document.getElementById('language').value || 'Not specified',
-      referral:   document.getElementById('referral').value.trim() || 'Not provided',
-      notes:      document.getElementById('notes').value.trim() || 'None',
-      submitted_at: new Date().toLocaleString(),
-    };
-
-    // Also save to localStorage for the admin panel
-    const requests = JSON.parse(localStorage.getItem('stremio_requests') || '[]');
-    requests.unshift({ ...params, id: Math.random().toString(36).slice(2), status: 'pending' });
-    localStorage.setItem('stremio_requests', JSON.stringify(requests));
-
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
-      .then(() => {
-        document.getElementById('formContent').style.display = 'none';
-        document.getElementById('successState').style.display = 'block';
-      })
-      .catch(err => {
-        console.error('EmailJS error:', err);
-        // Still show success if it saved locally
-        document.getElementById('formContent').style.display = 'none';
-        document.getElementById('successState').style.display = 'block';
+  function drawSprite(grid, ox, oy) {
+    grid.forEach((row, ry) => {
+      [...row].forEach((ch, rx) => {
+        const color = C[ch];
+        if (!color) return;
+        ctx.fillStyle = color;
+        ctx.fillRect((ox + rx) * S, (oy + ry) * S, S, S);
       });
+    });
   }
 
-  // Live validation on blur
-  ['firstName','lastName','email'].forEach(id => {
-    document.getElementById(id).addEventListener('blur', validate);
-  });
+  let frame = 0, tick = 0;
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#1a0e08';
+    ctx.fillRect(0, 15 * S, canvas.width, S);
+    drawSprite((tick % 60 < 30) ? f1 : f2, 0, 0);
+    drawSprite(fireFrames[frame % fireFrames.length], 13, 8);
+    ctx.fillStyle = 'rgba(200,96,26,0.12)';
+    ctx.fillRect(12 * S, 14 * S, 6 * S, S);
+  }
+
+  function loop() {
+    tick++;
+    if (tick % 8 === 0) frame++;
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+})();
+
+// ── Form ───────────────────────────────────────────────────────────────────────
+function validate() {
+  let ok = true;
+  const checks = {
+    first_name: v => v.trim().length > 0,
+    last_name:  v => v.trim().length > 0,
+    email:      v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+  };
+  for (const [id, check] of Object.entries(checks)) {
+    const grp = document.getElementById('grp-' + id);
+    if (!check(document.getElementById(id).value)) {
+      grp.classList.add('field-error'); ok = false;
+    } else {
+      grp.classList.remove('field-error');
+    }
+  }
+  return ok;
+}
+
+async function submitForm() {
+  if (!validate()) return;
+  const btn    = document.getElementById('submitBtn');
+  const banner = document.getElementById('errorBanner');
+  btn.disabled = true;
+  btn.textContent = 'Delivering…';
+  banner.style.display = 'none';
+
+  const body = {
+    first_name: document.getElementById('first_name').value.trim(),
+    last_name:  document.getElementById('last_name').value.trim(),
+    email:      document.getElementById('email').value.trim(),
+    phone:      document.getElementById('phone').value.trim(),
+    language:   document.getElementById('language').value,
+    referral:   document.getElementById('referral').value.trim(),
+    notes:      document.getElementById('notes').value.trim(),
+  };
+
+  try {
+    const res  = await fetch('/api/apply', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById('formContent').style.display = 'none';
+      document.getElementById('successState').style.display = 'block';
+    } else {
+      banner.textContent = data.error || 'The scroll was rejected.';
+      banner.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Present Scroll';
+    }
+  } catch {
+    banner.textContent = 'Connection lost. Try again.';
+    banner.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Present Scroll';
+  }
+}
+
+['first_name','last_name','email'].forEach(id => {
+  document.getElementById(id).addEventListener('blur', validate);
+});
 </script>
 </body>
 </html>
