@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DUNGEON · Warden</title>
-  <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -33,24 +33,30 @@
       font-size: 15px;
     }
 
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse 150% 150% at 50% 0%, transparent 50%, rgba(0,0,0,0.5) 100%);
+      pointer-events: none; z-index: 0;
+    }
+
     .red-rule {
       width: 100%; height: 1px;
       background: linear-gradient(90deg, transparent, var(--red2), transparent);
     }
 
-    /* ── 8-bit barbarian canvas ──────────────────────── */
-    #barb-canvas {
+    /* ── Corner gif ───────────────────────────────────── */
+    .corner-gif {
       position: fixed;
-      bottom: 0;
-      right: 0;
-      width: 160px;
-      height: 160px;
+      bottom: 16px; right: 16px;
+      width: 96px; height: 96px;
+      object-fit: contain;
       image-rendering: pixelated;
-      z-index: 50;
-      pointer-events: none;
+      z-index: 50; pointer-events: none;
+      opacity: 0.9;
     }
 
-    /* ── Lock screen ─────────────────────────────────── */
+    /* ── Lock ─────────────────────────────────────────── */
     #lockScreen {
       position: fixed; inset: 0; z-index: 200;
       background: var(--black);
@@ -60,12 +66,9 @@
     .lock-wrap { width: 340px; text-align: center; }
 
     .lock-title {
-      font-family: 'Cinzel', serif;
-      font-size: 28px; font-weight: 700;
-      letter-spacing: 0.15em; text-transform: uppercase;
-      color: var(--red3);
-      text-shadow: 0 0 30px rgba(180,40,40,0.5);
-      margin-bottom: 6px;
+      font-size: 28px; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--red3);
+      text-shadow: 0 0 30px rgba(180,40,40,0.5); margin-bottom: 6px;
     }
 
     .lock-sub {
@@ -87,8 +90,7 @@
       background: transparent; border: 1px solid var(--red2);
       color: var(--red3); font-family: 'Cinzel', serif;
       font-size: 13px; letter-spacing: 0.4em; text-transform: uppercase;
-      padding: 14px 0; width: 100%; cursor: pointer;
-      transition: all 0.2s;
+      padding: 14px 0; width: 100%; cursor: pointer; transition: all 0.2s;
     }
     .lock-btn:hover { background: rgba(180,34,34,0.1); color: var(--bone2); border-color: var(--red3); }
 
@@ -97,13 +99,11 @@
       text-transform: uppercase; color: var(--red3); display: none;
     }
 
-    /* ── App ─────────────────────────────────────────── */
+    /* ── App ──────────────────────────────────────────── */
     #adminApp { display: none; position: relative; z-index: 1; min-height: 100vh; }
 
-    /* Topbar */
     .topbar {
-      border-bottom: 1px solid var(--line);
-      padding: 18px 40px;
+      border-bottom: 1px solid var(--line); padding: 18px 40px;
       display: flex; align-items: center; justify-content: space-between;
     }
 
@@ -123,30 +123,14 @@
     .topbar-link:hover { color: var(--red3); }
 
     /* Stats */
-    .ledger {
-      display: grid; grid-template-columns: repeat(4,1fr);
-      border-bottom: 1px solid var(--line);
-    }
-
-    .ledger-cell {
-      padding: 24px 32px; border-right: 1px solid var(--line);
-    }
+    .ledger { display: grid; grid-template-columns: repeat(4,1fr); border-bottom: 1px solid var(--line); }
+    .ledger-cell { padding: 24px 32px; border-right: 1px solid var(--line); }
     .ledger-cell:last-child { border-right: none; }
-
-    .ledger-label {
-      font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--dim); margin-bottom: 8px;
-    }
-
-    .ledger-val {
-      font-size: 42px; letter-spacing: 0.05em;
-      color: var(--bone2); line-height: 1; font-weight: 400;
-    }
+    .ledger-label { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+    .ledger-val { font-size: 42px; color: var(--bone2); line-height: 1; font-weight: 400; }
 
     /* Tabs */
-    .tabs {
-      display: flex; border-bottom: 1px solid var(--line); padding: 0 40px;
-    }
+    .tabs { display: flex; border-bottom: 1px solid var(--line); padding: 0 40px; }
 
     .tab-btn {
       font-family: 'Cinzel', serif;
@@ -159,22 +143,13 @@
     .tab-btn:hover { color: var(--bone); }
     .tab-btn.active { color: var(--red3); border-bottom-color: var(--red2); }
 
-    /* Main */
     .main { padding: 36px 40px; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* List header */
-    .list-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 24px;
-    }
-
-    .list-label {
-      font-size: 11px; letter-spacing: 0.35em; text-transform: uppercase;
-      color: var(--red2);
-    }
-
+    /* List headers */
+    .list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .list-label { font-size: 11px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--red2); }
     .filters { display: flex; gap: 4px; }
 
     .filter-btn {
@@ -189,35 +164,23 @@
     /* Rows */
     .row-list { display: flex; flex-direction: column; }
 
-    .app-row {
-      border-bottom: 1px solid var(--line);
-      padding: 22px 0;
+    .app-row, .mem-row {
+      border-bottom: 1px solid var(--line); padding: 22px 0;
       display: grid; grid-template-columns: 1fr auto;
       gap: 20px; align-items: start;
     }
-    .app-row:last-child { border-bottom: none; }
+    .app-row:last-child, .mem-row:last-child { border-bottom: none; }
 
     .row-name {
       font-size: 17px; letter-spacing: 0.1em; text-transform: uppercase;
       color: var(--bone2); margin-bottom: 5px; font-weight: 700;
     }
-
-    .row-email {
-      font-size: 13px; letter-spacing: 0.05em; color: var(--dim); margin-bottom: 12px;
-    }
+    .row-email { font-size: 13px; letter-spacing: 0.05em; color: var(--dim); margin-bottom: 12px; }
 
     .row-meta { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; }
-
-    .meta-lbl {
-      font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--dimmer); margin-bottom: 3px;
-    }
-
+    .meta-lbl { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dimmer); margin-bottom: 3px; }
     .meta-val { font-size: 13px; color: var(--dim); }
-
-    .row-notes {
-      margin-top: 10px; font-size: 13px; color: var(--dim); font-style: italic;
-    }
+    .row-notes { margin-top: 10px; font-size: 13px; color: var(--dim); font-style: italic; }
 
     .status-mark { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; font-weight: 700; }
     .status-mark.pending  { color: var(--ember); }
@@ -240,33 +203,12 @@
     .act.blood { color: #7a2020; }
     .act.blood:hover { color: #aa3030; border-bottom-color: #7a2020; }
 
-    .row-date {
-      font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--dimmer); margin-top: 4px;
-    }
+    .row-date { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dimmer); margin-top: 4px; }
 
-    /* Members */
-    .mem-row {
-      border-bottom: 1px solid var(--line);
-      padding: 22px 0;
-      display: grid; grid-template-columns: 1fr auto;
-      gap: 20px; align-items: start;
-    }
-    .mem-row:last-child { border-bottom: none; }
-
+    /* Member creds */
     .mem-creds { margin-top: 12px; display: flex; gap: 32px; flex-wrap: wrap; }
-
-    .cred-lbl {
-      font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--dimmer); margin-bottom: 5px;
-    }
-
-    .cred-val {
-      font-size: 14px; color: var(--bone); letter-spacing: 0.04em;
-      display: flex; align-items: center; gap: 10px;
-    }
-
-    .pw-dots { color: var(--dim); letter-spacing: 3px; font-size: 16px; }
+    .cred-lbl { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dimmer); margin-bottom: 5px; }
+    .cred-val { font-size: 14px; color: var(--bone); display: flex; align-items: center; gap: 10px; }
 
     .show-btn, .copy-btn {
       font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em;
@@ -279,16 +221,10 @@
 
     /* Empty */
     .empty { text-align: center; padding: 64px 0; }
-    .empty-title {
-      font-size: 16px; letter-spacing: 0.25em; text-transform: uppercase;
-      color: var(--dim); margin-bottom: 10px;
-    }
-    .empty-sub {
-      font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;
-      color: var(--dimmer);
-    }
+    .empty-title { font-size: 16px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+    .empty-sub { font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--dimmer); }
 
-    /* Modal */
+    /* Modals */
     .veil {
       position: fixed; inset: 0; z-index: 100;
       background: rgba(0,0,0,0.92);
@@ -305,7 +241,6 @@
       font-size: 16px; letter-spacing: 0.3em; text-transform: uppercase;
       color: var(--red3); margin-bottom: 8px; font-weight: 700;
     }
-
     .modal-rule { margin-bottom: 28px; }
 
     .modal-sub {
@@ -314,10 +249,7 @@
     }
     .modal-sub strong { color: var(--bone2); font-weight: 400; }
 
-    .m-label {
-      font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--dim); margin-bottom: 8px; display: block;
-    }
+    .m-label { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; display: block; }
 
     .m-input {
       width: 100%; background: transparent; border: none;
@@ -337,8 +269,7 @@
 </head>
 <body>
 
-<!-- 8-bit barbarian canvas -->
-<canvas id="barb-canvas" width="160" height="160"></canvas>
+<img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
 
 <!-- Lock -->
 <div id="lockScreen">
@@ -364,22 +295,10 @@
   </div>
 
   <div class="ledger">
-    <div class="ledger-cell">
-      <div class="ledger-label">Applicants</div>
-      <div class="ledger-val" id="statApplicants">—</div>
-    </div>
-    <div class="ledger-cell">
-      <div class="ledger-label">Pending</div>
-      <div class="ledger-val" id="statPending" style="color:var(--ember)">—</div>
-    </div>
-    <div class="ledger-cell">
-      <div class="ledger-label">Members</div>
-      <div class="ledger-val" id="statMembers" style="color:var(--green2)">—</div>
-    </div>
-    <div class="ledger-cell">
-      <div class="ledger-label">Denied</div>
-      <div class="ledger-val" id="statDenied" style="color:var(--dimmer)">—</div>
-    </div>
+    <div class="ledger-cell"><div class="ledger-label">Applicants</div><div class="ledger-val" id="statApplicants">—</div></div>
+    <div class="ledger-cell"><div class="ledger-label">Pending</div><div class="ledger-val" id="statPending" style="color:var(--ember)">—</div></div>
+    <div class="ledger-cell"><div class="ledger-label">Members</div><div class="ledger-val" id="statMembers" style="color:var(--green2)">—</div></div>
+    <div class="ledger-cell"><div class="ledger-label">Denied</div><div class="ledger-val" id="statDenied" style="color:var(--dimmer)">—</div></div>
   </div>
 
   <div class="tabs">
@@ -388,7 +307,6 @@
   </div>
 
   <div class="main">
-
     <div class="tab-panel active" id="panel-applicants">
       <div class="list-header">
         <div class="list-label">Petitions</div>
@@ -410,7 +328,6 @@
       <div class="red-rule"></div>
       <div class="row-list" id="memberList"></div>
     </div>
-
   </div>
 </div>
 
@@ -451,422 +368,274 @@
 </div>
 
 <script>
-// ── 8-bit barbarian + campfire ─────────────────────────────────────────────────
-(function() {
-  const canvas = document.getElementById('barb-canvas');
-  const ctx = canvas.getContext('2d');
-  const S = 8; // pixel size
+  let appFilter = 'all';
+  let activeApplicantId = null;
+  let activeMemberId = null;
+  let showPasswords = {};
 
-  // Color palette
-  const C = {
-    _: null,           // transparent
-    K: '#0a0806',      // near black
-    R: '#8b1a1a',      // dark red (armor)
-    r: '#b22222',      // red
-    B: '#4a3020',      // dark brown (skin shadow)
-    b: '#7a5030',      // brown skin
-    s: '#c8a878',      // light skin
-    G: '#3a3028',      // dark grey (fur)
-    g: '#6a6050',      // grey fur
-    W: '#d4c4a8',      // bone/white
-    Y: '#c8801a',      // fire orange
-    y: '#f0c020',      // fire yellow
-    O: '#e05010',      // fire red-orange
-    T: '#2a1a10',      // ground dark
-  };
-
-  // Barbarian sprite (20x16 pixels, 2 frames for animation)
-  // Frame 1 — standing
-  const f1 = [
-    '_______WWWWW_______________',
-    '______WWRWWWW______________',
-    '_____WWRRbsWW______________',
-    '_____WggssbWW______________',
-    '______ggsssb_______________',
-    '_______ssss________________',
-    '______RssssR_______________',
-    '_____RRssssRR______________',
-    '____RRRRRRRRRg_____________',
-    '___gRRRRRRRRRg_____________',
-    '___gRRRRRRRRggg____________',
-    '____RRR__RRR_______________',
-    '____RRR__RRR_______________',
-    '____bbb__bbb_______________',
-    '____BBB__BBB_______________',
-    '___________________________',
-  ];
-
-  // Frame 2 — slight shift (raise arm)
-  const f2 = [
-    '_______WWWWW_______________',
-    '______WWRWWWW______________',
-    '_____WWRRbsWW______________',
-    '_____WggssbWW______________',
-    '______ggsssb_______________',
-    '_______ssss________________',
-    '______RssssR_______________',
-    '_____RRssssRR______________',
-    '____RRRRRRRRRg_____________',
-    '___gRRRRRRRRRg_____________',
-    '___gRRRRRRRRggg____________',
-    '____RRR__RRR_______________',
-    '____RRb__RRR_______________',
-    '____bBb__bbb_______________',
-    '____BBB__BBB_______________',
-    '___________________________',
-  ];
-
-  // Campfire (right side, animated flames)
-  // x offset: 13 columns, y offset: 8 rows
-  const fireFrames = [
-    // flame frame A
-    [
-      '______',
-      '___y__',
-      '__yYy_',
-      '_yOYy_',
-      '_OOYY_',
-      '_OOOO_',
-      '_TTTT_',
-      '_TTTT_',
-    ],
-    // flame frame B
-    [
-      '____y_',
-      '__yY__',
-      '__YOy_',
-      '_yYOO_',
-      '_OYYO_',
-      '_OOOO_',
-      '_TTTT_',
-      '_TTTT_',
-    ],
-    // flame frame C
-    [
-      '__y___',
-      '__yO__',
-      '_yYOy_',
-      '_OYYy_',
-      '_OOYY_',
-      '_OOOO_',
-      '_TTTT_',
-      '_TTTT_',
-    ],
-  ];
-
-  function drawSprite(grid, ox, oy) {
-    grid.forEach((row, ry) => {
-      [...row].forEach((ch, rx) => {
-        const color = C[ch];
-        if (!color) return;
-        ctx.fillStyle = color;
-        ctx.fillRect((ox + rx) * S, (oy + ry) * S, S, S);
+  async function unlock() {
+    const pw = document.getElementById('pinInput').value;
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ password: pw }),
       });
-    });
+      if (res.ok) {
+        document.getElementById('lockScreen').style.display = 'none';
+        document.getElementById('adminApp').style.display = 'block';
+        loadAll();
+      } else {
+        const d = await res.json();
+        document.getElementById('lockError').textContent = d.error || 'The gate does not yield.';
+        document.getElementById('lockError').style.display = 'block';
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinInput').focus();
+      }
+    } catch {
+      document.getElementById('lockError').textContent = 'The gate is unreachable.';
+      document.getElementById('lockError').style.display = 'block';
+    }
   }
 
-  let frame = 0;
-  let tick  = 0;
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Ground line
-    ctx.fillStyle = '#1a0e08';
-    ctx.fillRect(0, 15 * S, canvas.width, S);
-
-    // Barbarian (col 0, row 0)
-    const barbFrame = (tick % 60 < 30) ? f1 : f2;
-    drawSprite(barbFrame, 0, 0);
-
-    // Campfire (col 13, row 8)
-    const fireFrame = fireFrames[frame % fireFrames.length];
-    drawSprite(fireFrame, 13, 8);
-
-    // Fire glow on ground
-    ctx.fillStyle = 'rgba(200,96,26,0.15)';
-    ctx.fillRect(12 * S, 14 * S, 6 * S, S);
+  async function logout() {
+    await fetch('/api/logout', { method: 'POST' });
+    document.getElementById('lockScreen').style.display = 'flex';
+    document.getElementById('adminApp').style.display = 'none';
+    document.getElementById('pinInput').value = '';
+    document.getElementById('lockError').style.display = 'none';
   }
 
-  function loop() {
-    tick++;
-    if (tick % 8 === 0) frame++;
-    draw();
-    requestAnimationFrame(loop);
-  }
-
-  loop();
-})();
-
-// ── App logic ──────────────────────────────────────────────────────────────────
-let appFilter = 'all';
-let activeApplicantId = null;
-let activeMemberId = null;
-let showPasswords = {};
-
-async function unlock() {
-  const pw = document.getElementById('pinInput').value;
-  try {
-    const res = await fetch('/api/login', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ password: pw }),
-    });
-    if (res.ok) {
+  fetch('/api/me').then(r => r.json()).then(d => {
+    if (d.authenticated) {
       document.getElementById('lockScreen').style.display = 'none';
       document.getElementById('adminApp').style.display = 'block';
       loadAll();
     } else {
-      const d = await res.json();
-      document.getElementById('lockError').textContent = d.error || 'The gate does not yield.';
-      document.getElementById('lockError').style.display = 'block';
-      document.getElementById('pinInput').value = '';
       document.getElementById('pinInput').focus();
     }
-  } catch {
-    document.getElementById('lockError').textContent = 'The gate is unreachable.';
-    document.getElementById('lockError').style.display = 'block';
-  }
-}
-
-async function logout() {
-  await fetch('/api/logout', { method: 'POST' });
-  document.getElementById('lockScreen').style.display = 'flex';
-  document.getElementById('adminApp').style.display = 'none';
-  document.getElementById('pinInput').value = '';
-  document.getElementById('lockError').style.display = 'none';
-}
-
-fetch('/api/me').then(r => r.json()).then(d => {
-  if (d.authenticated) {
-    document.getElementById('lockScreen').style.display = 'none';
-    document.getElementById('adminApp').style.display = 'block';
-    loadAll();
-  } else {
-    document.getElementById('pinInput').focus();
-  }
-});
-
-function switchTab(name, el) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('panel-' + name).classList.add('active');
-  if (name === 'members') loadMembers();
-}
-
-async function loadAll() {
-  await Promise.all([loadStats(), loadApplicants(), loadMembers()]);
-}
-
-async function loadStats() {
-  const d = await fetch('/api/stats').then(r => r.json());
-  document.getElementById('statApplicants').textContent = d.applicants;
-  document.getElementById('statPending').textContent    = d.pending;
-  document.getElementById('statMembers').textContent    = d.members;
-  document.getElementById('statDenied').textContent     = d.denied;
-}
-
-async function loadApplicants() {
-  const url = appFilter === 'all' ? '/api/applicants' : `/api/applicants?status=${appFilter}`;
-  const rows = await fetch(url).then(r => r.json());
-  renderApplicants(rows);
-}
-
-function setAppFilter(f, el) {
-  appFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  loadApplicants();
-}
-
-const STATUS = { pending: 'Pending', approved: 'Approved', denied: 'Denied' };
-
-function fmt(dt) {
-  if (!dt) return '';
-  return new Date(dt).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-}
-
-function esc(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,"\\'").replace(/"/g,'&quot;');
-}
-
-function renderApplicants(rows) {
-  const el = document.getElementById('applicantList');
-  if (!rows.length) {
-    el.innerHTML = `<div class="empty"><div class="empty-title">No Petitions</div><div class="empty-sub">None have sought entry.</div></div>`;
-    return;
-  }
-  el.innerHTML = rows.map(r => `
-    <div class="app-row" id="app-${r.id}">
-      <div>
-        <div class="row-name">${r.first_name} ${r.last_name}</div>
-        <div class="row-email">${r.email}</div>
-        <div class="row-meta">
-          <span class="status-mark ${r.status}">${STATUS[r.status]||r.status}</span>
-          ${r.phone    ? `<div><div class="meta-lbl">Phone</div><div class="meta-val">${r.phone}</div></div>` : ''}
-          ${r.language ? `<div><div class="meta-lbl">Language</div><div class="meta-val">${r.language}</div></div>` : ''}
-          ${r.referral ? `<div><div class="meta-lbl">Referred By</div><div class="meta-val">${r.referral}</div></div>` : ''}
-        </div>
-        ${r.notes ? `<div class="row-notes">${r.notes}</div>` : ''}
-      </div>
-      <div class="row-actions">
-        ${r.status === 'pending' ? `
-          <button class="act red" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Entry</button>
-          <button class="act" onclick="setAppStatus('${r.id}','denied')">Deny</button>
-        ` : r.status === 'approved' ? `
-          <button class="act" onclick="setAppStatus('${r.id}','pending')">Reopen</button>
-        ` : `
-          <button class="act red" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Entry</button>
-          <button class="act" onclick="setAppStatus('${r.id}','pending')">Reopen</button>
-        `}
-        <button class="act blood" onclick="deleteApplicant('${r.id}')">Expunge</button>
-        <div class="row-date">${fmt(r.created_at)}</div>
-      </div>
-    </div>
-  `).join('');
-}
-
-async function setAppStatus(id, status) {
-  await fetch(`/api/applicants/${id}/status`, {
-    method: 'PATCH', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ status }),
   });
-  loadAll();
-}
 
-async function deleteApplicant(id) {
-  if (!confirm('Expunge this petition?')) return;
-  await fetch(`/api/applicants/${id}`, { method: 'DELETE' });
-  loadAll();
-}
-
-function openApprove(id, firstName, lastName, email) {
-  activeApplicantId = id;
-  document.getElementById('approveDesc').innerHTML =
-    `Create the Stremio account for <strong>${firstName} ${lastName}</strong> (${email}), then enter the credentials below.`;
-  document.getElementById('approveStremioEmail').value = email;
-  document.getElementById('approveStremioPass').value = '';
-  document.getElementById('approveModal').classList.add('open');
-}
-
-async function confirmApprove() {
-  const stremio_email = document.getElementById('approveStremioEmail').value.trim();
-  const stremio_pass  = document.getElementById('approveStremioPass').value.trim();
-  await fetch(`/api/applicants/${activeApplicantId}/promote`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ stremio_email, stremio_pass }),
-  });
-  closeModal('approveModal');
-  loadAll();
-  document.querySelectorAll('.tab-btn')[1].click();
-}
-
-async function loadMembers() {
-  const rows = await fetch('/api/members').then(r => r.json());
-  renderMembers(rows);
-}
-
-function renderMembers(rows) {
-  const el = document.getElementById('memberList');
-  if (!rows.length) {
-    el.innerHTML = `<div class="empty"><div class="empty-title">No Members Yet</div><div class="empty-sub">Grant entry to an applicant to add them here.</div></div>`;
-    return;
+  function switchTab(name, el) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+    if (name === 'members') loadMembers();
   }
-  el.innerHTML = rows.map(r => {
-    const shown = showPasswords[r.id];
-    return `
-      <div class="mem-row" id="mem-${r.id}">
+
+  async function loadAll() {
+    await Promise.all([loadStats(), loadApplicants(), loadMembers()]);
+  }
+
+  async function loadStats() {
+    const d = await fetch('/api/stats').then(r => r.json());
+    document.getElementById('statApplicants').textContent = d.applicants;
+    document.getElementById('statPending').textContent    = d.pending;
+    document.getElementById('statMembers').textContent    = d.members;
+    document.getElementById('statDenied').textContent     = d.denied;
+  }
+
+  async function loadApplicants() {
+    const url = appFilter === 'all' ? '/api/applicants' : `/api/applicants?status=${appFilter}`;
+    const rows = await fetch(url).then(r => r.json());
+    renderApplicants(rows);
+  }
+
+  function setAppFilter(f, el) {
+    appFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    loadApplicants();
+  }
+
+  const STATUS = { pending: 'Pending', approved: 'Approved', denied: 'Denied' };
+
+  function fmt(dt) {
+    if (!dt) return '';
+    return new Date(dt).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  }
+
+  function esc(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+  }
+
+  function renderApplicants(rows) {
+    const el = document.getElementById('applicantList');
+    if (!rows.length) {
+      el.innerHTML = `<div class="empty"><div class="empty-title">No Petitions</div><div class="empty-sub">None have sought entry.</div></div>`;
+      return;
+    }
+    el.innerHTML = rows.map(r => `
+      <div class="app-row" id="app-${r.id}">
         <div>
           <div class="row-name">${r.first_name} ${r.last_name}</div>
           <div class="row-email">${r.email}</div>
-          <div class="mem-creds">
-            <div>
-              <div class="cred-lbl">Stremio Email</div>
-              <div class="cred-val">
-                ${r.stremio_email || '—'}
-                ${r.stremio_email ? `<button class="copy-btn" id="cpe-${r.id}" onclick="copyVal('${esc(r.stremio_email)}','cpe-${r.id}')">Copy</button>` : ''}
-              </div>
-            </div>
-            <div>
-              <div class="cred-lbl">Stremio Password</div>
-              <div class="cred-val">
-                <span id="pw-${r.id}">${shown ? (r.stremio_pass||'—') : '········'}</span>
-                ${r.stremio_pass ? `
-                  <button class="show-btn" onclick="togglePw('${r.id}')">${shown?'Hide':'Show'}</button>
-                  <button class="copy-btn" id="cpp-${r.id}" onclick="copyVal('${esc(r.stremio_pass)}','cpp-${r.id}')">Copy</button>
-                ` : ''}
-              </div>
-            </div>
-            ${r.language ? `<div><div class="cred-lbl">Language</div><div class="cred-val">${r.language}</div></div>` : ''}
+          <div class="row-meta">
+            <span class="status-mark ${r.status}">${STATUS[r.status]||r.status}</span>
+            ${r.phone    ? `<div><div class="meta-lbl">Phone</div><div class="meta-val">${r.phone}</div></div>` : ''}
+            ${r.language ? `<div><div class="meta-lbl">Language</div><div class="meta-val">${r.language}</div></div>` : ''}
+            ${r.referral ? `<div><div class="meta-lbl">Referred By</div><div class="meta-val">${r.referral}</div></div>` : ''}
           </div>
           ${r.notes ? `<div class="row-notes">${r.notes}</div>` : ''}
         </div>
         <div class="row-actions">
-          <button class="act red" onclick="openEdit('${r.id}','${esc(r.stremio_email)}','${esc(r.stremio_pass)}','${esc(r.notes)}','${esc(r.first_name)}','${esc(r.last_name)}')">Edit</button>
-          <button class="act blood" onclick="deleteMember('${r.id}')">Remove</button>
-          <div class="row-date">Since ${fmt(r.created_at)}</div>
+          ${r.status === 'pending' ? `
+            <button class="act red" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Entry</button>
+            <button class="act" onclick="setAppStatus('${r.id}','denied')">Deny</button>
+          ` : r.status === 'approved' ? `
+            <button class="act" onclick="setAppStatus('${r.id}','pending')">Reopen</button>
+          ` : `
+            <button class="act red" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Entry</button>
+            <button class="act" onclick="setAppStatus('${r.id}','pending')">Reopen</button>
+          `}
+          <button class="act blood" onclick="deleteApplicant('${r.id}')">Expunge</button>
+          <div class="row-date">${fmt(r.created_at)}</div>
         </div>
       </div>
-    `;
-  }).join('');
-}
+    `).join('');
+  }
 
-function togglePw(id) {
-  showPasswords[id] = !showPasswords[id];
-  loadMembers();
-}
+  async function setAppStatus(id, status) {
+    await fetch(`/api/applicants/${id}/status`, {
+      method: 'PATCH', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ status }),
+    });
+    loadAll();
+  }
 
-function copyVal(text, btnId) {
-  navigator.clipboard.writeText(text).catch(() => {});
-  const btn = document.getElementById(btnId);
-  if (!btn) return;
-  const orig = btn.textContent;
-  btn.textContent = 'Copied';
-  btn.classList.add('copied');
-  setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
-}
+  async function deleteApplicant(id) {
+    if (!confirm('Expunge this petition?')) return;
+    await fetch(`/api/applicants/${id}`, { method: 'DELETE' });
+    loadAll();
+  }
 
-function openEdit(id, stremio_email, stremio_pass, notes, firstName, lastName) {
-  activeMemberId = id;
-  document.getElementById('editDesc').innerHTML = `Update credentials for <strong>${firstName} ${lastName}</strong>.`;
-  document.getElementById('editStremioEmail').value = stremio_email;
-  document.getElementById('editStremioPass').value  = stremio_pass;
-  document.getElementById('editNotes').value        = notes;
-  document.getElementById('editModal').classList.add('open');
-}
+  function openApprove(id, firstName, lastName, email) {
+    activeApplicantId = id;
+    document.getElementById('approveDesc').innerHTML =
+      `Create the Stremio account for <strong>${firstName} ${lastName}</strong> (${email}), then enter the credentials below.`;
+    document.getElementById('approveStremioEmail').value = email;
+    document.getElementById('approveStremioPass').value = '';
+    document.getElementById('approveModal').classList.add('open');
+  }
 
-async function confirmEdit() {
-  await fetch(`/api/members/${activeMemberId}`, {
-    method: 'PATCH', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({
-      stremio_email: document.getElementById('editStremioEmail').value.trim(),
-      stremio_pass:  document.getElementById('editStremioPass').value.trim(),
-      notes:         document.getElementById('editNotes').value.trim(),
-    }),
+  async function confirmApprove() {
+    const stremio_email = document.getElementById('approveStremioEmail').value.trim();
+    const stremio_pass  = document.getElementById('approveStremioPass').value.trim();
+    await fetch(`/api/applicants/${activeApplicantId}/promote`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ stremio_email, stremio_pass }),
+    });
+    closeModal('approveModal');
+    loadAll();
+    document.querySelectorAll('.tab-btn')[1].click();
+  }
+
+  async function loadMembers() {
+    const rows = await fetch('/api/members').then(r => r.json());
+    renderMembers(rows);
+  }
+
+  function renderMembers(rows) {
+    const el = document.getElementById('memberList');
+    if (!rows.length) {
+      el.innerHTML = `<div class="empty"><div class="empty-title">No Members Yet</div><div class="empty-sub">Grant entry to an applicant to add them here.</div></div>`;
+      return;
+    }
+    el.innerHTML = rows.map(r => {
+      const shown = showPasswords[r.id];
+      return `
+        <div class="mem-row" id="mem-${r.id}">
+          <div>
+            <div class="row-name">${r.first_name} ${r.last_name}</div>
+            <div class="row-email">${r.email}</div>
+            <div class="mem-creds">
+              <div>
+                <div class="cred-lbl">Stremio Email</div>
+                <div class="cred-val">
+                  ${r.stremio_email || '—'}
+                  ${r.stremio_email ? `<button class="copy-btn" id="cpe-${r.id}" onclick="copyVal('${esc(r.stremio_email)}','cpe-${r.id}')">Copy</button>` : ''}
+                </div>
+              </div>
+              <div>
+                <div class="cred-lbl">Stremio Password</div>
+                <div class="cred-val">
+                  <span id="pw-${r.id}">${shown ? (r.stremio_pass||'—') : '········'}</span>
+                  ${r.stremio_pass ? `
+                    <button class="show-btn" onclick="togglePw('${r.id}')">${shown?'Hide':'Show'}</button>
+                    <button class="copy-btn" id="cpp-${r.id}" onclick="copyVal('${esc(r.stremio_pass)}','cpp-${r.id}')">Copy</button>
+                  ` : ''}
+                </div>
+              </div>
+              ${r.language ? `<div><div class="cred-lbl">Language</div><div class="cred-val">${r.language}</div></div>` : ''}
+            </div>
+            ${r.notes ? `<div class="row-notes">${r.notes}</div>` : ''}
+          </div>
+          <div class="row-actions">
+            <button class="act red" onclick="openEdit('${r.id}','${esc(r.stremio_email)}','${esc(r.stremio_pass)}','${esc(r.notes)}','${esc(r.first_name)}','${esc(r.last_name)}')">Edit</button>
+            <button class="act blood" onclick="deleteMember('${r.id}')">Remove</button>
+            <div class="row-date">Since ${fmt(r.created_at)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function togglePw(id) {
+    showPasswords[id] = !showPasswords[id];
+    loadMembers();
+  }
+
+  function copyVal(text, btnId) {
+    navigator.clipboard.writeText(text).catch(() => {});
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+  }
+
+  function openEdit(id, stremio_email, stremio_pass, notes, firstName, lastName) {
+    activeMemberId = id;
+    document.getElementById('editDesc').innerHTML = `Update credentials for <strong>${firstName} ${lastName}</strong>.`;
+    document.getElementById('editStremioEmail').value = stremio_email;
+    document.getElementById('editStremioPass').value  = stremio_pass;
+    document.getElementById('editNotes').value        = notes;
+    document.getElementById('editModal').classList.add('open');
+  }
+
+  async function confirmEdit() {
+    await fetch(`/api/members/${activeMemberId}`, {
+      method: 'PATCH', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        stremio_email: document.getElementById('editStremioEmail').value.trim(),
+        stremio_pass:  document.getElementById('editStremioPass').value.trim(),
+        notes:         document.getElementById('editNotes').value.trim(),
+      }),
+    });
+    closeModal('editModal');
+    loadMembers();
+  }
+
+  async function deleteMember(id) {
+    if (!confirm('Remove this member from the roster?')) return;
+    await fetch(`/api/members/${id}`, { method: 'DELETE' });
+    loadAll();
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    activeApplicantId = null;
+    activeMemberId = null;
+  }
+
+  document.querySelectorAll('.veil').forEach(v => {
+    v.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('open');
+    });
   });
-  closeModal('editModal');
-  loadMembers();
-}
 
-async function deleteMember(id) {
-  if (!confirm('Remove this member from the roster?')) return;
-  await fetch(`/api/members/${id}`, { method: 'DELETE' });
-  loadAll();
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-  activeApplicantId = null;
-  activeMemberId = null;
-}
-
-document.querySelectorAll('.veil').forEach(v => {
-  v.addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('open');
-  });
-});
-
-document.getElementById('pinInput').focus();
+  document.getElementById('pinInput').focus();
 </script>
 </body>
 </html>
