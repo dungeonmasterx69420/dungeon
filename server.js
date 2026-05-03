@@ -113,6 +113,33 @@ app.get('/api/me', (req, res) => {
   res.json({ authenticated: !!(req.session && req.session.authenticated) });
 });
 
+
+// ── Member auth ───────────────────────────────────────────────────────────────
+app.post('/api/member/login', loginLimiter, (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password)
+    return res.status(400).json({ error: 'Email and password are required.' });
+  const member = db.prepare('SELECT * FROM members WHERE LOWER(stremio_email)=LOWER(?)').get(email.trim());
+  if (!member || member.stremio_pass !== password.trim())
+    return res.status(401).json({ error: 'Incorrect email or password.' });
+  req.session.member = { id: member.id, first_name: member.first_name, last_name: member.last_name, email: member.email };
+  req.session.save((err) => {
+    if (err) return res.status(500).json({ error: 'Session error' });
+    res.json({ ok: true });
+  });
+});
+
+app.post('/api/member/logout', (req, res) => {
+  req.session.destroy();
+  res.json({ ok: true });
+});
+
+app.get('/api/member/me', (req, res) => {
+  if (req.session && req.session.member)
+    return res.json({ authenticated: true, member: req.session.member });
+  res.json({ authenticated: false });
+});
+
 // ── Public: submit application ────────────────────────────────────────────────
 app.post('/api/apply', submitLimiter, (req, res) => {
   const { first_name, last_name, email, phone, language, referral, notes } = req.body;

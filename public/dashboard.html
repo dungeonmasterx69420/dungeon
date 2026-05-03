@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DUNGEON · Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #000000;
+      --deep:    #0c0808;
+      --red2:    #b22222;
+      --red3:    #cc3333;
+      --ember:   #c8601a;
+      --bone:    #d4c4a8;
+      --bone2:   #e8dcc8;
+      --dim:     #6a5a4a;
+      --dimmer:  #3a2a20;
+      --line:    rgba(180,50,50,0.2);
+      --line2:   rgba(180,50,50,0.4);
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--black);
+      color: var(--bone);
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 15px;
+    }
+
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse 150% 150% at 50% 0%, transparent 50%, rgba(0,0,0,0.5) 100%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .corner-gif {
+      position: fixed; bottom: 16px; right: 16px;
+      width: 96px; height: 96px;
+      object-fit: contain; image-rendering: pixelated;
+      z-index: 50; pointer-events: none; opacity: 0.9;
+    }
+
+    .red-rule {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--red2), transparent);
+    }
+
+    /* Topbar */
+    .topbar {
+      position: relative; z-index: 1;
+      border-bottom: 1px solid var(--line);
+      padding: 18px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .topbar-name {
+      font-size: 20px; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--red3);
+      text-shadow: 0 0 20px rgba(180,40,40,0.4);
+    }
+
+    .topbar-right { display: flex; align-items: center; gap: 28px; }
+
+    .greeting {
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    .topbar-link {
+      font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--dimmer); text-decoration: none; background: none; border: none;
+      cursor: pointer; font-family: 'Cinzel', serif; transition: color 0.2s;
+    }
+    .topbar-link:hover { color: var(--red3); }
+
+    /* Main */
+    .main {
+      position: relative; z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 72px 32px 100px;
+      text-align: center;
+    }
+
+    .dash-eyebrow {
+      font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase;
+      color: var(--red2); margin-bottom: 20px; display: block;
+    }
+
+    .dash-title {
+      font-size: 32px; font-weight: 400; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--bone2);
+      line-height: 1.2; margin-bottom: 24px;
+    }
+
+    .dash-rule { margin-bottom: 48px; }
+
+    /* Coming soon card */
+    .soon-card {
+      border: 1px solid var(--line2);
+      padding: 52px 40px;
+      position: relative;
+    }
+
+    /* Corner marks */
+    .soon-card::before, .soon-card::after {
+      content: '';
+      position: absolute;
+      width: 12px; height: 12px;
+      border-color: var(--red2); border-style: solid;
+      opacity: 0.4;
+    }
+    .soon-card::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+    .soon-card::after  { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+    .soon-gif {
+      width: 80px; height: 80px;
+      object-fit: contain; image-rendering: pixelated;
+      display: block; margin: 0 auto 32px;
+      opacity: 0.7;
+    }
+
+    .soon-label {
+      font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase;
+      color: var(--ember); display: block; margin-bottom: 16px;
+    }
+
+    .soon-title {
+      font-size: 18px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--bone2); margin-bottom: 20px; font-weight: 400;
+    }
+
+    .soon-body {
+      font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--dim); line-height: 2.4;
+    }
+
+    /* Placeholder tiles — greyed out future features */
+    .tiles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--line);
+      margin-top: 2px;
+    }
+
+    @media(max-width: 480px) { .tiles { grid-template-columns: 1fr; } }
+
+    .tile {
+      background: var(--black);
+      padding: 28px 24px;
+      text-align: left;
+      opacity: 0.3;
+    }
+
+    .tile-label {
+      font-size: 8px; letter-spacing: 0.35em; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 10px;
+    }
+
+    .tile-title {
+      font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--bone); font-weight: 400;
+    }
+
+    .tile-icon {
+      font-size: 20px; margin-bottom: 12px; display: block;
+      filter: grayscale(1);
+    }
+  </style>
+</head>
+<body>
+
+<img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
+
+<div class="topbar">
+  <div class="topbar-name">Dungeon</div>
+  <div class="topbar-right">
+    <span class="greeting" id="greeting"></span>
+    <button class="topbar-link" onclick="logout()">Leave</button>
+  </div>
+</div>
+
+<div class="main">
+  <span class="dash-eyebrow">Member Area</span>
+  <div class="dash-title">Welcome to<br>the Inner Vault</div>
+  <div class="red-rule dash-rule"></div>
+
+  <div class="soon-card">
+    <img class="soon-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
+    <span class="soon-label">— Under Construction —</span>
+    <div class="soon-title">More Shall Be Revealed</div>
+    <p class="soon-body">
+      Thy dashboard is being forged.<br>
+      Return soon — the keeper is at work.
+    </p>
+
+    <div class="tiles">
+      <div class="tile">
+        <span class="tile-icon">📺</span>
+        <div class="tile-label">Coming Soon</div>
+        <div class="tile-title">Stremio Credentials</div>
+      </div>
+      <div class="tile">
+        <span class="tile-icon">⚔️</span>
+        <div class="tile-label">Coming Soon</div>
+        <div class="tile-title">Addon Library</div>
+      </div>
+      <div class="tile">
+        <span class="tile-icon">📜</span>
+        <div class="tile-label">Coming Soon</div>
+        <div class="tile-title">Watch History</div>
+      </div>
+      <div class="tile">
+        <span class="tile-icon">🔥</span>
+        <div class="tile-label">Coming Soon</div>
+        <div class="tile-title">Recommendations</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Guard: redirect to login if not authenticated
+  fetch('/api/member/me').then(r => r.json()).then(d => {
+    if (!d.authenticated) {
+      window.location.href = '/login.html';
+    } else {
+      document.getElementById('greeting').textContent = d.member.first_name;
+    }
+  });
+
+  async function logout() {
+    await fetch('/api/member/logout', { method: 'POST' });
+    window.location.href = '/login.html';
+  }
+</script>
+</body>
+</html>

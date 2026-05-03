@@ -219,6 +219,9 @@
     footer p { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dimmer); }
     footer a { color: var(--dimmer); text-decoration: none; }
     footer a:hover { color: var(--red3); }
+    .torch-link { display: inline-block; vertical-align: middle; margin-left: 10px; opacity: 0.3; transition: opacity 0.3s; cursor: pointer; line-height: 0; }
+    .torch-link:hover { opacity: 0.9; }
+    #torchCanvas { image-rendering: pixelated; display: block; }
   </style>
 </head>
 <body>
@@ -314,7 +317,7 @@
   </div>
 
   <footer>
-    <p>Dungeon &mdash; <a href="/admin.html">Warden's Gate</a></p>
+    <p>Dungeon &mdash; <a href="/admin.html">Warden's Gate</a> <a href="/login.html" class="torch-link" title=""><canvas id="torchCanvas" width="14" height="20"></canvas></a></p>
   </footer>
 </div>
 
@@ -383,6 +386,81 @@
   ['first_name','last_name','email'].forEach(id => {
     document.getElementById(id).addEventListener('blur', validate);
   });
+</script>
+
+<script>
+// Tiny pixel torch animation in footer
+(function() {
+  const canvas = document.getElementById('torchCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const S = 2; // 2px per pixel = 14x20 canvas = 7x10 sprite
+
+  // 7-wide x 10-tall torch sprite, 3 flame frames
+  // Colors: B=brown handle, K=dark, O=orange, Y=yellow, r=red-orange, _=transparent
+  const C = { _: null, B: '#5a3010', K: '#3a1a08', O: '#d05010', Y: '#f0b020', r: '#b83010', o: '#e07020' };
+
+  // Each frame: 10 rows of 7 chars
+  const frames = [
+    // frame 1
+    ['__YY___',
+     '_YYoY__',
+     '_YOrO__',
+     '__rO___',
+     '___B___',
+     '___B___',
+     '___B___',
+     '__BBB__',
+     '___B___',
+     '___K___'],
+    // frame 2
+    ['___Y___',
+     '__YOY__',
+     '_YOrO__',
+     '_OYr___',
+     '___B___',
+     '___B___',
+     '___B___',
+     '__BBB__',
+     '___B___',
+     '___K___'],
+    // frame 3
+    ['__YY___',
+     '_oYY___',
+     '__OrY__',
+     '__rO___',
+     '___B___',
+     '___B___',
+     '___B___',
+     '__BBB__',
+     '___B___',
+     '___K___'],
+  ];
+
+  let frame = 0, tick = 0;
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const f = frames[frame % frames.length];
+    f.forEach((row, ry) => {
+      [...row].forEach((ch, rx) => {
+        const color = C[ch];
+        if (!color) return;
+        ctx.fillStyle = color;
+        ctx.fillRect(rx * S, ry * S, S, S);
+      });
+    });
+  }
+
+  function loop() {
+    tick++;
+    if (tick % 6 === 0) frame++;
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+})();
 </script>
 </body>
 </html>
