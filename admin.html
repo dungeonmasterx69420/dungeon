@@ -12,7 +12,6 @@
     :root {
       --black:  #000000;
       --panel:  #0d0c09;
-      --panel2: #111009;
       --gold:   #a07840;
       --gold2:  #c8a050;
       --bone:   #c8b898;
@@ -25,335 +24,158 @@
       --line2:  rgba(160,120,64,0.3);
     }
 
-    html, body {
-      min-height: 100vh;
-      background: var(--black);
-      color: var(--bone);
-      font-family: 'Cinzel', 'Palatino Linotype', Palatino, Georgia, serif;
-    }
+    html, body { min-height: 100vh; background: var(--black); color: var(--bone); font-family: 'Cinzel', 'Palatino Linotype', Palatino, Georgia, serif; }
 
-    body::after {
-      content: '';
-      position: fixed; inset: 0;
-      background: radial-gradient(ellipse 150% 150% at 50% 0%, transparent 50%, rgba(0,0,0,0.5) 100%);
-      pointer-events: none; z-index: 0;
-    }
+    body::after { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 150% 150% at 50% 0%, transparent 50%, rgba(0,0,0,0.5) 100%); pointer-events: none; z-index: 0; }
 
-    .gold-rule {
-      width: 100%; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold2), transparent);
-    }
+    .gold-rule { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold2), transparent); }
 
-    .gold-rule-sm {
-      width: 48px; height: 1px;
-      background: var(--gold); opacity: 0.5;
-    }
+    /* ── Lock ─────────────────────────────────────── */
+    #lockScreen { position: fixed; inset: 0; z-index: 200; background: var(--black); display: flex; align-items: center; justify-content: center; }
 
-    /* ── Lock ─────────────────────────────────────────── */
-    #lockScreen {
-      position: fixed; inset: 0; z-index: 200;
-      background: var(--black);
-      display: flex; align-items: center; justify-content: center;
-    }
+    .lock-wrap { width: 300px; text-align: center; }
+    .lock-title { font-size: 10px; letter-spacing: 0.55em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+    .lock-sub { font-size: 8px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--dim); margin-bottom: 36px; }
 
-    .lock-wrap {
-      width: 320px;
-      text-align: center;
-    }
-
-    .lock-title {
-      font-size: 10px;
-      letter-spacing: 0.55em;
-      text-transform: uppercase;
-      color: var(--gold);
-      font-weight: 400;
-      margin-bottom: 14px;
-    }
-
-    .lock-sub {
-      font-size: 8px;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: var(--dim);
-      margin-bottom: 40px;
-    }
-
-    .lock-input {
-      width: 100%;
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid var(--line2);
-      color: var(--bone);
-      font-family: 'Cinzel', Palatino, serif;
-      font-size: 16px;
-      letter-spacing: 0.3em;
-      text-align: center;
-      padding: 12px 0;
-      outline: none;
-      margin-bottom: 32px;
-      transition: border-color 0.2s;
-      border-radius: 0;
-    }
+    .lock-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--line2); color: var(--bone); font-family: 'Cinzel', serif; font-size: 16px; letter-spacing: 0.3em; text-align: center; padding: 12px 0; outline: none; margin-bottom: 28px; transition: border-color 0.2s; border-radius: 0; }
     .lock-input:focus { border-bottom-color: var(--gold2); }
 
-    .lock-btn {
-      background: transparent; border: none;
-      border-bottom: 1px solid var(--gold);
-      color: var(--gold2);
-      font-family: 'Cinzel', Palatino, serif;
-      font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase;
-      padding: 10px 0; width: 100%;
-      cursor: pointer; transition: color 0.2s, border-color 0.2s;
-    }
+    .lock-btn { background: transparent; border: none; border-bottom: 1px solid var(--gold); color: var(--gold2); font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; padding: 10px 0; width: 100%; cursor: pointer; transition: color 0.2s, border-color 0.2s; }
     .lock-btn:hover { color: var(--bone); border-bottom-color: var(--bone); }
 
-    .lock-error {
-      margin-top: 16px;
-      font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--blood); display: none;
-    }
+    .lock-error { margin-top: 16px; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blood); display: none; }
 
-    /* ── App ──────────────────────────────────────────── */
+    /* ── App shell ────────────────────────────────── */
     #adminApp { display: none; position: relative; z-index: 1; min-height: 100vh; }
 
-    /* Top bar */
-    .topbar {
-      border-bottom: 1px solid var(--line);
-      padding: 20px 40px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-
-    .topbar-name {
-      font-size: 10px; letter-spacing: 0.55em; text-transform: uppercase;
-      color: var(--gold); font-weight: 400;
-    }
-
+    .topbar { border-bottom: 1px solid var(--line); padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; }
+    .topbar-name { font-size: 10px; letter-spacing: 0.55em; text-transform: uppercase; color: var(--gold); }
     .topbar-right { display: flex; align-items: center; gap: 24px; }
-
-    .topbar-link {
-      font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--dimmer); text-decoration: none; background: none;
-      border: none; cursor: pointer; font-family: 'Cinzel', serif;
-      transition: color 0.2s;
-    }
+    .topbar-link { font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dimmer); text-decoration: none; background: none; border: none; cursor: pointer; font-family: 'Cinzel', serif; transition: color 0.2s; }
     .topbar-link:hover { color: var(--gold); }
 
-    /* Ledger stats */
-    .ledger {
-      display: grid; grid-template-columns: repeat(4,1fr);
-      border-bottom: 1px solid var(--line);
-    }
-
-    .ledger-cell {
-      padding: 28px 32px;
-      border-right: 1px solid var(--line);
-    }
+    /* ── Stats ────────────────────────────────────── */
+    .ledger { display: grid; grid-template-columns: repeat(4,1fr); border-bottom: 1px solid var(--line); }
+    .ledger-cell { padding: 24px 32px; border-right: 1px solid var(--line); }
     .ledger-cell:last-child { border-right: none; }
+    .ledger-label { font-size: 8px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+    .ledger-val { font-size: 36px; letter-spacing: 0.05em; color: var(--bone); line-height: 1; }
 
-    .ledger-label {
-      font-size: 8px; letter-spacing: 0.35em; text-transform: uppercase;
-      color: var(--dim); margin-bottom: 8px;
+    /* ── Tabs ─────────────────────────────────────── */
+    .tabs { display: flex; border-bottom: 1px solid var(--line); padding: 0 40px; }
+
+    .tab-btn {
+      font-family: 'Cinzel', serif;
+      font-size: 9px; letter-spacing: 0.35em; text-transform: uppercase;
+      background: none; border: none; border-bottom: 1px solid transparent;
+      color: var(--dim); cursor: pointer; padding: 18px 0; margin-right: 36px;
+      transition: color 0.2s, border-color 0.2s;
+      margin-bottom: -1px;
     }
+    .tab-btn:hover { color: var(--bone); }
+    .tab-btn.active { color: var(--gold2); border-bottom-color: var(--gold); }
 
-    .ledger-val {
-      font-size: 36px; letter-spacing: 0.05em;
-      color: var(--bone); font-weight: 400;
-      line-height: 1;
-    }
-
-    /* Main content */
+    /* ── Main ─────────────────────────────────────── */
     .main { padding: 36px 40px; }
 
-    .list-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 28px;
-    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
 
-    .list-label {
-      font-size: 8px; letter-spacing: 0.45em; text-transform: uppercase;
-      color: var(--gold);
-    }
-
+    /* List header */
+    .list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .list-label { font-size: 8px; letter-spacing: 0.45em; text-transform: uppercase; color: var(--gold); }
     .filters { display: flex; gap: 2px; }
-
-    .filter-btn {
-      font-family: 'Cinzel', serif;
-      font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase;
-      padding: 5px 12px;
-      background: transparent; border: 1px solid transparent;
-      color: var(--dim); cursor: pointer; transition: all 0.15s;
-    }
+    .filter-btn { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; padding: 5px 12px; background: transparent; border: 1px solid transparent; color: var(--dim); cursor: pointer; transition: all 0.15s; }
     .filter-btn:hover { color: var(--bone); border-color: var(--line2); }
     .filter-btn.active { color: var(--gold2); border-color: var(--line2); }
 
-    /* Petition rows */
-    .petition-list { display: flex; flex-direction: column; }
+    /* ── Applicant rows ───────────────────────────── */
+    .row-list { display: flex; flex-direction: column; }
 
-    .petition {
+    .app-row {
       border-bottom: 1px solid var(--line);
-      padding: 22px 0;
+      padding: 20px 0;
       display: grid; grid-template-columns: 1fr auto;
       gap: 20px; align-items: start;
     }
-    .petition:last-child { border-bottom: none; }
+    .app-row:last-child { border-bottom: none; }
 
-    .pet-name {
-      font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--bone); margin-bottom: 6px; font-weight: 400;
+    .row-name { font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bone); margin-bottom: 5px; font-weight: 400; }
+    .row-email { font-size: 10px; letter-spacing: 0.05em; color: var(--dim); margin-bottom: 10px; }
+
+    .row-meta { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+    .meta-item { }
+    .meta-lbl { font-size: 7px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dimmer); margin-bottom: 2px; }
+    .meta-val { font-size: 10px; color: var(--dim); }
+
+    .row-notes { margin-top: 8px; font-size: 10px; color: var(--dim); font-style: italic; }
+
+    .status-mark { font-size: 7px; letter-spacing: 0.3em; text-transform: uppercase; }
+    .status-mark.pending  { color: var(--gold); }
+    .status-mark.approved { color: var(--green2); }
+    .status-mark.denied   { color: var(--dimmer); }
+
+    .row-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 7px; }
+
+    .act { font-family: 'Cinzel', serif; font-size: 7px; letter-spacing: 0.25em; text-transform: uppercase; background: none; border: none; border-bottom: 1px solid transparent; color: var(--dim); cursor: pointer; padding: 2px 0; transition: color 0.15s, border-color 0.15s; }
+    .act:hover { color: var(--bone); border-bottom-color: var(--line2); }
+    .act.gold  { color: var(--gold); }
+    .act.gold:hover  { color: var(--gold2); border-bottom-color: var(--gold); }
+    .act.green { color: var(--green2); }
+    .act.green:hover { border-bottom-color: var(--green2); }
+    .act.red   { color: var(--blood); }
+    .act.red:hover   { color: #a03030; border-bottom-color: var(--blood); }
+
+    .row-date { font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dimmer); margin-top: 4px; }
+
+    /* ── Member rows ──────────────────────────────── */
+    .mem-row {
+      border-bottom: 1px solid var(--line);
+      padding: 20px 0;
+      display: grid; grid-template-columns: 1fr auto;
+      gap: 20px; align-items: start;
     }
+    .mem-row:last-child { border-bottom: none; }
 
-    .pet-email {
-      font-size: 10px; letter-spacing: 0.06em;
-      color: var(--dim); margin-bottom: 12px;
-    }
+    .mem-creds { margin-top: 10px; display: flex; gap: 20px; flex-wrap: wrap; }
 
-    .pet-meta {
-      display: flex; flex-wrap: wrap; gap: 20px;
-    }
+    .cred-block { }
+    .cred-lbl { font-size: 7px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dimmer); margin-bottom: 4px; }
+    .cred-val { font-size: 11px; color: var(--bone); letter-spacing: 0.04em; display: flex; align-items: center; gap: 8px; }
 
-    .pet-meta-item { }
+    .pw-dots { color: var(--dim); letter-spacing: 3px; }
 
-    .meta-label {
-      font-size: 7px; letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--dimmer); margin-bottom: 3px;
-    }
+    .show-btn { font-family: 'Cinzel', serif; font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; background: none; border: none; border-bottom: 1px solid var(--line2); color: var(--dimmer); cursor: pointer; padding: 1px 0; transition: color 0.15s; }
+    .show-btn:hover { color: var(--gold); }
 
-    .meta-val {
-      font-size: 10px; letter-spacing: 0.06em; color: var(--dim);
-    }
+    .copy-btn { font-family: 'Cinzel', serif; font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; background: none; border: none; border-bottom: 1px solid var(--line2); color: var(--dimmer); cursor: pointer; padding: 1px 0; transition: color 0.15s; }
+    .copy-btn:hover { color: var(--gold); }
+    .copy-btn.copied { color: var(--green2); }
 
-    .pet-notes {
-      margin-top: 10px;
-      font-size: 10px; letter-spacing: 0.05em; color: var(--dim);
-      font-style: italic;
-    }
+    /* ── Empty ────────────────────────────────────── */
+    .empty { text-align: center; padding: 64px 0; }
+    .empty-title { font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+    .empty-sub { font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dimmer); }
 
-    /* Status */
-    .status-mark {
-      font-size: 7px; letter-spacing: 0.3em; text-transform: uppercase;
-      padding: 3px 0;
-    }
-    .status-mark.pending { color: var(--gold); }
-    .status-mark.done    { color: var(--green2); }
-    .status-mark.skipped { color: var(--dimmer); }
+    /* ── Modal ────────────────────────────────────── */
+    .veil { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; }
+    .veil.open { display: flex; }
 
-    /* Actions */
-    .pet-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .modal { width: 460px; max-width: 95vw; background: var(--black); border: 1px solid var(--line2); padding: 40px; max-height: 90vh; overflow-y: auto; }
 
-    .act-btn {
-      font-family: 'Cinzel', serif;
-      font-size: 7px; letter-spacing: 0.25em; text-transform: uppercase;
-      background: none; border: none; border-bottom: 1px solid transparent;
-      color: var(--dim); cursor: pointer; padding: 2px 0;
-      transition: color 0.15s, border-color 0.15s;
-    }
-    .act-btn:hover { color: var(--bone); border-bottom-color: var(--line2); }
-    .act-btn.gold  { color: var(--gold); }
-    .act-btn.gold:hover  { color: var(--gold2); border-bottom-color: var(--gold); }
-    .act-btn.green { color: var(--green2); }
-    .act-btn.green:hover { border-bottom-color: var(--green2); }
-    .act-btn.red   { color: var(--blood); }
-    .act-btn.red:hover   { color: #a03030; border-bottom-color: var(--blood); }
-
-    .pet-date {
-      font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--dimmer); margin-top: 6px;
-    }
-
-    /* Empty */
-    .empty {
-      text-align: center; padding: 72px 0; color: var(--dim);
-    }
-    .empty-title {
-      font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--dim); margin-bottom: 12px; font-weight: 400;
-    }
-    .empty-sub {
-      font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--dimmer);
-    }
-
-    /* Modal veil */
-    .modal-veil {
-      position: fixed; inset: 0; z-index: 50;
-      background: rgba(0,0,0,0.88);
-      display: none; align-items: center; justify-content: center;
-    }
-    .modal-veil.open { display: flex; }
-
-    .modal-box {
-      width: 480px; max-width: 95vw;
-      max-height: 90vh; overflow-y: auto;
-      background: var(--black);
-      border: 1px solid var(--line2);
-      padding: 40px;
-    }
-
-    .modal-title {
-      font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
-      color: var(--gold); margin-bottom: 8px;
-    }
-
+    .modal-title { font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
     .modal-rule { margin-bottom: 28px; }
 
-    .modal-decree {
-      font-size: 11px; letter-spacing: 0.05em;
-      color: var(--dim); line-height: 1.8; margin-bottom: 24px;
-    }
-    .modal-decree strong { color: var(--bone); font-weight: 400; }
+    .modal-sub { font-size: 10px; letter-spacing: 0.05em; color: var(--dim); line-height: 1.8; margin-bottom: 24px; }
+    .modal-sub strong { color: var(--bone); font-weight: 400; }
 
-    .cred-label {
-      font-size: 7px; letter-spacing: 0.35em; text-transform: uppercase;
-      color: var(--dim); margin-bottom: 8px;
-    }
+    .m-label { font-size: 7px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; display: block; }
 
-    .copy-row {
-      display: flex; gap: 10px; align-items: center; margin-bottom: 10px;
-    }
-    .copy-row input {
-      flex: 1; background: transparent; border: none;
-      border-bottom: 1px solid var(--line2);
-      color: var(--bone); font-family: 'Cinzel', serif; font-size: 12px;
-      letter-spacing: 0.05em; padding: 8px 0; outline: none; border-radius: 0;
-    }
-    .copy-mini {
-      font-family: 'Cinzel', serif; font-size: 7px; letter-spacing: 0.25em;
-      text-transform: uppercase; background: none; border: none;
-      border-bottom: 1px solid var(--line2); color: var(--dim);
-      cursor: pointer; padding: 8px 0; transition: color 0.15s;
-      white-space: nowrap;
-    }
-    .copy-mini:hover { color: var(--gold); }
-    .copy-mini.copied { color: var(--green2); }
+    .m-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--line2); color: var(--bone); font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 0.05em; padding: 9px 0; outline: none; margin-bottom: 20px; transition: border-color 0.2s; border-radius: 0; }
+    .m-input:focus { border-bottom-color: var(--gold2); }
+    .m-input::placeholder { color: var(--dimmer); }
 
-    .pw-row {
-      display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
-    }
-    .pw-val {
-      font-size: 12px; letter-spacing: 0.1em; color: var(--bone);
-    }
-
-    .modal-steps {
-      font-size: 10px; letter-spacing: 0.05em;
-      color: var(--dim); line-height: 2.2; margin-bottom: 8px;
-    }
-    .modal-steps strong { color: var(--bone); font-weight: 400; }
-    .modal-steps a { color: var(--gold); text-decoration: none; }
-    .modal-steps a:hover { color: var(--gold2); }
-
-    .modal-notes {
-      margin-top: 16px; padding: 14px 0;
-      border-top: 1px solid var(--line);
-      font-size: 10px; letter-spacing: 0.05em;
-      color: var(--dim); line-height: 1.8; font-style: italic;
-    }
-    .modal-notes strong { color: var(--dim); font-style: normal; font-weight: 400; }
-
-    .modal-actions {
-      display: flex; justify-content: flex-end; gap: 20px;
-      margin-top: 32px; padding-top: 24px;
-      border-top: 1px solid var(--line);
-    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 24px; margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); }
   </style>
 </head>
 <body>
@@ -362,7 +184,7 @@
 <div id="lockScreen">
   <div class="lock-wrap">
     <div class="lock-title">Dungeon</div>
-    <div class="gold-rule" style="margin-bottom: 14px;"></div>
+    <div class="gold-rule" style="margin-bottom:14px"></div>
     <div class="lock-sub">Warden's Gate</div>
     <input class="lock-input" type="password" id="pinInput" placeholder="· · · · · ·"
       onkeydown="if(event.key==='Enter')unlock()" />
@@ -371,9 +193,8 @@
   </div>
 </div>
 
-<!-- Admin -->
+<!-- Admin app -->
 <div id="adminApp">
-
   <div class="topbar">
     <div class="topbar-name">Dungeon</div>
     <div class="topbar-right">
@@ -384,66 +205,106 @@
 
   <div class="ledger">
     <div class="ledger-cell">
-      <div class="ledger-label">Total</div>
-      <div class="ledger-val" id="statTotal">—</div>
+      <div class="ledger-label">Applicants</div>
+      <div class="ledger-val" id="statApplicants">—</div>
     </div>
     <div class="ledger-cell">
-      <div class="ledger-label">Awaiting</div>
+      <div class="ledger-label">Pending</div>
       <div class="ledger-val" id="statPending" style="color:var(--gold2)">—</div>
     </div>
     <div class="ledger-cell">
-      <div class="ledger-label">Granted</div>
-      <div class="ledger-val" id="statDone" style="color:var(--green2)">—</div>
+      <div class="ledger-label">Members</div>
+      <div class="ledger-val" id="statMembers" style="color:var(--green2)">—</div>
     </div>
     <div class="ledger-cell">
-      <div class="ledger-label">Turned Away</div>
-      <div class="ledger-val" id="statSkipped" style="color:var(--dimmer)">—</div>
+      <div class="ledger-label">Denied</div>
+      <div class="ledger-val" id="statDenied" style="color:var(--dimmer)">—</div>
     </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('applicants', this)">Applicants</button>
+    <button class="tab-btn" onclick="switchTab('members', this)">Members</button>
   </div>
 
   <div class="main">
-    <div class="list-header">
-      <div class="list-label">Petitions</div>
-      <div class="filters">
-        <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
-        <button class="filter-btn" onclick="setFilter('pending',this)">Awaiting</button>
-        <button class="filter-btn" onclick="setFilter('done',this)">Granted</button>
-        <button class="filter-btn" onclick="setFilter('skipped',this)">Turned Away</button>
+
+    <!-- Applicants panel -->
+    <div class="tab-panel active" id="panel-applicants">
+      <div class="list-header">
+        <div class="list-label">Petitions</div>
+        <div class="filters">
+          <button class="filter-btn active" onclick="setAppFilter('all',this)">All</button>
+          <button class="filter-btn" onclick="setAppFilter('pending',this)">Pending</button>
+          <button class="filter-btn" onclick="setAppFilter('approved',this)">Approved</button>
+          <button class="filter-btn" onclick="setAppFilter('denied',this)">Denied</button>
+        </div>
       </div>
+      <div class="gold-rule"></div>
+      <div class="row-list" id="applicantList"></div>
     </div>
 
-    <div class="gold-rule" style="margin-bottom:0"></div>
-    <div class="petition-list" id="petitionList"></div>
-  </div>
+    <!-- Members panel -->
+    <div class="tab-panel" id="panel-members">
+      <div class="list-header">
+        <div class="list-label">The Roster</div>
+      </div>
+      <div class="gold-rule"></div>
+      <div class="row-list" id="memberList"></div>
+    </div>
 
+  </div>
 </div>
 
-<!-- Modal -->
-<div class="modal-veil" id="setupModal">
-  <div class="modal-box">
+<!-- Approve modal: enter Stremio creds before promoting -->
+<div class="veil" id="approveModal">
+  <div class="modal">
     <div class="modal-title">Grant Entry</div>
     <div class="gold-rule modal-rule"></div>
-    <div id="setupContent"></div>
+    <div class="modal-sub" id="approveDesc"></div>
+    <label class="m-label">Stremio Email</label>
+    <input class="m-input" id="approveStremioEmail" type="email" placeholder="their@stremio.com" />
+    <label class="m-label">Stremio Password</label>
+    <input class="m-input" id="approveStremioPass" type="text" placeholder="password" />
     <div class="modal-actions">
-      <button class="act-btn" onclick="closeModal()">Dismiss</button>
-      <button class="act-btn green" onclick="markDone()">Mark as Granted</button>
+      <button class="act" onclick="closeModal('approveModal')">Dismiss</button>
+      <button class="act green" onclick="confirmApprove()">Grant Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit member modal -->
+<div class="veil" id="editModal">
+  <div class="modal">
+    <div class="modal-title">Edit Member</div>
+    <div class="gold-rule modal-rule"></div>
+    <div class="modal-sub" id="editDesc"></div>
+    <label class="m-label">Stremio Email</label>
+    <input class="m-input" id="editStremioEmail" type="email" placeholder="their@stremio.com" />
+    <label class="m-label">Stremio Password</label>
+    <input class="m-input" id="editStremioPass" type="text" placeholder="password" />
+    <label class="m-label">Notes</label>
+    <input class="m-input" id="editNotes" type="text" placeholder="—" />
+    <div class="modal-actions">
+      <button class="act" onclick="closeModal('editModal')">Dismiss</button>
+      <button class="act green" onclick="confirmEdit()">Save</button>
     </div>
   </div>
 </div>
 
 <script>
-  let currentFilter = 'all';
-  let activeId = null;
+  let appFilter = 'all';
+  let activeApplicantId = null;
+  let activeMemberId = null;
+  let showPasswords = {};
 
-  const STATUS_LABEL = { pending: 'Awaiting', done: 'Granted', skipped: 'Turned Away' };
-
-  // ── Auth ────────────────────────────────────────────────
+  // ── Auth ─────────────────────────────────────────────────────────────────
   async function unlock() {
     const pw = document.getElementById('pinInput').value;
     try {
       const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ password: pw }),
       });
       if (res.ok) {
@@ -481,152 +342,231 @@
     }
   });
 
-  // ── Data ────────────────────────────────────────────────
+  // ── Tabs ─────────────────────────────────────────────────────────────────
+  function switchTab(name, el) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+    if (name === 'members') loadMembers();
+  }
+
+  // ── Load all ──────────────────────────────────────────────────────────────
   async function loadAll() {
-    await Promise.all([loadStats(), loadPetitions()]);
+    await Promise.all([loadStats(), loadApplicants(), loadMembers()]);
   }
 
   async function loadStats() {
     const d = await fetch('/api/stats').then(r => r.json());
-    document.getElementById('statTotal').textContent   = d.total;
-    document.getElementById('statPending').textContent = d.pending;
-    document.getElementById('statDone').textContent    = d.done;
-    document.getElementById('statSkipped').textContent = d.skipped;
+    document.getElementById('statApplicants').textContent = d.applicants;
+    document.getElementById('statPending').textContent    = d.pending;
+    document.getElementById('statMembers').textContent    = d.members;
+    document.getElementById('statDenied').textContent     = d.denied;
   }
 
-  async function loadPetitions() {
-    const url = currentFilter === 'all' ? '/api/requests' : `/api/requests?status=${currentFilter}`;
+  // ── Applicants ────────────────────────────────────────────────────────────
+  async function loadApplicants() {
+    const url = appFilter === 'all' ? '/api/applicants' : `/api/applicants?status=${appFilter}`;
     const rows = await fetch(url).then(r => r.json());
-    renderPetitions(rows);
+    renderApplicants(rows);
   }
 
-  function setFilter(f, el) {
-    currentFilter = f;
+  function setAppFilter(f, el) {
+    appFilter = f;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
-    loadPetitions();
+    loadApplicants();
   }
+
+  const STATUS = { pending: 'Pending', approved: 'Approved', denied: 'Denied' };
 
   function fmt(dt) {
     if (!dt) return '';
     return new Date(dt).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
   }
 
-  function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+  function esc(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+  }
 
-  function renderPetitions(rows) {
-    const el = document.getElementById('petitionList');
+  function renderApplicants(rows) {
+    const el = document.getElementById('applicantList');
     if (!rows.length) {
-      el.innerHTML = `<div class="empty">
-        <div class="empty-title">${currentFilter === 'all' ? 'No Petitions' : STATUS_LABEL[currentFilter]}</div>
-        <div class="empty-sub">${currentFilter === 'all' ? 'None have sought entry.' : 'The ledger is empty here.'}</div>
-      </div>`;
+      el.innerHTML = `<div class="empty"><div class="empty-title">No Petitions</div><div class="empty-sub">None have sought entry.</div></div>`;
       return;
     }
-
     el.innerHTML = rows.map(r => `
-      <div class="petition" id="card-${r.id}">
+      <div class="app-row" id="app-${r.id}">
         <div>
-          <div class="pet-name">${r.first_name} ${r.last_name}</div>
-          <div class="pet-email">${r.email}</div>
-          <div class="pet-meta">
-            <span class="status-mark ${r.status}">${STATUS_LABEL[r.status] || r.status}</span>
-            ${r.phone ? `<div class="pet-meta-item"><div class="meta-label">Phone</div><div class="meta-val">${r.phone}</div></div>` : ''}
-            ${r.language ? `<div class="pet-meta-item"><div class="meta-label">Language</div><div class="meta-val">${r.language}</div></div>` : ''}
-            ${r.referral ? `<div class="pet-meta-item"><div class="meta-label">Referred By</div><div class="meta-val">${r.referral}</div></div>` : ''}
+          <div class="row-name">${r.first_name} ${r.last_name}</div>
+          <div class="row-email">${r.email}</div>
+          <div class="row-meta">
+            <span class="status-mark ${r.status}">${STATUS[r.status] || r.status}</span>
+            ${r.phone    ? `<div class="meta-item"><div class="meta-lbl">Phone</div><div class="meta-val">${r.phone}</div></div>` : ''}
+            ${r.language ? `<div class="meta-item"><div class="meta-lbl">Language</div><div class="meta-val">${r.language}</div></div>` : ''}
+            ${r.referral ? `<div class="meta-item"><div class="meta-lbl">Referred By</div><div class="meta-val">${r.referral}</div></div>` : ''}
           </div>
-          ${r.notes ? `<div class="pet-notes">${r.notes}</div>` : ''}
+          ${r.notes ? `<div class="row-notes">${r.notes}</div>` : ''}
         </div>
-        <div class="pet-actions">
+        <div class="row-actions">
           ${r.status === 'pending' ? `
-            <button class="act-btn gold" onclick="openSetup('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}','${esc(r.language)}','${esc(r.notes)}')">Grant Entry</button>
-            <button class="act-btn" onclick="setStatus('${r.id}','skipped')">Turn Away</button>
-          ` : r.status === 'done' ? `
-            <button class="act-btn" onclick="setStatus('${r.id}','pending')">Reopen</button>
+            <button class="act gold" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Entry</button>
+            <button class="act" onclick="setAppStatus('${r.id}','denied')">Deny</button>
+          ` : r.status === 'approved' ? `
+            <button class="act" onclick="setAppStatus('${r.id}','pending')">Reopen</button>
           ` : `
-            <button class="act-btn gold" onclick="openSetup('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}','${esc(r.language)}','${esc(r.notes)}')">Grant Entry</button>
-            <button class="act-btn" onclick="setStatus('${r.id}','pending')">Reopen</button>
+            <button class="act gold" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Entry</button>
+            <button class="act" onclick="setAppStatus('${r.id}','pending')">Reopen</button>
           `}
-          <button class="act-btn red" onclick="deletePetition('${r.id}')">Expunge</button>
-          <div class="pet-date">${fmt(r.created_at)}</div>
+          <button class="act red" onclick="deleteApplicant('${r.id}')">Expunge</button>
+          <div class="row-date">${fmt(r.created_at)}</div>
         </div>
       </div>
     `).join('');
   }
 
-  async function setStatus(id, status) {
-    await fetch(`/api/requests/${id}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+  async function setAppStatus(id, status) {
+    await fetch(`/api/applicants/${id}/status`, {
+      method: 'PATCH', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ status }),
     });
     loadAll();
   }
 
-  async function deletePetition(id) {
-    if (!confirm('Expunge this petition from the ledger?')) return;
-    await fetch(`/api/requests/${id}`, { method: 'DELETE' });
+  async function deleteApplicant(id) {
+    if (!confirm('Expunge this petition?')) return;
+    await fetch(`/api/applicants/${id}`, { method: 'DELETE' });
     loadAll();
   }
 
-  // ── Setup modal ─────────────────────────────────────────
-  function genPassword(firstName) {
-    const base = (firstName||'Vault').charAt(0).toUpperCase() + (firstName||'vault').slice(1).toLowerCase();
-    return base + Math.floor(Math.random()*900+100) + ['!','@','#','$','&'][Math.floor(Math.random()*5)];
+  // Approve flow
+  function openApprove(id, firstName, lastName, email) {
+    activeApplicantId = id;
+    document.getElementById('approveDesc').innerHTML =
+      `Create the Stremio account for <strong>${firstName} ${lastName}</strong> (${email}), then enter the credentials below to save them to the roster.`;
+    document.getElementById('approveStremioEmail').value = email;
+    document.getElementById('approveStremioPass').value = '';
+    document.getElementById('approveModal').classList.add('open');
   }
 
-  function openSetup(id, firstName, lastName, email, language, notes) {
-    activeId = id;
-    const pw = genPassword(firstName);
-    document.getElementById('setupContent').innerHTML = `
-      <div class="modal-decree">
-        Prepare passage for <strong>${firstName} ${lastName}</strong>.<br>
-        Create their account, then outfit it with thy addons.
-      </div>
-
-      <div class="cred-label">Email</div>
-      <div class="copy-row">
-        <input readonly value="${email}" />
-        <button class="copy-mini" onclick="copyMini(this,'${esc(email)}')">Copy</button>
-      </div>
-
-      <div class="cred-label" style="margin-top:6px">Suggested Password</div>
-      <div class="pw-row">
-        <span class="pw-val">${pw}</span>
-        <button class="copy-mini" onclick="copyMini(this,'${pw}')">Copy</button>
-      </div>
-
-      <div class="modal-steps">
-        <strong>The Ritual</strong><br>
-        I. <a href="https://www.stremio.com/register" target="_blank">Create account on Stremio ↗</a><br>
-        II. Sign into <a href="https://web.stremio.com" target="_blank">web.stremio.com ↗</a> as thyself — Settings → Addons<br>
-        III. Note addon URLs, then sign in as <strong>${firstName}</strong> and install the same<br>
-        ${language ? `IV. Set subtitle language to <strong>${language}</strong>` : ''}
-      </div>
-      ${notes ? `<div class="modal-notes"><strong>Notes:</strong> ${notes}</div>` : ''}
-    `;
-    document.getElementById('setupModal').classList.add('open');
+  async function confirmApprove() {
+    const stremio_email = document.getElementById('approveStremioEmail').value.trim();
+    const stremio_pass  = document.getElementById('approveStremioPass').value.trim();
+    await fetch(`/api/applicants/${activeApplicantId}/promote`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ stremio_email, stremio_pass }),
+    });
+    closeModal('approveModal');
+    loadAll();
+    // Switch to members tab to show the new member
+    document.querySelectorAll('.tab-btn')[1].click();
   }
 
-  function closeModal() {
-    document.getElementById('setupModal').classList.remove('open');
-    activeId = null;
+  // ── Members ───────────────────────────────────────────────────────────────
+  async function loadMembers() {
+    const rows = await fetch('/api/members').then(r => r.json());
+    renderMembers(rows);
   }
 
-  function markDone() {
-    if (activeId) { setStatus(activeId, 'done'); closeModal(); }
+  function renderMembers(rows) {
+    const el = document.getElementById('memberList');
+    if (!rows.length) {
+      el.innerHTML = `<div class="empty"><div class="empty-title">No Members Yet</div><div class="empty-sub">Grant entry to an applicant to add them here.</div></div>`;
+      return;
+    }
+    el.innerHTML = rows.map(r => {
+      const shown = showPasswords[r.id];
+      return `
+        <div class="mem-row" id="mem-${r.id}">
+          <div>
+            <div class="row-name">${r.first_name} ${r.last_name}</div>
+            <div class="row-email">${r.email}</div>
+            <div class="mem-creds">
+              <div class="cred-block">
+                <div class="cred-lbl">Stremio Email</div>
+                <div class="cred-val">
+                  ${r.stremio_email || '—'}
+                  ${r.stremio_email ? `<button class="copy-btn" id="cpe-${r.id}" onclick="copyVal('${esc(r.stremio_email)}','cpe-${r.id}')">Copy</button>` : ''}
+                </div>
+              </div>
+              <div class="cred-block">
+                <div class="cred-lbl">Stremio Password</div>
+                <div class="cred-val">
+                  <span id="pw-${r.id}">${shown ? (r.stremio_pass || '—') : '········'}</span>
+                  ${r.stremio_pass ? `
+                    <button class="show-btn" onclick="togglePw('${r.id}')">${shown ? 'Hide' : 'Show'}</button>
+                    <button class="copy-btn" id="cpp-${r.id}" onclick="copyVal('${esc(r.stremio_pass)}','cpp-${r.id}')">Copy</button>
+                  ` : ''}
+                </div>
+              </div>
+              ${r.language ? `<div class="cred-block"><div class="cred-lbl">Language</div><div class="cred-val">${r.language}</div></div>` : ''}
+            </div>
+            ${r.notes ? `<div class="row-notes">${r.notes}</div>` : ''}
+          </div>
+          <div class="row-actions">
+            <button class="act gold" onclick="openEdit('${r.id}','${esc(r.stremio_email)}','${esc(r.stremio_pass)}','${esc(r.notes)}','${esc(r.first_name)}','${esc(r.last_name)}')">Edit</button>
+            <button class="act red" onclick="deleteMember('${r.id}')">Remove</button>
+            <div class="row-date">Since ${fmt(r.created_at)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
-  function copyMini(btn, text) {
+  function togglePw(id) {
+    showPasswords[id] = !showPasswords[id];
+    loadMembers();
+  }
+
+  function copyVal(text, btnId) {
     navigator.clipboard.writeText(text).catch(() => {});
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
     const orig = btn.textContent;
     btn.textContent = 'Copied';
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
   }
 
-  document.getElementById('setupModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
+  function openEdit(id, stremio_email, stremio_pass, notes, firstName, lastName) {
+    activeMemberId = id;
+    document.getElementById('editDesc').innerHTML = `Update credentials for <strong>${firstName} ${lastName}</strong>.`;
+    document.getElementById('editStremioEmail').value = stremio_email;
+    document.getElementById('editStremioPass').value  = stremio_pass;
+    document.getElementById('editNotes').value        = notes;
+    document.getElementById('editModal').classList.add('open');
+  }
+
+  async function confirmEdit() {
+    await fetch(`/api/members/${activeMemberId}`, {
+      method: 'PATCH', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        stremio_email: document.getElementById('editStremioEmail').value.trim(),
+        stremio_pass:  document.getElementById('editStremioPass').value.trim(),
+        notes:         document.getElementById('editNotes').value.trim(),
+      }),
+    });
+    closeModal('editModal');
+    loadMembers();
+  }
+
+  async function deleteMember(id) {
+    if (!confirm('Remove this member from the roster?')) return;
+    await fetch(`/api/members/${id}`, { method: 'DELETE' });
+    loadAll();
+  }
+
+  // ── Modal helpers ─────────────────────────────────────────────────────────
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    activeApplicantId = null;
+    activeMemberId = null;
+  }
+
+  document.querySelectorAll('.veil').forEach(v => {
+    v.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('open');
+    });
   });
 
   document.getElementById('pinInput').focus();

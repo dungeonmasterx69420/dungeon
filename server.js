@@ -1,5 +1,4 @@
 const express = require('express');
-const nodemailer = require('nodemailer');
 const Database = require('better-sqlite3');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
@@ -10,14 +9,14 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ── Database setup ────────────────────────────────────────────────────────────
+// ── Database ──────────────────────────────────────────────────────────────────
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-const db = new Database(path.join(DATA_DIR, 'streamhub.db'));
+const db = new Database(path.join(DATA_DIR, 'dungeon.db'));
 
 db.exec(`
-  CREATE TABLE IF NOT EXISTS requests (
+  CREATE TABLE IF NOT EXISTS applicants (
     id          TEXT PRIMARY KEY,
     first_name  TEXT NOT NULL,
     last_name   TEXT NOT NULL,
@@ -30,16 +29,23 @@ db.exec(`
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP
   );
-`);
 
-// ── Mailer setup ──────────────────────────────────────────────────────────────
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+  CREATE TABLE IF NOT EXISTS members (
+    id            TEXT PRIMARY KEY,
+    first_name    TEXT NOT NULL,
+    last_name     TEXT NOT NULL,
+    email         TEXT NOT NULL,
+    phone         TEXT,
+    language      TEXT,
+    referral      TEXT,
+    notes         TEXT,
+    stremio_email TEXT,
+    stremio_pass  TEXT,
+    applicant_id  TEXT,
+    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+`);
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(express.json());
@@ -53,51 +59,40 @@ app.use(session({
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 8 * 60 * 60 * 1000, // 8 hours
+    maxAge: 8 * 60 * 60 * 1000,
   },
 }));
 
-// Rate limiter for form submissions
 const submitLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
+  windowMs: 60 * 60 * 1000,
   max: 5,
   message: { error: 'Too many requests. Please try again later.' },
 });
 
-// Rate limiter for login attempts
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
+  windowMs: 15 * 60 * 1000,
   max: 10,
   message: { error: 'Too many login attempts. Try again in 15 minutes.' },
 });
 
-// ── Auth middleware ───────────────────────────────────────────────────────────
 function requireAuth(req, res, next) {
   if (req.session && req.session.authenticated) return next();
   res.status(401).json({ error: 'Unauthorized' });
 }
 
-// ── Routes ────────────────────────────────────────────────────────────────────
-
-// Health check (Render uses this)
+// ── Auth ──────────────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ ok: true }));
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
 app.post('/api/login', loginLimiter, async (req, res) => {
   const { password } = req.body;
   const adminHash = process.env.ADMIN_PASSWORD_HASH;
-
   if (!adminHash) {
-    // Fallback for first-time setup: plain text comparison
-    const plainPassword = process.env.ADMIN_PASSWORD || 'admin123';
-    if (password !== plainPassword) {
-      return res.status(401).json({ error: 'Incorrect password' });
-    }
+    const plain = process.env.ADMIN_PASSWORD || 'admin123';
+    if (password !== plain) return res.status(401).json({ error: 'Incorrect password' });
   } else {
     const match = await bcrypt.compare(password, adminHash);
     if (!match) return res.status(401).json({ error: 'Incorrect password' });
   }
-
   req.session.authenticated = true;
   res.json({ ok: true });
 });
@@ -111,96 +106,97 @@ app.get('/api/me', (req, res) => {
   res.json({ authenticated: !!(req.session && req.session.authenticated) });
 });
 
-// ── Submit request (public) ───────────────────────────────────────────────────
-app.post('/api/request', submitLimiter, async (req, res) => {
+// ── Public: submit application ────────────────────────────────────────────────
+app.post('/api/apply', submitLimiter, (req, res) => {
   const { first_name, last_name, email, phone, language, referral, notes } = req.body;
-
-  if (!first_name || !last_name || !email) {
+  if (!first_name || !last_name || !email)
     return res.status(400).json({ error: 'Name and email are required.' });
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
     return res.status(400).json({ error: 'Invalid email address.' });
-  }
 
   const id = Math.random().toString(36).slice(2) + Date.now().toString(36);
-
   db.prepare(`
-    INSERT INTO requests (id, first_name, last_name, email, phone, language, referral, notes)
+    INSERT INTO applicants (id, first_name, last_name, email, phone, language, referral, notes)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(id, first_name.trim(), last_name.trim(), email.trim(), phone||'', language||'', referral||'', notes||'');
-
-  // Send email notification
-  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
-    try {
-      await transporter.sendMail({
-        from: `"StreamHub" <${process.env.GMAIL_USER}>`,
-        to: process.env.GMAIL_USER,
-        subject: `📺 New Stremio request from ${first_name} ${last_name}`,
-        html: `
-          <div style="font-family:monospace;background:#0a0a0f;color:#eef2f7;padding:32px;max-width:560px">
-            <h2 style="color:#e8412a;letter-spacing:4px;font-size:18px">NEW REQUEST</h2>
-            <table style="width:100%;border-collapse:collapse;margin-top:20px">
-              <tr><td style="padding:8px 0;color:#888;width:120px">Name</td><td style="padding:8px 0">${first_name} ${last_name}</td></tr>
-              <tr><td style="padding:8px 0;color:#888">Email</td><td style="padding:8px 0">${email}</td></tr>
-              <tr><td style="padding:8px 0;color:#888">Phone</td><td style="padding:8px 0">${phone || '—'}</td></tr>
-              <tr><td style="padding:8px 0;color:#888">Language</td><td style="padding:8px 0">${language || '—'}</td></tr>
-              <tr><td style="padding:8px 0;color:#888">Referred by</td><td style="padding:8px 0">${referral || '—'}</td></tr>
-              <tr><td style="padding:8px 0;color:#888">Notes</td><td style="padding:8px 0">${notes || '—'}</td></tr>
-            </table>
-            <div style="margin-top:24px">
-              <a href="${process.env.SITE_URL || ''}/admin.html" style="background:#e8412a;color:#fff;padding:12px 24px;text-decoration:none;font-weight:bold;letter-spacing:2px">OPEN ADMIN PANEL</a>
-            </div>
-          </div>
-        `,
-      });
-    } catch (err) {
-      console.error('Email send failed:', err.message);
-      // Don't fail the request just because email failed
-    }
-  }
-
+  `).run(id, first_name.trim(), last_name.trim(), email.trim(),
+         phone||'', language||'', referral||'', notes||'');
   res.json({ ok: true });
 });
 
-// ── Admin API (protected) ─────────────────────────────────────────────────────
-app.get('/api/requests', requireAuth, (req, res) => {
+// ── Admin: applicants ─────────────────────────────────────────────────────────
+app.get('/api/applicants', requireAuth, (req, res) => {
   const { status } = req.query;
-  const rows = status && status !== 'all'
-    ? db.prepare('SELECT * FROM requests WHERE status = ? ORDER BY created_at DESC').all(status)
-    : db.prepare('SELECT * FROM requests ORDER BY created_at DESC').all();
+  const rows = (status && status !== 'all')
+    ? db.prepare('SELECT * FROM applicants WHERE status=? ORDER BY created_at DESC').all(status)
+    : db.prepare('SELECT * FROM applicants ORDER BY created_at DESC').all();
   res.json(rows);
 });
 
-app.get('/api/stats', requireAuth, (req, res) => {
-  const total   = db.prepare('SELECT COUNT(*) as n FROM requests').get().n;
-  const pending = db.prepare("SELECT COUNT(*) as n FROM requests WHERE status='pending'").get().n;
-  const done    = db.prepare("SELECT COUNT(*) as n FROM requests WHERE status='done'").get().n;
-  const skipped = db.prepare("SELECT COUNT(*) as n FROM requests WHERE status='skipped'").get().n;
-  res.json({ total, pending, done, skipped });
-});
-
-app.patch('/api/requests/:id/status', requireAuth, (req, res) => {
+app.patch('/api/applicants/:id/status', requireAuth, (req, res) => {
   const { status } = req.body;
-  if (!['pending', 'done', 'skipped'].includes(status)) {
+  if (!['pending', 'approved', 'denied'].includes(status))
     return res.status(400).json({ error: 'Invalid status' });
-  }
-  db.prepare("UPDATE requests SET status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?")
+  db.prepare('UPDATE applicants SET status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')
     .run(status, req.params.id);
   res.json({ ok: true });
 });
 
-app.delete('/api/requests/:id', requireAuth, (req, res) => {
-  db.prepare('DELETE FROM requests WHERE id=?').run(req.params.id);
+app.delete('/api/applicants/:id', requireAuth, (req, res) => {
+  db.prepare('DELETE FROM applicants WHERE id=?').run(req.params.id);
   res.json({ ok: true });
 });
 
-// ── SPA fallback ──────────────────────────────────────────────────────────────
+// Promote applicant → member (saves their Stremio credentials too)
+app.post('/api/applicants/:id/promote', requireAuth, (req, res) => {
+  const applicant = db.prepare('SELECT * FROM applicants WHERE id=?').get(req.params.id);
+  if (!applicant) return res.status(404).json({ error: 'Not found' });
+
+  const { stremio_email, stremio_pass } = req.body;
+  const id = Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+  db.prepare(`
+    INSERT INTO members (id, first_name, last_name, email, phone, language, referral, notes, stremio_email, stremio_pass, applicant_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(id, applicant.first_name, applicant.last_name, applicant.email,
+         applicant.phone, applicant.language, applicant.referral, applicant.notes,
+         stremio_email||'', stremio_pass||'', applicant.id);
+
+  db.prepare('UPDATE applicants SET status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')
+    .run('approved', applicant.id);
+
+  res.json({ ok: true });
+});
+
+// ── Admin: members ────────────────────────────────────────────────────────────
+app.get('/api/members', requireAuth, (req, res) => {
+  res.json(db.prepare('SELECT * FROM members ORDER BY created_at DESC').all());
+});
+
+app.patch('/api/members/:id', requireAuth, (req, res) => {
+  const { stremio_email, stremio_pass, notes } = req.body;
+  db.prepare(`
+    UPDATE members SET stremio_email=?, stremio_pass=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?
+  `).run(stremio_email||'', stremio_pass||'', notes||'', req.params.id);
+  res.json({ ok: true });
+});
+
+app.delete('/api/members/:id', requireAuth, (req, res) => {
+  db.prepare('DELETE FROM members WHERE id=?').run(req.params.id);
+  res.json({ ok: true });
+});
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+app.get('/api/stats', requireAuth, (req, res) => {
+  res.json({
+    applicants: db.prepare('SELECT COUNT(*) as n FROM applicants').get().n,
+    pending:    db.prepare("SELECT COUNT(*) as n FROM applicants WHERE status='pending'").get().n,
+    members:    db.prepare('SELECT COUNT(*) as n FROM members').get().n,
+    denied:     db.prepare("SELECT COUNT(*) as n FROM applicants WHERE status='denied'").get().n,
+  });
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`StreamHub running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Dungeon running on port ${PORT}`));
