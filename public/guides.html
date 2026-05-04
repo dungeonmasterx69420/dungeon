@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DUNGEON · Guides</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black:#000; --deep:#0c0808; --panel:#100d0d;
+      --red2:#b22222; --red3:#cc3333; --ember:#c8601a;
+      --bone:#d4c4a8; --bone2:#e8dcc8; --dim:#6a5a4a; --dimmer:#3a2a20;
+      --line:rgba(180,50,50,0.18); --line2:rgba(180,50,50,0.38);
+    }
+    html,body { min-height:100vh; background:var(--black); color:var(--bone); font-family:'Cinzel',Georgia,serif; }
+    body::after { content:''; position:fixed; inset:0; background:radial-gradient(ellipse 160% 100% at 50% 0%, transparent 40%, rgba(0,0,0,0.55) 100%); pointer-events:none; z-index:0; }
+    .corner-gif { position:fixed; bottom:16px; right:16px; width:96px; height:96px; object-fit:contain; image-rendering:pixelated; z-index:50; pointer-events:none; opacity:0.9; }
+    .red-rule { width:100%; height:1px; background:linear-gradient(90deg,transparent,var(--red2),transparent); }
+    .red-rule-sm { width:60px; height:1px; background:var(--red2); opacity:0.6; }
+
+    .topbar { position:relative; z-index:10; border-bottom:1px solid var(--line); padding:16px 40px; display:flex; align-items:center; justify-content:space-between; }
+    .topbar-name { font-size:20px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--red3); text-shadow:0 0 20px rgba(180,40,40,0.4); }
+    .back-link { font-size:11px; letter-spacing:0.25em; text-transform:uppercase; color:var(--dimmer); text-decoration:none; transition:color .2s; }
+    .back-link:hover { color:var(--red3); }
+
+    .page { position:relative; z-index:1; max-width:780px; margin:0 auto; padding:48px 32px 100px; }
+
+    .page-eyebrow { font-size:9px; letter-spacing:0.5em; text-transform:uppercase; color:var(--red2); margin-bottom:16px; }
+    .page-title { font-size:clamp(24px,4vw,36px); font-weight:400; letter-spacing:0.14em; text-transform:uppercase; color:var(--bone2); margin-bottom:14px; }
+    .page-sub { font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--dim); line-height:2; margin-bottom:48px; }
+
+    /* Guide cards */
+    .guide { border:1px solid var(--line2); margin-bottom:2px; }
+
+    .guide-header {
+      padding:24px 28px; cursor:pointer;
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      transition:background .2s; user-select:none;
+    }
+    .guide-header:hover { background:#0e0b0b; }
+
+    .guide-icon { font-size:28px; flex-shrink:0; }
+
+    .guide-head-text { flex:1; }
+    .guide-tag { font-size:8px; letter-spacing:0.35em; text-transform:uppercase; color:var(--red2); margin-bottom:6px; }
+    .guide-name { font-size:15px; letter-spacing:0.1em; text-transform:uppercase; color:var(--bone2); font-weight:700; }
+    .guide-desc { font-size:11px; letter-spacing:0.06em; color:var(--dim); margin-top:4px; }
+
+    .guide-chevron { font-size:12px; color:var(--dim); transition:transform .25s; }
+    .guide.open .guide-chevron { transform:rotate(180deg); }
+
+    .guide-body { display:none; padding:0 28px 28px; }
+    .guide.open .guide-body { display:block; }
+
+    /* Steps */
+    .steps { list-style:none; counter-reset:step; }
+    .steps li {
+      counter-increment:step;
+      display:flex; gap:16px; align-items:flex-start;
+      padding:16px 0; border-bottom:1px solid var(--line);
+    }
+    .steps li:last-child { border-bottom:none; }
+
+    .step-num {
+      flex-shrink:0;
+      width:28px; height:28px;
+      border:1px solid var(--line2);
+      display:flex; align-items:center; justify-content:center;
+      font-size:10px; letter-spacing:0.1em; color:var(--red2);
+      margin-top:2px;
+    }
+
+    .step-text { font-size:13px; letter-spacing:0.05em; color:var(--dim); line-height:1.8; }
+    .step-text strong { color:var(--bone2); font-weight:700; }
+    .step-text a { color:var(--red3); text-decoration:none; }
+    .step-text a:hover { text-decoration:underline; }
+
+    .step-note {
+      margin-top:8px; padding:10px 14px;
+      border-left:2px solid var(--red2);
+      background:rgba(180,34,34,0.05);
+      font-size:11px; letter-spacing:0.05em; color:var(--dim); line-height:1.7;
+    }
+
+    .guide-divider {
+      font-size:9px; letter-spacing:0.3em; text-transform:uppercase;
+      color:var(--ember); margin:20px 0 12px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .guide-divider::after { content:''; flex:1; height:1px; background:var(--line2); }
+
+    /* Tech savvy section */
+    .tech-block {
+      margin-top:16px; padding:18px 20px;
+      border:1px solid var(--line);
+      background:#0a0808;
+    }
+    .tech-label { font-size:8px; letter-spacing:0.4em; text-transform:uppercase; color:var(--dim); margin-bottom:10px; }
+    .tech-text { font-size:12px; letter-spacing:0.05em; color:var(--dim); line-height:1.9; }
+    .tech-text a { color:var(--red3); text-decoration:none; }
+    .tech-text a:hover { text-decoration:underline; }
+    .tech-text strong { color:var(--bone); }
+  </style>
+</head>
+<body>
+
+<img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
+
+<div class="topbar">
+  <div class="topbar-name">Dungeon</div>
+  <a href="/dashboard.html" class="back-link">← Dashboard</a>
+</div>
+
+<div class="page">
+  <div class="page-eyebrow">Setup Guides</div>
+  <div class="page-title">Get Stremio on<br>Your Devices</div>
+  <p class="page-sub">Step-by-step instructions for every platform.<br>Tap a guide below to expand it.</p>
+
+  <div class="red-rule" style="margin-bottom:32px"></div>
+
+  <!-- iOS Guide -->
+  <div class="guide" id="guide-ios">
+    <div class="guide-header" onclick="toggleGuide('ios')">
+      <div class="guide-icon">📱</div>
+      <div class="guide-head-text">
+        <div class="guide-tag">iPhone &amp; iPad</div>
+        <div class="guide-name">iOS Setup</div>
+        <div class="guide-desc">Add to home screen + Outplayer for local playback</div>
+      </div>
+      <div class="guide-chevron">▼</div>
+    </div>
+    <div class="guide-body">
+      <div class="guide-divider">Standard Method</div>
+      <ul class="steps">
+        <li>
+          <div class="step-num">1</div>
+          <div class="step-text">
+            Open <strong>Safari</strong> on your iPhone or iPad and go to <a href="https://web.stremio.com" target="_blank">web.stremio.com</a>.
+            <div class="step-note">Must use Safari — other browsers don't support Add to Home Screen properly.</div>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">2</div>
+          <div class="step-text">
+            Tap the <strong>Share icon</strong> at the bottom of the screen (the box with an arrow pointing up), then tap <strong>Add to Home Screen</strong>. Name it "Stremio" and tap Add.
+          </div>
+        </li>
+        <li>
+          <div class="step-num">3</div>
+          <div class="step-text">
+            Open the app from your home screen and <strong>log in</strong> with your Stremio credentials. Make sure you log in so your addons and settings sync correctly.
+          </div>
+        </li>
+        <li>
+          <div class="step-num">4</div>
+          <div class="step-text">
+            Go to the <strong>App Store</strong> and download <a href="https://apps.apple.com/us/app/outplayer/id1449923287" target="_blank"><strong>Outplayer</strong></a> — it's free. This lets Stremio open stream links in a proper video player.
+          </div>
+        </li>
+        <li>
+          <div class="step-num">5</div>
+          <div class="step-text">
+            Back in Stremio Web, tap the <strong>settings gear icon</strong> → scroll down to <strong>Advanced</strong> → find <strong>Stream links</strong> or <strong>External Player</strong> → select <strong>Outplayer</strong>.
+            <div class="step-note">Once set, tapping any stream will hand it off to Outplayer automatically.</div>
+          </div>
+        </li>
+      </ul>
+
+      <div class="tech-block">
+        <div class="tech-label">Tech-Savvy Option — Sideload the Full App</div>
+        <div class="tech-text">
+          If you want the actual Stremio app (not the web version), you can sideload the official IPA. Stremio publishes it directly at <a href="https://www.stremio.com/downloads" target="_blank">stremio.com/downloads</a>. Use <strong>AltStore</strong> or <strong>Sideloadly</strong> to install it — no jailbreak required. Note that free Apple IDs require re-signing every 7 days. If you're on iOS 14–17, <strong>TrollStore</strong> installs it permanently.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TV Guide -->
+  <div class="guide" id="guide-tv">
+    <div class="guide-header" onclick="toggleGuide('tv')">
+      <div class="guide-icon">📺</div>
+      <div class="guide-head-text">
+        <div class="guide-tag">Fire TV · Android TV · Google TV</div>
+        <div class="guide-name">TV Setup</div>
+        <div class="guide-desc">App store or sideload via Downloader</div>
+      </div>
+      <div class="guide-chevron">▼</div>
+    </div>
+    <div class="guide-body">
+      <div class="guide-divider">Try the App Store First</div>
+      <ul class="steps">
+        <li>
+          <div class="step-num">1</div>
+          <div class="step-text">
+            On your TV remote, open the <strong>App Store / Play Store / Amazon Appstore</strong> and search for <strong>"Stremio"</strong>. If it appears, install it and skip the rest of these steps.
+            <div class="step-note">Stremio is now available on some Amazon Fire TV devices and Android TV via the Play Store. Try this first.</div>
+          </div>
+        </li>
+      </ul>
+
+      <div class="guide-divider">If It's Not in the Store — Use Downloader</div>
+      <ul class="steps">
+        <li>
+          <div class="step-num">1</div>
+          <div class="step-text">
+            Go to your TV's app store and install the <strong>Downloader</strong> app by AFTVnews. It's free and available on Fire TV and Android TV.
+          </div>
+        </li>
+        <li>
+          <div class="step-num">2</div>
+          <div class="step-text">
+            Before using Downloader, you need to allow unknown apps. On <strong>Fire TV</strong>: Settings → My Fire TV → Developer Options → Install Unknown Apps → enable Downloader. On <strong>Android TV</strong>: Settings → Apps → Downloader → enable Unknown Sources.
+          </div>
+        </li>
+        <li>
+          <div class="step-num">3</div>
+          <div class="step-text">
+            Open <strong>Downloader</strong>, select the URL input field, and type: <strong>stremio.com</strong> then press Go. This loads Stremio's official website where you can download the APK directly.
+            <div class="step-note">This goes straight to Stremio's official site — always the safest source for the APK.</div>
+          </div>
+        </li>
+        <li>
+          <div class="step-num">4</div>
+          <div class="step-text">
+            On the Stremio downloads page, tap <strong>Download Now</strong> for Android TV / Fire TV. Wait for the download to finish, then tap <strong>Install</strong>.
+          </div>
+        </li>
+        <li>
+          <div class="step-num">5</div>
+          <div class="step-text">
+            Open Stremio and <strong>log in</strong> with your credentials. You can scan the QR code on screen using your phone to log in quickly. Your addons will sync automatically.
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- More coming -->
+  <div class="guide" style="opacity:0.35">
+    <div class="guide-header">
+      <div class="guide-icon">💻</div>
+      <div class="guide-head-text">
+        <div class="guide-tag">Coming Soon</div>
+        <div class="guide-name">Windows &amp; Mac Setup</div>
+        <div class="guide-desc">Desktop install guide</div>
+      </div>
+      <div class="guide-chevron">▼</div>
+    </div>
+  </div>
+
+  <div class="guide" style="opacity:0.35;margin-top:2px">
+    <div class="guide-header">
+      <div class="guide-icon">🤖</div>
+      <div class="guide-head-text">
+        <div class="guide-tag">Coming Soon</div>
+        <div class="guide-name">Android Setup</div>
+        <div class="guide-desc">Phone &amp; tablet guide</div>
+      </div>
+      <div class="guide-chevron">▼</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if (!d.authenticated) window.location.href = '/login.html';
+  });
+
+  function toggleGuide(id) {
+    const el = document.getElementById('guide-' + id);
+    el.classList.toggle('open');
+  }
+</script>
+</body>
+</html>

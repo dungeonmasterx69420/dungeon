@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DUNGEON · Renew</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black:#000; --deep:#0c0808; --red2:#b22222; --red3:#cc3333;
+      --bone:#d4c4a8; --bone2:#e8dcc8; --dim:#6a5a4a; --dimmer:#3a2a20;
+      --line:rgba(180,50,50,0.2); --line2:rgba(180,50,50,0.4);
+    }
+    html,body { min-height:100vh; background:var(--black); color:var(--bone); font-family:'Cinzel',Georgia,serif; font-size:15px; display:flex; flex-direction:column; align-items:center; }
+    body::after { content:''; position:fixed; inset:0; background:radial-gradient(ellipse 120% 120% at 50% 50%, transparent 40%, rgba(0,0,0,0.65) 100%); pointer-events:none; z-index:0; }
+    .corner-gif { position:fixed; bottom:16px; right:16px; width:96px; height:96px; object-fit:contain; image-rendering:pixelated; z-index:50; pointer-events:none; opacity:0.9; }
+    .red-rule { width:100%; height:1px; background:linear-gradient(90deg,transparent,var(--red2),transparent); }
+    .red-rule-sm { width:60px; height:1px; background:var(--red2); opacity:0.6; margin:0 auto; }
+    .page { position:relative; z-index:1; width:100%; max-width:520px; padding:0 28px 80px; }
+    header { padding:48px 0 0; margin-bottom:44px; text-align:center; }
+    .site-name { font-size:28px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--red3); text-shadow:0 0 30px rgba(180,40,40,0.4); margin-bottom:14px; }
+    .hero { text-align:center; margin-bottom:44px; }
+    .eyebrow { font-size:10px; letter-spacing:0.4em; text-transform:uppercase; color:var(--dim); margin-bottom:16px; }
+    h1 { font-size:clamp(24px,5vw,34px); font-weight:400; letter-spacing:0.14em; text-transform:uppercase; color:var(--bone2); line-height:1.25; margin-bottom:20px; }
+    .hero-sub { font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--dim); line-height:2.2; }
+    .field { margin-bottom:20px; }
+    label { display:block; font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:var(--dim); margin-bottom:9px; }
+    textarea { width:100%; background:transparent; border:none; border-bottom:1px solid var(--line2); color:var(--bone2); font-family:'Cinzel',Georgia,serif; font-size:14px; letter-spacing:0.05em; padding:10px 0; outline:none; transition:border-color .2s; border-radius:0; resize:none; height:80px; line-height:1.7; }
+    textarea:focus { border-bottom-color:var(--red3); }
+    textarea::placeholder { color:var(--dimmer); font-size:13px; }
+    .submit-btn { width:100%; background:transparent; border:1px solid var(--red2); color:var(--red3); font-family:'Cinzel',Georgia,serif; font-size:12px; letter-spacing:0.4em; text-transform:uppercase; padding:15px 0; cursor:pointer; transition:all .2s; margin-top:32px; }
+    .submit-btn:hover { background:rgba(180,34,34,0.1); color:var(--bone2); border-color:var(--red3); }
+    .submit-btn:disabled { opacity:0.3; cursor:not-allowed; }
+    .error-banner { display:none; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--red3); text-align:center; margin-bottom:16px; }
+    #successPage { display:none; text-align:center; padding:56px 0; }
+    .success-eyebrow { font-size:9px; letter-spacing:0.5em; text-transform:uppercase; color:var(--red2); display:block; margin-bottom:20px; }
+    .success-title { font-size:20px; letter-spacing:0.15em; text-transform:uppercase; color:var(--bone2); margin-bottom:24px; font-weight:400; }
+    .success-sub { font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--dim); line-height:2.4; }
+    .back-link { display:inline-block; margin-top:32px; font-size:10px; letter-spacing:0.25em; text-transform:uppercase; color:var(--dimmer); text-decoration:none; transition:color .2s; }
+    .back-link:hover { color:var(--red3); }
+  </style>
+</head>
+<body>
+<img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
+<div class="page">
+  <header>
+    <div class="site-name">Dungeon</div>
+    <div class="red-rule"></div>
+  </header>
+
+  <div id="formPage">
+    <div class="hero">
+      <div class="eyebrow">Monthly Renewal</div>
+      <h1>Request Another Month</h1>
+      <div class="red-rule-sm" style="margin-bottom:20px"></div>
+      <p class="hero-sub">The keeper will be notified<br>and extend thy access.</p>
+    </div>
+
+    <div class="error-banner" id="errorBanner"></div>
+
+    <div class="field">
+      <label>Notes (optional)</label>
+      <textarea id="notes" placeholder="Anything you'd like the keeper to know…"></textarea>
+    </div>
+
+    <div class="red-rule"></div>
+    <button class="submit-btn" id="submitBtn" onclick="submitRenewal()">Submit Renewal</button>
+    <div style="text-align:center"><a href="/dashboard.html" class="back-link">← Back to Dashboard</a></div>
+  </div>
+
+  <div id="successPage">
+    <span class="success-eyebrow">— Submitted —</span>
+    <div class="success-title">Renewal Request Received</div>
+    <div class="red-rule-sm" style="margin-bottom:24px"></div>
+    <p class="success-sub">The keeper has been notified.<br>Thy access will be extended shortly.</p>
+    <a href="/dashboard.html" class="back-link">← Return to Dashboard</a>
+  </div>
+</div>
+
+<script>
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if (!d.authenticated) window.location.href = '/login.html';
+  });
+
+  async function submitRenewal() {
+    const btn    = document.getElementById('submitBtn');
+    const banner = document.getElementById('errorBanner');
+    btn.disabled = true; btn.textContent = 'Submitting…'; banner.style.display = 'none';
+    try {
+      const res  = await fetch('/api/member/renew', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ notes: document.getElementById('notes').value.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('formPage').style.display = 'none';
+        document.getElementById('successPage').style.display = 'block';
+      } else {
+        banner.textContent = data.error || 'Something went wrong.';
+        banner.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Submit Renewal';
+      }
+    } catch {
+      banner.textContent = 'Connection lost. Try again.';
+      banner.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Submit Renewal';
+    }
+  }
+</script>
+</body>
+</html>

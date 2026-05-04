@@ -304,6 +304,7 @@
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('applicants',this)">Applicants</button>
     <button class="tab-btn" onclick="switchTab('members',this)">Members</button>
+    <button class="tab-btn" onclick="switchTab('support',this)">Support <span id="suppBadge" style="display:none;color:var(--red3);font-size:10px"></span></button>
   </div>
 
   <div class="main">
@@ -327,6 +328,19 @@
       </div>
       <div class="red-rule"></div>
       <div class="row-list" id="memberList"></div>
+    </div>
+
+    <div class="tab-panel" id="panel-support">
+      <div class="list-header">
+        <div class="list-label">Support Messages</div>
+        <div class="filters">
+          <button class="filter-btn active" onclick="setSuppFilter('open',this)">Open</button>
+          <button class="filter-btn" onclick="setSuppFilter('resolved',this)">Resolved</button>
+          <button class="filter-btn" onclick="setSuppFilter('all',this)">All</button>
+        </div>
+      </div>
+      <div class="red-rule"></div>
+      <div class="row-list" id="supportList"></div>
     </div>
   </div>
 </div>
@@ -421,6 +435,7 @@
     el.classList.add('active');
     document.getElementById('panel-' + name).classList.add('active');
     if (name === 'members') loadMembers();
+    if (name === 'support') loadSupport();
   }
 
   async function loadAll() {
@@ -433,6 +448,10 @@
     document.getElementById('statPending').textContent    = d.pending;
     document.getElementById('statMembers').textContent    = d.members;
     document.getElementById('statDenied').textContent     = d.denied;
+    if (d.support > 0) {
+      const b = document.getElementById('suppBadge');
+      if (b) { b.textContent = '(' + d.support + ')'; b.style.display='inline'; }
+    }
   }
 
   async function loadApplicants() {
@@ -567,11 +586,13 @@
                 </div>
               </div>
               ${r.language ? `<div><div class="cred-lbl">Language</div><div class="cred-val">${r.language}</div></div>` : ''}
+              ${r.subscription_end ? `<div><div class="cred-lbl">Subscription Ends</div><div class="cred-val" style="font-size:12px">${new Date(r.subscription_end).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div></div>` : ''}
             </div>
             ${r.notes ? `<div class="row-notes">${r.notes}</div>` : ''}
           </div>
           <div class="row-actions">
-            <button class="act red" onclick="openEdit('${r.id}','${esc(r.stremio_email)}','${esc(r.stremio_pass)}','${esc(r.notes)}','${esc(r.first_name)}','${esc(r.last_name)}')">Edit</button>
+            <button class="act green" onclick="renewMember('${r.id}')">Renew</button>
+          <button class="act red" onclick="openEdit('${r.id}','${esc(r.stremio_email)}','${esc(r.stremio_pass)}','${esc(r.notes)}','${esc(r.first_name)}','${esc(r.last_name)}')">Edit</button>
             <button class="act blood" onclick="deleteMember('${r.id}')">Remove</button>
             <div class="row-date">Since ${fmt(r.created_at)}</div>
           </div>
@@ -634,6 +655,73 @@
       if (e.target === this) this.classList.remove('open');
     });
   });
+
+  // ── Renew member subscription ────────────────────────────────────────────────
+  async function renewMember(id) {
+    if (!confirm('Extend this member\'s subscription by 1 month?')) return;
+    await fetch('/api/members/' + id + '/renew', { method: 'POST' });
+    loadMembers(); loadStats();
+  }
+
+  // ── Support messages ──────────────────────────────────────────────────────────
+  let suppFilter = 'open';
+
+  async function loadSupport() {
+    const rows = await fetch('/api/support').then(r => r.json());
+    const filtered = suppFilter === 'all' ? rows : rows.filter(r => r.status === suppFilter);
+    renderSupport(filtered);
+  }
+
+  function setSuppFilter(f, el) {
+    suppFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    loadSupport();
+  }
+
+  function renderSupport(rows) {
+    const el = document.getElementById('supportList');
+    if (!rows.length) {
+      el.innerHTML = '<div class="empty"><div class="empty-title">No Messages</div><div class="empty-sub">All quiet in the dungeon.</div></div>';
+      return;
+    }
+    el.innerHTML = rows.map(r => `
+      <div class="app-row">
+        <div>
+          <div class="row-name">${r.member_name}</div>
+          <div class="row-email">${r.member_email}</div>
+          <div class="row-meta" style="margin-top:8px">
+            <span class="status-mark ${r.status === 'open' ? 'pending' : 'approved'}">${r.status === 'open' ? 'Open' : 'Resolved'}</span>
+            <div><div class="meta-lbl">Subject</div><div class="meta-val">${r.subject}</div></div>
+          </div>
+          <div class="row-notes">${r.message}</div>
+        </div>
+        <div class="row-actions">
+          ${r.status === 'open'
+            ? `<button class="act green" onclick="resolveSupport('${r.id}')">Resolve</button>`
+            : `<button class="act" onclick="reopenSupport('${r.id}')">Reopen</button>`}
+          <button class="act blood" onclick="deleteSupport('${r.id}')">Delete</button>
+          <div class="row-date">${fmt(r.created_at)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function resolveSupport(id) {
+    await fetch('/api/support/' + id + '/status', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'resolved'}) });
+    loadSupport(); loadStats();
+  }
+
+  async function reopenSupport(id) {
+    await fetch('/api/support/' + id + '/status', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'open'}) });
+    loadSupport(); loadStats();
+  }
+
+  async function deleteSupport(id) {
+    if (!confirm('Delete this message?')) return;
+    await fetch('/api/support/' + id, { method:'DELETE' });
+    loadSupport(); loadStats();
+  }
 
   document.getElementById('pinInput').focus();
 </script>
