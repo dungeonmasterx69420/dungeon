@@ -9,7 +9,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --black:#1a1a1a; --red2:#b22222; --red3:#cc3333;
-      --bone:#d4c4a8; --bone2:#e8dcc8; --dim:#7a6a58; --dimmer:#3a2a20;
+      --bone:#d4c4a8; --bone2:#e8dcc8; --dim:#9a8a70; --dimmer:#3a2a20;
       --line:rgba(180,50,50,0.2); --line2:rgba(180,50,50,0.4);
     }
     html,body { min-height:100vh; background:var(--black); color:var(--bone); font-family:'Cinzel',Georgia,serif; font-size:15px; display:flex; flex-direction:column; align-items:center; }
@@ -23,16 +23,16 @@
     header { padding:52px 0 0; margin-bottom:48px; text-align:center; }
     .site-name { font-size:36px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--red3); text-shadow:0 0 40px rgba(180,40,40,0.45); margin-bottom:16px; text-decoration:none; display:block; }
     .hero { text-align:center; margin-bottom:52px; }
-    .eyebrow { font-size:11px; letter-spacing:0.4em; text-transform:uppercase; color:var(--dim); margin-bottom:18px; }
+    .eyebrow { font-size:13px; letter-spacing:0.4em; text-transform:uppercase; color:var(--dim); margin-bottom:18px; font-weight:700; }
     h1 { font-size:clamp(28px,5vw,40px); font-weight:400; letter-spacing:0.14em; text-transform:uppercase; color:var(--bone2); line-height:1.25; margin-bottom:22px; }
-    .hero-sub { font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--dim); line-height:2.2; }
+    .hero-sub { font-size:14px; letter-spacing:0.1em; text-transform:uppercase; color:var(--dim); line-height:2.2; font-weight:600; }
     .form-section { margin-bottom:32px; }
-    .section-label { font-size:10px; letter-spacing:0.4em; text-transform:uppercase; color:var(--red2); font-weight:400; display:flex; align-items:center; gap:14px; margin-bottom:24px; }
+    .section-label { font-size:13px; letter-spacing:0.4em; text-transform:uppercase; color:var(--red2); font-weight:700; display:flex; align-items:center; gap:14px; margin-bottom:24px; }
     .section-label::before,.section-label::after { content:''; flex:1; height:1px; background:var(--line2); }
     .field { margin-bottom:20px; }
     .field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
     @media(max-width:440px) { .field-row { grid-template-columns:1fr; } }
-    label { display:block; font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:var(--dim); margin-bottom:9px; }
+    label { display:block; font-size:13px; letter-spacing:0.3em; text-transform:uppercase; color:var(--dim); margin-bottom:9px; font-weight:700; }
     label .req { color:var(--red2); margin-left:3px; }
     input,select,textarea { width:100%; background:transparent; border:none; border-bottom:1px solid var(--line2); color:var(--bone2); font-family:'Cinzel',Georgia,serif; font-size:14px; letter-spacing:0.05em; padding:10px 0; outline:none; transition:border-color .2s; border-radius:0; appearance:none; }
     input:focus,select:focus,textarea:focus { border-bottom-color:var(--red3); }
