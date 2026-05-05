@@ -2,51 +2,94 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>DUNGEON · Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --black:   #000000;
+      --black:   #1a1a1a;
       --deep:    #0c0808;
-      --panel:   #100d0d;
+      --panel:   #110e0e;
       --red:     #8b1a1a;
       --red2:    #b22222;
       --red3:    #cc3333;
       --ember:   #c8601a;
       --bone:    #d4c4a8;
       --bone2:   #e8dcc8;
-      --dim:     #6a5a4a;
+      --dim:     #7a6a58;
       --dimmer:  #3a2a20;
       --line:    rgba(180,50,50,0.18);
       --line2:   rgba(180,50,50,0.38);
-      --green:   #2a5a2a;
       --green2:  #4a9a4a;
       --amber:   #b87820;
     }
 
-    html, body { min-height: 100vh; background: var(--black); color: var(--bone); font-family: 'Cinzel', Georgia, serif; }
+    html, body {
+      min-height: 100vh;
+      background: var(--black);
+      color: var(--bone);
+      font-family: 'Cinzel', Georgia, serif;
+    }
 
-    body::after { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 160% 100% at 50% 0%, transparent 40%, rgba(0,0,0,0.55) 100%); pointer-events: none; z-index: 0; }
-
-    .corner-gif { position: fixed; bottom: 16px; right: 16px; width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated; z-index: 50; pointer-events: none; opacity: 0.9; }
+    body::after {
+      content: ''; position: fixed; inset: 0;
+      background: radial-gradient(ellipse 160% 100% at 50% 0%, transparent 40%, rgba(0,0,0,0.5) 100%);
+      pointer-events: none; z-index: 0;
+    }
 
     .red-rule { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--red2), transparent); }
 
-    /* ── Topbar ───────────────────────────────────────── */
-    .topbar { position: relative; z-index: 10; border-bottom: 1px solid var(--line); padding: 16px 40px; display: flex; align-items: center; justify-content: space-between; }
-    .topbar-name { font-size: 20px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--red3); text-shadow: 0 0 20px rgba(180,40,40,0.4); }
+    /* ════════════════════════════════════════
+       DESKTOP (≥ 768px)
+    ════════════════════════════════════════ */
+
+    /* Corner gif — desktop only */
+    .corner-gif {
+      position: fixed; bottom: 16px; right: 16px;
+      width: 96px; height: 96px;
+      object-fit: contain; image-rendering: pixelated;
+      z-index: 50; pointer-events: none; opacity: 0.9;
+    }
+
+    /* Topbar */
+    .topbar {
+      position: relative; z-index: 10;
+      border-bottom: 1px solid var(--line);
+      padding: 16px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .topbar-name {
+      font-size: 26.4px; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--red3);
+      text-shadow: 0 0 20px rgba(180,40,40,0.4);
+    }
+
     .topbar-right { display: flex; align-items: center; gap: 24px; }
-    .greeting { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); }
-    .topbar-link { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--dimmer); text-decoration: none; background: none; border: none; cursor: pointer; font-family: 'Cinzel', serif; transition: color 0.2s; }
+
+    .greeting {
+      font-size: 15.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim);
+    }
+
+    .topbar-link {
+      font-size: 15.5px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--dimmer); text-decoration: none; background: none; border: none;
+      cursor: pointer; font-family: 'Cinzel', serif; transition: color 0.2s;
+    }
     .topbar-link:hover { color: var(--red3); }
 
-    /* ── Page ─────────────────────────────────────────── */
-    .page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 40px 32px 120px; }
+    /* Bottom nav — hidden on desktop */
 
-    /* ── Subscription banner ──────────────────────────── */
+    /* Page */
+    .page {
+      position: relative; z-index: 1;
+      max-width: 900px; margin: 0 auto;
+      padding: 40px 32px 80px;
+    }
+
+    /* Subscription banner */
     .sub-banner {
       border: 1px solid var(--line2);
       padding: 28px 32px;
@@ -60,48 +103,46 @@
     }
 
     .sub-banner::before {
-      content: '';
-      position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
     }
     .sub-banner.active::before   { background: var(--green2); }
     .sub-banner.expiring::before { background: var(--amber); }
     .sub-banner.expired::before  { background: var(--red2); }
 
-    .sub-label { font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+    .sub-label {
+      font-size: 18px; letter-spacing: 0.4em; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 8px;
+    }
 
-    .sub-status { font-size: 22px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+    .sub-status {
+      font-size: 28.8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    }
     .sub-status.active   { color: var(--green2); }
     .sub-status.expiring { color: var(--amber); }
     .sub-status.expired  { color: var(--red3); }
 
-    .sub-dates { margin-top: 8px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); line-height: 1.9; }
-
-    .sub-days {
-      text-align: right;
+    .sub-dates {
+      margin-top: 10px; font-size: 15.5px; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--dim); line-height: 2;
     }
 
-    .sub-days-num { font-size: 48px; font-weight: 400; line-height: 1; color: var(--bone2); }
-    .sub-days-label { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dim); margin-top: 4px; }
+    .sub-days { text-align: right; }
+    .sub-days-num { font-size: 62.4px; font-weight: 400; line-height: 1; color: var(--bone2); }
+    .sub-days-label {
+      font-size: 18px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--dim); margin-top: 4px;
+    }
 
-    /* ── Section heading ──────────────────────────────── */
+    /* Section head */
     .section-head {
-      font-size: 9px; letter-spacing: 0.45em; text-transform: uppercase;
+      font-size: 26px; letter-spacing: 0.45em; text-transform: uppercase;
       color: var(--red2); margin-bottom: 20px;
       display: flex; align-items: center; gap: 14px;
     }
     .section-head::after { content: ''; flex: 1; height: 1px; background: var(--line2); }
 
-    /* ── Action tiles ─────────────────────────────────── */
-    .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); margin-bottom: 1px; }
-    .tiles-2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); margin-bottom: 48px; }
-
-    @media(max-width: 640px) {
-      .tiles, .tiles-2 { grid-template-columns: 1fr 1fr; }
-    }
-
-    @media(max-width: 420px) {
-      .tiles, .tiles-2 { grid-template-columns: 1fr; }
-    }
+    /* Tiles — desktop 3 col */
+    .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); margin-bottom: 48px; }
 
     .tile {
       background: var(--panel);
@@ -112,52 +153,137 @@
       transition: background 0.2s;
       cursor: pointer; border: none; font-family: 'Cinzel', serif;
     }
-    .tile:hover { background: #1a1010; }
+    .tile:hover { background: #1c1212; }
 
     .tile-img {
-      width: 64px; height: 64px;
+      width: 56px; height: 56px;
       object-fit: contain; image-rendering: pixelated;
-      opacity: 0.85; transition: opacity 0.2s;
-      display: block;
+      opacity: 0.85; transition: opacity 0.2s; display: block;
     }
     .tile:hover .tile-img { opacity: 1; }
 
-    /* inline SVG icon tiles */
-    .tile-icon { font-size: 40px; line-height: 1; }
+    .tile-icon { font-size: 43.2px; line-height: 1; }
 
     .tile-label {
-      font-size: 8px; letter-spacing: 0.35em; text-transform: uppercase;
+      font-size: 10.7px; letter-spacing: 0.35em; text-transform: uppercase;
       color: var(--dim); margin-bottom: 2px;
     }
-    .tile-title { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--bone2); font-weight: 700; }
-    .tile-sub { font-size: 10px; letter-spacing: 0.06em; color: var(--dim); line-height: 1.6; }
+    .tile-title {
+      font-size: 15.5px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--bone2); font-weight: 700;
+    }
+    .tile-sub { font-size: 13.1px; letter-spacing: 0.05em; color: var(--dim); line-height: 1.6; }
 
-    /* dimmed coming-soon tile */
-    .tile.soon { opacity: 0.35; cursor: default; }
-    .tile.soon:hover { background: var(--panel); }
-
-    /* ── Canvas torch ─────────────────────────────────── */
+    /* Torch / footer */
     .torch-link { display: inline-block; vertical-align: middle; margin-left: 10px; opacity: 0.3; transition: opacity 0.3s; cursor: pointer; line-height: 0; }
     .torch-link:hover { opacity: 0.9; }
     #torchCanvas { image-rendering: pixelated; display: block; }
 
     footer { padding: 40px 0 0; text-align: center; }
-    footer p { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dimmer); }
+    footer p { font-size: 13.1px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dimmer); }
     footer a { color: var(--dimmer); text-decoration: none; }
     footer a:hover { color: var(--red3); }
+
+
+    /* ════════════════════════════════════════
+       MOBILE (≤ 767px)
+    ════════════════════════════════════════ */
+    @media (max-width: 767px) {
+
+      /* Hide desktop elements */
+      .corner-gif  { display: none; }
+      .topbar-right { display: none; }
+      footer        { display: none; }
+
+      /* Topbar — just logo + greeting */
+      .topbar {
+        padding: 14px 20px;
+        position: sticky; top: 0;
+        background: var(--black);
+        border-bottom: 1px solid var(--line2);
+        z-index: 100;
+      }
+
+      .topbar-name { font-size: 32px; letter-spacing: 0.18em; }
+
+      .mob-greeting {
+        font-size: 20px; letter-spacing: 0.12em; text-transform: uppercase;
+        color: var(--dim);
+      }
+
+      /* Page padding — leave room for bottom nav */
+      .page { padding: 24px 16px 40px; }
+
+      /* Subscription banner — single column, bigger text */
+      .sub-banner {
+        grid-template-columns: 1fr;
+        padding: 24px 20px 24px 26px;
+        margin-bottom: 32px;
+        gap: 15.3px;
+      }
+
+      .sub-label  { font-size: 16px; letter-spacing: 0.2em; }
+      .sub-status { font-size: 36px; }
+      .sub-dates  { font-size: 18px; letter-spacing: 0.04em; line-height: 2; }
+
+      /* Days remaining — inline next to status on mobile */
+      .sub-days {
+        text-align: left;
+        display: flex; align-items: baseline; gap: 10.2px;
+      }
+      .sub-days-num   { font-size: 64px; }
+      .sub-days-label { font-size: 16px; letter-spacing: 0.15em; margin-top: 0; }
+
+      /* Section head */
+      .section-head { font-size: 18px; letter-spacing: 0.2em; margin-bottom: 16px; }
+
+      /* Tiles — 2 col on mobile */
+      .tiles {
+        grid-template-columns: 1fr 1fr;
+        gap: 2px;
+        margin-bottom: 32px;
+      }
+
+      .tile {
+        padding: 32px 14px;
+        gap: 10.2px;
+        min-height: 160px;
+        justify-content: center;
+        -webkit-tap-highlight-color: rgba(180,34,34,0.15);
+      }
+
+      .tile-icon { font-size: 48px; }
+      .tile-img  { width: 56px; height: 56px; }
+
+      .tile-label { font-size: 14px; letter-spacing: 0.15em; }
+      .tile-title { font-size: 18px; letter-spacing: 0.06em; }
+      .tile-sub   { display: none; }
+
+
+
+
+    }
   </style>
 </head>
 <body>
 
+<!-- Desktop only -->
 <img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
 
+<!-- Topbar -->
 <div class="topbar">
   <div class="topbar-name">Dungeon</div>
+  <!-- Desktop: greeting + leave -->
   <div class="topbar-right">
     <span class="greeting" id="greeting"></span>
     <button class="topbar-link" onclick="logout()">Leave</button>
   </div>
+  <!-- Mobile: greeting only, no leave button -->
+  <div id="mob-right" style="display:none">
+    <span class="mob-greeting" id="mob-greeting"></span>
+  </div>
 </div>
+
 
 <div class="page">
 
@@ -174,15 +300,13 @@
     </div>
   </div>
 
-  <!-- Quick links -->
+  <!-- Tiles -->
   <div class="section-head">The Vault</div>
-  <div class="tiles" style="margin-bottom:1px">
+  <div class="tiles">
 
-    <!-- Stremio Web -->
     <a class="tile" href="https://web.stremio.com" target="_blank" rel="noopener">
       <img class="tile-img" src="https://www.stremio.com/website/stremio-logo-small.png"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
-           alt="Stremio" />
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'" alt="Stremio" />
       <span class="tile-icon" style="display:none">📺</span>
       <div>
         <div class="tile-label">Open App</div>
@@ -191,44 +315,6 @@
       </div>
     </a>
 
-    <!-- Renew -->
-    <a class="tile" href="/renew.html">
-      <span class="tile-icon">⚔️</span>
-      <div>
-        <div class="tile-label">Monthly</div>
-        <div class="tile-title">Renew Access</div>
-        <div class="tile-sub">Request another month</div>
-      </div>
-    </a>
-
-    <!-- Buy Me a Coffee -->
-    <a class="tile" href="https://buymeacoffee.com/enterdungeon" target="_blank" rel="noopener">
-      <img class="tile-img"
-           src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
-           alt="Buy Me a Coffee" />
-      <span class="tile-icon" style="display:none">☕</span>
-      <div>
-        <div class="tile-label">Support</div>
-        <div class="tile-title">Buy Me a Coffee</div>
-        <div class="tile-sub">Keep the dungeon lit</div>
-      </div>
-    </a>
-
-  </div>
-  <div class="tiles-2">
-
-    <!-- Support -->
-    <a class="tile" href="/support.html">
-      <span class="tile-icon">🛡️</span>
-      <div>
-        <div class="tile-label">Help</div>
-        <div class="tile-title">Support</div>
-        <div class="tile-sub">Send a message to the keeper</div>
-      </div>
-    </a>
-
-    <!-- Guides -->
     <a class="tile" href="/guides.html">
       <span class="tile-icon">📜</span>
       <div>
@@ -238,18 +324,48 @@
       </div>
     </a>
 
-    <!-- Coming soon -->
-    <div class="tile soon">
+    <a class="tile" href="/suggest.html">
       <span class="tile-icon">🔥</span>
       <div>
-        <div class="tile-label">Coming Soon</div>
-        <div class="tile-title">Recommendations</div>
-        <div class="tile-sub">Keeper's picks</div>
+        <div class="tile-label">Ideas</div>
+        <div class="tile-title">Suggest a Feature</div>
+        <div class="tile-sub">Tell the keeper what you want</div>
       </div>
-    </div>
+    </a>
+
+    <a class="tile" href="/renew.html">
+      <span class="tile-icon">⚔️</span>
+      <div>
+        <div class="tile-label">Monthly</div>
+        <div class="tile-title">Renew Access</div>
+        <div class="tile-sub">Request another month</div>
+      </div>
+    </a>
+
+    <a class="tile" href="https://buymeacoffee.com/enterdungeon" target="_blank" rel="noopener">
+      <img class="tile-img"
+           src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'" alt="Buy Me a Coffee" />
+      <span class="tile-icon" style="display:none">☕</span>
+      <div>
+        <div class="tile-label">Support</div>
+        <div class="tile-title">Buy Me a Coffee</div>
+        <div class="tile-sub">Keep the dungeon lit</div>
+      </div>
+    </a>
+
+    <a class="tile" href="/support.html">
+      <span class="tile-icon">🛡️</span>
+      <div>
+        <div class="tile-label">Help</div>
+        <div class="tile-title">Support</div>
+        <div class="tile-sub">Send a message to the keeper</div>
+      </div>
+    </a>
 
   </div>
 
+  <!-- Desktop footer only -->
   <footer>
     <p>Dungeon &mdash; <a href="/" class="topbar-link">Home</a> <a href="/login.html" class="torch-link" title=""><canvas id="torchCanvas" width="14" height="20"></canvas></a></p>
   </footer>
@@ -257,14 +373,19 @@
 </div>
 
 <script>
-  // ── Auth guard ────────────────────────────────────────────────────────────────
+  const isMobile = window.innerWidth < 768;
+
   fetch('/api/member/me').then(r => r.json()).then(d => {
     if (!d.authenticated) { window.location.href = '/login.html'; return; }
-
     const m = d.member;
-    document.getElementById('greeting').textContent = m.first_name;
 
-    // Subscription status
+    // Greeting — desktop topbar vs mobile inline
+    document.getElementById('greeting').textContent = m.first_name;
+    const mobGreet = document.getElementById('mob-greeting');
+    const mobRight = document.getElementById('mob-right');
+    if (isMobile) { mobGreet.textContent = m.first_name; if(mobRight) mobRight.style.display = 'flex'; }
+
+    // Subscription
     const banner   = document.getElementById('subBanner');
     const status   = document.getElementById('subStatus');
     const dates    = document.getElementById('subDates');
@@ -277,15 +398,12 @@
       status.textContent = 'No Active Subscription';
       dates.textContent = 'Contact the keeper to get started.';
       daysNum.textContent = '—';
-      daysLbl.textContent = 'days remaining';
     } else {
-      const now     = new Date();
-      const end     = new Date(m.subscription_end);
-      const start   = m.subscription_start ? new Date(m.subscription_start) : null;
-      const msLeft  = end - now;
-      const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
-
-      const fmtDate = d => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      const now      = new Date();
+      const end      = new Date(m.subscription_end);
+      const start    = m.subscription_start ? new Date(m.subscription_start) : null;
+      const daysLeft = Math.ceil((end - now) / 86400000);
+      const fmt      = dt => dt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
       if (daysLeft <= 0) {
         banner.classList.add('expired');
@@ -304,7 +422,7 @@
         daysNum.textContent = daysLeft;
       }
 
-      dates.innerHTML = (start ? `Started: ${fmtDate(start)}<br>` : '') + `Expires: ${fmtDate(end)}`;
+      dates.innerHTML = (start ? `Started: ${fmt(start)}<br>` : '') + `Expires: ${fmt(end)}`;
     }
   });
 
@@ -313,27 +431,29 @@
     window.location.href = '/login.html';
   }
 
-  // ── Pixel torch ───────────────────────────────────────────────────────────────
-  (function() {
-    const canvas = document.getElementById('torchCanvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const S = 2;
-    const C = { _: null, B: '#5a3010', K: '#3a1a08', O: '#d05010', Y: '#f0b020', r: '#b83010', o: '#e07020' };
-    const frames = [
-      ['__YY___','_YYoY__','_YOrO__','__rO___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
-      ['___Y___','__YOY__','_YOrO__','_OYr___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
-      ['__YY___','_oYY___','__OrY__','__rO___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
-    ];
-    let frame = 0, tick = 0;
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      frames[frame % frames.length].forEach((row, ry) => {
-        [...row].forEach((ch, rx) => { const c = C[ch]; if (c) { ctx.fillStyle = c; ctx.fillRect(rx*S, ry*S, S, S); } });
-      });
-    }
-    (function loop() { tick++; if (tick % 6 === 0) frame++; draw(); requestAnimationFrame(loop); })();
-  })();
+  // Pixel torch (desktop only)
+  if (!isMobile) {
+    (function() {
+      const canvas = document.getElementById('torchCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const S = 2;
+      const C = { _:null, B:'#5a3010', K:'#3a1a08', O:'#d05010', Y:'#f0b020', r:'#b83010', o:'#e07020' };
+      const frames = [
+        ['__YY___','_YYoY__','_YOrO__','__rO___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
+        ['___Y___','__YOY__','_YOrO__','_OYr___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
+        ['__YY___','_oYY___','__OrY__','__rO___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
+      ];
+      let frame = 0, tick = 0;
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        frames[frame % frames.length].forEach((row, ry) => {
+          [...row].forEach((ch, rx) => { const c = C[ch]; if (c) { ctx.fillStyle = c; ctx.fillRect(rx*S, ry*S, S, S); } });
+        });
+      }
+      (function loop() { tick++; if (tick % 6 === 0) frame++; draw(); requestAnimationFrame(loop); })();
+    })();
+  }
 </script>
 </body>
 </html>
