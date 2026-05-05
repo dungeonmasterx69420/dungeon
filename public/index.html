@@ -3,321 +3,700 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DUNGEON</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+  <title>DUNGEON - Streaming Service</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --black:  #000000;
-      --deep:   #0c0808;
-      --red:    #8b1a1a;
-      --red2:   #b22222;
-      --red3:   #cc3333;
-      --ember:  #c8601a;
-      --bone:   #d4c4a8;
-      --bone2:  #e8dcc8;
-      --dim:    #6a5a4a;
-      --dimmer: #3a2a20;
-      --line:   rgba(180,50,50,0.2);
-      --line2:  rgba(180,50,50,0.4);
+      --bg-dark:     #0f0f0f;
+      --bg-darker:   #1a1a1a;
+      --bg-card:     #252525;
+      --red-primary: #dc2626;
+      --red-light:   #ef4444;
+      --red-dark:    #991b1b;
+      --text-white:  #ffffff;
+      --text-light:  #e5e7eb;
+      --text-gray:   #9ca3af;
     }
 
     html, body {
       min-height: 100vh;
-      background: var(--black);
-      color: var(--bone);
-      font-family: 'Cinzel', Georgia, serif;
+      background: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Inter', sans-serif;
       font-size: 15px;
     }
 
-    body { display: flex; flex-direction: column; align-items: center; }
+    body { display: flex; flex-direction: column; }
 
-    body::after {
+    body::before {
       content: '';
       position: fixed; inset: 0;
-      background: radial-gradient(ellipse 120% 120% at 50% 50%, transparent 40%, rgba(0,0,0,0.65) 100%);
+      background: linear-gradient(135deg, rgba(220,38,38,0.05) 0%, transparent 50%);
       pointer-events: none; z-index: 0;
     }
 
-    /* ── Corner GIF ─────────────────────────────────── */
-    .corner-gif {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      width: 96px;
-      height: 96px;
-      object-fit: contain;
-      image-rendering: pixelated;
-      z-index: 50;
-      pointer-events: none;
-      opacity: 0.9;
+    /* ── Navigation ─────────────────────────────────── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: linear-gradient(180deg, rgba(15,15,15,1) 0%, rgba(15,15,15,0.98) 100%);
+      border-bottom: 1px solid rgba(220,38,38,0.1);
+      backdrop-filter: blur(10px);
+      padding: 0 40px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
-    .red-rule {
-      width: 100%; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--red2), transparent);
+    .navbar-brand {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--red-primary);
+      text-decoration: none;
+      letter-spacing: 2px;
+      font-family: 'Poppins', sans-serif;
     }
 
-    .red-rule-sm {
-      width: 60px; height: 1px;
-      background: var(--red2); opacity: 0.6; margin: 0 auto;
+    .navbar-links {
+      display: flex;
+      gap: 40px;
+      align-items: center;
     }
 
+    .navbar-link {
+      color: var(--text-gray);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .navbar-link:hover,
+    .navbar-link.active {
+      color: var(--red-primary);
+    }
+
+    .navbar-cta {
+      background: var(--red-primary);
+      color: white;
+      padding: 10px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .navbar-cta:hover {
+      background: var(--red-light);
+    }
+
+    /* ── Page Layout ─────────────────────────────────── */
     .page {
-      position: relative; z-index: 1;
-      width: 100%; max-width: 540px;
-      padding: 0 28px 100px;
+      position: relative;
+      z-index: 1;
+      width: 100%;
     }
 
-    header {
-      padding: 52px 0 0;
-      margin-bottom: 48px;
-      text-align: center;
+    /* ── Hero Section ────────────────────────────────── */
+    .hero {
+      position: relative;
+      height: 500px;
+      background: linear-gradient(135deg, var(--bg-darker) 0%, rgba(26,26,26,0.8) 100%),
+                  linear-gradient(45deg, rgba(220,38,38,0.15) 0%, transparent 60%);
+      display: flex;
+      align-items: center;
+      padding: 0 40px;
+      overflow: hidden;
     }
 
-    .site-name {
-      font-size: 36px; font-weight: 700;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--red3);
-      text-shadow: 0 0 40px rgba(180,40,40,0.45);
+    .hero::before {
+      content: '';
+      position: absolute;
+      right: -100px;
+      top: -100px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(220,38,38,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 600px;
+    }
+
+    .hero-label {
+      color: var(--red-primary);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
       margin-bottom: 16px;
     }
 
-    /* ── Form page ──────────────────────────────────── */
-    #formPage { display: block; }
-
-    .hero { text-align: center; margin-bottom: 52px; }
-
-    .eyebrow {
-      font-size: 11px; letter-spacing: 0.4em; text-transform: uppercase;
-      color: var(--dim); margin-bottom: 18px;
+    .hero-title {
+      font-size: 56px;
+      font-weight: 700;
+      color: var(--text-white);
+      margin-bottom: 16px;
+      line-height: 1.2;
+      font-family: 'Poppins', sans-serif;
     }
 
-    h1 {
-      font-size: clamp(28px, 5vw, 40px); font-weight: 400;
-      letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--bone2); line-height: 1.25; margin-bottom: 22px;
+    .hero-description {
+      color: var(--text-gray);
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 32px;
     }
 
-    .hero-sub {
-      font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--dim); line-height: 2.2;
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
     }
 
-    .form-section { margin-bottom: 32px; }
+    .btn {
+      padding: 12px 32px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: var(--red-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--red-light);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-white);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.2);
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    /* ── Content Grid ────────────────────────────────── */
+    .section {
+      padding: 60px 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .section-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-white);
+      margin-bottom: 32px;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .content-card {
+      position: relative;
+      aspect-ratio: 9/13;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s, filter 0.2s;
+      background: var(--bg-card);
+      border: 1px solid rgba(220,38,38,0.1);
+    }
+
+    .content-card:hover {
+      transform: translateY(-8px);
+      filter: brightness(1.2);
+      border-color: var(--red-primary);
+    }
+
+    .content-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .content-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%);
+    }
+
+    .content-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px;
+      color: var(--text-white);
+      z-index: 2;
+    }
+
+    .content-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .content-meta {
+      font-size: 11px;
+      color: var(--text-gray);
+    }
+
+    /* ── Form Section ────────────────────────────────── */
+    #formPage {
+      display: block;
+      padding: 80px 40px;
+    }
+
+    .form-container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: var(--bg-darker);
+      border: 1px solid rgba(220,38,38,0.1);
+      border-radius: 12px;
+      padding: 40px;
+    }
+
+    .form-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-white);
+      margin-bottom: 12px;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .form-subtitle {
+      color: var(--text-gray);
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    .form-section { margin-bottom: 28px; }
 
     .section-label {
-      font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
-      color: var(--red2); font-weight: 400;
-      display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
-    }
-    .section-label::before, .section-label::after {
-      content: ''; flex: 1; height: 1px; background: var(--line2);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--red-primary);
+      margin-bottom: 20px;
     }
 
     .field { margin-bottom: 20px; }
 
     .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media(max-width:440px) { .field-row { grid-template-columns: 1fr; } }
+    @media(max-width:600px) { .field-row { grid-template-columns: 1fr; } }
 
     label {
-      display: block; font-size: 10px; letter-spacing: 0.3em;
-      text-transform: uppercase; color: var(--dim); margin-bottom: 9px;
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-light);
+      margin-bottom: 8px;
     }
-    label .req { color: var(--red2); margin-left: 3px; }
+
+    label .req {
+      color: var(--red-primary);
+      margin-left: 4px;
+    }
 
     input, select, textarea {
-      width: 100%; background: transparent; border: none;
-      border-bottom: 1px solid var(--line2);
-      color: var(--bone2); font-family: 'Cinzel', Georgia, serif;
-      font-size: 14px; letter-spacing: 0.05em; padding: 10px 0;
-      outline: none; transition: border-color 0.2s; border-radius: 0; appearance: none;
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid rgba(220,38,38,0.2);
+      border-radius: 6px;
+      color: var(--text-white);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      padding: 12px 16px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
     }
-    input:focus, select:focus, textarea:focus { border-bottom-color: var(--red3); }
-    input::placeholder, textarea::placeholder { color: var(--dimmer); font-size: 13px; }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--red-primary);
+      background: rgba(220,38,38,0.05);
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: var(--text-gray);
+    }
 
     select {
       cursor: pointer;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(180,50,50,0.6)'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 2px center; padding-right: 18px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23dc2626' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 40px;
     }
-    select option { background: #0c0808; }
-    textarea { resize: none; height: 72px; line-height: 1.7; }
+
+    select option {
+      background: var(--bg-darker);
+      color: var(--text-white);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
 
     .error-banner {
-      display: none; font-size: 11px; letter-spacing: 0.18em;
-      text-transform: uppercase; color: var(--red3);
-      text-align: center; margin-bottom: 20px;
+      display: none;
+      background: rgba(220,38,38,0.1);
+      border: 1px solid var(--red-primary);
+      color: var(--red-light);
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      margin-bottom: 20px;
     }
 
     .field-error input,
     .field-error select,
-    .field-error textarea { border-bottom-color: var(--red2); }
+    .field-error textarea {
+      border-color: var(--red-primary);
+      background: rgba(220,38,38,0.08);
+    }
 
     .err-msg {
-      display: none; font-size: 10px; letter-spacing: 0.15em;
-      color: var(--red2); margin-top: 5px; text-transform: uppercase;
+      display: none;
+      font-size: 12px;
+      color: var(--red-light);
+      margin-top: 6px;
     }
+
     .field-error .err-msg { display: block; }
 
-    .submit-wrap { margin-top: 40px; text-align: center; }
+    .submit-wrap { margin-top: 32px; }
 
     .submit-btn {
-      background: transparent; border: 1px solid var(--red2);
-      color: var(--red3); font-family: 'Cinzel', Georgia, serif;
-      font-size: 13px; letter-spacing: 0.4em; text-transform: uppercase;
-      padding: 16px 0; width: 100%; cursor: pointer; transition: all 0.2s;
+      background: var(--red-primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    .submit-btn:hover { background: rgba(180,34,34,0.1); color: var(--bone2); border-color: var(--red3); }
-    .submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .submit-btn:hover {
+      background: var(--red-light);
+      transform: translateY(-2px);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
 
     /* ── Success page ───────────────────────────────── */
     #successPage {
       display: none;
       text-align: center;
-      padding: 80px 0 0;
+      padding: 120px 40px;
     }
 
-    .success-gif {
-      width: 140px;
-      height: 140px;
-      object-fit: contain;
-      image-rendering: pixelated;
-      margin: 0 auto 40px;
-      display: block;
-      opacity: 0.95;
+    .success-container {
+      max-width: 500px;
+      margin: 0 auto;
     }
 
-    .success-eyebrow {
-      font-size: 10px; letter-spacing: 0.5em; text-transform: uppercase;
-      color: var(--red2); display: block; margin-bottom: 20px;
+    .success-icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 32px;
+      background: rgba(220,38,38,0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
     }
 
     .success-title {
-      font-size: 24px; letter-spacing: 0.15em; text-transform: uppercase;
-      color: var(--bone2); margin-bottom: 24px; font-weight: 700;
-      line-height: 1.3;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-white);
+      margin-bottom: 16px;
+      font-family: 'Poppins', sans-serif;
     }
-
-    .success-rule { margin-bottom: 28px; }
 
     .success-body {
-      font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--dim); line-height: 2.4;
+      color: var(--text-gray);
+      font-size: 16px;
+      line-height: 1.6;
     }
 
-    /* Nav */
-    .nav-link {
-      position: fixed; top: 24px; right: 24px;
-      font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
-      color: var(--dimmer); text-decoration: none; transition: color 0.2s; z-index: 10;
+    /* ── Footer ──────────────────────────────────────– */
+    footer {
+      padding: 40px;
+      text-align: center;
+      border-top: 1px solid rgba(220,38,38,0.1);
+      color: var(--text-gray);
+      font-size: 14px;
     }
-    .nav-link:hover { color: var(--red3); }
 
-    footer { padding: 48px 0 0; text-align: center; }
-    footer p { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dimmer); }
-    footer a { color: var(--dimmer); text-decoration: none; }
-    footer a:hover { color: var(--red3); }
-    .torch-link { display: inline-block; vertical-align: middle; margin-left: 10px; opacity: 0.3; transition: opacity 0.3s; cursor: pointer; line-height: 0; }
-    .torch-link:hover { opacity: 0.9; }
-    #torchCanvas { image-rendering: pixelated; display: block; }
+    footer a {
+      color: var(--red-primary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    footer a:hover {
+      color: var(--red-light);
+    }
+
+    /* ── Responsive ──────────────────────────────────– */
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0 20px;
+      }
+
+      .navbar-links {
+        gap: 20px;
+      }
+
+      .hero {
+        height: 350px;
+        padding: 0 20px;
+      }
+
+      .hero-title {
+        font-size: 36px;
+      }
+
+      .hero-buttons {
+        flex-direction: column;
+      }
+
+      .section {
+        padding: 40px 20px;
+      }
+
+      .form-container {
+        padding: 32px 20px;
+      }
+
+      .content-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+    }
+
+    @media (max-width: 480px) {
+      .navbar-links {
+        display: none;
+      }
+
+      .hero-title {
+        font-size: 28px;
+      }
+
+      .section-title {
+        font-size: 20px;
+      }
+
+      .content-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
   </style>
 </head>
 <body>
 
-<img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
-<a href="/admin.html" class="nav-link">Warden ↗</a>
+<!-- Navigation -->
+<nav class="navbar">
+  <a href="/" class="navbar-brand">DUNGEON</a>
+  <div class="navbar-links">
+    <a href="#browse" class="navbar-link">Browse</a>
+    <a href="#new" class="navbar-link">New</a>
+    <a href="/login.html" class="navbar-link">My List</a>
+    <a href="/admin.html" class="navbar-link navbar-cta">Admin</a>
+  </div>
+</nav>
 
 <div class="page">
 
-  <header>
-    <div class="site-name">Dungeon</div>
-    <div class="red-rule"></div>
-  </header>
-
-  <!-- Form page -->
-  <div id="formPage">
-    <div class="hero">
-      <div class="eyebrow">Invitation Only</div>
-      <h1>Seek Entry</h1>
-      <div class="red-rule-sm" style="margin-bottom:22px"></div>
-      <p class="hero-sub">
-        Complete the scroll below.<br>
-        The keeper shall prepare thy passage.
+  <!-- Featured Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-label">New Entry</div>
+      <h1 class="hero-title">Join the Dungeon</h1>
+      <p class="hero-description">
+        Get instant access to your library. Manage your Stremio account, track your subscriptions, and unlock exclusive features.
       </p>
+      <div class="hero-buttons">
+        <button class="btn btn-primary" onclick="document.querySelector('#formPage').scrollIntoView({behavior: 'smooth'})">Request Access</button>
+        <button class="btn btn-secondary" onclick="alert('Coming soon')">Learn More</button>
+      </div>
     </div>
+  </section>
 
-    <div class="error-banner" id="errorBanner"></div>
-
-    <div class="form-section">
-      <div class="section-label">Identity</div>
-      <div class="field-row">
-        <div class="field" id="grp-first_name">
-          <label>Given Name <span class="req">*</span></label>
-          <input type="text" id="first_name" placeholder="—" autocomplete="given-name" />
-          <div class="err-msg">Required</div>
+  <!-- Popular Content Section -->
+  <section class="section">
+    <h2 class="section-title">Featured Collections</h2>
+    <div class="content-grid">
+      <div class="content-card">
+        <div style="background: linear-gradient(135deg, #dc2626, #991b1b); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">🎬</div>
+        <div class="content-info">
+          <div class="content-title">Premium Access</div>
+          <div class="content-meta">Top Tier</div>
         </div>
-        <div class="field" id="grp-last_name">
-          <label>Family Name <span class="req">*</span></label>
-          <input type="text" id="last_name" placeholder="—" autocomplete="family-name" />
-          <div class="err-msg">Required</div>
+      </div>
+      <div class="content-card">
+        <div style="background: linear-gradient(135deg, #991b1b, #7f1d1d); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">👑</div>
+        <div class="content-info">
+          <div class="content-title">Elite Collection</div>
+          <div class="content-meta">Exclusive</div>
         </div>
       </div>
-      <div class="field" id="grp-email">
-        <label>Email <span class="req">*</span></label>
-        <input type="email" id="email" placeholder="name@realm.com" autocomplete="email" />
-        <div class="err-msg">A valid address is required</div>
+      <div class="content-card">
+        <div style="background: linear-gradient(135deg, #7f1d1d, #5f1f1f); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">⚔️</div>
+        <div class="content-info">
+          <div class="content-title">Warrior's Pick</div>
+          <div class="content-meta">Best Rated</div>
+        </div>
       </div>
-      <div class="field">
-        <label>Phone</label>
-        <input type="tel" id="phone" placeholder="—" autocomplete="tel" />
+      <div class="content-card">
+        <div style="background: linear-gradient(135deg, #5f1f1f, #3f1f1f); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">🔥</div>
+        <div class="content-info">
+          <div class="content-title">Trending Now</div>
+          <div class="content-meta">Popular</div>
+        </div>
+      </div>
+      <div class="content-card">
+        <div style="background: linear-gradient(135deg, #ef4444, #dc2626); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">🎯</div>
+        <div class="content-info">
+          <div class="content-title">Staff Picks</div>
+          <div class="content-meta">Curated</div>
+        </div>
+      </div>
+      <div class="content-card">
+        <div style="background: linear-gradient(135deg, #dc2626, #b91c1c); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">🏆</div>
+        <div class="content-info">
+          <div class="content-title">Awards</div>
+          <div class="content-meta">Recognition</div>
+        </div>
       </div>
     </div>
+  </section>
 
-    <div class="form-section">
-      <div class="section-label">Preferences</div>
-      <div class="field">
-        <label>Subtitle Language</label>
-        <select id="language">
-          <option value="">— Select —</option>
-          <option>English</option><option>Spanish</option><option>French</option>
-          <option>Portuguese</option><option>German</option><option>Italian</option>
-          <option>Arabic</option><option>Chinese (Simplified)</option>
-          <option>Japanese</option><option>Korean</option><option>Hindi</option>
-          <option>Other</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Who Referred You</label>
-        <input type="text" id="referral" placeholder="—" />
-      </div>
-      <div class="field">
-        <label>Notes</label>
-        <textarea id="notes" placeholder="Special requirements…"></textarea>
-      </div>
-    </div>
+  <!-- Request Access Form -->
+  <div id="formPage" style="display: none;">
+    <section class="section">
+      <div class="form-container">
+        <h2 class="form-title">Request Access</h2>
+        <p class="form-subtitle">Fill in your details below and we'll get you started</p>
 
-    <div class="red-rule"></div>
-    <div class="submit-wrap">
-      <button class="submit-btn" id="submitBtn" onclick="submitForm()">Present Scroll</button>
-    </div>
+        <div class="error-banner" id="errorBanner"></div>
+
+        <div class="form-section">
+          <div class="section-label">Your Information</div>
+          <div class="field-row">
+            <div class="field" id="grp-first_name">
+              <label>First Name <span class="req">*</span></label>
+              <input type="text" id="first_name" placeholder="John" autocomplete="given-name" />
+              <div class="err-msg">Required</div>
+            </div>
+            <div class="field" id="grp-last_name">
+              <label>Last Name <span class="req">*</span></label>
+              <input type="text" id="last_name" placeholder="Doe" autocomplete="family-name" />
+              <div class="err-msg">Required</div>
+            </div>
+          </div>
+          <div class="field" id="grp-email">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" id="email" placeholder="john@example.com" autocomplete="email" />
+            <div class="err-msg">A valid email is required</div>
+          </div>
+          <div class="field">
+            <label>Phone (Optional)</label>
+            <input type="tel" id="phone" placeholder="+1 (555) 123-4567" autocomplete="tel" />
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-label">Preferences</div>
+          <div class="field">
+            <label>Subtitle Language</label>
+            <select id="language">
+              <option value="">Select a language...</option>
+              <option>English</option>
+              <option>Spanish</option>
+              <option>French</option>
+              <option>Portuguese</option>
+              <option>German</option>
+              <option>Italian</option>
+              <option>Arabic</option>
+              <option>Chinese (Simplified)</option>
+              <option>Japanese</option>
+              <option>Korean</option>
+              <option>Hindi</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>How did you hear about us?</label>
+            <input type="text" id="referral" placeholder="Friend, Search, Social Media..." />
+          </div>
+          <div class="field">
+            <label>Additional Notes</label>
+            <textarea id="notes" placeholder="Tell us anything else we should know..."></textarea>
+          </div>
+        </div>
+
+        <div class="submit-wrap">
+          <button class="submit-btn" id="submitBtn" onclick="submitForm()">Request Access</button>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <!-- Success page — replaces everything -->
+  <!-- Success Page -->
   <div id="successPage">
-    <img class="success-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="Barbarian" />
-    <span class="success-eyebrow">— Received —</span>
-    <div class="success-title">Thy Scroll Has<br>Been Delivered</div>
-    <div class="red-rule success-rule"></div>
-    <p class="success-body">
-      The keeper has been summoned.<br>
-      Await word at thy courier address.
-    </p>
+    <section class="section">
+      <div class="success-container">
+        <div class="success-icon">✓</div>
+        <h2 class="success-title">Request Received</h2>
+        <p class="success-body">
+          Thank you for your interest in joining the Dungeon. We've received your request and our team will review it shortly. Check your email for updates.
+        </p>
+      </div>
+    </section>
   </div>
 
   <footer>
-    <p>Dungeon &mdash; <a href="/admin.html">Warden's Gate</a> <a href="/login.html" class="torch-link" title=""><canvas id="torchCanvas" width="14" height="20"></canvas></a></p>
+    <p>© 2024 DUNGEON Streaming. All rights reserved. | <a href="/admin.html">Admin</a> | <a href="/">Home</a></p>
   </footer>
 </div>
 
@@ -332,7 +711,8 @@
     for (const [id, check] of Object.entries(checks)) {
       const grp = document.getElementById('grp-' + id);
       if (!check(document.getElementById(id).value)) {
-        grp.classList.add('field-error'); ok = false;
+        grp.classList.add('field-error');
+        ok = false;
       } else {
         grp.classList.remove('field-error');
       }
@@ -342,125 +722,50 @@
 
   async function submitForm() {
     if (!validate()) return;
-    const btn    = document.getElementById('submitBtn');
+    const btn = document.getElementById('submitBtn');
     const banner = document.getElementById('errorBanner');
     btn.disabled = true;
-    btn.textContent = 'Delivering…';
+    btn.textContent = 'Submitting…';
     banner.style.display = 'none';
 
     const body = {
       first_name: document.getElementById('first_name').value.trim(),
-      last_name:  document.getElementById('last_name').value.trim(),
-      email:      document.getElementById('email').value.trim(),
-      phone:      document.getElementById('phone').value.trim(),
-      language:   document.getElementById('language').value,
-      referral:   document.getElementById('referral').value.trim(),
-      notes:      document.getElementById('notes').value.trim(),
+      last_name: document.getElementById('last_name').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      language: document.getElementById('language').value,
+      referral: document.getElementById('referral').value.trim(),
+      notes: document.getElementById('notes').value.trim(),
     };
 
     try {
-      const res  = await fetch('/api/apply', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
+      const res = await fetch('/api/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
       const data = await res.json();
       if (res.ok) {
         document.getElementById('formPage').style.display = 'none';
         document.getElementById('successPage').style.display = 'block';
-        // hide the corner gif since we show one centered now
-        document.querySelector('.corner-gif').style.display = 'none';
+        window.scrollTo(0, 0);
       } else {
-        banner.textContent = data.error || 'The scroll was rejected.';
+        banner.textContent = data.error || 'Your request could not be processed.';
         banner.style.display = 'block';
         btn.disabled = false;
-        btn.textContent = 'Present Scroll';
+        btn.textContent = 'Request Access';
       }
-    } catch {
-      banner.textContent = 'Connection lost. Try again.';
+    } catch (error) {
+      banner.textContent = 'Connection error. Please try again.';
       banner.style.display = 'block';
       btn.disabled = false;
-      btn.textContent = 'Present Scroll';
+      btn.textContent = 'Request Access';
     }
   }
 
-  ['first_name','last_name','email'].forEach(id => {
+  ['first_name', 'last_name', 'email'].forEach(id => {
     document.getElementById(id).addEventListener('blur', validate);
   });
-</script>
-
-<script>
-// Tiny pixel torch animation in footer
-(function() {
-  const canvas = document.getElementById('torchCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const S = 2; // 2px per pixel = 14x20 canvas = 7x10 sprite
-
-  // 7-wide x 10-tall torch sprite, 3 flame frames
-  // Colors: B=brown handle, K=dark, O=orange, Y=yellow, r=red-orange, _=transparent
-  const C = { _: null, B: '#5a3010', K: '#3a1a08', O: '#d05010', Y: '#f0b020', r: '#b83010', o: '#e07020' };
-
-  // Each frame: 10 rows of 7 chars
-  const frames = [
-    // frame 1
-    ['__YY___',
-     '_YYoY__',
-     '_YOrO__',
-     '__rO___',
-     '___B___',
-     '___B___',
-     '___B___',
-     '__BBB__',
-     '___B___',
-     '___K___'],
-    // frame 2
-    ['___Y___',
-     '__YOY__',
-     '_YOrO__',
-     '_OYr___',
-     '___B___',
-     '___B___',
-     '___B___',
-     '__BBB__',
-     '___B___',
-     '___K___'],
-    // frame 3
-    ['__YY___',
-     '_oYY___',
-     '__OrY__',
-     '__rO___',
-     '___B___',
-     '___B___',
-     '___B___',
-     '__BBB__',
-     '___B___',
-     '___K___'],
-  ];
-
-  let frame = 0, tick = 0;
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const f = frames[frame % frames.length];
-    f.forEach((row, ry) => {
-      [...row].forEach((ch, rx) => {
-        const color = C[ch];
-        if (!color) return;
-        ctx.fillStyle = color;
-        ctx.fillRect(rx * S, ry * S, S, S);
-      });
-    });
-  }
-
-  function loop() {
-    tick++;
-    if (tick % 6 === 0) frame++;
-    draw();
-    requestAnimationFrame(loop);
-  }
-
-  loop();
-})();
 </script>
 </body>
 </html>
