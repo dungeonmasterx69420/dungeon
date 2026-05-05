@@ -2,770 +2,237 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DUNGEON - Streaming Service</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>DUNGEON</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg-dark:     #0f0f0f;
-      --bg-darker:   #1a1a1a;
-      --bg-card:     #252525;
-      --red-primary: #dc2626;
-      --red-light:   #ef4444;
-      --red-dark:    #991b1b;
-      --text-white:  #ffffff;
-      --text-light:  #e5e7eb;
-      --text-gray:   #9ca3af;
+      --black:  #1a1a1a;
+      --red2:   #b22222;
+      --red3:   #cc3333;
+      --bone:   #d4c4a8;
+      --bone2:  #e8dcc8;
+      --dim:    #7a6a58;
+      --dimmer: #3a2a20;
+      --line:   rgba(180,50,50,0.2);
+      --line2:  rgba(180,50,50,0.4);
     }
 
     html, body {
-      min-height: 100vh;
-      background: var(--bg-dark);
-      color: var(--text-light);
-      font-family: 'Inter', sans-serif;
-      font-size: 15px;
+      height: 100%;
+      background: var(--black);
+      color: var(--bone);
+      font-family: 'Cinzel', Georgia, serif;
     }
 
-    body { display: flex; flex-direction: column; }
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
 
-    body::before {
+    /* Subtle vignette */
+    body::after {
       content: '';
       position: fixed; inset: 0;
-      background: linear-gradient(135deg, rgba(220,38,38,0.05) 0%, transparent 50%);
+      background: radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, rgba(0,0,0,0.55) 100%);
       pointer-events: none; z-index: 0;
     }
 
-    /* ── Navigation ─────────────────────────────────── */
-    .navbar {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: linear-gradient(180deg, rgba(15,15,15,1) 0%, rgba(15,15,15,0.98) 100%);
-      border-bottom: 1px solid rgba(220,38,38,0.1);
-      backdrop-filter: blur(10px);
-      padding: 0 40px;
-      height: 70px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    /* Warden link */
+    .nav-link {
+      position: fixed; top: 24px; right: 28px;
+      font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--dimmer); text-decoration: none;
+      transition: color 0.2s; z-index: 10;
+    }
+    .nav-link:hover { color: var(--red3); }
+
+    /* Top-left header */
+    .site-header {
+      position: relative; z-index: 10;
+      padding: 24px 28px;
+      display: flex; align-items: center;
     }
 
-    .navbar-brand {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--red-primary);
-      text-decoration: none;
-      letter-spacing: 2px;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .navbar-links {
-      display: flex;
-      gap: 40px;
-      align-items: center;
-    }
-
-    .navbar-link {
-      color: var(--text-gray);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
-    .navbar-link:hover,
-    .navbar-link.active {
-      color: var(--red-primary);
-    }
-
-    .navbar-cta {
-      background: var(--red-primary);
-      color: white;
-      padding: 10px 24px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: background 0.2s;
-    }
-
-    .navbar-cta:hover {
-      background: var(--red-light);
-    }
-
-    /* ── Page Layout ─────────────────────────────────── */
-    .page {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-    }
-
-    /* ── Hero Section ────────────────────────────────── */
-    .hero {
-      position: relative;
-      height: 500px;
-      background: linear-gradient(135deg, var(--bg-darker) 0%, rgba(26,26,26,0.8) 100%),
-                  linear-gradient(45deg, rgba(220,38,38,0.15) 0%, transparent 60%);
-      display: flex;
-      align-items: center;
-      padding: 0 40px;
-      overflow: hidden;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      right: -100px;
-      top: -100px;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(220,38,38,0.1) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 2;
-      max-width: 600px;
-    }
-
-    .hero-label {
-      color: var(--red-primary);
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 16px;
-    }
-
-    .hero-title {
-      font-size: 56px;
-      font-weight: 700;
-      color: var(--text-white);
-      margin-bottom: 16px;
-      line-height: 1.2;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .hero-description {
-      color: var(--text-gray);
-      font-size: 16px;
-      line-height: 1.6;
-      margin-bottom: 32px;
-    }
-
-    .hero-buttons {
-      display: flex;
-      gap: 16px;
-    }
-
-    .btn {
-      padding: 12px 32px;
-      border-radius: 6px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
-      text-decoration: none;
-      display: inline-block;
-    }
-
-    .btn-primary {
-      background: var(--red-primary);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--red-light);
-      transform: translateY(-2px);
-    }
-
-    .btn-secondary {
-      background: rgba(255,255,255,0.1);
-      color: var(--text-white);
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255,255,255,0.2);
-      border-color: rgba(255,255,255,0.3);
-    }
-
-    /* ── Content Grid ────────────────────────────────── */
-    .section {
-      padding: 60px 40px;
-      max-width: 1400px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    .section-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text-white);
-      margin-bottom: 32px;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .content-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-
-    .content-card {
-      position: relative;
-      aspect-ratio: 9/13;
-      border-radius: 8px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.2s, filter 0.2s;
-      background: var(--bg-card);
-      border: 1px solid rgba(220,38,38,0.1);
-    }
-
-    .content-card:hover {
-      transform: translateY(-8px);
-      filter: brightness(1.2);
-      border-color: var(--red-primary);
-    }
-
-    .content-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .content-card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%);
-    }
-
-    .content-info {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 16px;
-      color: var(--text-white);
-      z-index: 2;
-    }
-
-    .content-title {
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .content-meta {
-      font-size: 11px;
-      color: var(--text-gray);
-    }
-
-    /* ── Form Section ────────────────────────────────── */
-    #formPage {
-      display: block;
-      padding: 80px 40px;
-    }
-
-    .form-container {
-      max-width: 500px;
-      margin: 0 auto;
-      background: var(--bg-darker);
-      border: 1px solid rgba(220,38,38,0.1);
-      border-radius: 12px;
-      padding: 40px;
-    }
-
-    .form-title {
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--text-white);
-      margin-bottom: 12px;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .form-subtitle {
-      color: var(--text-gray);
-      font-size: 14px;
-      margin-bottom: 32px;
-    }
-
-    .form-section { margin-bottom: 28px; }
-
-    .section-label {
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--red-primary);
-      margin-bottom: 20px;
-    }
-
-    .field { margin-bottom: 20px; }
-
-    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media(max-width:600px) { .field-row { grid-template-columns: 1fr; } }
-
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-light);
-      margin-bottom: 8px;
-    }
-
-    label .req {
-      color: var(--red-primary);
-      margin-left: 4px;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      background: var(--bg-card);
-      border: 1px solid rgba(220,38,38,0.2);
-      border-radius: 6px;
-      color: var(--text-white);
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      padding: 12px 16px;
-      outline: none;
-      transition: border-color 0.2s, background 0.2s;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--red-primary);
-      background: rgba(220,38,38,0.05);
-    }
-
-    input::placeholder, textarea::placeholder {
-      color: var(--text-gray);
-    }
-
-    select {
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23dc2626' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 40px;
-    }
-
-    select option {
-      background: var(--bg-darker);
-      color: var(--text-white);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
-
-    .error-banner {
-      display: none;
-      background: rgba(220,38,38,0.1);
-      border: 1px solid var(--red-primary);
-      color: var(--red-light);
-      padding: 12px 16px;
-      border-radius: 6px;
-      font-size: 14px;
-      margin-bottom: 20px;
-    }
-
-    .field-error input,
-    .field-error select,
-    .field-error textarea {
-      border-color: var(--red-primary);
-      background: rgba(220,38,38,0.08);
-    }
-
-    .err-msg {
-      display: none;
-      font-size: 12px;
-      color: var(--red-light);
-      margin-top: 6px;
-    }
-
-    .field-error .err-msg { display: block; }
-
-    .submit-wrap { margin-top: 32px; }
-
-    .submit-btn {
-      background: var(--red-primary);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-family: 'Inter', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      padding: 14px;
-      width: 100%;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .submit-btn:hover {
-      background: var(--red-light);
-      transform: translateY(-2px);
-    }
-
-    .submit-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* ── Success page ───────────────────────────────── */
-    #successPage {
-      display: none;
+    /* Center content */
+    .center {
+      position: relative; z-index: 1;
       text-align: center;
-      padding: 120px 40px;
+      padding: 0 32px;
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
     }
 
-    .success-container {
-      max-width: 500px;
-      margin: 0 auto;
-    }
-
-    .success-icon {
-      width: 120px;
-      height: 120px;
-      margin: 0 auto 32px;
-      background: rgba(220,38,38,0.1);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 60px;
-    }
-
-    .success-title {
-      font-size: 32px;
+    /* Title — top left, small */
+    .title {
+      font-size: 22px;
       font-weight: 700;
-      color: var(--text-white);
-      margin-bottom: 16px;
-      font-family: 'Poppins', sans-serif;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--red3);
+      line-height: 1;
+      user-select: none;
     }
 
-    .success-body {
-      color: var(--text-gray);
-      font-size: 16px;
-      line-height: 1.6;
+    /* Gold rule */
+    .rule {
+      width: 100%;
+      max-width: 480px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--red2), transparent);
+      margin: 0 auto 48px;
     }
 
-    /* ── Footer ──────────────────────────────────────– */
+    /* Two paths */
+    .paths {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .path-link {
+      font-size: 13px;
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      color: var(--dim);
+      text-decoration: none;
+      padding: 14px 0;
+      width: 240px;
+      text-align: center;
+      border: 1px solid transparent;
+      transition: all 0.25s;
+      display: block;
+    }
+
+    .path-link.primary {
+      border-color: var(--red2);
+      color: var(--red3);
+    }
+
+    .path-link.primary:hover {
+      background: rgba(178,34,34,0.1);
+      color: var(--bone2);
+      border-color: var(--red3);
+    }
+
+    .path-link.secondary {
+      border-color: var(--dimmer);
+      color: var(--dim);
+    }
+
+    .path-link.secondary:hover {
+      border-color: var(--dim);
+      color: var(--bone);
+    }
+
+    /* Divider between paths */
+    .path-or {
+      font-size: 9px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--dimmer);
+    }
+
+    /* Footer */
     footer {
-      padding: 40px;
-      text-align: center;
-      border-top: 1px solid rgba(220,38,38,0.1);
-      color: var(--text-gray);
-      font-size: 14px;
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    footer p {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--dimmer);
     }
 
     footer a {
-      color: var(--red-primary);
+      color: var(--dimmer);
       text-decoration: none;
-      transition: color 0.2s;
     }
 
-    footer a:hover {
-      color: var(--red-light);
+    footer a:hover { color: var(--red3); }
+
+    /* Torch */
+    .torch-link {
+      display: inline-block; vertical-align: middle;
+      margin-left: 8px; opacity: 0.3;
+      transition: opacity 0.3s; cursor: pointer; line-height: 0;
+    }
+    .torch-link:hover { opacity: 0.9; }
+    #torchCanvas { image-rendering: pixelated; display: block; }
+
+    /* Corner gif — desktop only */
+    .corner-gif {
+      position: fixed; bottom: 16px; right: 16px;
+      width: 88px; height: 88px;
+      object-fit: contain; image-rendering: pixelated;
+      z-index: 50; pointer-events: none; opacity: 0.85;
     }
 
-    /* ── Responsive ──────────────────────────────────– */
-    @media (max-width: 768px) {
-      .navbar {
-        padding: 0 20px;
-      }
-
-      .navbar-links {
-        gap: 20px;
-      }
-
-      .hero {
-        height: 350px;
-        padding: 0 20px;
-      }
-
-      .hero-title {
-        font-size: 36px;
-      }
-
-      .hero-buttons {
-        flex-direction: column;
-      }
-
-      .section {
-        padding: 40px 20px;
-      }
-
-      .form-container {
-        padding: 32px 20px;
-      }
-
-      .content-grid {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      }
-    }
-
-    @media (max-width: 480px) {
-      .navbar-links {
-        display: none;
-      }
-
-      .hero-title {
-        font-size: 28px;
-      }
-
-      .section-title {
-        font-size: 20px;
-      }
-
-      .content-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    @media (max-width: 767px) {
+      .corner-gif { display: none; }
+      .site-header { padding: 20px 20px; }
+      .title { font-size: 18px; }
+      .path-link { width: 180px; font-size: 12px; letter-spacing: 0.35em; padding: 12px 0; }
     }
   </style>
 </head>
 <body>
 
-<!-- Navigation -->
-<nav class="navbar">
-  <a href="/" class="navbar-brand">DUNGEON</a>
-  <div class="navbar-links">
-    <a href="#browse" class="navbar-link">Browse</a>
-    <a href="#new" class="navbar-link">New</a>
-    <a href="/login.html" class="navbar-link">My List</a>
-    <a href="/admin.html" class="navbar-link navbar-cta">Admin</a>
-  </div>
-</nav>
+<img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
+<a href="/admin.html" class="nav-link">Warden ↗</a>
 
-<div class="page">
-
-  <!-- Featured Hero -->
-  <section class="hero">
-    <div class="hero-content">
-      <div class="hero-label">New Entry</div>
-      <h1 class="hero-title">Join the Dungeon</h1>
-      <p class="hero-description">
-        Get instant access to your library. Manage your Stremio account, track your subscriptions, and unlock exclusive features.
-      </p>
-      <div class="hero-buttons">
-        <button class="btn btn-primary" onclick="document.querySelector('#formPage').scrollIntoView({behavior: 'smooth'})">Request Access</button>
-        <button class="btn btn-secondary" onclick="alert('Coming soon')">Learn More</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Popular Content Section -->
-  <section class="section">
-    <h2 class="section-title">Featured Collections</h2>
-    <div class="content-grid">
-      <div class="content-card">
-        <div style="background: linear-gradient(135deg, #dc2626, #991b1b); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">🎬</div>
-        <div class="content-info">
-          <div class="content-title">Premium Access</div>
-          <div class="content-meta">Top Tier</div>
-        </div>
-      </div>
-      <div class="content-card">
-        <div style="background: linear-gradient(135deg, #991b1b, #7f1d1d); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">👑</div>
-        <div class="content-info">
-          <div class="content-title">Elite Collection</div>
-          <div class="content-meta">Exclusive</div>
-        </div>
-      </div>
-      <div class="content-card">
-        <div style="background: linear-gradient(135deg, #7f1d1d, #5f1f1f); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">⚔️</div>
-        <div class="content-info">
-          <div class="content-title">Warrior's Pick</div>
-          <div class="content-meta">Best Rated</div>
-        </div>
-      </div>
-      <div class="content-card">
-        <div style="background: linear-gradient(135deg, #5f1f1f, #3f1f1f); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">🔥</div>
-        <div class="content-info">
-          <div class="content-title">Trending Now</div>
-          <div class="content-meta">Popular</div>
-        </div>
-      </div>
-      <div class="content-card">
-        <div style="background: linear-gradient(135deg, #ef4444, #dc2626); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">🎯</div>
-        <div class="content-info">
-          <div class="content-title">Staff Picks</div>
-          <div class="content-meta">Curated</div>
-        </div>
-      </div>
-      <div class="content-card">
-        <div style="background: linear-gradient(135deg, #dc2626, #b91c1c); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px;">🏆</div>
-        <div class="content-info">
-          <div class="content-title">Awards</div>
-          <div class="content-meta">Recognition</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Request Access Form -->
-  <div id="formPage" style="display: none;">
-    <section class="section">
-      <div class="form-container">
-        <h2 class="form-title">Request Access</h2>
-        <p class="form-subtitle">Fill in your details below and we'll get you started</p>
-
-        <div class="error-banner" id="errorBanner"></div>
-
-        <div class="form-section">
-          <div class="section-label">Your Information</div>
-          <div class="field-row">
-            <div class="field" id="grp-first_name">
-              <label>First Name <span class="req">*</span></label>
-              <input type="text" id="first_name" placeholder="John" autocomplete="given-name" />
-              <div class="err-msg">Required</div>
-            </div>
-            <div class="field" id="grp-last_name">
-              <label>Last Name <span class="req">*</span></label>
-              <input type="text" id="last_name" placeholder="Doe" autocomplete="family-name" />
-              <div class="err-msg">Required</div>
-            </div>
-          </div>
-          <div class="field" id="grp-email">
-            <label>Email <span class="req">*</span></label>
-            <input type="email" id="email" placeholder="john@example.com" autocomplete="email" />
-            <div class="err-msg">A valid email is required</div>
-          </div>
-          <div class="field">
-            <label>Phone (Optional)</label>
-            <input type="tel" id="phone" placeholder="+1 (555) 123-4567" autocomplete="tel" />
-          </div>
-        </div>
-
-        <div class="form-section">
-          <div class="section-label">Preferences</div>
-          <div class="field">
-            <label>Subtitle Language</label>
-            <select id="language">
-              <option value="">Select a language...</option>
-              <option>English</option>
-              <option>Spanish</option>
-              <option>French</option>
-              <option>Portuguese</option>
-              <option>German</option>
-              <option>Italian</option>
-              <option>Arabic</option>
-              <option>Chinese (Simplified)</option>
-              <option>Japanese</option>
-              <option>Korean</option>
-              <option>Hindi</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>How did you hear about us?</label>
-            <input type="text" id="referral" placeholder="Friend, Search, Social Media..." />
-          </div>
-          <div class="field">
-            <label>Additional Notes</label>
-            <textarea id="notes" placeholder="Tell us anything else we should know..."></textarea>
-          </div>
-        </div>
-
-        <div class="submit-wrap">
-          <button class="submit-btn" id="submitBtn" onclick="submitForm()">Request Access</button>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <!-- Success Page -->
-  <div id="successPage">
-    <section class="section">
-      <div class="success-container">
-        <div class="success-icon">✓</div>
-        <h2 class="success-title">Request Received</h2>
-        <p class="success-body">
-          Thank you for your interest in joining the Dungeon. We've received your request and our team will review it shortly. Check your email for updates.
-        </p>
-      </div>
-    </section>
-  </div>
-
-  <footer>
-    <p>© 2024 DUNGEON Streaming. All rights reserved. | <a href="/admin.html">Admin</a> | <a href="/">Home</a></p>
-  </footer>
+<div class="site-header">
+  <div class="title">Dungeon</div>
 </div>
 
+<div class="center">
+  <a href="/apply.html" class="path-link primary">Seek Entry</a>
+</div>
+
+<footer>
+  <p>
+    <a href="/admin.html">Warden's Gate</a>
+    <a href="/login.html" class="torch-link" title=""><canvas id="torchCanvas" width="14" height="20"></canvas></a>
+  </p>
+</footer>
+
 <script>
-  function validate() {
-    let ok = true;
-    const checks = {
-      first_name: v => v.trim().length > 0,
-      last_name:  v => v.trim().length > 0,
-      email:      v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
-    };
-    for (const [id, check] of Object.entries(checks)) {
-      const grp = document.getElementById('grp-' + id);
-      if (!check(document.getElementById(id).value)) {
-        grp.classList.add('field-error');
-        ok = false;
-      } else {
-        grp.classList.remove('field-error');
-      }
-    }
-    return ok;
-  }
-
-  async function submitForm() {
-    if (!validate()) return;
-    const btn = document.getElementById('submitBtn');
-    const banner = document.getElementById('errorBanner');
-    btn.disabled = true;
-    btn.textContent = 'Submitting…';
-    banner.style.display = 'none';
-
-    const body = {
-      first_name: document.getElementById('first_name').value.trim(),
-      last_name: document.getElementById('last_name').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      phone: document.getElementById('phone').value.trim(),
-      language: document.getElementById('language').value,
-      referral: document.getElementById('referral').value.trim(),
-      notes: document.getElementById('notes').value.trim(),
-    };
-
-    try {
-      const res = await fetch('/api/apply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+  // Pixel torch
+  (function() {
+    const canvas = document.getElementById('torchCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const S = 2;
+    const C = { _:null, B:'#5a3010', K:'#3a1a08', O:'#d05010', Y:'#f0b020', r:'#b83010', o:'#e07020' };
+    const frames = [
+      ['__YY___','_YYoY__','_YOrO__','__rO___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
+      ['___Y___','__YOY__','_YOrO__','_OYr___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
+      ['__YY___','_oYY___','__OrY__','__rO___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
+    ];
+    let frame = 0, tick = 0;
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      frames[frame % frames.length].forEach((row, ry) => {
+        [...row].forEach((ch, rx) => { const c = C[ch]; if (c) { ctx.fillStyle = c; ctx.fillRect(rx*S, ry*S, S, S); } });
       });
-      const data = await res.json();
-      if (res.ok) {
-        document.getElementById('formPage').style.display = 'none';
-        document.getElementById('successPage').style.display = 'block';
-        window.scrollTo(0, 0);
-      } else {
-        banner.textContent = data.error || 'Your request could not be processed.';
-        banner.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = 'Request Access';
-      }
-    } catch (error) {
-      banner.textContent = 'Connection error. Please try again.';
-      banner.style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = 'Request Access';
     }
-  }
-
-  ['first_name', 'last_name', 'email'].forEach(id => {
-    document.getElementById(id).addEventListener('blur', validate);
-  });
+    (function loop() { tick++; if (tick % 6 === 0) frame++; draw(); requestAnimationFrame(loop); })();
+  })();
 </script>
 </body>
 </html>

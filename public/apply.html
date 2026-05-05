@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DUNGEON · Apply</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:  #000000;
+      --deep:   #0c0808;
+      --red:    #8b1a1a;
+      --red2:   #b22222;
+      --red3:   #cc3333;
+      --ember:  #c8601a;
+      --bone:   #d4c4a8;
+      --bone2:  #e8dcc8;
+      --dim:    #6a5a4a;
+      --dimmer: #3a2a20;
+      --line:   rgba(180,50,50,0.2);
+      --line2:  rgba(180,50,50,0.4);
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--black);
+      color: var(--bone);
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 15px;
+    }
+
+    body { display: flex; flex-direction: column; align-items: center; }
+
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse 120% 120% at 50% 50%, transparent 40%, rgba(0,0,0,0.65) 100%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── Corner GIF ─────────────────────────────────── */
+    .corner-gif {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      image-rendering: pixelated;
+      z-index: 50;
+      pointer-events: none;
+      opacity: 0.9;
+    }
+
+    .red-rule {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--red2), transparent);
+    }
+
+    .red-rule-sm {
+      width: 60px; height: 1px;
+      background: var(--red2); opacity: 0.6; margin: 0 auto;
+    }
+
+    .page {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 540px;
+      padding: 0 28px 100px;
+    }
+
+    header {
+      padding: 52px 0 0;
+      margin-bottom: 48px;
+      text-align: center;
+    }
+
+    .site-name {
+      font-size: 36px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--red3);
+      text-shadow: 0 0 40px rgba(180,40,40,0.45);
+      margin-bottom: 16px;
+    }
+
+    /* ── Form page ──────────────────────────────────── */
+    #formPage { display: block; }
+
+    .hero { text-align: center; margin-bottom: 52px; }
+
+    .eyebrow {
+      font-size: 11px; letter-spacing: 0.4em; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(28px, 5vw, 40px); font-weight: 400;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--bone2); line-height: 1.25; margin-bottom: 22px;
+    }
+
+    .hero-sub {
+      font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--dim); line-height: 2.2;
+    }
+
+    .form-section { margin-bottom: 32px; }
+
+    .section-label {
+      font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
+      color: var(--red2); font-weight: 400;
+      display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+    }
+    .section-label::before, .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--line2);
+    }
+
+    .field { margin-bottom: 20px; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:440px) { .field-row { grid-template-columns: 1fr; } }
+
+    label {
+      display: block; font-size: 10px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--dim); margin-bottom: 9px;
+    }
+    label .req { color: var(--red2); margin-left: 3px; }
+
+    input, select, textarea {
+      width: 100%; background: transparent; border: none;
+      border-bottom: 1px solid var(--line2);
+      color: var(--bone2); font-family: 'Cinzel', Georgia, serif;
+      font-size: 14px; letter-spacing: 0.05em; padding: 10px 0;
+      outline: none; transition: border-color 0.2s; border-radius: 0; appearance: none;
+    }
+    input:focus, select:focus, textarea:focus { border-bottom-color: var(--red3); }
+    input::placeholder, textarea::placeholder { color: var(--dimmer); font-size: 13px; }
+
+    select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(180,50,50,0.6)'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 2px center; padding-right: 18px;
+    }
+    select option { background: #0c0808; }
+    textarea { resize: none; height: 72px; line-height: 1.7; }
+
+    .error-banner {
+      display: none; font-size: 11px; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--red3);
+      text-align: center; margin-bottom: 20px;
+    }
+
+    .field-error input,
+    .field-error select,
+    .field-error textarea { border-bottom-color: var(--red2); }
+
+    .err-msg {
+      display: none; font-size: 10px; letter-spacing: 0.15em;
+      color: var(--red2); margin-top: 5px; text-transform: uppercase;
+    }
+    .field-error .err-msg { display: block; }
+
+    .submit-wrap { margin-top: 40px; text-align: center; }
+
+    .submit-btn {
+      background: transparent; border: 1px solid var(--red2);
+      color: var(--red3); font-family: 'Cinzel', Georgia, serif;
+      font-size: 13px; letter-spacing: 0.4em; text-transform: uppercase;
+      padding: 16px 0; width: 100%; cursor: pointer; transition: all 0.2s;
+    }
+    .submit-btn:hover { background: rgba(180,34,34,0.1); color: var(--bone2); border-color: var(--red3); }
+    .submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* ── Success page ───────────────────────────────── */
+    #successPage {
+      display: none;
+      text-align: center;
+      padding: 80px 0 0;
+    }
+
+    .success-gif {
+      width: 140px;
+      height: 140px;
+      object-fit: contain;
+      image-rendering: pixelated;
+      margin: 0 auto 40px;
+      display: block;
+      opacity: 0.95;
+    }
+
+    .success-eyebrow {
+      font-size: 10px; letter-spacing: 0.5em; text-transform: uppercase;
+      color: var(--red2); display: block; margin-bottom: 20px;
+    }
+
+    .success-title {
+      font-size: 24px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--bone2); margin-bottom: 24px; font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .success-rule { margin-bottom: 28px; }
+
+    .success-body {
+      font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--dim); line-height: 2.4;
+    }
+
+    /* Nav */
+    .nav-link {
+      position: fixed; top: 24px; right: 24px;
+      font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--dimmer); text-decoration: none; transition: color 0.2s; z-index: 10;
+    }
+    .nav-link:hover { color: var(--red3); }
+
+    footer { padding: 48px 0 0; text-align: center; }
+    footer p { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dimmer); }
+    footer a { color: var(--dimmer); text-decoration: none; }
+    footer a:hover { color: var(--red3); }
+    .torch-link { display: inline-block; vertical-align: middle; margin-left: 10px; opacity: 0.3; transition: opacity 0.3s; cursor: pointer; line-height: 0; }
+    .torch-link:hover { opacity: 0.9; }
+    #torchCanvas { image-rendering: pixelated; display: block; }
+  </style>
+</head>
+<body>
+
+<img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
+<a href="/" class="nav-link">← Home</a>
+
+<div class="page">
+
+  <header>
+    <div class="site-name">Dungeon</div>
+    <div class="red-rule"></div>
+  </header>
+
+  <!-- Form page -->
+  <div id="formPage">
+    <div class="hero">
+      <div class="eyebrow">Invitation Only</div>
+      <h1>Seek Entry</h1>
+      <div class="red-rule-sm" style="margin-bottom:22px"></div>
+      <p class="hero-sub">
+        Complete the scroll below.<br>
+        The keeper shall prepare thy passage.
+      </p>
+    </div>
+
+    <div class="error-banner" id="errorBanner"></div>
+
+    <div class="form-section">
+      <div class="section-label">Identity</div>
+      <div class="field-row">
+        <div class="field" id="grp-first_name">
+          <label>Given Name <span class="req">*</span></label>
+          <input type="text" id="first_name" placeholder="—" autocomplete="given-name" />
+          <div class="err-msg">Required</div>
+        </div>
+        <div class="field" id="grp-last_name">
+          <label>Family Name <span class="req">*</span></label>
+          <input type="text" id="last_name" placeholder="—" autocomplete="family-name" />
+          <div class="err-msg">Required</div>
+        </div>
+      </div>
+      <div class="field" id="grp-email">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" id="email" placeholder="name@realm.com" autocomplete="email" />
+        <div class="err-msg">A valid address is required</div>
+      </div>
+      <div class="field">
+        <label>Phone</label>
+        <input type="tel" id="phone" placeholder="—" autocomplete="tel" />
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">Preferences</div>
+      <div class="field">
+        <label>Subtitle Language</label>
+        <select id="language">
+          <option value="">— Select —</option>
+          <option>English</option><option>Spanish</option><option>French</option>
+          <option>Portuguese</option><option>German</option><option>Italian</option>
+          <option>Arabic</option><option>Chinese (Simplified)</option>
+          <option>Japanese</option><option>Korean</option><option>Hindi</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Who Referred You</label>
+        <input type="text" id="referral" placeholder="—" />
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="notes" placeholder="Special requirements…"></textarea>
+      </div>
+    </div>
+
+    <div class="red-rule"></div>
+    <div class="submit-wrap">
+      <button class="submit-btn" id="submitBtn" onclick="submitForm()">Present Scroll</button>
+    </div>
+  </div>
+
+  <!-- Success page — replaces everything -->
+  <div id="successPage">
+    <img class="success-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="Barbarian" />
+    <span class="success-eyebrow">— Received —</span>
+    <div class="success-title">Thy Scroll Has<br>Been Delivered</div>
+    <div class="red-rule success-rule"></div>
+    <p class="success-body">
+      The keeper has been summoned.<br>
+      Await word at thy courier address.
+    </p>
+  </div>
+
+  <footer>
+    <p>Dungeon &mdash; <a href="/admin.html">Warden's Gate</a></p>
+  </footer>
+</div>
+
+<script>
+  function validate() {
+    let ok = true;
+    const checks = {
+      first_name: v => v.trim().length > 0,
+      last_name:  v => v.trim().length > 0,
+      email:      v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+    };
+    for (const [id, check] of Object.entries(checks)) {
+      const grp = document.getElementById('grp-' + id);
+      if (!check(document.getElementById(id).value)) {
+        grp.classList.add('field-error'); ok = false;
+      } else {
+        grp.classList.remove('field-error');
+      }
+    }
+    return ok;
+  }
+
+  async function submitForm() {
+    if (!validate()) return;
+    const btn    = document.getElementById('submitBtn');
+    const banner = document.getElementById('errorBanner');
+    btn.disabled = true;
+    btn.textContent = 'Delivering…';
+    banner.style.display = 'none';
+
+    const body = {
+      first_name: document.getElementById('first_name').value.trim(),
+      last_name:  document.getElementById('last_name').value.trim(),
+      email:      document.getElementById('email').value.trim(),
+      phone:      document.getElementById('phone').value.trim(),
+      language:   document.getElementById('language').value,
+      referral:   document.getElementById('referral').value.trim(),
+      notes:      document.getElementById('notes').value.trim(),
+    };
+
+    try {
+      const res  = await fetch('/api/apply', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('formPage').style.display = 'none';
+        document.getElementById('successPage').style.display = 'block';
+        // hide the corner gif since we show one centered now
+        document.querySelector('.corner-gif').style.display = 'none';
+      } else {
+        banner.textContent = data.error || 'The scroll was rejected.';
+        banner.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Present Scroll';
+      }
+    } catch {
+      banner.textContent = 'Connection lost. Try again.';
+      banner.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Present Scroll';
+    }
+  }
+
+  ['first_name','last_name','email'].forEach(id => {
+    document.getElementById(id).addEventListener('blur', validate);
+  });
+</script>
+
+</body>
+</html>
