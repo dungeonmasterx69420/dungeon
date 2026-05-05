@@ -43,21 +43,23 @@
       pointer-events: none; z-index: 0;
     }
 
-    /* Warden link */
-    .nav-link {
-      position: fixed; top: 24px; right: 28px;
-      font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--dimmer); text-decoration: none;
-      transition: color 0.2s; z-index: 10;
-    }
-    .nav-link:hover { color: var(--red3); }
-
-    /* Top-left header */
-    .site-header {
+    /* Topbar */
+    .topbar {
       position: relative; z-index: 10;
-      padding: 24px 28px;
-      display: flex; align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding: 16px 28px;
+      display: flex; align-items: center; justify-content: space-between;
     }
+
+    .topbar-right {
+      display: flex; align-items: center; gap: 20px;
+    }
+
+    .warden-link {
+      font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--dim); text-decoration: none; transition: color 0.2s;
+    }
+    .warden-link:hover { color: var(--red3); }
 
     /* Center content */
     .center {
@@ -140,39 +142,12 @@
       color: var(--dimmer);
     }
 
-    /* Footer */
-    footer {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    footer p {
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--dimmer);
-    }
-
-    footer a {
-      color: var(--dimmer);
-      text-decoration: none;
-    }
-
-    footer a:hover { color: var(--red3); }
-
     /* Torch */
     .torch-link {
       display: inline-block; vertical-align: middle;
-      margin-left: 8px; opacity: 0.3;
-      transition: opacity 0.3s; cursor: pointer; line-height: 0;
+      opacity: 0.35; transition: opacity 0.3s; cursor: pointer; line-height: 0;
     }
-    .torch-link:hover { opacity: 0.9; }
+    .torch-link:hover { opacity: 1; }
     #torchCanvas { image-rendering: pixelated; display: block; }
 
     /* Corner gif — desktop only */
@@ -185,7 +160,7 @@
 
     @media (max-width: 767px) {
       .corner-gif { display: none; }
-      .site-header { padding: 20px 20px; }
+      .topbar { padding: 14px 20px; }
       .title { font-size: 18px; }
       .path-link { width: 180px; font-size: 12px; letter-spacing: 0.35em; padding: 12px 0; }
     }
@@ -194,22 +169,17 @@
 <body>
 
 <img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
-<a href="/admin.html" class="nav-link">Warden ↗</a>
-
-<div class="site-header">
-  <div class="title">Dungeon</div>
+<div class="topbar">
+  <a href="/" class="title" style="text-decoration:none">Dungeon</a>
+  <div class="topbar-right">
+    <a href="/admin.html" class="warden-link">Warden</a>
+    <a href="/login.html" class="torch-link" title="Member login"><canvas id="torchCanvas" width="14" height="20"></canvas></a>
+  </div>
 </div>
 
 <div class="center">
   <a href="/apply.html" class="path-link primary">Seek Entry</a>
 </div>
-
-<footer>
-  <p>
-    <a href="/admin.html">Warden's Gate</a>
-    <a href="/login.html" class="torch-link" title=""><canvas id="torchCanvas" width="14" height="20"></canvas></a>
-  </p>
-</footer>
 
 <script>
   // Pixel torch
