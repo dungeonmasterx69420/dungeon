@@ -239,10 +239,12 @@
 
       /* Tiles — 2 col on mobile */
       .tiles {
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-wrap: wrap;
         gap: 2px;
         margin-bottom: 32px;
       }
+      .tiles .tile { width: calc(50% - 1px); }
 
       .tile {
         padding: 32px 14px;
@@ -272,7 +274,7 @@
 
 <!-- Topbar -->
 <div class="topbar">
-  <div class="topbar-name">Dungeon</div>
+  <a href="/" class="topbar-name" style="text-decoration:none">Dungeon</a>
   <!-- Desktop: greeting + leave -->
   <div class="topbar-right">
     <span class="greeting" id="greeting"></span>
@@ -304,7 +306,7 @@
   <div class="section-head">The Vault</div>
   <div class="tiles">
 
-    <a class="tile" href="https://web.stremio.com" target="_blank" rel="noopener">
+    <a class="tile" href="https://web.stremio.com" target="_blank" rel="noopener" style="order:1">
       <img class="tile-img" src="https://www.stremio.com/website/stremio-logo-small.png"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'" alt="Stremio" />
       <span class="tile-icon" style="display:none">📺</span>
@@ -315,7 +317,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/guides.html">
+    <a class="tile" href="/guides.html" style="order:2">
       <span class="tile-icon">📜</span>
       <div>
         <div class="tile-label">Setup Help</div>
@@ -324,7 +326,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/suggest.html">
+    <a class="tile" href="/suggest.html" style="order:6">
       <span class="tile-icon">🔥</span>
       <div>
         <div class="tile-label">Ideas</div>
@@ -333,7 +335,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/renew.html">
+    <a class="tile" href="/renew.html" style="order:3">
       <span class="tile-icon">⚔️</span>
       <div>
         <div class="tile-label">Monthly</div>
@@ -342,7 +344,7 @@
       </div>
     </a>
 
-    <a class="tile" href="https://buymeacoffee.com/enterdungeon" target="_blank" rel="noopener">
+    <a class="tile" href="https://buymeacoffee.com/enterdungeon" target="_blank" rel="noopener" style="order:5">
       <img class="tile-img"
            src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'" alt="Buy Me a Coffee" />
@@ -354,7 +356,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/support.html">
+    <a class="tile" href="/support.html" style="order:4">
       <span class="tile-icon">🛡️</span>
       <div>
         <div class="tile-label">Help</div>
