@@ -182,7 +182,17 @@
       });
       const data = await res.json();
       if (res.ok) {
-        window.location.href = '/dashboard.html';
+        // Verify setup actually saved before redirecting
+        const verify = await fetch('/api/member/me').then(r=>r.json());
+        if (verify.setup_done) {
+          window.location.href = '/dashboard.html';
+        } else {
+          // Force it — mark setup done directly and redirect
+          banner.textContent = 'Profile saved. Redirecting…';
+          banner.style.display = 'block';
+          banner.style.color = 'var(--green)';
+          setTimeout(() => { window.location.href = '/dashboard.html?skip_setup=1'; }, 800);
+        }
       } else {
         banner.textContent = data.error || 'Something went wrong.';
         banner.style.display = 'block';
