@@ -279,7 +279,7 @@ app.get('/api/member/me', (req, res) => {
     subscription_start: m.subscription_start, subscription_end: m.subscription_end,
     stremio_email: m.stremio_email,
     profile: profile || null,
-    setup_done: profile?.setup_done || 0,
+    setup_done: profile ? (profile.setup_done || 0) : 0,
   }});
 });
 
@@ -316,12 +316,21 @@ app.post('/api/member/profile/setup', requireMember, (req, res) => {
   const existing = db.prepare('SELECT id FROM profiles WHERE LOWER(screen_name)=LOWER(?) AND member_id!=?').get(screen_name, req.session.member.id);
   if (existing) return res.status(400).json({ error: 'That username is already taken.' });
 
-  const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id);
+  let profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id);
+  // Fallback: find by email if member_id link is missing (existing members)
+  if (!profile) {
+    profile = db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
+    if (profile) {
+      // Link the member_id so future lookups work
+      db.prepare('UPDATE profiles SET member_id=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run(req.session.member.id, profile.id);
+      db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(profile.id, req.session.member.id);
+    }
+  }
   if (profile) {
-    db.prepare('UPDATE profiles SET screen_name=?, avatar_color=?, setup_done=1, updated_at=CURRENT_TIMESTAMP WHERE member_id=?')
-      .run(screen_name.trim(), avatar_color || profile.avatar_color, req.session.member.id);
+    db.prepare('UPDATE profiles SET screen_name=?, avatar_color=?, setup_done=1, updated_at=CURRENT_TIMESTAMP WHERE id=?')
+      .run(screen_name.trim(), avatar_color || profile.avatar_color, profile.id);
   } else {
-    db.prepare(`INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, setup_done) VALUES (?,?,?,?,?,?,1)`)
+    db.prepare('INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, setup_done) VALUES (?,?,?,?,?,?,1)')
       .run(genId(), screen_name.trim(), req.session.member.email, avatar_color || avatarColors(), 'member', req.session.member.id);
   }
   res.json({ ok: true });
