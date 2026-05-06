@@ -35,6 +35,10 @@
     footer a{color:var(--muted);text-decoration:none}
     footer a:hover{color:var(--text)}
   </style>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
 </head>
 <body>
 <div class="topbar">
@@ -43,7 +47,7 @@
 <div class="center">
   <div class="card">
     <div class="card-title">Member Sign In</div>
-    <div class="card-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Use your Stremio credentials to access your dashboard.</div>
+    <div class="card-sub">Sign in with your Stremio credentials.</div>
     <div class="field">
       <label>Stremio Email</label>
       <input type="email" id="email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')login()"/>

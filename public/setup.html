@@ -138,7 +138,8 @@
   // Guard
   fetch('/api/member/me').then(r=>r.json()).then(d=>{
     if (!d.authenticated) { window.location.href='/login.html'; return; }
-    if (d.member?.setup_done) { window.location.href='/dashboard.html'; return; }
+    const isEditing = new URLSearchParams(window.location.search).get('edit');
+    if (d.member?.setup_done && !isEditing) { window.location.href='/dashboard.html'; return; }
     // Pre-fill with placeholder name (auto-generated from first name) as a suggestion
     const sn = d.member?.profile?.screen_name || d.member?.first_name || '';
     if (sn) {
