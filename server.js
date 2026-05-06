@@ -74,6 +74,45 @@ db.exec(`
     updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
+
+  CREATE TABLE IF NOT EXISTS forum_categories (
+    id          TEXT PRIMARY KEY,
+    name        TEXT NOT NULL,
+    description TEXT,
+    position    INTEGER DEFAULT 0,
+    restricted  INTEGER DEFAULT 0,
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS forum_threads (
+    id           TEXT PRIMARY KEY,
+    category_id  TEXT NOT NULL,
+    profile_id   TEXT NOT NULL,
+    title        TEXT NOT NULL,
+    pinned       INTEGER DEFAULT 0,
+    locked       INTEGER DEFAULT 0,
+    post_count   INTEGER DEFAULT 0,
+    last_post_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS forum_posts (
+    id         TEXT PRIMARY KEY,
+    thread_id  TEXT NOT NULL,
+    profile_id TEXT NOT NULL,
+    content    TEXT NOT NULL,
+    edited_at  DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS forum_notifications (
+    id         TEXT PRIMARY KEY,
+    profile_id TEXT NOT NULL,
+    thread_id  TEXT NOT NULL,
+    post_id    TEXT NOT NULL,
+    read       INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
   CREATE TABLE IF NOT EXISTS support_messages (
     id           TEXT PRIMARY KEY,
     member_id    TEXT NOT NULL,
@@ -158,6 +197,24 @@ function emailExpired(firstName) {
 function emailModApproval(applicantName, screenName, applicantEmail, applicantId) {
   return emailShell(`<h2>Mod Approval — Action Required</h2><div class="rule"></div><p>A moderator has approved an application. You need to create their Stremio account and grant access.</p><div class="box"><div class="row"><span class="lbl">Name</span><span class="val">${applicantName}</span></div><div class="row"><span class="lbl">Username</span><span class="val">@${screenName}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${applicantEmail}</span></div></div><p>Log into the admin panel and grant access to complete the process.</p><a href="${SITE_URL}/admin.html" class="btn">Open Admin Panel</a>`);
 }
+
+
+// ── Seed forum categories ─────────────────────────────────────────────────────
+(function seedCategories() {
+  const count = db.prepare('SELECT COUNT(*) as n FROM forum_categories').get().n;
+  if (count > 0) return;
+  const cats = [
+    { id: genId(), name: 'Announcements', description: 'Official updates from the Warden.', position: 0, restricted: 1 },
+    { id: genId(), name: 'General',       description: 'General discussion for members.',   position: 1, restricted: 0 },
+    { id: genId(), name: 'Help & Support',description: 'Need help? Ask here.',              position: 2, restricted: 0 },
+    { id: genId(), name: 'Recommendations',description: 'Share and discover great content.', position: 3, restricted: 0 },
+    { id: genId(), name: 'Off Topic',     description: 'Anything goes.',                    position: 4, restricted: 0 },
+  ];
+  for (const c of cats) {
+    db.prepare('INSERT INTO forum_categories (id,name,description,position,restricted) VALUES (?,?,?,?,?)').run(c.id,c.name,c.description,c.position,c.restricted);
+  }
+  console.log('[forum] Default categories seeded');
+})();
 
 // ── Cron ──────────────────────────────────────────────────────────────────────
 function runSubscriptionCron() {
@@ -569,6 +626,202 @@ app.patch('/api/support/:id/status', requireAuth, (req, res) => {
 app.delete('/api/support/:id', requireAuth, (req, res) => {
   db.prepare('DELETE FROM support_messages WHERE id=?').run(req.params.id);
   res.json({ ok: true });
+});
+
+
+// ── Forum: categories ─────────────────────────────────────────────────────────
+app.get('/api/forum/categories', requireMember, (req, res) => {
+  const cats = db.prepare('SELECT * FROM forum_categories ORDER BY position').all();
+  // Add thread + post counts
+  const result = cats.map(c => ({
+    ...c,
+    thread_count: db.prepare('SELECT COUNT(*) as n FROM forum_threads WHERE category_id=?').get(c.id).n,
+    post_count:   db.prepare('SELECT COUNT(*) as n FROM forum_posts p JOIN forum_threads t ON p.thread_id=t.id WHERE t.category_id=?').get(c.id).n,
+    last_thread:  db.prepare('SELECT t.id, t.title, t.last_post_at, p.screen_name FROM forum_threads t JOIN profiles p ON t.profile_id=p.id WHERE t.category_id=? ORDER BY t.last_post_at DESC LIMIT 1').get(c.id) || null,
+  }));
+  res.json(result);
+});
+
+// ── Forum: threads in category ────────────────────────────────────────────────
+app.get('/api/forum/categories/:id/threads', requireMember, (req, res) => {
+  const threads = db.prepare(`
+    SELECT t.*, p.screen_name, p.avatar_url, p.avatar_color, p.tier,
+           (SELECT COUNT(*) FROM forum_posts WHERE thread_id=t.id) as reply_count,
+           (SELECT screen_name FROM profiles WHERE id=(SELECT profile_id FROM forum_posts WHERE thread_id=t.id ORDER BY created_at DESC LIMIT 1)) as last_poster
+    FROM forum_threads t
+    JOIN profiles p ON t.profile_id=p.id
+    WHERE t.category_id=?
+    ORDER BY t.pinned DESC, t.last_post_at DESC
+  `).all(req.params.id);
+  res.json(threads);
+});
+
+// ── Forum: single thread + posts ──────────────────────────────────────────────
+app.get('/api/forum/threads/:id', requireMember, (req, res) => {
+  const thread = db.prepare(`
+    SELECT t.*, p.screen_name, p.avatar_url, p.avatar_color, p.tier, c.name as category_name, c.id as category_id
+    FROM forum_threads t
+    JOIN profiles p ON t.profile_id=p.id
+    JOIN forum_categories c ON t.category_id=c.id
+    WHERE t.id=?
+  `).get(req.params.id);
+  if (!thread) return res.status(404).json({ error: 'Thread not found' });
+
+  const posts = db.prepare(`
+    SELECT po.*, p.screen_name, p.avatar_url, p.avatar_color, p.tier
+    FROM forum_posts po
+    JOIN profiles p ON po.profile_id=p.id
+    WHERE po.thread_id=?
+    ORDER BY po.created_at ASC
+  `).all(req.params.id);
+
+  // Mark notifications read
+  if (req.session.member) {
+    const profile = db.prepare('SELECT id FROM profiles WHERE member_id=?').get(req.session.member.id);
+    if (profile) {
+      db.prepare("UPDATE forum_notifications SET read=1 WHERE profile_id=? AND thread_id=?").run(profile.id, req.params.id);
+    }
+  }
+
+  res.json({ thread, posts });
+});
+
+// ── Forum: create thread ──────────────────────────────────────────────────────
+app.post('/api/forum/threads', requireMember, submitLimiter, (req, res) => {
+  const { category_id, title, content } = req.body;
+  if (!category_id || !title?.trim() || !content?.trim())
+    return res.status(400).json({ error: 'Category, title and content are required.' });
+  if (title.trim().length > 200)
+    return res.status(400).json({ error: 'Title must be under 200 characters.' });
+
+  const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id)
+    || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
+  if (!profile) return res.status(403).json({ error: 'Profile required.' });
+
+  // Neuts cannot post
+  if (profile.tier === 'neut') return res.status(403).json({ error: 'You must be an approved member to post.' });
+
+  // Restricted categories — only warden/admin
+  const cat = db.prepare('SELECT * FROM forum_categories WHERE id=?').get(category_id);
+  if (!cat) return res.status(404).json({ error: 'Category not found.' });
+  if (cat.restricted && !['warden','admin'].includes(profile.tier))
+    return res.status(403).json({ error: 'Only the Warden can post in Announcements.' });
+
+  const threadId = genId();
+  const postId   = genId();
+  const now = new Date().toISOString();
+
+  db.prepare('INSERT INTO forum_threads (id,category_id,profile_id,title,last_post_at) VALUES (?,?,?,?,?)')
+    .run(threadId, category_id, profile.id, title.trim(), now);
+  db.prepare('INSERT INTO forum_posts (id,thread_id,profile_id,content) VALUES (?,?,?,?)')
+    .run(postId, threadId, profile.id, content.trim());
+  db.prepare('UPDATE forum_threads SET post_count=1 WHERE id=?').run(threadId);
+
+  res.json({ ok: true, thread_id: threadId });
+});
+
+// ── Forum: reply to thread ────────────────────────────────────────────────────
+app.post('/api/forum/threads/:id/posts', requireMember, submitLimiter, (req, res) => {
+  const { content } = req.body;
+  if (!content?.trim()) return res.status(400).json({ error: 'Reply cannot be empty.' });
+
+  const thread = db.prepare('SELECT * FROM forum_threads WHERE id=?').get(req.params.id);
+  if (!thread) return res.status(404).json({ error: 'Thread not found.' });
+  if (thread.locked) return res.status(403).json({ error: 'This thread is locked.' });
+
+  const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id)
+    || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
+  if (!profile) return res.status(403).json({ error: 'Profile required.' });
+  if (profile.tier === 'neut') return res.status(403).json({ error: 'You must be an approved member to post.' });
+
+  const postId = genId();
+  const now    = new Date().toISOString();
+
+  db.prepare('INSERT INTO forum_posts (id,thread_id,profile_id,content) VALUES (?,?,?,?)').run(postId, thread.id, profile.id, content.trim());
+  db.prepare('UPDATE forum_threads SET post_count=post_count+1, last_post_at=? WHERE id=?').run(now, thread.id);
+
+  // Notify thread author and anyone who replied (except poster)
+  const notifyProfiles = db.prepare(`
+    SELECT DISTINCT profile_id FROM forum_posts WHERE thread_id=? AND profile_id!=?
+  `).all(thread.id, profile.id).map(r => r.profile_id);
+  if (thread.profile_id !== profile.id) notifyProfiles.push(thread.profile_id);
+  const unique = [...new Set(notifyProfiles)];
+  for (const pid of unique) {
+    db.prepare('INSERT INTO forum_notifications (id,profile_id,thread_id,post_id) VALUES (?,?,?,?)').run(genId(), pid, thread.id, postId);
+  }
+
+  res.json({ ok: true, post_id: postId });
+});
+
+// ── Forum: delete post (mod+) ─────────────────────────────────────────────────
+app.delete('/api/forum/posts/:id', requireMember, (req, res) => {
+  const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id)
+    || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
+  if (!profile) return res.status(403).json({ error: 'Forbidden' });
+
+  const post = db.prepare('SELECT * FROM forum_posts WHERE id=?').get(req.params.id);
+  if (!post) return res.status(404).json({ error: 'Not found' });
+
+  // Can delete own posts or mod+
+  if (post.profile_id !== profile.id && !['mod','admin','warden'].includes(profile.tier))
+    return res.status(403).json({ error: 'Forbidden' });
+
+  db.prepare('DELETE FROM forum_posts WHERE id=?').run(req.params.id);
+  db.prepare('UPDATE forum_threads SET post_count=MAX(0,post_count-1) WHERE id=?').run(post.thread_id);
+  res.json({ ok: true });
+});
+
+// ── Forum: pin/lock thread (mod+) ─────────────────────────────────────────────
+app.patch('/api/forum/threads/:id', requireMember, (req, res) => {
+  const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id)
+    || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
+  if (!profile || !['mod','admin','warden'].includes(profile.tier))
+    return res.status(403).json({ error: 'Forbidden' });
+
+  const { pinned, locked } = req.body;
+  const updates = [];
+  const vals    = [];
+  if (pinned !== undefined) { updates.push('pinned=?'); vals.push(pinned ? 1 : 0); }
+  if (locked !== undefined) { updates.push('locked=?'); vals.push(locked ? 1 : 0); }
+  if (!updates.length) return res.status(400).json({ error: 'Nothing to update' });
+  vals.push(req.params.id);
+  db.prepare(`UPDATE forum_threads SET ${updates.join(',')} WHERE id=?`).run(...vals);
+  res.json({ ok: true });
+});
+
+// ── Forum: delete thread (mod+) ───────────────────────────────────────────────
+app.delete('/api/forum/threads/:id', requireMember, (req, res) => {
+  const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id)
+    || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
+  if (!profile) return res.status(403).json({ error: 'Forbidden' });
+
+  const thread = db.prepare('SELECT * FROM forum_threads WHERE id=?').get(req.params.id);
+  if (!thread) return res.status(404).json({ error: 'Not found' });
+
+  if (thread.profile_id !== profile.id && !['mod','admin','warden'].includes(profile.tier))
+    return res.status(403).json({ error: 'Forbidden' });
+
+  db.prepare('DELETE FROM forum_posts WHERE thread_id=?').run(req.params.id);
+  db.prepare('DELETE FROM forum_threads WHERE id=?').run(req.params.id);
+  db.prepare('DELETE FROM forum_notifications WHERE thread_id=?').run(req.params.id);
+  res.json({ ok: true });
+});
+
+// ── Forum: notifications ──────────────────────────────────────────────────────
+app.get('/api/forum/notifications', requireMember, (req, res) => {
+  const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id)
+    || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
+  if (!profile) return res.json([]);
+  const notifs = db.prepare(`
+    SELECT n.*, t.title as thread_title, p.screen_name as replier
+    FROM forum_notifications n
+    JOIN forum_threads t ON n.thread_id=t.id
+    JOIN forum_posts po ON n.post_id=po.id
+    JOIN profiles p ON po.profile_id=p.id
+    WHERE n.profile_id=? AND n.read=0
+    ORDER BY n.created_at DESC LIMIT 20
+  `).all(profile.id);
+  res.json(notifs);
 });
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
