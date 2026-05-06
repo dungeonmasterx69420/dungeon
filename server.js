@@ -214,13 +214,6 @@ function requireMod(req, res, next) {
 }
 
 
-// ── TEMP DEBUG ────────────────────────────────────────────────────────────────
-app.get('/api/debug/profiles', requireAuth, (req, res) => {
-  const members  = db.prepare('SELECT id, email, profile_id FROM members').all();
-  const profiles = db.prepare('SELECT id, email, screen_name, member_id, setup_done, tier FROM profiles').all();
-  res.json({ members, profiles });
-});
-
 // ── Health ────────────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ ok: true }));
 
