@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>Dungeon · New Thread</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171}
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
+    .nav{display:flex;align-items:center;gap:20px}
+    .nav a{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;transition:color .2s}
+    .nav a:hover{color:var(--text)}
+    .page{max-width:680px;margin:0 auto;padding:36px 24px 80px}
+    .breadcrumb{font-size:13px;color:var(--muted);margin-bottom:20px}
+    .breadcrumb a{color:var(--green);text-decoration:none}
+    .page-title{font-family:'Cinzel',serif;font-size:24px;font-weight:700;color:var(--text);margin-bottom:24px}
+    .divider{height:1px;background:var(--border);margin-bottom:24px}
+    .field{margin-bottom:20px}
+    label{display:block;font-size:12px;font-weight:600;color:var(--muted2);margin-bottom:7px;letter-spacing:0.04em;text-transform:uppercase}
+    input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:11px 14px;outline:none;transition:border-color .2s;appearance:none}
+    input:focus,select:focus,textarea:focus{border-color:var(--green)}
+    input::placeholder,textarea::placeholder{color:var(--muted)}
+    select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b8f7a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+    select option{background:#111915}
+    textarea{resize:vertical;min-height:180px;line-height:1.6}
+    .hint{font-size:11px;color:var(--muted);margin-top:5px}
+    .char-count{font-size:11px;color:var(--muted);text-align:right;margin-top:4px}
+    .char-count.over{color:var(--red)}
+    .error-banner{display:none;font-size:13px;color:var(--red);margin-bottom:16px;padding:12px 14px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:8px}
+    .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+    .cancel-btn{padding:10px 18px;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--muted2);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;display:inline-block;transition:border-color .2s,color .2s}
+    .cancel-btn:hover{border-color:var(--green);color:var(--green)}
+    .submit-btn{padding:10px 22px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s}
+    .submit-btn:hover{opacity:0.9}
+    .submit-btn:disabled{opacity:0.4;cursor:not-allowed}
+    @media(max-width:767px){.page{padding:24px 14px 60px}.topbar{padding:12px 16px}}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <a href="/" class="logo">Dungeon</a>
+  <div class="nav">
+    <a href="/forum.html">Forum</a>
+    <a href="/dashboard.html">Dashboard</a>
+  </div>
+</div>
+
+<div class="page">
+  <div class="breadcrumb"><a href="/forum.html">Forum</a> › New Thread</div>
+  <div class="page-title">New Thread</div>
+  <div class="divider"></div>
+
+  <div class="error-banner" id="errorBanner"></div>
+
+  <div class="field">
+    <label>Category</label>
+    <select id="category">
+      <option value="">Select a category…</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Title</label>
+    <input type="text" id="title" placeholder="Thread title…" maxlength="200" oninput="updateCharCount()"/>
+    <div class="char-count" id="charCount">0 / 200</div>
+  </div>
+
+  <div class="field">
+    <label>Content</label>
+    <textarea id="content" placeholder="Write your post…"></textarea>
+    <div class="hint">Plain text. Be respectful and on-topic.</div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="actions">
+    <a href="/forum.html" class="cancel-btn">Cancel</a>
+    <button class="submit-btn" id="submitBtn" onclick="submitThread()">Post Thread</button>
+  </div>
+</div>
+
+<script>
+  const preCat = new URLSearchParams(window.location.search).get('cat');
+  let myProfile = null;
+
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if(!d.authenticated){window.location.href='/login.html';return}
+    myProfile = d.member?.profile;
+    if(myProfile?.tier==='neut'){
+      document.getElementById('errorBanner').textContent='Your application is pending. You cannot post yet.';
+      document.getElementById('errorBanner').style.display='block';
+      document.getElementById('submitBtn').disabled=true;
+    }
+    loadCategories();
+  });
+
+  async function loadCategories(){
+    const cats = await fetch('/api/forum/categories').then(r=>r.json());
+    const sel = document.getElementById('category');
+    cats.forEach(c=>{
+      // Skip restricted categories unless warden/admin
+      if(c.restricted && myProfile && !['warden','admin'].includes(myProfile.tier)) return;
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.name;
+      if(c.id===preCat) opt.selected=true;
+      sel.appendChild(opt);
+    });
+  }
+
+  function updateCharCount(){
+    const len = document.getElementById('title').value.length;
+    const el = document.getElementById('charCount');
+    el.textContent = `${len} / 200`;
+    el.classList.toggle('over', len>=200);
+  }
+
+  async function submitThread(){
+    const category_id = document.getElementById('category').value;
+    const title   = document.getElementById('title').value.trim();
+    const content = document.getElementById('content').value.trim();
+    const btn = document.getElementById('submitBtn');
+    const banner = document.getElementById('errorBanner');
+
+    if(!category_id||!title||!content){
+      banner.textContent='Category, title and content are all required.';
+      banner.style.display='block';return;
+    }
+    btn.disabled=true;btn.textContent='Posting…';banner.style.display='none';
+
+    const res = await fetch('/api/forum/threads',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({category_id,title,content}),
+    });
+    const data = await res.json();
+    if(res.ok){
+      window.location.href=`/thread.html?id=${data.thread_id}`;
+    } else {
+      banner.textContent=data.error||'Something went wrong.';
+      banner.style.display='block';
+      btn.disabled=false;btn.textContent='Post Thread';
+    }
+  }
+</script>
+</body>
+</html>

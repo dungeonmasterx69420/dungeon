@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>Dungeon · Threads</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;--amber:#fbbf24}
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
+    .nav{display:flex;align-items:center;gap:20px}
+    .nav a,.nav button{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color .2s}
+    .nav a:hover,.nav button:hover{color:var(--text)}
+    .page{max-width:860px;margin:0 auto;padding:32px 24px 80px}
+    .breadcrumb{font-size:13px;color:var(--muted);margin-bottom:20px}
+    .breadcrumb a{color:var(--green);text-decoration:none}
+    .breadcrumb a:hover{text-decoration:underline}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .page-title{font-family:'Cinzel',serif;font-size:24px;font-weight:700;color:var(--text)}
+    .page-desc{font-size:14px;color:var(--muted2);margin-bottom:24px}
+    .new-btn{padding:9px 18px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:opacity .2s;display:inline-block;white-space:nowrap}
+    .new-btn:hover{opacity:0.9}
+    .new-btn:disabled{opacity:0.4;cursor:not-allowed}
+    .divider{height:1px;background:var(--border);margin-bottom:0}
+
+    /* Thread rows */
+    .thread-row{border-bottom:1px solid var(--border);padding:16px 0;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;text-decoration:none;color:inherit;transition:background .15s;cursor:pointer}
+    .thread-row:last-child{border-bottom:none}
+    .thread-row:hover{background:rgba(52,211,153,0.03);border-radius:6px;padding-left:6px;padding-right:6px}
+    .thread-badges{display:flex;gap:6px;margin-bottom:6px}
+    .badge-pin{font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(52,211,153,0.12);color:var(--green)}
+    .badge-lock{font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(148,163,160,0.12);color:var(--muted2)}
+    .thread-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.4}
+    .thread-meta{font-size:12px;color:var(--muted)}
+    .thread-meta a{color:var(--green);text-decoration:none}
+    .thread-meta a:hover{text-decoration:underline}
+    .thread-stats{text-align:right}
+    .thread-replies{font-size:16px;font-weight:600;color:var(--text)}
+    .thread-replies-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em}
+    .thread-last{font-size:11px;color:var(--muted);margin-top:4px}
+    .empty{text-align:center;padding:48px 0;color:var(--muted)}
+
+    footer{text-align:center;padding:32px 0 0;font-size:12px;color:var(--muted)}
+    footer a{color:var(--muted);text-decoration:none}
+    footer a:hover{color:var(--text)}
+    @media(max-width:767px){.page{padding:20px 14px 60px}.topbar{padding:12px 16px}.thread-stats{display:none}}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <a href="/" class="logo">Dungeon</a>
+  <div class="nav">
+    <a href="/forum.html">Forum</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <button onclick="logout()">Sign out</button>
+  </div>
+</div>
+
+<div class="page">
+  <div class="breadcrumb"><a href="/forum.html">Forum</a> › <span id="catName">…</span></div>
+  <div class="page-header">
+    <div class="page-title" id="pageTitle">…</div>
+    <a href="#" class="new-btn" id="newBtn">+ New Thread</a>
+  </div>
+  <div class="page-desc" id="pageDesc"></div>
+  <div class="divider"></div>
+  <div id="threadList"><div style="color:var(--muted);font-size:14px;padding:24px 0">Loading…</div></div>
+  <footer>
+    <a href="/forum.html">Forum</a> &nbsp;·&nbsp; <a href="/dashboard.html">Members</a>
+  </footer>
+</div>
+
+<script>
+  const catId = new URLSearchParams(window.location.search).get('cat');
+  if (!catId) window.location.href = '/forum.html';
+
+  let myProfile = null;
+  let isRestricted = false;
+
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if(!d.authenticated){window.location.href='/login.html';return}
+    myProfile = d.member?.profile;
+    loadCategory();
+    loadThreads();
+  });
+
+  async function loadCategory(){
+    const cats = await fetch('/api/forum/categories').then(r=>r.json());
+    const cat = cats.find(c=>c.id===catId);
+    if(!cat){window.location.href='/forum.html';return}
+    document.title = `Dungeon · ${cat.name}`;
+    document.getElementById('catName').textContent = cat.name;
+    document.getElementById('pageTitle').textContent = cat.name;
+    document.getElementById('pageDesc').textContent = cat.description||'';
+    isRestricted = !!cat.restricted;
+    const btn = document.getElementById('newBtn');
+    btn.href = `/new-thread.html?cat=${catId}`;
+    // Disable new thread for restricted categories unless warden/admin
+    if(isRestricted && myProfile && !['warden','admin'].includes(myProfile.tier)){
+      btn.style.opacity='0.3';
+      btn.style.pointerEvents='none';
+      btn.title='Only the Warden can post in Announcements';
+    }
+  }
+
+  async function loadThreads(){
+    const threads = await fetch(`/api/forum/categories/${catId}/threads`).then(r=>r.json());
+    const el = document.getElementById('threadList');
+    if(!threads.length){el.innerHTML='<div class="empty">No threads yet. Be the first to post.</div>';return}
+    el.innerHTML = threads.map(t=>`
+      <div class="thread-row" onclick="window.location.href='/thread.html?id=${t.id}'">
+        <div>
+          <div class="thread-badges">
+            ${t.pinned?'<span class="badge-pin">📌 Pinned</span>':''}
+            ${t.locked?'<span class="badge-lock">🔒 Locked</span>':''}
+          </div>
+          <div class="thread-title">${t.title}</div>
+          <div class="thread-meta">by <a href="/profile.html?id=${t.profile_id}" onclick="event.stopPropagation()">@${t.screen_name}</a> &mdash; ${timeAgo(t.created_at)}</div>
+        </div>
+        <div class="thread-stats">
+          <div class="thread-replies">${t.reply_count}</div>
+          <div class="thread-replies-label">replies</div>
+          ${t.last_poster?`<div class="thread-last">Last: @${t.last_poster}</div>`:''}
+        </div>
+      </div>`).join('');
+  }
+
+  function timeAgo(dt){
+    const s=Math.floor((Date.now()-new Date(dt))/1000);
+    if(s<60)return 'just now';
+    if(s<3600)return Math.floor(s/60)+'m ago';
+    if(s<86400)return Math.floor(s/3600)+'h ago';
+    if(s<604800)return Math.floor(s/86400)+'d ago';
+    return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  }
+
+  async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html'}
+</script>
+</body>
+</html>

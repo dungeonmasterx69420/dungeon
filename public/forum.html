@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>Dungeon · Forum</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;--amber:#fbbf24}
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
+    .nav{display:flex;align-items:center;gap:20px}
+    .nav a,.nav button{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color .2s;display:flex;align-items:center;gap:5px}
+    .nav a:hover,.nav button:hover{color:var(--text)}
+    .notif-badge{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;min-width:16px;text-align:center}
+    .page{max-width:860px;margin:0 auto;padding:32px 24px 80px}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+    .page-title{font-family:'Cinzel',serif;font-size:26px;font-weight:700;color:var(--text)}
+    .new-btn{padding:9px 18px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:opacity .2s;display:inline-block}
+    .new-btn:hover{opacity:0.9}
+    .divider{height:1px;background:var(--border);margin-bottom:24px}
+
+    /* Category cards */
+    .category-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;transition:border-color .2s}
+    .category-card:hover{border-color:var(--border2)}
+    .category-header{padding:18px 20px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;text-decoration:none;color:inherit;display:block}
+    .cat-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+    .cat-name{font-size:15px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+    .cat-restricted{font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(251,191,36,0.12);color:var(--amber)}
+    .cat-desc{font-size:13px;color:var(--muted2);line-height:1.5;margin-bottom:12px}
+    .cat-stats{display:flex;gap:20px}
+    .cat-stat{font-size:12px;color:var(--muted)}
+    .cat-stat span{color:var(--muted2);font-weight:500}
+    .cat-last{font-size:12px;color:var(--muted);border-top:1px solid var(--border);padding-top:10px;margin-top:4px}
+    .cat-last a{color:var(--green);text-decoration:none;font-weight:500}
+    .cat-last a:hover{text-decoration:underline}
+
+    footer{text-align:center;padding:32px 0 0;font-size:12px;color:var(--muted)}
+    footer a{color:var(--muted);text-decoration:none}
+    footer a:hover{color:var(--text)}
+    @media(max-width:767px){.page{padding:20px 14px 60px}.topbar{padding:12px 16px}}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <a href="/" class="logo">Dungeon</a>
+  <div class="nav">
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/directory.html">Directory</a>
+    <button id="notifBtn" onclick="window.location.href='/forum.html'" style="display:none">
+      🔔 <span class="notif-badge" id="notifCount"></span>
+    </button>
+    <button onclick="logout()">Sign out</button>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-title">Forum</div>
+    <a href="/new-thread.html" class="new-btn">+ New Thread</a>
+  </div>
+  <div class="divider"></div>
+  <div id="categoryList"><div style="color:var(--muted);font-size:14px">Loading…</div></div>
+
+  <footer>
+    <a href="/dashboard.html">Members</a> &nbsp;·&nbsp; <a href="/admin.html">Warden</a>
+  </footer>
+</div>
+
+<script>
+  const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Warden',color:'#fbbf24'}};
+
+  let myProfile = null;
+
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if(!d.authenticated){window.location.href='/login.html';return}
+    myProfile = d.member?.profile;
+    loadNotifs();
+    loadCategories();
+  });
+
+  async function loadNotifs(){
+    const notifs = await fetch('/api/forum/notifications').then(r=>r.json());
+    if(notifs.length){
+      document.getElementById('notifBtn').style.display='flex';
+      document.getElementById('notifCount').textContent=notifs.length;
+    }
+  }
+
+  async function loadCategories(){
+    const cats = await fetch('/api/forum/categories').then(r=>r.json());
+    const el = document.getElementById('categoryList');
+    el.innerHTML = cats.map(c => {
+      const lastThread = c.last_thread;
+      const lastText = lastThread
+        ? `Last post in <a href="/thread.html?id=${lastThread.id}">${lastThread.title}</a> by @${lastThread.screen_name} &mdash; ${timeAgo(lastThread.last_post_at)}`
+        : 'No posts yet';
+      return `<div class="category-card">
+        <a href="/threads.html?cat=${c.id}" class="category-header" style="display:block;text-decoration:none;color:inherit;padding:18px 20px">
+          <div class="cat-top">
+            <div class="cat-name">${c.name}${c.restricted?'<span class="cat-restricted">Warden Only</span>':''}</div>
+          </div>
+          <div class="cat-desc">${c.description||''}</div>
+          <div class="cat-stats">
+            <div class="cat-stat"><span>${c.thread_count}</span> threads</div>
+            <div class="cat-stat"><span>${c.post_count}</span> posts</div>
+          </div>
+          ${lastThread?`<div class="cat-last" style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(52,211,153,0.08)">${lastText}</div>`:''}
+        </a>
+      </div>`;
+    }).join('');
+  }
+
+  function timeAgo(dt){
+    const s=Math.floor((Date.now()-new Date(dt))/1000);
+    if(s<60)return 'just now';
+    if(s<3600)return Math.floor(s/60)+'m ago';
+    if(s<86400)return Math.floor(s/3600)+'h ago';
+    if(s<604800)return Math.floor(s/86400)+'d ago';
+    return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  }
+
+  async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html'}
+</script>
+</body>
+</html>
