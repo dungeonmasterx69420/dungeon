@@ -3,7 +3,7 @@
 ## Files
 - `server.js` — Express backend (API + static serving)
 - `public/index.html` — The Gate (public request form)
-- `public/admin.html` — Warden's Gate (admin dashboard)
+- `public/admin.html` — Warden's Chamber (admin dashboard)
 - `Dockerfile` — for your Render Docker service
 
 ---
@@ -62,7 +62,7 @@ Your site will be live at `https://your-service.onrender.com`
 ## Usage
 
 - **The Gate** (`/`) — share this URL with friends & family
-- **Warden's Gate** (`/admin.html`) — your private dashboard; log in with `ADMIN_PASSWORD`
+- **Warden's Chamber** (`/admin.html`) — your private dashboard; log in with `ADMIN_PASSWORD`
 - Submissions are saved to SQLite and emailed to your Gmail
 - Click **⚡ Grant Entry** on any petition to get step-by-step account setup instructions
 - Mark as **Granted** when done
