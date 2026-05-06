@@ -1,319 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DUNGEON · Warden</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>Dungeon · Warden</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --black:   #1a1a1a;
-      --deep:    #0c0808;
-      --red:     #8b1a1a;
-      --red2:    #b22222;
-      --red3:    #cc3333;
-      --ember:   #c8601a;
-      --bone:    #d4c4a8;
-      --bone2:   #e8dcc8;
-      --dim:     #6a5a4a;
-      --dimmer:  #3a2a20;
-      --line:    rgba(180,50,50,0.2);
-      --line2:   rgba(180,50,50,0.4);
-      --green:   #4a8a4a;
-      --green2:  #6abf6a;
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0b0f0e;--surface:#111915;--surface2:#172118;--surface3:#1e2a20;
+      --border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
+      --green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);
+      --text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;
+      --red:#f87171;--red-bg:rgba(248,113,113,0.1);--red-border:rgba(248,113,113,0.25);
+      --amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1);
     }
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
 
-    html, body {
-      min-height: 100vh;
-      background: var(--black);
-      color: var(--bone);
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: 15px;
-    }
+    /* Lock */
+    #lockScreen{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:center;justify-content:center}
+    .lock-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px 36px;width:100%;max-width:360px;text-align:center}
+    .lock-logo{font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:var(--green);letter-spacing:0.12em;margin-bottom:6px}
+    .lock-sub{font-size:13px;color:var(--muted2);margin-bottom:28px}
+    .lock-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:16px;padding:12px 14px;outline:none;transition:border-color .2s;text-align:center;margin-bottom:16px}
+    .lock-input:focus{border-color:var(--green)}
+    .lock-input::placeholder{color:var(--muted)}
+    .lock-btn{width:100%;padding:12px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s}
+    .lock-btn:hover{opacity:0.9}
+    .lock-error{display:none;margin-top:14px;font-size:13px;color:var(--red)}
 
-    body::after {
-      content: '';
-      position: fixed; inset: 0;
-      background: radial-gradient(ellipse 150% 150% at 50% 0%, transparent 50%, rgba(0,0,0,0.5) 100%);
-      pointer-events: none; z-index: 0;
-    }
-
-    .red-rule {
-      width: 100%; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--red2), transparent);
-    }
-
-    /* ── Corner gif ───────────────────────────────────── */
-    .corner-gif {
-      position: fixed;
-      bottom: 16px; right: 16px;
-      width: 96px; height: 96px;
-      object-fit: contain;
-      image-rendering: pixelated;
-      z-index: 50; pointer-events: none;
-      opacity: 0.9;
-    }
-
-    /* ── Lock ─────────────────────────────────────────── */
-    #lockScreen {
-      position: fixed; inset: 0; z-index: 200;
-      background: var(--black);
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    .lock-wrap { width: 340px; text-align: center; }
-
-    .lock-title {
-      font-size: 28px; font-weight: 700; letter-spacing: 0.15em;
-      text-transform: uppercase; color: var(--red3);
-      text-shadow: 0 0 30px rgba(180,40,40,0.5); margin-bottom: 6px;
-    }
-
-    .lock-sub {
-      font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--dim); margin-bottom: 40px;
-    }
-
-    .lock-input {
-      width: 100%; background: transparent; border: none;
-      border-bottom: 1px solid var(--line2);
-      color: var(--bone2); font-family: 'Cinzel', serif;
-      font-size: 20px; letter-spacing: 0.3em; text-align: center;
-      padding: 14px 0; outline: none; margin-bottom: 32px;
-      transition: border-color 0.2s; border-radius: 0;
-    }
-    .lock-input:focus { border-bottom-color: var(--red3); }
-
-    .lock-btn {
-      background: transparent; border: 1px solid var(--red2);
-      color: var(--red3); font-family: 'Cinzel', serif;
-      font-size: 13px; letter-spacing: 0.4em; text-transform: uppercase;
-      padding: 14px 0; width: 100%; cursor: pointer; transition: all 0.2s;
-    }
-    .lock-btn:hover { background: rgba(180,34,34,0.1); color: var(--bone2); border-color: var(--red3); }
-
-    .lock-error {
-      margin-top: 16px; font-size: 12px; letter-spacing: 0.15em;
-      text-transform: uppercase; color: var(--red3); display: none;
-    }
-
-    /* ── App ──────────────────────────────────────────── */
-    #adminApp { display: none; position: relative; z-index: 1; min-height: 100vh; }
-
-    .topbar {
-      border-bottom: 1px solid var(--line); padding: 18px 40px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-
-    .topbar-name {
-      font-size: 20px; font-weight: 700; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--red3);
-      text-shadow: 0 0 20px rgba(180,40,40,0.4);
-    }
-
-    .topbar-right { display: flex; align-items: center; gap: 28px; }
-
-    .topbar-link {
-      font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
-      color: var(--dim); text-decoration: none; background: none; border: none;
-      cursor: pointer; font-family: 'Cinzel', serif; transition: color 0.2s;
-    }
-    .topbar-link:hover { color: var(--red3); }
+    /* App */
+    #adminApp{display:none;min-height:100vh}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
+    .topbar-right{display:flex;gap:16px;align-items:center}
+    .topbar-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color .2s}
+    .topbar-link:hover{color:var(--text)}
 
     /* Stats */
-    .ledger { display: grid; grid-template-columns: repeat(4,1fr); border-bottom: 1px solid var(--line); }
-    .ledger-cell { padding: 24px 32px; border-right: 1px solid var(--line); }
-    .ledger-cell:last-child { border-right: none; }
-    .ledger-label { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
-    .ledger-val { font-size: 42px; color: var(--bone2); line-height: 1; font-weight: 400; }
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+    .stat-cell{background:var(--bg);padding:20px 28px}
+    .stat-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .stat-val{font-size:32px;font-weight:600;color:var(--text)}
 
     /* Tabs */
-    .tabs { display: flex; border-bottom: 1px solid var(--line); padding: 0 40px; }
+    .tabs{display:flex;border-bottom:1px solid var(--border);padding:0 28px;background:var(--surface)}
+    .tab-btn{font-size:13px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;padding:14px 0;margin-right:28px;transition:color .2s,border-color .2s;margin-bottom:-1px}
+    .tab-btn:hover{color:var(--text)}
+    .tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
 
-    .tab-btn {
-      font-family: 'Cinzel', serif;
-      font-size: 13px; letter-spacing: 0.25em; text-transform: uppercase;
-      background: none; border: none; border-bottom: 2px solid transparent;
-      color: var(--dim); cursor: pointer; padding: 18px 0;
-      margin-right: 40px; transition: color 0.2s, border-color 0.2s;
-      margin-bottom: -1px;
-    }
-    .tab-btn:hover { color: var(--bone); }
-    .tab-btn.active { color: var(--red3); border-bottom-color: var(--red2); }
+    /* Main */
+    .main{padding:28px}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
 
-    .main { padding: 36px 40px; }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    /* List headers */
-    .list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-    .list-label { font-size: 11px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--red2); }
-    .filters { display: flex; gap: 4px; }
-
-    .filter-btn {
-      font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.18em;
-      text-transform: uppercase; padding: 6px 14px;
-      background: transparent; border: 1px solid transparent;
-      color: var(--dim); cursor: pointer; transition: all 0.15s;
-    }
-    .filter-btn:hover { color: var(--bone); border-color: var(--line2); }
-    .filter-btn.active { color: var(--red3); border-color: var(--line2); }
+    /* List header */
+    .list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .list-label{font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)}
+    .filters{display:flex;gap:4px}
+    .filter-btn{font-size:12px;font-weight:500;padding:5px 12px;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+    .filter-btn:hover{color:var(--text);border-color:var(--border2)}
+    .filter-btn.active{color:var(--green);border-color:var(--border2);background:var(--green-bg)}
 
     /* Rows */
-    .row-list { display: flex; flex-direction: column; }
+    .divider{height:1px;background:var(--border);margin-bottom:0}
+    .row-list{display:flex;flex-direction:column}
+    .app-row,.mem-row{border-bottom:1px solid var(--border);padding:18px 0;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+    .app-row:last-child,.mem-row:last-child{border-bottom:none}
 
-    .app-row, .mem-row {
-      border-bottom: 1px solid var(--line); padding: 22px 0;
-      display: grid; grid-template-columns: 1fr auto;
-      gap: 20px; align-items: start;
-    }
-    .app-row:last-child, .mem-row:last-child { border-bottom: none; }
+    .row-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+    .row-email{font-size:13px;color:var(--muted2);margin-bottom:10px}
+    .row-meta{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+    .meta-lbl{font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+    .meta-val{font-size:13px;color:var(--muted2)}
+    .row-notes{margin-top:8px;font-size:13px;color:var(--muted);font-style:italic}
+    .row-date{font-size:11px;color:var(--muted);margin-top:6px}
 
-    .row-name {
-      font-size: 17px; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--bone2); margin-bottom: 5px; font-weight: 700;
-    }
-    .row-email { font-size: 13px; letter-spacing: 0.05em; color: var(--dim); margin-bottom: 12px; }
+    /* Badges */
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    .badge-pending{background:var(--amber-bg);color:var(--amber)}
+    .badge-approved{background:var(--green-bg2);color:var(--green)}
+    .badge-denied{background:rgba(107,143,122,0.1);color:var(--muted)}
+    .badge-open{background:var(--red-bg);color:var(--red)}
+    .badge-resolved{background:var(--green-bg);color:var(--green)}
+    .badge-renewal{background:rgba(52,211,153,0.08);color:var(--muted2);font-size:10px;padding:2px 8px;border-radius:4px;margin-left:6px}
 
-    .row-meta { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; }
-    .meta-lbl { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dimmer); margin-bottom: 3px; }
-    .meta-val { font-size: 13px; color: var(--dim); }
-    .row-notes { margin-top: 10px; font-size: 13px; color: var(--dim); font-style: italic; }
-
-    .status-mark { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; font-weight: 700; }
-    .status-mark.pending  { color: var(--ember); }
-    .status-mark.approved { color: var(--green2); }
-    .status-mark.denied   { color: var(--dimmer); }
-
-    .row-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-
-    .act {
-      font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.2em;
-      text-transform: uppercase; background: none; border: none;
-      border-bottom: 1px solid transparent; color: var(--dim);
-      cursor: pointer; padding: 2px 0; transition: color 0.15s, border-color 0.15s;
-    }
-    .act:hover { color: var(--bone); border-bottom-color: var(--line2); }
-    .act.red   { color: var(--red2); }
-    .act.red:hover   { color: var(--red3); border-bottom-color: var(--red2); }
-    .act.green { color: var(--green2); }
-    .act.green:hover { border-bottom-color: var(--green2); }
-    .act.blood { color: #7a2020; }
-    .act.blood:hover { color: #aa3030; border-bottom-color: #7a2020; }
-
-    .row-date { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dimmer); margin-top: 4px; }
+    /* Actions */
+    .row-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+    .act{font-size:12px;font-weight:500;background:none;border:none;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;padding:5px 10px;transition:background .15s,color .15s;color:var(--muted2)}
+    .act:hover{background:var(--surface2);color:var(--text)}
+    .act.green{color:var(--green)}
+    .act.green:hover{background:var(--green-bg)}
+    .act.red{color:var(--red)}
+    .act.red:hover{background:var(--red-bg)}
 
     /* Member creds */
-    .mem-creds { margin-top: 12px; display: flex; gap: 32px; flex-wrap: wrap; }
-    .cred-lbl { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dimmer); margin-bottom: 5px; }
-    .cred-val { font-size: 14px; color: var(--bone); display: flex; align-items: center; gap: 10px; }
+    .mem-creds{margin-top:10px;display:flex;gap:24px;flex-wrap:wrap}
+    .cred-lbl{font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+    .cred-val{font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px}
+    .show-btn,.copy-btn{font-size:11px;font-weight:500;background:none;border:1px solid var(--border2);border-radius:4px;color:var(--muted);cursor:pointer;padding:2px 8px;font-family:'Inter',sans-serif;transition:color .15s}
+    .show-btn:hover,.copy-btn:hover{color:var(--green);border-color:var(--green)}
+    .copy-btn.copied{color:var(--green)}
 
-    .show-btn, .copy-btn {
-      font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em;
-      text-transform: uppercase; background: none; border: none;
-      border-bottom: 1px solid var(--line2); color: var(--dimmer);
-      cursor: pointer; padding: 1px 0; transition: color 0.15s;
-    }
-    .show-btn:hover, .copy-btn:hover { color: var(--red3); }
-    .copy-btn.copied { color: var(--green2); }
+    /* Sub date on member */
+    .sub-chip{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-left:8px}
+    .sub-chip.active{background:var(--green-bg);color:var(--green)}
+    .sub-chip.expiring{background:var(--amber-bg);color:var(--amber)}
+    .sub-chip.expired{background:var(--red-bg);color:var(--red)}
 
     /* Empty */
-    .empty { text-align: center; padding: 64px 0; }
-    .empty-title { font-size: 16px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
-    .empty-sub { font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--dimmer); }
+    .empty{text-align:center;padding:48px 0}
+    .empty-title{font-size:15px;font-weight:500;color:var(--muted2);margin-bottom:6px}
+    .empty-sub{font-size:13px;color:var(--muted)}
 
-    /* Modals */
-    .veil {
-      position: fixed; inset: 0; z-index: 100;
-      background: rgba(0,0,0,0.92);
-      display: none; align-items: center; justify-content: center;
-    }
-    .veil.open { display: flex; }
+    /* Modal */
+    .veil{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center}
+    .veil.open{display:flex}
+    .modal{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:32px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto}
+    .modal-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px}
+    .modal-sub{font-size:13px;color:var(--muted2);margin-bottom:24px;line-height:1.6}
+    .modal-sub strong{color:var(--text);font-weight:600}
+    .m-label{font-size:12px;font-weight:600;color:var(--muted2);margin-bottom:7px;display:block;letter-spacing:0.04em;text-transform:uppercase}
+    .m-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 14px;outline:none;margin-bottom:16px;transition:border-color .2s}
+    .m-input:focus{border-color:var(--green)}
+    .m-input::placeholder{color:var(--muted)}
+    .modal-divider{height:1px;background:var(--border);margin:16px 0}
+    .modal-actions{display:flex;justify-content:flex-end;gap:10px}
+    .modal-btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .2s;border:none}
+    .modal-btn.cancel{background:var(--surface2);color:var(--muted2)}
+    .modal-btn.cancel:hover{color:var(--text)}
+    .modal-btn.confirm{background:var(--green);color:#0b0f0e}
+    .modal-btn.confirm:hover{opacity:0.9}
 
-    .modal {
-      width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
-      background: var(--deep); border: 1px solid var(--line2); padding: 40px;
-    }
-
-    .modal-title {
-      font-size: 16px; letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--red3); margin-bottom: 8px; font-weight: 700;
-    }
-    .modal-rule { margin-bottom: 28px; }
-
-    .modal-sub {
-      font-size: 14px; letter-spacing: 0.04em; color: var(--dim);
-      line-height: 1.8; margin-bottom: 28px;
-    }
-    .modal-sub strong { color: var(--bone2); font-weight: 400; }
-
-    .m-label { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; display: block; }
-
-    .m-input {
-      width: 100%; background: transparent; border: none;
-      border-bottom: 1px solid var(--line2); color: var(--bone2);
-      font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: 0.05em;
-      padding: 10px 0; outline: none; margin-bottom: 24px;
-      transition: border-color 0.2s; border-radius: 0;
-    }
-    .m-input:focus { border-bottom-color: var(--red3); }
-    .m-input::placeholder { color: var(--dimmer); }
-
-    .modal-actions {
-      display: flex; justify-content: flex-end; gap: 24px;
-      margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line);
-    }
-      @media (max-width: 767px) {
-      .corner-gif { display: none; }
+    @media(max-width:767px){
+      .stats{grid-template-columns:1fr 1fr}
+      .stat-cell{padding:16px 18px}
+      .stat-val{font-size:26px}
+      .main{padding:16px}
+      .tabs{padding:0 16px;overflow-x:auto}
+      .topbar{padding:12px 16px}
     }
   </style>
 </head>
 <body>
 
-<img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
-
 <!-- Lock -->
 <div id="lockScreen">
-  <div class="lock-wrap">
-    <a href="/" class="lock-title" style="text-decoration:none">Dungeon</a>
-    <div class="red-rule" style="margin-bottom:14px"></div>
-    <div class="lock-sub">Warden's Chamber</div>
-    <input class="lock-input" type="password" id="pinInput" placeholder="· · · · · ·"
-      onkeydown="if(event.key==='Enter')unlock()" />
-    <button class="lock-btn" onclick="unlock()">Enter</button>
-    <div class="lock-error" id="lockError">The gate does not yield.</div>
+  <div class="lock-card">
+    <div class="lock-logo">Dungeon</div>
+    <div class="lock-sub">Warden Access</div>
+    <input class="lock-input" type="password" id="pinInput" placeholder="Password" onkeydown="if(event.key==='Enter')unlock()"/>
+    <button class="lock-btn" onclick="unlock()">Sign In</button>
+    <div class="lock-error" id="lockError">Incorrect password.</div>
   </div>
 </div>
 
 <!-- Admin -->
 <div id="adminApp">
   <div class="topbar">
-    <a href="/" class="topbar-name" style="text-decoration:none">Dungeon</a>
+    <a href="/" class="logo">Dungeon</a>
     <div class="topbar-right">
-      <a href="/" class="topbar-link">← The Gate</a>
-      <button class="topbar-link" onclick="logout()">Bar the Gate</button>
+      <a href="/" class="topbar-link">View Site</a>
+      <button class="topbar-link" onclick="logout()">Sign Out</button>
     </div>
   </div>
 
-  <div class="ledger">
-    <div class="ledger-cell"><div class="ledger-label">Applicants</div><div class="ledger-val" id="statApplicants">—</div></div>
-    <div class="ledger-cell"><div class="ledger-label">Pending</div><div class="ledger-val" id="statPending" style="color:var(--ember)">—</div></div>
-    <div class="ledger-cell"><div class="ledger-label">Members</div><div class="ledger-val" id="statMembers" style="color:var(--green2)">—</div></div>
-    <div class="ledger-cell"><div class="ledger-label">Denied</div><div class="ledger-val" id="statDenied" style="color:var(--dimmer)">—</div></div>
+  <div class="stats">
+    <div class="stat-cell"><div class="stat-label">Applicants</div><div class="stat-val" id="statApplicants">—</div></div>
+    <div class="stat-cell"><div class="stat-label">Pending</div><div class="stat-val" id="statPending" style="color:var(--amber)">—</div></div>
+    <div class="stat-cell"><div class="stat-label">Members</div><div class="stat-val" id="statMembers" style="color:var(--green)">—</div></div>
+    <div class="stat-cell"><div class="stat-label">Support</div><div class="stat-val" id="statSupport" style="color:var(--red)">—</div></div>
   </div>
 
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('applicants',this)">Applicants</button>
     <button class="tab-btn" onclick="switchTab('members',this)">Members</button>
-    <button class="tab-btn" onclick="switchTab('support',this)">Support <span id="suppBadge" style="display:none;color:var(--red3);font-size:10px"></span></button>
+    <button class="tab-btn" onclick="switchTab('support',this)">Support <span id="suppBadge" style="display:none;color:var(--red)"></span></button>
   </div>
 
   <div class="main">
+
     <div class="tab-panel active" id="panel-applicants">
       <div class="list-header">
-        <div class="list-label">Petitions</div>
+        <div class="list-label">Applications</div>
         <div class="filters">
           <button class="filter-btn active" onclick="setAppFilter('all',this)">All</button>
           <button class="filter-btn" onclick="setAppFilter('pending',this)">Pending</button>
@@ -321,411 +190,329 @@
           <button class="filter-btn" onclick="setAppFilter('denied',this)">Denied</button>
         </div>
       </div>
-      <div class="red-rule"></div>
+      <div class="divider"></div>
       <div class="row-list" id="applicantList"></div>
     </div>
 
     <div class="tab-panel" id="panel-members">
-      <div class="list-header">
-        <div class="list-label">The Roster</div>
-      </div>
-      <div class="red-rule"></div>
+      <div class="list-header"><div class="list-label">Members</div></div>
+      <div class="divider"></div>
       <div class="row-list" id="memberList"></div>
     </div>
 
     <div class="tab-panel" id="panel-support">
       <div class="list-header">
-        <div class="list-label">Support Messages</div>
+        <div class="list-label">Messages</div>
         <div class="filters">
           <button class="filter-btn active" onclick="setSuppFilter('open',this)">Open</button>
           <button class="filter-btn" onclick="setSuppFilter('resolved',this)">Resolved</button>
           <button class="filter-btn" onclick="setSuppFilter('all',this)">All</button>
         </div>
       </div>
-      <div class="red-rule"></div>
+      <div class="divider"></div>
       <div class="row-list" id="supportList"></div>
     </div>
+
   </div>
 </div>
 
-<!-- Approve modal -->
+<!-- Grant Entry Modal -->
 <div class="veil" id="approveModal">
   <div class="modal">
-    <div class="modal-title">Grant Entry</div>
-    <div class="red-rule modal-rule"></div>
+    <div class="modal-title">Grant Access</div>
     <div class="modal-sub" id="approveDesc"></div>
     <label class="m-label">Stremio Email</label>
-    <input class="m-input" id="approveStremioEmail" type="email" placeholder="their@stremio.com" />
+    <input class="m-input" id="approveStremioEmail" type="email" placeholder="their@stremio.com"/>
     <label class="m-label">Stremio Password</label>
-    <input class="m-input" id="approveStremioPass" type="text" placeholder="password" />
+    <input class="m-input" id="approveStremioPass" type="text" placeholder="Password"/>
+    <div class="modal-divider"></div>
     <div class="modal-actions">
-      <button class="act" onclick="closeModal('approveModal')">Dismiss</button>
-      <button class="act green" onclick="confirmApprove()">Grant Entry</button>
+      <button class="modal-btn cancel" onclick="closeModal('approveModal')">Cancel</button>
+      <button class="modal-btn confirm" onclick="confirmApprove()">Grant Access</button>
     </div>
   </div>
 </div>
 
-<!-- Edit modal -->
+<!-- Edit Member Modal -->
 <div class="veil" id="editModal">
   <div class="modal">
     <div class="modal-title">Edit Member</div>
-    <div class="red-rule modal-rule"></div>
     <div class="modal-sub" id="editDesc"></div>
     <label class="m-label">Stremio Email</label>
-    <input class="m-input" id="editStremioEmail" type="email" placeholder="their@stremio.com" />
+    <input class="m-input" id="editStremioEmail" type="email" placeholder="their@stremio.com"/>
     <label class="m-label">Stremio Password</label>
-    <input class="m-input" id="editStremioPass" type="text" placeholder="password" />
+    <input class="m-input" id="editStremioPass" type="text" placeholder="Password"/>
     <label class="m-label">Notes</label>
-    <input class="m-input" id="editNotes" type="text" placeholder="—" />
+    <input class="m-input" id="editNotes" type="text" placeholder="—"/>
+    <div class="modal-divider"></div>
     <div class="modal-actions">
-      <button class="act" onclick="closeModal('editModal')">Dismiss</button>
-      <button class="act green" onclick="confirmEdit()">Save</button>
+      <button class="modal-btn cancel" onclick="closeModal('editModal')">Cancel</button>
+      <button class="modal-btn confirm" onclick="confirmEdit()">Save Changes</button>
     </div>
   </div>
 </div>
 
 <script>
-  let appFilter = 'all';
-  let activeApplicantId = null;
-  let activeMemberId = null;
-  let showPasswords = {};
+  let appFilter='all', suppFilter='open';
+  let activeApplicantId=null, activeMemberId=null;
+  let showPasswords={};
 
-  async function unlock() {
-    const pw = document.getElementById('pinInput').value;
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ password: pw }),
-      });
-      if (res.ok) {
-        document.getElementById('lockScreen').style.display = 'none';
-        document.getElementById('adminApp').style.display = 'block';
+  async function unlock(){
+    const pw=document.getElementById('pinInput').value;
+    try{
+      const res=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+      if(res.ok){
+        document.getElementById('lockScreen').style.display='none';
+        document.getElementById('adminApp').style.display='block';
         loadAll();
       } else {
-        const d = await res.json();
-        document.getElementById('lockError').textContent = d.error || 'The gate does not yield.';
-        document.getElementById('lockError').style.display = 'block';
-        document.getElementById('pinInput').value = '';
+        const d=await res.json();
+        document.getElementById('lockError').textContent=d.error||'Incorrect password.';
+        document.getElementById('lockError').style.display='block';
+        document.getElementById('pinInput').value='';
         document.getElementById('pinInput').focus();
       }
-    } catch {
-      document.getElementById('lockError').textContent = 'The gate is unreachable.';
-      document.getElementById('lockError').style.display = 'block';
-    }
+    }catch{document.getElementById('lockError').textContent='Connection error.';document.getElementById('lockError').style.display='block'}
   }
 
-  async function logout() {
-    await fetch('/api/logout', { method: 'POST' });
-    document.getElementById('lockScreen').style.display = 'flex';
-    document.getElementById('adminApp').style.display = 'none';
-    document.getElementById('pinInput').value = '';
-    document.getElementById('lockError').style.display = 'none';
+  async function logout(){
+    await fetch('/api/logout',{method:'POST'});
+    document.getElementById('lockScreen').style.display='flex';
+    document.getElementById('adminApp').style.display='none';
+    document.getElementById('pinInput').value='';
+    document.getElementById('lockError').style.display='none';
   }
 
-  fetch('/api/me').then(r => r.json()).then(d => {
-    if (d.authenticated) {
-      document.getElementById('lockScreen').style.display = 'none';
-      document.getElementById('adminApp').style.display = 'block';
-      loadAll();
-    } else {
-      document.getElementById('pinInput').focus();
-    }
+  fetch('/api/me').then(r=>r.json()).then(d=>{
+    if(d.authenticated){document.getElementById('lockScreen').style.display='none';document.getElementById('adminApp').style.display='block';loadAll()}
+    else{document.getElementById('pinInput').focus()}
   });
 
-  function switchTab(name, el) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  function switchTab(name,el){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     el.classList.add('active');
-    document.getElementById('panel-' + name).classList.add('active');
-    if (name === 'members') loadMembers();
-    if (name === 'support') loadSupport();
+    document.getElementById('panel-'+name).classList.add('active');
+    if(name==='members')loadMembers();
+    if(name==='support')loadSupport();
   }
 
-  async function loadAll() {
-    await Promise.all([loadStats(), loadApplicants(), loadMembers()]);
+  async function loadAll(){await Promise.all([loadStats(),loadApplicants(),loadMembers()])}
+
+  async function loadStats(){
+    const d=await fetch('/api/stats').then(r=>r.json());
+    document.getElementById('statApplicants').textContent=d.applicants;
+    document.getElementById('statPending').textContent=d.pending;
+    document.getElementById('statMembers').textContent=d.members;
+    document.getElementById('statSupport').textContent=d.support||0;
+    const b=document.getElementById('suppBadge');
+    if(b&&d.support>0){b.textContent='('+d.support+')';b.style.display='inline'}
   }
 
-  async function loadStats() {
-    const d = await fetch('/api/stats').then(r => r.json());
-    document.getElementById('statApplicants').textContent = d.applicants;
-    document.getElementById('statPending').textContent    = d.pending;
-    document.getElementById('statMembers').textContent    = d.members;
-    document.getElementById('statDenied').textContent     = d.denied;
-    if (d.support > 0) {
-      const b = document.getElementById('suppBadge');
-      if (b) { b.textContent = '(' + d.support + ')'; b.style.display='inline'; }
-    }
-  }
-
-  async function loadApplicants() {
-    const url = appFilter === 'all' ? '/api/applicants' : `/api/applicants?status=${appFilter}`;
-    const rows = await fetch(url).then(r => r.json());
+  async function loadApplicants(){
+    const url=appFilter==='all'?'/api/applicants':`/api/applicants?status=${appFilter}`;
+    const rows=await fetch(url).then(r=>r.json());
     renderApplicants(rows);
   }
 
-  function setAppFilter(f, el) {
-    appFilter = f;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  function setAppFilter(f,el){
+    appFilter=f;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
     el.classList.add('active');
     loadApplicants();
   }
 
-  const STATUS = { pending: 'Pending', approved: 'Approved', denied: 'Denied' };
+  function fmt(dt){if(!dt)return '';return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
+  function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,"\\'").replace(/"/g,'&quot;')}
 
-  function fmt(dt) {
-    if (!dt) return '';
-    return new Date(dt).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-  }
+  const BADGES={pending:'<span class="badge badge-pending">Pending</span>',approved:'<span class="badge badge-approved">Approved</span>',denied:'<span class="badge badge-denied">Denied</span>'};
 
-  function esc(s) {
-    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,"\\'").replace(/"/g,'&quot;');
-  }
-
-  function renderApplicants(rows) {
-    const el = document.getElementById('applicantList');
-    if (!rows.length) {
-      el.innerHTML = `<div class="empty"><div class="empty-title">No Petitions</div><div class="empty-sub">None have sought entry.</div></div>`;
-      return;
-    }
-    el.innerHTML = rows.map(r => `
-      <div class="app-row" id="app-${r.id}">
+  function renderApplicants(rows){
+    const el=document.getElementById('applicantList');
+    if(!rows.length){el.innerHTML='<div class="empty"><div class="empty-title">No applications</div><div class="empty-sub">Nothing here yet.</div></div>';return}
+    el.innerHTML=rows.map(r=>`
+      <div class="app-row">
         <div>
-          <div class="row-name">${r.first_name} ${r.last_name}</div>
+          <div class="row-name">${r.first_name} ${r.last_name} ${r.type==='renewal'?'<span class="badge-renewal">Renewal</span>':''}</div>
           <div class="row-email">${r.email}</div>
           <div class="row-meta">
-            <span class="status-mark ${r.status}">${STATUS[r.status]||r.status}</span>
-            ${r.phone    ? `<div><div class="meta-lbl">Phone</div><div class="meta-val">${r.phone}</div></div>` : ''}
-            ${r.language ? `<div><div class="meta-lbl">Language</div><div class="meta-val">${r.language}</div></div>` : ''}
-            ${r.referral ? `<div><div class="meta-lbl">Referred By</div><div class="meta-val">${r.referral}</div></div>` : ''}
+            ${BADGES[r.status]||r.status}
+            ${r.phone?`<div><div class="meta-lbl">Phone</div><div class="meta-val">${r.phone}</div></div>`:''}
+            ${r.language?`<div><div class="meta-lbl">Language</div><div class="meta-val">${r.language}</div></div>`:''}
+            ${r.referral?`<div><div class="meta-lbl">Referred by</div><div class="meta-val">${r.referral}</div></div>`:''}
           </div>
-          ${r.notes ? `<div class="row-notes">${r.notes}</div>` : ''}
+          ${r.notes?`<div class="row-notes">${r.notes}</div>`:''}
         </div>
         <div class="row-actions">
-          ${r.status === 'pending' ? `
-            <button class="act red" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Entry</button>
+          ${r.status==='pending'?`
+            <button class="act green" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Access</button>
             <button class="act" onclick="setAppStatus('${r.id}','denied')">Deny</button>
-          ` : r.status === 'approved' ? `
+          `:r.status==='approved'?`
             <button class="act" onclick="setAppStatus('${r.id}','pending')">Reopen</button>
-          ` : `
-            <button class="act red" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Entry</button>
+          `:`
+            <button class="act green" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Access</button>
             <button class="act" onclick="setAppStatus('${r.id}','pending')">Reopen</button>
           `}
-          <button class="act blood" onclick="deleteApplicant('${r.id}')">Expunge</button>
+          <button class="act red" onclick="deleteApplicant('${r.id}')">Delete</button>
           <div class="row-date">${fmt(r.created_at)}</div>
         </div>
-      </div>
-    `).join('');
+      </div>`).join('');
   }
 
-  async function setAppStatus(id, status) {
-    await fetch(`/api/applicants/${id}/status`, {
-      method: 'PATCH', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ status }),
-    });
+  async function setAppStatus(id,status){
+    await fetch(`/api/applicants/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
     loadAll();
   }
 
-  async function deleteApplicant(id) {
-    if (!confirm('Expunge this petition?')) return;
-    await fetch(`/api/applicants/${id}`, { method: 'DELETE' });
+  async function deleteApplicant(id){
+    if(!confirm('Delete this application?'))return;
+    await fetch(`/api/applicants/${id}`,{method:'DELETE'});
     loadAll();
   }
 
-  function openApprove(id, firstName, lastName, email) {
-    activeApplicantId = id;
-    document.getElementById('approveDesc').innerHTML =
-      `Create the Stremio account for <strong>${firstName} ${lastName}</strong> (${email}), then enter the credentials below.`;
-    document.getElementById('approveStremioEmail').value = email;
-    document.getElementById('approveStremioPass').value = '';
+  function openApprove(id,firstName,lastName,email){
+    activeApplicantId=id;
+    document.getElementById('approveDesc').innerHTML=`Create a Stremio account for <strong>${firstName} ${lastName}</strong> (${email}), then enter the credentials below.`;
+    document.getElementById('approveStremioEmail').value=email;
+    document.getElementById('approveStremioPass').value='';
     document.getElementById('approveModal').classList.add('open');
   }
 
-  async function confirmApprove() {
-    const stremio_email = document.getElementById('approveStremioEmail').value.trim();
-    const stremio_pass  = document.getElementById('approveStremioPass').value.trim();
-    await fetch(`/api/applicants/${activeApplicantId}/promote`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ stremio_email, stremio_pass }),
-    });
+  async function confirmApprove(){
+    const stremio_email=document.getElementById('approveStremioEmail').value.trim();
+    const stremio_pass=document.getElementById('approveStremioPass').value.trim();
+    await fetch(`/api/applicants/${activeApplicantId}/promote`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email,stremio_pass})});
     closeModal('approveModal');
     loadAll();
     document.querySelectorAll('.tab-btn')[1].click();
   }
 
-  async function loadMembers() {
-    const rows = await fetch('/api/members').then(r => r.json());
+  async function loadMembers(){
+    const rows=await fetch('/api/members').then(r=>r.json());
     renderMembers(rows);
   }
 
-  function renderMembers(rows) {
-    const el = document.getElementById('memberList');
-    if (!rows.length) {
-      el.innerHTML = `<div class="empty"><div class="empty-title">No Members Yet</div><div class="empty-sub">Grant entry to an applicant to add them here.</div></div>`;
-      return;
-    }
-    el.innerHTML = rows.map(r => {
-      const shown = showPasswords[r.id];
-      return `
-        <div class="mem-row" id="mem-${r.id}">
-          <div>
-            <div class="row-name">${r.first_name} ${r.last_name}</div>
-            <div class="row-email">${r.email}</div>
-            <div class="mem-creds">
-              <div>
-                <div class="cred-lbl">Stremio Email</div>
-                <div class="cred-val">
-                  ${r.stremio_email || '—'}
-                  ${r.stremio_email ? `<button class="copy-btn" id="cpe-${r.id}" onclick="copyVal('${esc(r.stremio_email)}','cpe-${r.id}')">Copy</button>` : ''}
-                </div>
-              </div>
-              <div>
-                <div class="cred-lbl">Stremio Password</div>
-                <div class="cred-val">
-                  <span id="pw-${r.id}">${shown ? (r.stremio_pass||'—') : '········'}</span>
-                  ${r.stremio_pass ? `
-                    <button class="show-btn" onclick="togglePw('${r.id}')">${shown?'Hide':'Show'}</button>
-                    <button class="copy-btn" id="cpp-${r.id}" onclick="copyVal('${esc(r.stremio_pass)}','cpp-${r.id}')">Copy</button>
-                  ` : ''}
-                </div>
-              </div>
-              ${r.language ? `<div><div class="cred-lbl">Language</div><div class="cred-val">${r.language}</div></div>` : ''}
-              ${r.subscription_end ? `<div><div class="cred-lbl">Subscription Ends</div><div class="cred-val" style="font-size:12px">${new Date(r.subscription_end).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div></div>` : ''}
+  function subChip(subEnd){
+    if(!subEnd)return '';
+    const days=Math.ceil((new Date(subEnd)-new Date())/86400000);
+    if(days<=0)return '<span class="sub-chip expired">Expired</span>';
+    if(days<=5)return `<span class="sub-chip expiring">${days}d left</span>`;
+    return `<span class="sub-chip active">${days}d left</span>`;
+  }
+
+  function renderMembers(rows){
+    const el=document.getElementById('memberList');
+    if(!rows.length){el.innerHTML='<div class="empty"><div class="empty-title">No members yet</div><div class="empty-sub">Grant access to an applicant to add them here.</div></div>';return}
+    el.innerHTML=rows.map(r=>{
+      const shown=showPasswords[r.id];
+      return `<div class="mem-row">
+        <div>
+          <div class="row-name">${r.first_name} ${r.last_name}${subChip(r.subscription_end)}</div>
+          <div class="row-email">${r.email}</div>
+          <div class="mem-creds">
+            <div>
+              <div class="cred-lbl">Stremio Email</div>
+              <div class="cred-val">${r.stremio_email||'—'} ${r.stremio_email?`<button class="copy-btn" id="cpe-${r.id}" onclick="copyVal('${esc(r.stremio_email)}','cpe-${r.id}')">Copy</button>`:''}</div>
             </div>
-            ${r.notes ? `<div class="row-notes">${r.notes}</div>` : ''}
+            <div>
+              <div class="cred-lbl">Password</div>
+              <div class="cred-val">
+                <span id="pw-${r.id}">${shown?(r.stremio_pass||'—'):'••••••••'}</span>
+                ${r.stremio_pass?`<button class="show-btn" onclick="togglePw('${r.id}')">${shown?'Hide':'Show'}</button><button class="copy-btn" id="cpp-${r.id}" onclick="copyVal('${esc(r.stremio_pass)}','cpp-${r.id}')">Copy</button>`:''}
+              </div>
+            </div>
+            ${r.subscription_end?`<div><div class="cred-lbl">Expires</div><div class="meta-val" style="font-size:13px">${fmt(r.subscription_end)}</div></div>`:''}
           </div>
-          <div class="row-actions">
-            <button class="act green" onclick="renewMember('${r.id}')">Renew</button>
-          <button class="act red" onclick="openEdit('${r.id}','${esc(r.stremio_email)}','${esc(r.stremio_pass)}','${esc(r.notes)}','${esc(r.first_name)}','${esc(r.last_name)}')">Edit</button>
-            <button class="act blood" onclick="deleteMember('${r.id}')">Remove</button>
-            <div class="row-date">Since ${fmt(r.created_at)}</div>
-          </div>
+          ${r.notes?`<div class="row-notes">${r.notes}</div>`:''}
         </div>
-      `;
+        <div class="row-actions">
+          <button class="act green" onclick="renewMember('${r.id}')">Renew</button>
+          <button class="act" onclick="openEdit('${r.id}','${esc(r.stremio_email)}','${esc(r.stremio_pass)}','${esc(r.notes)}','${esc(r.first_name)}','${esc(r.last_name)}')">Edit</button>
+          <button class="act red" onclick="deleteMember('${r.id}')">Remove</button>
+          <div class="row-date">Since ${fmt(r.created_at)}</div>
+        </div>
+      </div>`;
     }).join('');
   }
 
-  function togglePw(id) {
-    showPasswords[id] = !showPasswords[id];
-    loadMembers();
+  function togglePw(id){showPasswords[id]=!showPasswords[id];loadMembers()}
+
+  function copyVal(text,btnId){
+    navigator.clipboard.writeText(text).catch(()=>{});
+    const btn=document.getElementById(btnId);
+    if(!btn)return;
+    const orig=btn.textContent;
+    btn.textContent='Copied';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied')},1500);
   }
 
-  function copyVal(text, btnId) {
-    navigator.clipboard.writeText(text).catch(() => {});
-    const btn = document.getElementById(btnId);
-    if (!btn) return;
-    const orig = btn.textContent;
-    btn.textContent = 'Copied';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+  async function renewMember(id){
+    if(!confirm('Extend this member\'s subscription by 1 month?'))return;
+    await fetch(`/api/members/${id}/renew`,{method:'POST'});
+    loadMembers();loadStats();
   }
 
-  function openEdit(id, stremio_email, stremio_pass, notes, firstName, lastName) {
-    activeMemberId = id;
-    document.getElementById('editDesc').innerHTML = `Update credentials for <strong>${firstName} ${lastName}</strong>.`;
-    document.getElementById('editStremioEmail').value = stremio_email;
-    document.getElementById('editStremioPass').value  = stremio_pass;
-    document.getElementById('editNotes').value        = notes;
+  function openEdit(id,stremio_email,stremio_pass,notes,firstName,lastName){
+    activeMemberId=id;
+    document.getElementById('editDesc').innerHTML=`Editing credentials for <strong>${firstName} ${lastName}</strong>.`;
+    document.getElementById('editStremioEmail').value=stremio_email;
+    document.getElementById('editStremioPass').value=stremio_pass;
+    document.getElementById('editNotes').value=notes;
     document.getElementById('editModal').classList.add('open');
   }
 
-  async function confirmEdit() {
-    await fetch(`/api/members/${activeMemberId}`, {
-      method: 'PATCH', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        stremio_email: document.getElementById('editStremioEmail').value.trim(),
-        stremio_pass:  document.getElementById('editStremioPass').value.trim(),
-        notes:         document.getElementById('editNotes').value.trim(),
-      }),
-    });
-    closeModal('editModal');
-    loadMembers();
+  async function confirmEdit(){
+    await fetch(`/api/members/${activeMemberId}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:document.getElementById('editStremioEmail').value.trim(),stremio_pass:document.getElementById('editStremioPass').value.trim(),notes:document.getElementById('editNotes').value.trim()})});
+    closeModal('editModal');loadMembers();
   }
 
-  async function deleteMember(id) {
-    if (!confirm('Remove this member from the roster?')) return;
-    await fetch(`/api/members/${id}`, { method: 'DELETE' });
+  async function deleteMember(id){
+    if(!confirm('Remove this member?'))return;
+    await fetch(`/api/members/${id}`,{method:'DELETE'});
     loadAll();
   }
 
-  function closeModal(id) {
-    document.getElementById(id).classList.remove('open');
-    activeApplicantId = null;
-    activeMemberId = null;
-  }
-
-  document.querySelectorAll('.veil').forEach(v => {
-    v.addEventListener('click', function(e) {
-      if (e.target === this) this.classList.remove('open');
-    });
-  });
-
-  // ── Renew member subscription ────────────────────────────────────────────────
-  async function renewMember(id) {
-    if (!confirm('Extend this member\'s subscription by 1 month?')) return;
-    await fetch('/api/members/' + id + '/renew', { method: 'POST' });
-    loadMembers(); loadStats();
-  }
-
-  // ── Support messages ──────────────────────────────────────────────────────────
-  let suppFilter = 'open';
-
-  async function loadSupport() {
-    const rows = await fetch('/api/support').then(r => r.json());
-    const filtered = suppFilter === 'all' ? rows : rows.filter(r => r.status === suppFilter);
+  async function loadSupport(){
+    const rows=await fetch('/api/support').then(r=>r.json());
+    const filtered=suppFilter==='all'?rows:rows.filter(r=>r.status===suppFilter);
     renderSupport(filtered);
   }
 
-  function setSuppFilter(f, el) {
-    suppFilter = f;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  function setSuppFilter(f,el){
+    suppFilter=f;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
     el.classList.add('active');
     loadSupport();
   }
 
-  function renderSupport(rows) {
-    const el = document.getElementById('supportList');
-    if (!rows.length) {
-      el.innerHTML = '<div class="empty"><div class="empty-title">No Messages</div><div class="empty-sub">All quiet in the dungeon.</div></div>';
-      return;
-    }
-    el.innerHTML = rows.map(r => `
+  function renderSupport(rows){
+    const el=document.getElementById('supportList');
+    if(!rows.length){el.innerHTML='<div class="empty"><div class="empty-title">No messages</div><div class="empty-sub">All clear.</div></div>';return}
+    el.innerHTML=rows.map(r=>`
       <div class="app-row">
         <div>
           <div class="row-name">${r.member_name}</div>
           <div class="row-email">${r.member_email}</div>
           <div class="row-meta" style="margin-top:8px">
-            <span class="status-mark ${r.status === 'open' ? 'pending' : 'approved'}">${r.status === 'open' ? 'Open' : 'Resolved'}</span>
+            ${r.status==='open'?'<span class="badge badge-open">Open</span>':'<span class="badge badge-resolved">Resolved</span>'}
             <div><div class="meta-lbl">Subject</div><div class="meta-val">${r.subject}</div></div>
           </div>
           <div class="row-notes">${r.message}</div>
         </div>
         <div class="row-actions">
-          ${r.status === 'open'
-            ? `<button class="act green" onclick="resolveSupport('${r.id}')">Resolve</button>`
-            : `<button class="act" onclick="reopenSupport('${r.id}')">Reopen</button>`}
-          <button class="act blood" onclick="deleteSupport('${r.id}')">Delete</button>
+          ${r.status==='open'?`<button class="act green" onclick="resolveSupport('${r.id}')">Resolve</button>`:`<button class="act" onclick="reopenSupport('${r.id}')">Reopen</button>`}
+          <button class="act red" onclick="deleteSupport('${r.id}')">Delete</button>
           <div class="row-date">${fmt(r.created_at)}</div>
         </div>
-      </div>
-    `).join('');
+      </div>`).join('');
   }
 
-  async function resolveSupport(id) {
-    await fetch('/api/support/' + id + '/status', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'resolved'}) });
-    loadSupport(); loadStats();
-  }
+  async function resolveSupport(id){await fetch(`/api/support/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'resolved'})});loadSupport();loadStats()}
+  async function reopenSupport(id){await fetch(`/api/support/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'open'})});loadSupport();loadStats()}
+  async function deleteSupport(id){if(!confirm('Delete this message?'))return;await fetch(`/api/support/${id}`,{method:'DELETE'});loadSupport();loadStats()}
 
-  async function reopenSupport(id) {
-    await fetch('/api/support/' + id + '/status', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'open'}) });
-    loadSupport(); loadStats();
-  }
-
-  async function deleteSupport(id) {
-    if (!confirm('Delete this message?')) return;
-    await fetch('/api/support/' + id, { method:'DELETE' });
-    loadSupport(); loadStats();
-  }
-
+  function closeModal(id){document.getElementById(id).classList.remove('open');activeApplicantId=null;activeMemberId=null}
+  document.querySelectorAll('.veil').forEach(v=>{v.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')})});
   document.getElementById('pinInput').focus();
 </script>
 </body>

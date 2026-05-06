@@ -1,110 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DUNGEON · Apply</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>Dungeon · Apply</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --black:#1a1a1a; --red2:#b22222; --red3:#cc3333;
-      --bone:#d4c4a8; --bone2:#e8dcc8; --dim:#9a8a70; --dimmer:#3a2a20;
-      --line:rgba(180,50,50,0.2); --line2:rgba(180,50,50,0.4);
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0b0f0e;--surface:#111915;--surface2:#172118;
+      --border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
+      --green:#34d399;--green-bg:rgba(52,211,153,0.08);
+      --text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;
     }
-    html,body { min-height:100vh; background:var(--black); color:var(--bone); font-family:'Cinzel',Georgia,serif; font-size:15px; display:flex; flex-direction:column; align-items:center; }
-    body::after { content:''; position:fixed; inset:0; background:radial-gradient(ellipse 120% 120% at 50% 50%, transparent 40%, rgba(0,0,0,0.65) 100%); pointer-events:none; z-index:0; }
-    .corner-gif { position:fixed; bottom:16px; right:16px; width:96px; height:96px; object-fit:contain; image-rendering:pixelated; z-index:50; pointer-events:none; opacity:0.9; }
-    .red-rule { width:100%; height:1px; background:linear-gradient(90deg,transparent,var(--red2),transparent); }
-    .red-rule-sm { width:60px; height:1px; background:var(--red2); opacity:0.6; margin:0 auto; }
-    .nav-link { position:fixed; top:24px; right:24px; font-size:10px; letter-spacing:0.25em; text-transform:uppercase; color:var(--dimmer); text-decoration:none; transition:color 0.2s; z-index:10; }
-    .nav-link:hover { color:var(--red3); }
-    .page { position:relative; z-index:1; width:100%; max-width:540px; padding:0 28px 80px; }
-    header { padding:52px 0 0; margin-bottom:48px; text-align:center; }
-    .site-name { font-size:36px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--red3); text-shadow:0 0 40px rgba(180,40,40,0.45); margin-bottom:16px; text-decoration:none; display:block; }
-    .hero { text-align:center; margin-bottom:52px; }
-    .eyebrow { font-size:13px; letter-spacing:0.4em; text-transform:uppercase; color:var(--dim); margin-bottom:18px; font-weight:700; }
-    h1 { font-size:clamp(28px,5vw,40px); font-weight:400; letter-spacing:0.14em; text-transform:uppercase; color:var(--bone2); line-height:1.25; margin-bottom:22px; }
-    .hero-sub { font-size:14px; letter-spacing:0.1em; text-transform:uppercase; color:var(--dim); line-height:2.2; font-weight:600; }
-    .form-section { margin-bottom:32px; }
-    .section-label { font-size:13px; letter-spacing:0.4em; text-transform:uppercase; color:var(--red2); font-weight:700; display:flex; align-items:center; gap:14px; margin-bottom:24px; }
-    .section-label::before,.section-label::after { content:''; flex:1; height:1px; background:var(--line2); }
-    .field { margin-bottom:20px; }
-    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    @media(max-width:440px) { .field-row { grid-template-columns:1fr; } }
-    label { display:block; font-size:13px; letter-spacing:0.3em; text-transform:uppercase; color:var(--dim); margin-bottom:9px; font-weight:700; }
-    label .req { color:var(--red2); margin-left:3px; }
-    input,select,textarea { width:100%; background:transparent; border:none; border-bottom:1px solid var(--line2); color:var(--bone2); font-family:'Cinzel',Georgia,serif; font-size:14px; letter-spacing:0.05em; padding:10px 0; outline:none; transition:border-color .2s; border-radius:0; appearance:none; }
-    input:focus,select:focus,textarea:focus { border-bottom-color:var(--red3); }
-    input::placeholder,textarea::placeholder { color:var(--dimmer); font-size:13px; }
-    select { cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(180,50,50,0.6)'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 2px center; padding-right:18px; }
-    select option { background:#1a1a1a; }
-    textarea { resize:none; height:72px; line-height:1.7; }
-    .error-banner { display:none; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--red3); text-align:center; margin-bottom:20px; }
-    .field-error input,.field-error select,.field-error textarea { border-bottom-color:var(--red2); }
-    .err-msg { display:none; font-size:10px; letter-spacing:0.15em; color:var(--red2); margin-top:5px; text-transform:uppercase; }
-    .field-error .err-msg { display:block; }
-    .submit-wrap { margin-top:40px; text-align:center; }
-    .submit-btn { background:transparent; border:1px solid var(--red2); color:var(--red3); font-family:'Cinzel',Georgia,serif; font-size:13px; letter-spacing:0.4em; text-transform:uppercase; padding:16px 0; width:100%; cursor:pointer; transition:all .2s; }
-    .submit-btn:hover { background:rgba(180,34,34,0.1); color:var(--bone2); border-color:var(--red3); }
-    .submit-btn:disabled { opacity:0.3; cursor:not-allowed; }
-    #successPage { display:none; text-align:center; padding:60px 0; }
-    .success-gif { width:140px; height:140px; object-fit:contain; image-rendering:pixelated; margin:0 auto 40px; display:block; opacity:0.95; }
-    .success-eyebrow { font-size:10px; letter-spacing:0.5em; text-transform:uppercase; color:var(--red2); display:block; margin-bottom:24px; }
-    .success-title { font-size:24px; letter-spacing:0.15em; text-transform:uppercase; color:var(--bone2); margin-bottom:24px; font-weight:400; }
-    .success-body { font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color:var(--dim); line-height:2.4; }
-    footer { padding:24px 0 0; text-align:center; }
-    footer p { font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--dimmer); }
-    footer a { color:var(--dimmer); text-decoration:none; }
-    footer a:hover { color:var(--red3); }
-    @media(max-width:767px) { .corner-gif { display:none; } }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center}
+    .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
+    .page{max-width:560px;margin:0 auto;padding:40px 24px 80px}
+    .page-title{font-family:'Cinzel',serif;font-size:28px;font-weight:700;color:var(--text);margin-bottom:8px}
+    .page-sub{font-size:14px;color:var(--muted2);margin-bottom:36px;line-height:1.6}
+    .divider{height:1px;background:var(--border);margin-bottom:28px}
+    .section-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+    .section{margin-bottom:28px}
+    .field{margin-bottom:16px}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:480px){.field-row{grid-template-columns:1fr}}
+    label{display:block;font-size:12px;font-weight:600;color:var(--muted2);margin-bottom:7px;letter-spacing:0.04em;text-transform:uppercase}
+    label .req{color:var(--green);margin-left:2px}
+    input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s;appearance:none}
+    input:focus,select:focus,textarea:focus{border-color:var(--green)}
+    input::placeholder,textarea::placeholder{color:var(--muted)}
+    select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b8f7a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+    select option{background:#111915}
+    textarea{resize:none;height:80px;line-height:1.6}
+    .field-error input,.field-error select,.field-error textarea{border-color:var(--red)}
+    .err-msg{display:none;font-size:12px;color:var(--red);margin-top:5px}
+    .field-error .err-msg{display:block}
+    .error-banner{display:none;font-size:13px;color:var(--red);margin-bottom:16px;padding:12px 14px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:8px}
+    .submit-btn{width:100%;padding:13px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:8px}
+    .submit-btn:hover{opacity:0.9}
+    .submit-btn:disabled{opacity:0.4;cursor:not-allowed}
+    #successPage{display:none;text-align:center;padding:60px 0}
+    .success-icon{font-size:48px;margin-bottom:20px}
+    .success-title{font-size:22px;font-weight:600;color:var(--text);margin-bottom:10px}
+    .success-sub{font-size:14px;color:var(--muted2);line-height:1.7}
+    @media(max-width:767px){.page{padding:28px 20px 60px}}
   </style>
 </head>
 <body>
-<img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
+<div class="topbar">
+  <a href="/" class="logo">Dungeon</a>
+</div>
 <div class="page">
-  <header>
-    <a href="/" class="site-name">Dungeon</a>
-    <div class="red-rule"></div>
-  </header>
-  <div class="hero">
-    <div class="eyebrow">Invitation Only</div>
-    <h1>Seek Entry</h1>
-    <div class="red-rule-sm" style="margin-bottom:22px"></div>
-    <p class="hero-sub">Complete the scroll below.<br>The keeper shall prepare thy passage.</p>
-  </div>
+  <div class="page-title">Request Access</div>
+  <div class="page-sub">Submit your details below. The Warden will review your request and be in touch.</div>
+  <div class="divider"></div>
+
   <div id="formPage">
     <div class="error-banner" id="errorBanner"></div>
-    <div class="form-section">
-      <div class="section-label">Identity</div>
+    <div class="section">
+      <div class="section-label">Your Details</div>
       <div class="field-row">
         <div class="field" id="grp-first_name">
-          <label>Given Name <span class="req">*</span></label>
-          <input type="text" id="first_name" placeholder="—" autocomplete="given-name" />
+          <label>First Name <span class="req">*</span></label>
+          <input type="text" id="first_name" placeholder="First name" autocomplete="given-name"/>
           <div class="err-msg">Required</div>
         </div>
         <div class="field" id="grp-last_name">
-          <label>Family Name <span class="req">*</span></label>
-          <input type="text" id="last_name" placeholder="—" autocomplete="family-name" />
+          <label>Last Name <span class="req">*</span></label>
+          <input type="text" id="last_name" placeholder="Last name" autocomplete="family-name"/>
           <div class="err-msg">Required</div>
         </div>
       </div>
       <div class="field" id="grp-email">
-        <label>Email <span class="req">*</span></label>
-        <input type="email" id="email" placeholder="name@realm.com" autocomplete="email" />
-        <div class="err-msg">A valid address is required</div>
+        <label>Email Address <span class="req">*</span></label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
+        <div class="err-msg">A valid email is required</div>
       </div>
       <div class="field">
-        <label>Phone</label>
-        <input type="tel" id="phone" placeholder="—" autocomplete="tel" />
+        <label>Phone Number</label>
+        <input type="tel" id="phone" placeholder="Optional" autocomplete="tel"/>
       </div>
     </div>
-    <div class="form-section">
+
+    <div class="section">
       <div class="section-label">Preferences</div>
       <div class="field">
         <label>Subtitle Language</label>
         <select id="language">
-          <option value="">— Select —</option>
+          <option value="">Select a language</option>
           <option>English</option><option>Spanish</option><option>French</option>
           <option>Portuguese</option><option>German</option><option>Italian</option>
           <option>Arabic</option><option>Chinese (Simplified)</option>
@@ -112,52 +97,49 @@
         </select>
       </div>
       <div class="field">
-        <label>Who Referred You</label>
-        <input type="text" id="referral" placeholder="—" />
+        <label>Who referred you?</label>
+        <input type="text" id="referral" placeholder="Optional"/>
       </div>
       <div class="field">
         <label>Notes</label>
-        <textarea id="notes" placeholder="Special requirements…"></textarea>
+        <textarea id="notes" placeholder="Anything else you'd like us to know…"></textarea>
       </div>
     </div>
-    <div class="red-rule"></div>
-    <div class="submit-wrap">
-      <button class="submit-btn" id="submitBtn" onclick="submitForm()">Present Scroll</button>
-    </div>
+
+    <div class="divider"></div>
+    <button class="submit-btn" id="submitBtn" onclick="submitForm()">Submit Request</button>
   </div>
+
   <div id="successPage">
-    <img class="success-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
-    <span class="success-eyebrow">— Received —</span>
-    <div class="success-title">Thy Scroll Has Been Delivered</div>
-    <div class="red-rule" style="margin-bottom:24px"></div>
-    <p class="success-body">The keeper has been summoned.<br>Await word at thy courier address.</p>
+    <div class="success-icon">✅</div>
+    <div class="success-title">Request Submitted</div>
+    <div class="success-sub">Your request has been received.<br>The Warden will be in touch at your email address.</div>
   </div>
-  <footer><p>Dungeon &mdash; <a href="/admin.html">Warden's Gate</a></p></footer>
 </div>
 <script>
-  function validate() {
-    let ok = true;
-    const checks = { first_name: v=>v.trim().length>0, last_name: v=>v.trim().length>0, email: v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) };
-    for (const [id,check] of Object.entries(checks)) {
-      const grp = document.getElementById('grp-'+id);
-      if (!check(document.getElementById(id).value)) { grp.classList.add('field-error'); ok=false; }
-      else { grp.classList.remove('field-error'); }
+  function validate(){
+    let ok=true;
+    const checks={first_name:v=>v.trim().length>0,last_name:v=>v.trim().length>0,email:v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)};
+    for(const[id,check]of Object.entries(checks)){
+      const grp=document.getElementById('grp-'+id);
+      if(!check(document.getElementById(id).value)){grp.classList.add('field-error');ok=false}
+      else{grp.classList.remove('field-error')}
     }
     return ok;
   }
-  async function submitForm() {
-    if (!validate()) return;
-    const btn=document.getElementById('submitBtn'), banner=document.getElementById('errorBanner');
-    btn.disabled=true; btn.textContent='Delivering…'; banner.style.display='none';
-    const body = { first_name:document.getElementById('first_name').value.trim(), last_name:document.getElementById('last_name').value.trim(), email:document.getElementById('email').value.trim(), phone:document.getElementById('phone').value.trim(), language:document.getElementById('language').value, referral:document.getElementById('referral').value.trim(), notes:document.getElementById('notes').value.trim() };
-    try {
+  async function submitForm(){
+    if(!validate())return;
+    const btn=document.getElementById('submitBtn'),banner=document.getElementById('errorBanner');
+    btn.disabled=true;btn.textContent='Submitting…';banner.style.display='none';
+    const body={first_name:document.getElementById('first_name').value.trim(),last_name:document.getElementById('last_name').value.trim(),email:document.getElementById('email').value.trim(),phone:document.getElementById('phone').value.trim(),language:document.getElementById('language').value,referral:document.getElementById('referral').value.trim(),notes:document.getElementById('notes').value.trim()};
+    try{
       const res=await fetch('/api/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       const data=await res.json();
-      if (res.ok) { document.getElementById('formPage').style.display='none'; document.getElementById('successPage').style.display='block'; const g=document.querySelector('.corner-gif'); if(g) g.style.display='none'; }
-      else { banner.textContent=data.error||'The scroll was rejected.'; banner.style.display='block'; btn.disabled=false; btn.textContent='Present Scroll'; }
-    } catch { banner.textContent='Connection lost. Try again.'; banner.style.display='block'; btn.disabled=false; btn.textContent='Present Scroll'; }
+      if(res.ok){document.getElementById('formPage').style.display='none';document.getElementById('successPage').style.display='block'}
+      else{banner.textContent=data.error||'Something went wrong.';banner.style.display='block';btn.disabled=false;btn.textContent='Submit Request'}
+    }catch{banner.textContent='Connection error. Please try again.';banner.style.display='block';btn.disabled=false;btn.textContent='Submit Request'}
   }
-  ['first_name','last_name','email'].forEach(id=>{ document.getElementById(id).addEventListener('blur',validate); });
+  ['first_name','last_name','email'].forEach(id=>{document.getElementById(id).addEventListener('blur',validate)});
 </script>
 </body>
 </html>

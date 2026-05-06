@@ -1,70 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DUNGEON · Enter</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>Dungeon · Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --black:#1a1a1a; --red2:#b22222; --red3:#cc3333;
-      --bone:#d4c4a8; --bone2:#e8dcc8; --dim:#7a6a58; --dimmer:#3a2a20;
-      --line:rgba(180,50,50,0.2); --line2:rgba(180,50,50,0.4);
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0b0f0e;--surface:#111915;--surface2:#172118;
+      --border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
+      --green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);
+      --text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;
     }
-    html,body { min-height:100vh; background:var(--black); color:var(--bone); font-family:'Cinzel',Georgia,serif; display:flex; align-items:center; justify-content:center; }
-    body::after { content:''; position:fixed; inset:0; background:radial-gradient(ellipse 120% 120% at 50% 50%, transparent 40%, rgba(0,0,0,0.7) 100%); pointer-events:none; z-index:0; }
-    .corner-gif { position:fixed; bottom:16px; right:16px; width:96px; height:96px; object-fit:contain; image-rendering:pixelated; z-index:50; pointer-events:none; opacity:0.9; }
-    .red-rule { width:100%; height:1px; background:linear-gradient(90deg,transparent,var(--red2),transparent); }
-    .wrap { position:relative; z-index:1; width:320px; text-align:center; padding:0 8px; }
-    .site-name { font-size:28px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--red3); text-shadow:0 0 40px rgba(180,40,40,0.45); margin-bottom:14px; text-decoration:none; display:block; }
-    .sub { font-size:10px; letter-spacing:0.35em; text-transform:uppercase; color:var(--dim); margin-bottom:48px; }
-    .field { margin-bottom:24px; text-align:left; }
-    label { display:block; font-size:9px; letter-spacing:0.35em; text-transform:uppercase; color:var(--dim); margin-bottom:9px; }
-    input { width:100%; background:transparent; border:none; border-bottom:1px solid var(--line2); color:var(--bone2); font-family:'Cinzel',Georgia,serif; font-size:14px; letter-spacing:0.05em; padding:10px 0; outline:none; transition:border-color .2s; border-radius:0; }
-    input:focus { border-bottom-color:var(--red3); }
-    input::placeholder { color:var(--dimmer); font-size:13px; }
-    .login-btn { width:100%; margin-top:36px; background:transparent; border:1px solid var(--red2); color:var(--red3); font-family:'Cinzel',Georgia,serif; font-size:12px; letter-spacing:0.4em; text-transform:uppercase; padding:14px 0; cursor:pointer; transition:all .2s; }
-    .login-btn:hover { background:rgba(180,34,34,0.1); color:var(--bone2); border-color:var(--red3); }
-    .login-btn:disabled { opacity:0.3; cursor:not-allowed; }
-    .error-msg { display:none; margin-top:18px; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--red3); }
-    .back-link { display:block; margin-top:40px; font-size:9px; letter-spacing:0.25em; text-transform:uppercase; color:var(--dimmer); text-decoration:none; transition:color .2s; }
-    .back-link:hover { color:var(--dim); }
-    @media(max-width:767px) { .corner-gif { display:none; } }
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;display:flex;flex-direction:column}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
+    .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
+    .center{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 32px;width:100%;max-width:380px}
+    .card-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px}
+    .card-sub{font-size:13px;color:var(--muted2);margin-bottom:28px}
+    .field{margin-bottom:18px}
+    label{display:block;font-size:12px;font-weight:600;color:var(--muted2);margin-bottom:7px;letter-spacing:0.04em;text-transform:uppercase}
+    input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s}
+    input:focus{border-color:var(--green)}
+    input::placeholder{color:var(--muted)}
+    .btn{width:100%;margin-top:8px;padding:12px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s}
+    .btn:hover{opacity:0.9}
+    .btn:disabled{opacity:0.4;cursor:not-allowed}
+    .error-msg{display:none;margin-top:14px;font-size:13px;color:var(--red);text-align:center}
+    @media(max-width:767px){.card{padding:28px 20px}}
+
+    footer{text-align:center;padding:32px 0 0;font-size:12px;color:var(--muted)}
+    footer a{color:var(--muted);text-decoration:none}
+    footer a:hover{color:var(--text)}
   </style>
 </head>
 <body>
-<img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
-<div class="wrap">
-  <a href="/" class="site-name">Dungeon</a>
-  <div class="red-rule" style="margin-bottom:14px"></div>
-  <div class="sub">Members Only</div>
-  <div class="field">
-    <label>Stremio Email</label>
-    <input type="email" id="email" placeholder="—" autocomplete="email" onkeydown="if(event.key==='Enter')login()" />
+<div class="topbar">
+  <a href="/" class="logo">Dungeon</a>
+</div>
+<div class="center">
+  <div class="card">
+    <div class="card-title">Member Sign In</div>
+    <div class="card-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Use your Stremio credentials to access your dashboard.</div>
+    <div class="field">
+      <label>Stremio Email</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')login()"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"/>
+    </div>
+    <button class="btn" id="loginBtn" onclick="login()">Sign In</button>
+    <div class="error-msg" id="errorMsg"></div>
   </div>
-  <div class="field">
-    <label>Password</label>
-    <input type="password" id="password" placeholder="—" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()" />
-  </div>
-  <button class="login-btn" id="loginBtn" onclick="login()">Enter</button>
-  <div class="error-msg" id="errorMsg"></div>
-  <a href="/" class="back-link">Return</a>
 </div>
 <script>
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{ if(d.authenticated) window.location.href='/dashboard.html'; });
-  async function login() {
-    const email=document.getElementById('email').value.trim(), password=document.getElementById('password').value.trim();
-    const btn=document.getElementById('loginBtn'), err=document.getElementById('errorMsg');
-    if (!email||!password) { err.textContent='Both fields are required.'; err.style.display='block'; return; }
-    btn.disabled=true; btn.textContent='Entering…'; err.style.display='none';
-    try {
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{if(d.authenticated)window.location.href='/dashboard.html'});
+  async function login(){
+    const email=document.getElementById('email').value.trim();
+    const password=document.getElementById('password').value.trim();
+    const btn=document.getElementById('loginBtn');
+    const err=document.getElementById('errorMsg');
+    if(!email||!password){err.textContent='Both fields are required.';err.style.display='block';return}
+    btn.disabled=true;btn.textContent='Signing in…';err.style.display='none';
+    try{
       const res=await fetch('/api/member/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
       const data=await res.json();
-      if (res.ok) { window.location.href='/dashboard.html'; }
-      else { err.textContent=data.error||'The gate does not yield.'; err.style.display='block'; btn.disabled=false; btn.textContent='Enter'; }
-    } catch { err.textContent='Connection lost. Try again.'; err.style.display='block'; btn.disabled=false; btn.textContent='Enter'; }
+      if(res.ok){window.location.href='/dashboard.html'}
+      else{err.textContent=data.error||'Incorrect email or password.';err.style.display='block';btn.disabled=false;btn.textContent='Sign In'}
+    }catch{err.textContent='Connection error. Please try again.';err.style.display='block';btn.disabled=false;btn.textContent='Sign In'}
   }
 </script>
+
+  <footer>
+    <a href="/dashboard.html">Members</a>
+    &nbsp;·&nbsp;
+    <a href="/admin.html">Warden</a>
+  </footer>
 </body>
 </html>

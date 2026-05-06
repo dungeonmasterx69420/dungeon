@@ -1,296 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>DUNGEON · Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>Dungeon · Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --black:   #1a1a1a;
-      --deep:    #0c0808;
-      --panel:   #110e0e;
-      --red:     #8b1a1a;
-      --red2:    #b22222;
-      --red3:    #cc3333;
-      --ember:   #c8601a;
-      --bone:    #d4c4a8;
-      --bone2:   #e8dcc8;
-      --dim:     #7a6a58;
-      --dimmer:  #3a2a20;
-      --line:    rgba(180,50,50,0.18);
-      --line2:   rgba(180,50,50,0.38);
-      --green2:  #4a9a4a;
-      --amber:   #b87820;
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0b0f0e;--surface:#111915;--surface2:#172118;
+      --border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
+      --green:#34d399;--green-dim:#10b981;
+      --green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);
+      --text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;
+      --red:#f87171;--red-bg:rgba(248,113,113,0.1);
+      --amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1);
     }
-
-    html, body {
-      min-height: 100vh;
-      background: var(--black);
-      color: var(--bone);
-      font-family: 'Cinzel', Georgia, serif;
-    }
-
-    body::after {
-      content: ''; position: fixed; inset: 0;
-      background: radial-gradient(ellipse 160% 100% at 50% 0%, transparent 40%, rgba(0,0,0,0.5) 100%);
-      pointer-events: none; z-index: 0;
-    }
-
-    .red-rule { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--red2), transparent); }
-
-    /* ════════════════════════════════════════
-       DESKTOP (≥ 768px)
-    ════════════════════════════════════════ */
-
-    /* Corner gif — desktop only */
-    .corner-gif {
-      position: fixed; bottom: 16px; right: 16px;
-      width: 96px; height: 96px;
-      object-fit: contain; image-rendering: pixelated;
-      z-index: 50; pointer-events: none; opacity: 0.9;
-    }
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
 
     /* Topbar */
-    .topbar {
-      position: relative; z-index: 10;
-      border-bottom: 1px solid var(--line);
-      padding: 16px 40px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
+    .topbar-right{display:flex;align-items:center;gap:20px}
+    .greeting{font-size:13px;color:var(--muted2);font-weight:500}
+    .leave-btn{font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;transition:color .2s}
+    .leave-btn:hover{color:var(--text)}
 
-    .topbar-name {
-      font-size: 26.4px; font-weight: 700; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--red3);
-      text-shadow: 0 0 20px rgba(180,40,40,0.4);
-    }
-
-    .topbar-right { display: flex; align-items: center; gap: 24px; }
-
-    .greeting {
-      font-size: 15.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim);
-    }
-
-    .topbar-link {
-      font-size: 15.5px; letter-spacing: 0.25em; text-transform: uppercase;
-      color: var(--dimmer); text-decoration: none; background: none; border: none;
-      cursor: pointer; font-family: 'Cinzel', serif; transition: color 0.2s;
-    }
-    .topbar-link:hover { color: var(--red3); }
-
-    /* Bottom nav — hidden on desktop */
-
-    /* Page */
-    .page {
-      position: relative; z-index: 1;
-      max-width: 900px; margin: 0 auto;
-      padding: 40px 32px 80px;
-    }
+    .page{max-width:900px;margin:0 auto;padding:32px 28px 80px}
 
     /* Subscription banner */
-    .sub-banner {
-      border: 1px solid var(--line2);
-      padding: 28px 32px;
-      margin-bottom: 48px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: center;
-      gap: 24px;
-      position: relative;
-      overflow: hidden;
-    }
+    .sub-banner{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;position:relative;overflow:hidden}
+    .sub-banner::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+    .sub-banner.active::before{background:var(--green)}
+    .sub-banner.expiring::before{background:var(--amber)}
+    .sub-banner.expired::before{background:var(--red)}
+    .sub-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+    .sub-status{font-size:18px;font-weight:600;margin-bottom:6px}
+    .sub-status.active{color:var(--green)}
+    .sub-status.expiring{color:var(--amber)}
+    .sub-status.expired{color:var(--red)}
+    .sub-dates{font-size:13px;color:var(--muted2);line-height:1.7}
+    .sub-days{text-align:right}
+    .sub-days-num{font-size:40px;font-weight:600;color:var(--text);line-height:1}
+    .sub-days-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-top:4px}
 
-    .sub-banner::before {
-      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-    }
-    .sub-banner.active::before   { background: var(--green2); }
-    .sub-banner.expiring::before { background: var(--amber); }
-    .sub-banner.expired::before  { background: var(--red2); }
-
-    .sub-label {
-      font-size: 18px; letter-spacing: 0.4em; text-transform: uppercase;
-      color: var(--dim); margin-bottom: 8px;
-    }
-
-    .sub-status {
-      font-size: 28.8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-    }
-    .sub-status.active   { color: var(--green2); }
-    .sub-status.expiring { color: var(--amber); }
-    .sub-status.expired  { color: var(--red3); }
-
-    .sub-dates {
-      margin-top: 10px; font-size: 15.5px; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--dim); line-height: 2;
-    }
-
-    .sub-days { text-align: right; }
-    .sub-days-num { font-size: 62.4px; font-weight: 400; line-height: 1; color: var(--bone2); }
-    .sub-days-label {
-      font-size: 18px; letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--dim); margin-top: 4px;
-    }
+    /* Welcome message */
+    .welcome{background:var(--green-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:28px;font-size:13px;color:var(--muted2);line-height:1.7}
+    .welcome a{color:var(--green);text-decoration:none;font-weight:500}
+    .welcome a:hover{text-decoration:underline}
 
     /* Section head */
-    .section-head {
-      font-size: 26px; letter-spacing: 0.45em; text-transform: uppercase;
-      color: var(--red2); margin-bottom: 20px;
-      display: flex; align-items: center; gap: 14px;
-    }
-    .section-head::after { content: ''; flex: 1; height: 1px; background: var(--line2); }
+    .section-head{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+    .section-head::after{content:'';flex:1;height:1px;background:var(--border)}
 
-    /* Tiles — desktop 3 col */
-    .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); margin-bottom: 48px; }
+    /* Tiles */
+    .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+    .tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;text-decoration:none;color:inherit;transition:border-color .2s,background .2s;cursor:pointer}
+    .tile:hover{background:var(--surface2);border-color:var(--border2)}
+    .tile-icon{font-size:28px;line-height:1}
+    .tile-label{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+    .tile-title{font-size:13px;font-weight:600;color:var(--text)}
 
-    .tile {
-      background: var(--panel);
-      padding: 28px 22px;
-      display: flex; flex-direction: column; align-items: center;
-      text-align: center; gap: 14px;
-      text-decoration: none; color: inherit;
-      transition: background 0.2s;
-      cursor: pointer; border: none; font-family: 'Cinzel', serif;
-    }
-    .tile:hover { background: #1c1212; }
+    /* Footer */
+    footer{text-align:center;padding:32px 0 0;font-size:12px;color:var(--muted)}
+    footer a{color:var(--muted);text-decoration:none}
+    footer a:hover{color:var(--text)}
+    .torch-link{display:inline-flex;align-items:center;opacity:0.35;transition:opacity .3s;cursor:pointer;margin-left:6px;vertical-align:middle}
+    .torch-link:hover{opacity:1}
+    #torchCanvas{image-rendering:pixelated;display:block}
 
-    .tile-img {
-      width: 56px; height: 56px;
-      object-fit: contain; image-rendering: pixelated;
-      opacity: 0.85; transition: opacity 0.2s; display: block;
-    }
-    .tile:hover .tile-img { opacity: 1; }
-
-    .tile-icon { font-size: 43.2px; line-height: 1; }
-
-    .tile-label {
-      font-size: 10.7px; letter-spacing: 0.35em; text-transform: uppercase;
-      color: var(--dim); margin-bottom: 2px;
-    }
-    .tile-title {
-      font-size: 15.5px; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--bone2); font-weight: 700;
-    }
-    .tile-sub { font-size: 13.1px; letter-spacing: 0.05em; color: var(--dim); line-height: 1.6; }
-
-    /* Torch / footer */
-    .torch-link { display: inline-block; vertical-align: middle; margin-left: 10px; opacity: 0.3; transition: opacity 0.3s; cursor: pointer; line-height: 0; }
-    .torch-link:hover { opacity: 0.9; }
-    #torchCanvas { image-rendering: pixelated; display: block; }
-
-    footer { padding: 40px 0 0; text-align: center; }
-    footer p { font-size: 13.1px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dimmer); }
-    footer a { color: var(--dimmer); text-decoration: none; }
-    footer a:hover { color: var(--red3); }
-
-
-    /* ════════════════════════════════════════
-       MOBILE (≤ 767px)
-    ════════════════════════════════════════ */
-    @media (max-width: 767px) {
-      .corner-gif { display: none; }
-
-      /* Hide desktop elements */
-      .corner-gif  { display: none; }
-      .topbar-right { display: none; }
-      footer        { display: none; }
-
-      /* Topbar — just logo + greeting */
-      .topbar {
-        padding: 14px 20px;
-        position: sticky; top: 0;
-        background: var(--black);
-        border-bottom: 1px solid var(--line2);
-        z-index: 100;
-      }
-
-      .topbar-name { font-size: 32px; letter-spacing: 0.18em; }
-
-      .mob-greeting {
-        font-size: 20px; letter-spacing: 0.12em; text-transform: uppercase;
-        color: var(--dim);
-      }
-
-      /* Page padding — leave room for bottom nav */
-      .page { padding: 24px 16px 40px; }
-
-      /* Subscription banner — compact on mobile */
-      .sub-banner {
-        grid-template-columns: 1fr auto;
-        padding: 14px 16px 14px 20px;
-        margin-bottom: 20px;
-        gap: 12px;
-      }
-
-      .sub-label  { font-size: 11px; letter-spacing: 0.2em; }
-      .sub-status { font-size: 20px; }
-      .sub-dates  { font-size: 12px; letter-spacing: 0.03em; line-height: 1.7; }
-
-      /* Days remaining — back to right column on mobile */
-      .sub-days {
-        text-align: right;
-        display: block;
-      }
-      .sub-days-num   { font-size: 36px; }
-      .sub-days-label { font-size: 10px; letter-spacing: 0.15em; margin-top: 2px; }
-
-      /* Section head */
-      .section-head { font-size: 18px; letter-spacing: 0.2em; margin-bottom: 16px; }
-
-      /* Tiles — 2 col on mobile */
-      .tiles {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 2px;
-        margin-bottom: 32px;
-      }
-      .tiles .tile { width: calc(50% - 1px); }
-
-      .tile {
-        padding: 32px 14px;
-        gap: 10.2px;
-        min-height: 160px;
-        justify-content: center;
-        -webkit-tap-highlight-color: rgba(180,34,34,0.15);
-      }
-
-      .tile-icon { font-size: 48px; }
-      .tile-img  { width: 56px; height: 56px; }
-
-      .tile-label { font-size: 14px; letter-spacing: 0.15em; }
-      .tile-title { font-size: 18px; letter-spacing: 0.06em; }
-      .tile-sub   { display: none; }
-
-
-
-
+    /* Mobile */
+    @media(max-width:767px){
+      .topbar{padding:12px 16px}
+      .topbar-right .greeting{display:none}
+      .page{padding:20px 14px 60px}
+      .sub-banner{grid-template-columns:1fr auto;padding:14px 16px 14px 20px;margin-bottom:12px}
+      .sub-status{font-size:16px}
+      .sub-dates{font-size:12px}
+      .sub-days-num{font-size:32px}
+      .sub-days-label{font-size:10px}
+      .tiles{grid-template-columns:1fr 1fr;gap:8px}
+      .tile{padding:16px 10px;gap:8px}
+      .tile-icon{font-size:24px}
+      .tile-title{font-size:12px}
+      footer{display:none}
+      /* Mobile tile order */
+      .tile[data-mob-order="1"]{order:1}
+      .tile[data-mob-order="2"]{order:2}
+      .tile[data-mob-order="3"]{order:3}
+      .tile[data-mob-order="4"]{order:4}
+      .tile[data-mob-order="5"]{order:5}
+      .tile[data-mob-order="6"]{order:6}
+      .tiles{display:flex;flex-wrap:wrap}
+      .tile{width:calc(50% - 4px)}
     }
   </style>
 </head>
 <body>
 
-<!-- Desktop only -->
-<img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
-
-<!-- Topbar -->
 <div class="topbar">
-  <a href="/" class="topbar-name" style="text-decoration:none">Dungeon</a>
-  <!-- Desktop: greeting + leave -->
+  <a href="/" class="logo">Dungeon</a>
   <div class="topbar-right">
     <span class="greeting" id="greeting"></span>
-    <button class="topbar-link" onclick="logout()">Leave</button>
-  </div>
-  <!-- Mobile: greeting only, no leave button -->
-  <div id="mob-right" style="display:none">
-    <span class="mob-greeting" id="mob-greeting"></span>
+    <button class="leave-btn" onclick="logout()">Sign out</button>
   </div>
 </div>
 
-
 <div class="page">
 
-  <!-- Subscription banner -->
   <div class="sub-banner" id="subBanner">
     <div>
       <div class="sub-label">Subscription</div>
@@ -299,161 +116,92 @@
     </div>
     <div class="sub-days">
       <div class="sub-days-num" id="subDaysNum">—</div>
-      <div class="sub-days-label" id="subDaysLabel">days remaining</div>
+      <div class="sub-days-label">days remaining</div>
     </div>
   </div>
 
-  <!-- Tiles -->
-  <div class="section-head">The Vault</div>
-  <div class="tiles">
-
-    <a class="tile" href="https://web.stremio.com" target="_blank" rel="noopener" style="order:1">
-      <img class="tile-img" src="https://www.stremio.com/website/stremio-logo-small.png"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='block'" alt="Stremio" />
-      <span class="tile-icon" style="display:none">📺</span>
-      <div>
-        <div class="tile-label">Open App</div>
-        <div class="tile-title">Stremio Web</div>
-        <div class="tile-sub">Launch your stream library</div>
-      </div>
-    </a>
-
-    <a class="tile" href="/guides.html" style="order:2">
-      <span class="tile-icon">📜</span>
-      <div>
-        <div class="tile-label">Setup Help</div>
-        <div class="tile-title">Guides</div>
-        <div class="tile-sub">Get Stremio on your devices</div>
-      </div>
-    </a>
-
-    <a class="tile" href="/suggest.html" style="order:6">
-      <span class="tile-icon">🔥</span>
-      <div>
-        <div class="tile-label">Ideas</div>
-        <div class="tile-title">Suggest a Feature</div>
-        <div class="tile-sub">Tell the keeper what you want</div>
-      </div>
-    </a>
-
-    <a class="tile" href="/renew.html" style="order:3">
-      <span class="tile-icon">⚔️</span>
-      <div>
-        <div class="tile-label">Monthly</div>
-        <div class="tile-title">Renew Access</div>
-        <div class="tile-sub">Request another month</div>
-      </div>
-    </a>
-
-    <a class="tile" href="https://buymeacoffee.com/enterdungeon" target="_blank" rel="noopener" style="order:5">
-      <span class="tile-icon">☕</span>
-      <div>
-        <div class="tile-label">Support</div>
-        <div class="tile-title">Buy Me a Coffee</div>
-        <div class="tile-sub">Keep the dungeon lit</div>
-      </div>
-    </a>
-
-    <a class="tile" href="/support.html" style="order:4">
-      <span class="tile-icon">🛡️</span>
-      <div>
-        <div class="tile-label">Help</div>
-        <div class="tile-title">Support</div>
-        <div class="tile-sub">Send a message to the keeper</div>
-      </div>
-    </a>
-
+  <div class="welcome" id="welcomeMsg">
+    The Warden is glad to have you here. Your access is active — head to <a href="https://web.stremio.com" target="_blank">Stremio Web</a> to start watching, or check the <a href="/guides.html">Guides</a> if you need help getting set up on a new device.
   </div>
 
-  <!-- Desktop footer only -->
+  <div class="section-head">Quick Access</div>
+
+  <div class="tiles">
+    <a class="tile" href="https://web.stremio.com" target="_blank" rel="noopener" data-mob-order="1">
+      <div class="tile-icon">📺</div>
+      <div><div class="tile-label">Open App</div><div class="tile-title">Stremio Web</div></div>
+    </a>
+    <a class="tile" href="/guides.html" data-mob-order="2">
+      <div class="tile-icon">📜</div>
+      <div><div class="tile-label">Setup Help</div><div class="tile-title">Guides</div></div>
+    </a>
+    <a class="tile" href="/suggest.html" data-mob-order="6">
+      <div class="tile-icon">🔥</div>
+      <div><div class="tile-label">Ideas</div><div class="tile-title">Suggest a Feature</div></div>
+    </a>
+    <a class="tile" href="/renew.html" data-mob-order="3">
+      <div class="tile-icon">⚔️</div>
+      <div><div class="tile-label">Monthly</div><div class="tile-title">Renew Access</div></div>
+    </a>
+    <a class="tile" href="https://buymeacoffee.com/enterdungeon" target="_blank" rel="noopener" data-mob-order="5">
+      <div class="tile-icon">☕</div>
+      <div><div class="tile-label">Support</div><div class="tile-title">Buy Me a Coffee</div></div>
+    </a>
+    <a class="tile" href="/support.html" data-mob-order="4">
+      <div class="tile-icon">🛡️</div>
+      <div><div class="tile-label">Help</div><div class="tile-title">Support</div></div>
+    </a>
+  </div>
+
   <footer>
-    <p>Dungeon &mdash; <a href="/" class="topbar-link">Home</a> <a href="/login.html" class="torch-link" title=""><canvas id="torchCanvas" width="14" height="20"></canvas></a></p>
+    <a href="/dashboard.html">Members</a>
+    &nbsp;·&nbsp;
+    <a href="/admin.html">Warden</a>
   </footer>
 
 </div>
 
 <script>
-  const isMobile = window.innerWidth < 768;
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if(!d.authenticated){window.location.href='/login.html';return}
+    const m=d.member;
+    document.getElementById('greeting').textContent='Welcome, '+m.first_name;
 
-  fetch('/api/member/me').then(r => r.json()).then(d => {
-    if (!d.authenticated) { window.location.href = '/login.html'; return; }
-    const m = d.member;
+    const banner=document.getElementById('subBanner');
+    const status=document.getElementById('subStatus');
+    const dates=document.getElementById('subDates');
+    const daysNum=document.getElementById('subDaysNum');
+    const welcome=document.getElementById('welcomeMsg');
 
-    // Greeting — desktop topbar vs mobile inline
-    document.getElementById('greeting').textContent = m.first_name;
-    const mobGreet = document.getElementById('mob-greeting');
-    const mobRight = document.getElementById('mob-right');
-    if (isMobile) { mobGreet.textContent = m.first_name; if(mobRight) mobRight.style.display = 'flex'; }
-
-    // Subscription
-    const banner   = document.getElementById('subBanner');
-    const status   = document.getElementById('subStatus');
-    const dates    = document.getElementById('subDates');
-    const daysNum  = document.getElementById('subDaysNum');
-    const daysLbl  = document.getElementById('subDaysLabel');
-
-    if (!m.subscription_end) {
-      banner.classList.add('expired');
-      status.classList.add('expired');
-      status.textContent = 'No Active Subscription';
-      dates.textContent = 'Contact the keeper to get started.';
-      daysNum.textContent = '—';
+    if(!m.subscription_end){
+      banner.classList.add('expired');status.classList.add('expired');
+      status.textContent='No Active Subscription';
+      dates.textContent='Contact the Warden to get started.';
+      daysNum.textContent='—';
+      welcome.textContent='Your subscription is not currently active. Please contact the Warden or submit a renewal request.';
     } else {
-      const now      = new Date();
-      const end      = new Date(m.subscription_end);
-      const start    = m.subscription_start ? new Date(m.subscription_start) : null;
-      const daysLeft = Math.ceil((end - now) / 86400000);
-      const fmt      = dt => dt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
-      if (daysLeft <= 0) {
-        banner.classList.add('expired');
-        status.classList.add('expired');
-        status.textContent = 'Expired';
-        daysNum.textContent = '0';
-      } else if (daysLeft <= 5) {
-        banner.classList.add('expiring');
-        status.classList.add('expiring');
-        status.textContent = 'Expiring Soon';
-        daysNum.textContent = daysLeft;
+      const now=new Date(),end=new Date(m.subscription_end);
+      const start=m.subscription_start?new Date(m.subscription_start):null;
+      const daysLeft=Math.ceil((end-now)/86400000);
+      const fmt=dt=>dt.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+      if(daysLeft<=0){
+        banner.classList.add('expired');status.classList.add('expired');status.textContent='Expired';daysNum.textContent='0';
+        welcome.innerHTML='Your subscription has expired. <a href="/renew.html">Request a renewal</a> to restore access.';
+      } else if(daysLeft<=5){
+        banner.classList.add('expiring');status.classList.add('expiring');status.textContent='Expiring Soon';daysNum.textContent=daysLeft;
+        welcome.innerHTML='Your subscription expires in '+daysLeft+' days. <a href="/renew.html">Renew now</a> to keep your access.';
       } else {
-        banner.classList.add('active');
-        status.classList.add('active');
-        status.textContent = 'Active';
-        daysNum.textContent = daysLeft;
+        banner.classList.add('active');status.classList.add('active');status.textContent='Active';daysNum.textContent=daysLeft;
       }
-
-      dates.innerHTML = (start ? `Started: ${fmt(start)}<br>` : '') + `Expires: ${fmt(end)}`;
+      dates.innerHTML=(start?'Started: '+fmt(start)+'<br>':'')+'Expires: '+fmt(end);
     }
   });
 
-  async function logout() {
-    await fetch('/api/member/logout', { method: 'POST' });
-    window.location.href = '/login.html';
+  async function logout(){
+    await fetch('/api/member/logout',{method:'POST'});
+    window.location.href='/login.html';
   }
 
-  // Pixel torch (desktop only)
-  if (!isMobile) {
-    (function() {
-      const canvas = document.getElementById('torchCanvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const S = 2;
-      const C = { _:null, B:'#5a3010', K:'#3a1a08', O:'#d05010', Y:'#f0b020', r:'#b83010', o:'#e07020' };
-      const frames = [
-        ['__YY___','_YYoY__','_YOrO__','__rO___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
-        ['___Y___','__YOY__','_YOrO__','_OYr___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
-        ['__YY___','_oYY___','__OrY__','__rO___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
-      ];
-      let frame = 0, tick = 0;
-      function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        frames[frame % frames.length].forEach((row, ry) => {
-          [...row].forEach((ch, rx) => { const c = C[ch]; if (c) { ctx.fillStyle = c; ctx.fillRect(rx*S, ry*S, S, S); } });
-        });
-      }
-      (function loop() { tick++; if (tick % 6 === 0) frame++; draw(); requestAnimationFrame(loop); })();
-    })();
-  }
 </script>
 </body>
 </html>

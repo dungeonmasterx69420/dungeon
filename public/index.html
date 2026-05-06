@@ -1,209 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>DUNGEON</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>Dungeon</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --black:  #1a1a1a;
-      --red2:   #b22222;
-      --red3:   #cc3333;
-      --bone:   #d4c4a8;
-      --bone2:  #e8dcc8;
-      --dim:    #7a6a58;
-      --dimmer: #3a2a20;
-      --line:   rgba(180,50,50,0.2);
-      --line2:  rgba(180,50,50,0.4);
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0b0f0e;--surface:#111915;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
+      --green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;
     }
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
+    body{display:flex;flex-direction:column;min-height:100vh}
 
-    html, body {
-      height: 100%;
-      background: var(--black);
-      color: var(--bone);
-      font-family: 'Cinzel', Georgia, serif;
+    .topbar{
+      background:var(--surface);border-bottom:1px solid var(--border);
+      padding:16px 28px;display:flex;align-items:center;justify-content:space-between;
     }
+    .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
+    .warden-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;transition:color .2s}
+    .warden-link:hover{color:var(--text)}
 
-    body {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      position: relative;
-      overflow: hidden;
+
+    .center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+
+    .tagline{font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:32px}
+
+    .seek-btn{
+      display:inline-block;padding:14px 48px;
+      background:var(--green-bg);border:1px solid var(--green);border-radius:8px;
+      color:var(--green);font-family:'Inter',sans-serif;font-size:15px;font-weight:600;
+      letter-spacing:0.06em;text-decoration:none;text-transform:uppercase;
+      transition:background .2s,color .2s;
     }
+    .seek-btn:hover{background:var(--green);color:#0b0f0e}
 
-    /* Subtle vignette */
-    body::after {
-      content: '';
-      position: fixed; inset: 0;
-      background: radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, rgba(0,0,0,0.55) 100%);
-      pointer-events: none; z-index: 0;
-    }
-
-    /* Topbar */
-    .topbar {
-      position: relative; z-index: 10;
-      border-bottom: 1px solid var(--line);
-      padding: 16px 28px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-
-    .topbar-right {
-      display: flex; align-items: center; gap: 20px;
-    }
-
-    .warden-link {
-      font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--dim); text-decoration: none; transition: color 0.2s;
-    }
-    .warden-link:hover { color: var(--red3); }
-
-    /* Center content */
-    .center {
-      position: relative; z-index: 1;
-      text-align: center;
-      padding: 0 32px;
-      flex: 1;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-    }
-
-    /* Title — top left, small */
-    .title {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--red3);
-      line-height: 1;
-      user-select: none;
-    }
-
-    /* Gold rule */
-    .rule {
-      width: 100%;
-      max-width: 480px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--red2), transparent);
-      margin: 0 auto 48px;
-    }
-
-    /* Two paths */
-    .paths {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .path-link {
-      font-size: 17px;
-      font-weight: 700;
-      letter-spacing: 0.45em;
-      text-transform: uppercase;
-      color: var(--dim);
-      text-decoration: none;
-      padding: 16px 0;
-      width: 280px;
-      text-align: center;
-      border: 1px solid transparent;
-      transition: all 0.25s;
-      display: block;
-    }
-
-    .path-link.primary {
-      border-color: var(--red2);
-      color: var(--red3);
-    }
-
-    .path-link.primary:hover {
-      background: rgba(178,34,34,0.1);
-      color: var(--bone2);
-      border-color: var(--red3);
-    }
-
-    .path-link.secondary {
-      border-color: var(--dimmer);
-      color: var(--dim);
-    }
-
-    .path-link.secondary:hover {
-      border-color: var(--dim);
-      color: var(--bone);
-    }
-
-    /* Divider between paths */
-    .path-or {
-      font-size: 9px;
-      letter-spacing: 0.4em;
-      text-transform: uppercase;
-      color: var(--dimmer);
-    }
-
-    /* Torch */
-    .torch-link {
-      display: inline-block; vertical-align: middle;
-      opacity: 0.35; transition: opacity 0.3s; cursor: pointer; line-height: 0;
-    }
-    .torch-link:hover { opacity: 1; }
-    #torchCanvas { image-rendering: pixelated; display: block; }
-
-    /* Corner gif — desktop only */
-    .corner-gif {
-      position: fixed; bottom: 16px; right: 16px;
-      width: 88px; height: 88px;
-      object-fit: contain; image-rendering: pixelated;
-      z-index: 50; pointer-events: none; opacity: 0.85;
-    }
-
-    @media (max-width: 767px) {
-      .corner-gif { display: none; }
-      .topbar { padding: 14px 20px; }
-      .title { font-size: 18px; }
-      .path-link { width: 180px; font-size: 12px; letter-spacing: 0.35em; padding: 12px 0; }
+    @media(max-width:767px){
+      .topbar{padding:14px 20px}
     }
   </style>
 </head>
 <body>
 
-<img class="corner-gif" src="https://c.tenor.com/sbNfkG-ioMwAAAAd/tenor.gif" alt="" />
 <div class="topbar">
-  <a href="/" class="title" style="text-decoration:none">Dungeon</a>
-  <div class="topbar-right">
+  <a href="/" class="logo">Dungeon</a>
+  <div style="display:flex;align-items:center;gap:16px">
     <a href="/admin.html" class="warden-link">Warden</a>
-    <a href="/login.html" class="torch-link" title="Member login"><canvas id="torchCanvas" width="14" height="20"></canvas></a>
+    <a href="/dashboard.html" class="warden-link">Members</a>
   </div>
 </div>
 
 <div class="center">
-  <a href="/apply.html" class="path-link primary">Seek Entry</a>
+  <div class="tagline">Members Only</div>
+  <a href="/apply.html" class="seek-btn">Apply</a>
 </div>
 
-<script>
-  // Pixel torch
-  (function() {
-    const canvas = document.getElementById('torchCanvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const S = 2;
-    const C = { _:null, B:'#5a3010', K:'#3a1a08', O:'#d05010', Y:'#f0b020', r:'#b83010', o:'#e07020' };
-    const frames = [
-      ['__YY___','_YYoY__','_YOrO__','__rO___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
-      ['___Y___','__YOY__','_YOrO__','_OYr___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
-      ['__YY___','_oYY___','__OrY__','__rO___','___B___','___B___','___B___','__BBB__','___B___','___K___'],
-    ];
-    let frame = 0, tick = 0;
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      frames[frame % frames.length].forEach((row, ry) => {
-        [...row].forEach((ch, rx) => { const c = C[ch]; if (c) { ctx.fillStyle = c; ctx.fillRect(rx*S, ry*S, S, S); } });
-      });
-    }
-    (function loop() { tick++; if (tick % 6 === 0) frame++; draw(); requestAnimationFrame(loop); })();
-  })();
-</script>
-</body>
-</html>
