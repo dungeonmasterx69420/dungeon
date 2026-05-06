@@ -130,6 +130,7 @@
   }
 
   function timeAgo(dt){
+    if(dt && !dt.endsWith('Z') && !dt.includes('+')) dt = dt.replace(' ','T') + 'Z';
     const s=Math.floor((Date.now()-new Date(dt))/1000);
     if(s<60)return 'just now';
     if(s<3600)return Math.floor(s/60)+'m ago';
