@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>Dungeon · Directory</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0}
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
+    .back-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;transition:color .2s}
+    .back-link:hover{color:var(--text)}
+    .page{max-width:720px;margin:0 auto;padding:32px 24px 80px}
+    .page-title{font-family:'Cinzel',serif;font-size:26px;font-weight:700;color:var(--text);margin-bottom:8px}
+    .page-sub{font-size:14px;color:var(--muted2);margin-bottom:28px}
+    .divider{height:1px;background:var(--border);margin-bottom:24px}
+
+    /* Tier filter tabs */
+    .tier-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px}
+    .tier-tab{font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+    .tier-tab:hover{color:var(--text);border-color:var(--green)}
+    .tier-tab.active{border-color:var(--green);color:var(--green);background:var(--green-bg)}
+
+    /* Member grid */
+    .member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+
+    .member-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 16px;text-align:center;text-decoration:none;color:inherit;transition:border-color .2s,background .2s;display:block}
+    .member-card:hover{border-color:var(--border2);background:var(--surface2)}
+
+    .avatar{width:56px;height:56px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#0b0f0e;overflow:hidden}
+    .avatar img{width:100%;height:100%;object-fit:cover}
+
+    .card-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px}
+    .tier-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    .tier-dot{width:6px;height:6px;border-radius:50%}
+    .card-date{font-size:11px;color:var(--muted);margin-top:8px}
+
+    .empty{text-align:center;padding:48px 0;color:var(--muted)}
+
+    /* Tier section headings */
+    .tier-section{margin-bottom:28px}
+    .tier-heading{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .tier-heading::after{content:'';flex:1;height:1px;background:var(--border)}
+
+    footer{text-align:center;padding:32px 0 0;font-size:12px;color:var(--muted)}
+    footer a{color:var(--muted);text-decoration:none}
+    footer a:hover{color:var(--text)}
+
+    @media(max-width:767px){.member-grid{grid-template-columns:1fr 1fr}.page{padding:20px 14px 60px}}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <a href="/" class="logo">Dungeon</a>
+  <a href="/dashboard.html" class="back-link">Dashboard</a>
+</div>
+<div class="page">
+  <div class="page-title">Directory</div>
+  <div class="page-sub">The community roster.</div>
+  <div class="divider"></div>
+  <div id="content"><div class="empty">Loading…</div></div>
+  <footer>
+    <a href="/dashboard.html">Members</a> &nbsp;·&nbsp; <a href="/admin.html">Warden</a>
+  </footer>
+</div>
+
+<script>
+  const TIERS = {
+    warden: { label:'Warden',    color:'#fbbf24', order:0 },
+    admin:  { label:'Admin',     color:'#f87171', order:1 },
+    mod:    { label:'Moderator', color:'#34d399', order:2 },
+    member: { label:'Member',    color:'#60a5fa', order:3 },
+    neut:   { label:'Neut',      color:'#e2e8e4', order:4 },
+  };
+
+  let allProfiles = [];
+  let activeFilter = 'all';
+
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if (!d.authenticated) { window.location.href='/login.html'; return; }
+    loadDirectory();
+  });
+
+  async function loadDirectory() {
+    const res = await fetch('/api/profiles');
+    if (!res.ok) return;
+    allProfiles = await res.json();
+    render();
+  }
+
+  function render() {
+    const content = document.getElementById('content');
+    const filtered = activeFilter === 'all' ? allProfiles : allProfiles.filter(p => p.tier === activeFilter);
+
+    if (!filtered.length) { content.innerHTML='<div class="empty">No members found.</div>'; return; }
+
+    // Group by tier
+    const groups = {};
+    filtered.forEach(p => {
+      if (!groups[p.tier]) groups[p.tier] = [];
+      groups[p.tier].push(p);
+    });
+
+    const tierOrder = ['warden','admin','mod','member','neut'];
+    let html = '';
+
+    tierOrder.forEach(tier => {
+      if (!groups[tier] || !groups[tier].length) return;
+      const t = TIERS[tier] || { label: tier, color: '#e2e8e4' };
+      html += `<div class="tier-section">
+        <div class="tier-heading">${t.label}s (${groups[tier].length})</div>
+        <div class="member-grid">
+          ${groups[tier].map(p => {
+            const initials = p.screen_name ? p.screen_name[0].toUpperCase() : '?';
+            const joinDate = new Date(p.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'});
+            return `<a class="member-card" href="/profile.html?id=${p.id}">
+              <div class="avatar" style="background:${p.avatar_color}">
+                ${p.avatar_url ? `<img src="${p.avatar_url}" alt=""/>` : initials}
+              </div>
+              <div class="card-name">@${p.screen_name}</div>
+              <div class="tier-badge" style="background:${t.color}22;color:${t.color}">
+                <div class="tier-dot" style="background:${t.color}"></div>${t.label}
+              </div>
+              <div class="card-date">Joined ${joinDate}</div>
+            </a>`;
+          }).join('')}
+        </div>
+      </div>`;
+    });
+
+    content.innerHTML = html;
+  }
+</script>
+</body>
+</html>

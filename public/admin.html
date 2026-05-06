@@ -84,6 +84,13 @@
     .badge-open{background:var(--red-bg);color:var(--red)}
     .badge-resolved{background:var(--green-bg);color:var(--green)}
     .badge-renewal{background:rgba(52,211,153,0.08);color:var(--muted2);font-size:10px;padding:2px 8px;border-radius:4px;margin-left:6px}
+    .badge-mod-approved{background:rgba(52,211,153,0.12);color:var(--green);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+    .avatar-sm{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0b0f0e;flex-shrink:0;overflow:hidden;vertical-align:middle;margin-right:8px}
+    .avatar-sm img{width:100%;height:100%;object-fit:cover}
+    .tier-select{background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:"Inter",sans-serif;font-size:12px;padding:5px 10px;outline:none;cursor:pointer}
+    .tier-select:focus{border-color:var(--green)}
+    .profile-link{color:var(--green);text-decoration:none;font-weight:500}
+    .profile-link:hover{text-decoration:underline}
 
     /* Actions */
     .row-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
@@ -141,6 +148,10 @@
       .topbar{padding:12px 16px}
     }
   </style>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
 </head>
 <body>
 
@@ -176,6 +187,7 @@
     <button class="tab-btn active" onclick="switchTab('applicants',this)">Applicants</button>
     <button class="tab-btn" onclick="switchTab('members',this)">Members</button>
     <button class="tab-btn" onclick="switchTab('support',this)">Support <span id="suppBadge" style="display:none;color:var(--red)"></span></button>
+    <button class="tab-btn" onclick="switchTab('profiles',this)">Profiles</button>
   </div>
 
   <div class="main">
@@ -188,6 +200,7 @@
           <button class="filter-btn" onclick="setAppFilter('pending',this)">Pending</button>
           <button class="filter-btn" onclick="setAppFilter('approved',this)">Approved</button>
           <button class="filter-btn" onclick="setAppFilter('denied',this)">Denied</button>
+          <button class="filter-btn" onclick="setAppFilter('mod_approved',this)" style="color:var(--green)">Mod Approved</button>
         </div>
       </div>
       <div class="divider"></div>
@@ -211,6 +224,14 @@
       </div>
       <div class="divider"></div>
       <div class="row-list" id="supportList"></div>
+    </div>
+
+    <div class="tab-panel" id="panel-profiles">
+      <div class="list-header">
+        <div class="list-label">All Profiles</div>
+      </div>
+      <div class="divider"></div>
+      <div class="row-list" id="profileList"></div>
     </div>
 
   </div>
@@ -295,6 +316,7 @@
     document.getElementById('panel-'+name).classList.add('active');
     if(name==='members')loadMembers();
     if(name==='support')loadSupport();
+    if(name==='profiles')loadProfiles();
   }
 
   async function loadAll(){await Promise.all([loadStats(),loadApplicants(),loadMembers()])}
@@ -325,7 +347,9 @@
   function fmt(dt){if(!dt)return '';return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
   function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,"\\'").replace(/"/g,'&quot;')}
 
-  const BADGES={pending:'<span class="badge badge-pending">Pending</span>',approved:'<span class="badge badge-approved">Approved</span>',denied:'<span class="badge badge-denied">Denied</span>'};
+  const BADGES={pending:'<span class="badge badge-pending">Pending</span>',approved:'<span class="badge badge-approved">Approved</span>',denied:'<span class="badge badge-denied">Denied</span>',mod_approved:'<span class="badge-mod-approved">Mod Approved</span>'};
+
+  const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Warden',color:'#fbbf24'}};
 
   function renderApplicants(rows){
     const el=document.getElementById('applicantList');
@@ -333,7 +357,7 @@
     el.innerHTML=rows.map(r=>`
       <div class="app-row">
         <div>
-          <div class="row-name">${r.first_name} ${r.last_name} ${r.type==='renewal'?'<span class="badge-renewal">Renewal</span>':''}</div>
+          <div class="row-name">${r.screen_name?`<a class="profile-link" href="/profile.html?sn=${r.screen_name}">@${r.screen_name}</a> &mdash; `:''} ${r.first_name} ${r.last_name} ${r.type==='renewal'?'<span class="badge-renewal">Renewal</span>':''}${r.status==='mod_approved'?'<span class="badge-renewal" style="color:var(--green)">⚡ Mod Approved</span>':''}</div>
           <div class="row-email">${r.email}</div>
           <div class="row-meta">
             ${BADGES[r.status]||r.status}
@@ -407,7 +431,7 @@
       const shown=showPasswords[r.id];
       return `<div class="mem-row">
         <div>
-          <div class="row-name">${r.first_name} ${r.last_name}${subChip(r.subscription_end)}</div>
+          <div class="row-name">${r.avatar_url||r.avatar_color?`<span class="avatar-sm" style="background:${r.avatar_color||'#60a5fa'}">${r.avatar_url?`<img src="${r.avatar_url}" alt=""/>`:(r.screen_name||r.first_name)[0].toUpperCase()}</span>`:''} ${r.screen_name?`<a class="profile-link" href="/profile.html?sn=${r.screen_name}">@${r.screen_name}</a> &mdash; `:''} ${r.first_name} ${r.last_name} ${subChip(r.subscription_end)}</div>
           <div class="row-email">${r.email}</div>
           <div class="mem-creds">
             <div>
@@ -510,6 +534,50 @@
   async function resolveSupport(id){await fetch(`/api/support/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'resolved'})});loadSupport();loadStats()}
   async function reopenSupport(id){await fetch(`/api/support/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'open'})});loadSupport();loadStats()}
   async function deleteSupport(id){if(!confirm('Delete this message?'))return;await fetch(`/api/support/${id}`,{method:'DELETE'});loadSupport();loadStats()}
+
+
+  // ── Profiles ──────────────────────────────────────────────────────────────────
+  async function loadProfiles() {
+    const rows = await fetch('/api/admin/profiles').then(r=>r.json());
+    renderProfiles(rows);
+  }
+
+  function renderProfiles(rows) {
+    const el = document.getElementById('profileList');
+    if (!rows.length) { el.innerHTML='<div class="empty"><div class="empty-title">No profiles</div></div>'; return; }
+    el.innerHTML = rows.map(r => {
+      const tier = TIERS[r.tier] || {label:r.tier,color:'#e2e8e4'};
+      const initials = r.screen_name ? r.screen_name[0].toUpperCase() : '?';
+      return `<div class="app-row">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="avatar-sm" style="background:${r.avatar_color||'#60a5fa'};width:40px;height:40px;font-size:14px;flex-shrink:0">
+            ${r.avatar_url?`<img src="${r.avatar_url}" alt=""/>`:initials}
+          </span>
+          <div>
+            <div class="row-name"><a class="profile-link" href="/profile.html?id=${r.id}">@${r.screen_name}</a></div>
+            <div class="row-email">${r.email}</div>
+            <div style="margin-top:6px;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${tier.color}22;color:${tier.color}">
+              <div style="width:6px;height:6px;border-radius:50%;background:${tier.color}"></div>${tier.label}
+            </div>
+          </div>
+        </div>
+        <div class="row-actions">
+          <select class="tier-select" onchange="promoteTier('${r.id}',this.value)">
+            ${Object.entries(TIERS).map(([k,v])=>`<option value="${k}" ${r.tier===k?'selected':''}>${v.label}</option>`).join('')}
+          </select>
+          <div class="row-date">Joined ${fmt(r.created_at)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function promoteTier(profileId, tier) {
+    await fetch(`/api/admin/profiles/${profileId}/tier`, {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({tier}),
+    });
+    loadProfiles();
+  }
 
   function closeModal(id){document.getElementById(id).classList.remove('open');activeApplicantId=null;activeMemberId=null}
   document.querySelectorAll('.veil').forEach(v=>{v.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')})});

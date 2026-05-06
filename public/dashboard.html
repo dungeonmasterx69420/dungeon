@@ -95,6 +95,10 @@
       .tile{width:calc(50% - 4px)}
     }
   </style>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
 </head>
 <body>
 
@@ -153,7 +157,11 @@
     </a>
   </div>
 
-  <footer>
+  <footer id="dashFooter">
+    <a href="/profile.html">My Profile</a>
+    &nbsp;·&nbsp;
+    <a href="/directory.html">Directory</a>
+    &nbsp;·&nbsp;
     <a href="/dashboard.html">Members</a>
     &nbsp;·&nbsp;
     <a href="/admin.html">Warden</a>
@@ -164,8 +172,18 @@
 <script>
   fetch('/api/member/me').then(r=>r.json()).then(d=>{
     if(!d.authenticated){window.location.href='/login.html';return}
+    if(!d.setup_done){window.location.href='/setup.html';return}
     const m=d.member;
-    document.getElementById('greeting').textContent='Welcome, '+m.first_name;
+    const tierColors={neut:'#e2e8e4',member:'#60a5fa',mod:'#34d399',admin:'#f87171',warden:'#fbbf24'};
+    const tierLabels={neut:'Neut',member:'Member',mod:'Moderator',admin:'Admin',warden:'Warden'};
+    const tier = m.profile?.tier || 'member';
+    const tColor = tierColors[tier]||'#60a5fa';
+    const tLabel = tierLabels[tier]||'Member';
+    if(['mod','admin','warden'].includes(tier)){
+      const footer=document.getElementById('dashFooter');
+      if(footer){const modLink=document.createElement('span');modLink.innerHTML=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';footer.appendChild(modLink);}
+    }
+    document.getElementById('greeting').innerHTML = `Welcome, ${m.first_name} <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${tColor}22;color:${tColor};margin-left:4px"><span style="width:6px;height:6px;border-radius:50%;background:${tColor};display:inline-block"></span>${tLabel}</span>`;
 
     const banner=document.getElementById('subBanner');
     const status=document.getElementById('subStatus');

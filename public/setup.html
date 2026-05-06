@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>Dungeon · Setup Profile</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171}
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;display:flex;flex-direction:column}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center}
+    .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
+    .center{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 32px;width:100%;max-width:440px}
+    .card-title{font-size:20px;font-weight:600;color:var(--text);margin-bottom:6px}
+    .card-sub{font-size:13px;color:var(--muted2);margin-bottom:28px;line-height:1.6}
+
+    /* Avatar picker */
+    .avatar-section{margin-bottom:28px;text-align:center}
+    .avatar-preview{width:80px;height:80px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#0b0f0e;cursor:pointer;border:2px solid var(--border2);position:relative;overflow:hidden}
+    .avatar-preview img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .avatar-preview .upload-hint{position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;opacity:0;border-radius:50%;font-size:11px;font-weight:600;color:#fff;letter-spacing:0.05em;text-transform:uppercase;transition:opacity .2s}
+    .avatar-preview:hover .upload-hint{opacity:1}
+    #avatarInput{display:none}
+    .avatar-hint{font-size:12px;color:var(--muted);margin-bottom:8px}
+
+    .color-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+    .color-dot{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .15s}
+    .color-dot:hover{transform:scale(1.15)}
+    .color-dot.selected{border-color:#fff}
+
+    .field{margin-bottom:18px}
+    label{display:block;font-size:12px;font-weight:600;color:var(--muted2);margin-bottom:7px;letter-spacing:0.04em;text-transform:uppercase}
+    input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s}
+    input:focus{border-color:var(--green)}
+    input::placeholder{color:var(--muted)}
+    .field-hint{font-size:11px;color:var(--muted);margin-top:5px}
+    .field-error input{border-color:var(--red)}
+    .err-msg{display:none;font-size:12px;color:var(--red);margin-top:5px}
+    .field-error .err-msg{display:block}
+
+    .error-banner{display:none;font-size:13px;color:var(--red);margin-bottom:16px;padding:12px 14px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:8px}
+    .btn{width:100%;padding:13px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:8px}
+    .btn:hover{opacity:0.9}
+    .btn:disabled{opacity:0.4;cursor:not-allowed}
+    .divider{height:1px;background:var(--border);margin:20px 0}
+    @media(max-width:767px){.card{padding:24px 18px}}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <a href="/" class="logo">Dungeon</a>
+</div>
+<div class="center">
+  <div class="card">
+    <div class="card-title">Set Up Your Profile</div>
+    <div class="card-sub">Choose a username and avatar. You can update these later from your profile settings.</div>
+
+    <div class="avatar-section">
+      <div class="avatar-preview" id="avatarPreview" onclick="document.getElementById('avatarInput').click()">
+        <span id="avatarInitials">?</span>
+        <div class="upload-hint">Upload</div>
+      </div>
+      <input type="file" id="avatarInput" accept="image/*"/>
+      <div class="avatar-hint">Click to upload a photo, or pick a color below</div>
+      <div class="color-row" id="colorRow"></div>
+    </div>
+
+    <div class="error-banner" id="errorBanner"></div>
+
+    <div class="field" id="grp-screen_name">
+      <label>Username</label>
+      <input type="text" id="screen_name" placeholder="dungeon_lord" maxlength="20" oninput="updateInitials()"/>
+      <div class="field-hint">3–20 characters. Letters, numbers and underscores only.</div>
+      <div class="err-msg" id="snErr">Invalid username format.</div>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn" id="saveBtn" onclick="saveProfile()">Save Profile</button>
+  </div>
+</div>
+
+<script>
+  const COLORS = ['#60a5fa','#34d399','#f87171','#fbbf24','#a78bfa','#fb7185','#38bdf8','#4ade80','#e2e8e4'];
+  let selectedColor = COLORS[0];
+  let avatarBase64 = null;
+
+  // Build color dots
+  const colorRow = document.getElementById('colorRow');
+  COLORS.forEach(c => {
+    const dot = document.createElement('div');
+    dot.className = 'color-dot' + (c === selectedColor ? ' selected' : '');
+    dot.style.background = c;
+    dot.onclick = () => {
+      selectedColor = c;
+      document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+      dot.classList.add('selected');
+      updatePreview();
+    };
+    colorRow.appendChild(dot);
+  });
+
+  function updateInitials() {
+    const sn = document.getElementById('screen_name').value;
+    document.getElementById('avatarInitials').textContent = sn ? sn[0].toUpperCase() : '?';
+  }
+
+  function updatePreview() {
+    const preview = document.getElementById('avatarPreview');
+    if (!avatarBase64) {
+      preview.style.background = selectedColor;
+    }
+  }
+
+  updatePreview();
+
+  // Avatar upload
+  document.getElementById('avatarInput').addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert('Image must be under 5MB.'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      avatarBase64 = e.target.result;
+      const preview = document.getElementById('avatarPreview');
+      const initials = document.getElementById('avatarInitials');
+      let img = preview.querySelector('img');
+      if (!img) { img = document.createElement('img'); preview.insertBefore(img, initials); }
+      img.src = avatarBase64;
+      initials.style.display = 'none';
+      preview.style.background = 'transparent';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Guard
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if (!d.authenticated) { window.location.href='/login.html'; return; }
+    if (d.setup_done) { window.location.href='/dashboard.html'; return; }
+    // Pre-fill with placeholder name (auto-generated from first name) as a suggestion
+    const sn = d.profile?.screen_name || d.member?.first_name || '';
+    if (sn) {
+      document.getElementById('screen_name').value = sn;
+      updateInitials();
+    }
+    // Set avatar color from existing profile if any
+    if (d.profile?.avatar_color) {
+      selectedColor = d.profile.avatar_color;
+      document.querySelectorAll('.color-dot').forEach(dot => {
+        dot.classList.toggle('selected', dot.style.background === selectedColor);
+      });
+      updatePreview();
+    }
+  });
+
+  async function saveProfile() {
+    const screenName = document.getElementById('screen_name').value.trim();
+    const btn = document.getElementById('saveBtn');
+    const banner = document.getElementById('errorBanner');
+    const grp = document.getElementById('grp-screen_name');
+
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(screenName)) {
+      grp.classList.add('field-error'); return;
+    }
+    grp.classList.remove('field-error');
+    btn.disabled = true; btn.textContent = 'Saving…'; banner.style.display = 'none';
+
+    try {
+      // Upload avatar if one was selected
+      if (avatarBase64) {
+        await fetch('/api/member/profile/avatar', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ image: avatarBase64 }),
+        });
+      }
+
+      const res = await fetch('/api/member/profile/setup', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ screen_name: screenName, avatar_color: selectedColor }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        window.location.href = '/dashboard.html';
+      } else {
+        banner.textContent = data.error || 'Something went wrong.';
+        banner.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Save Profile';
+      }
+    } catch {
+      banner.textContent = 'Connection error. Please try again.';
+      banner.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Save Profile';
+    }
+  }
+</script>
+</body>
+</html>
