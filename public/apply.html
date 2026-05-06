@@ -4,6 +4,10 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
   <title>Dungeon · Apply</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -13,7 +17,6 @@
       --green:#34d399;--green-bg:rgba(52,211,153,0.08);
       --text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;
     }
-    *{box-sizing:border-box;margin:0;padding:0}
     html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center}
     .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
@@ -34,6 +37,7 @@
     select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b8f7a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
     select option{background:#111915}
     textarea{resize:none;height:80px;line-height:1.6}
+    .field-hint{font-size:11px;color:var(--muted);margin-top:5px}
     .field-error input,.field-error select,.field-error textarea{border-color:var(--red)}
     .err-msg{display:none;font-size:12px;color:var(--red);margin-top:5px}
     .field-error .err-msg{display:block}
@@ -47,10 +51,6 @@
     .success-sub{font-size:14px;color:var(--muted2);line-height:1.7}
     @media(max-width:767px){.page{padding:28px 20px 60px}}
   </style>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
 </head>
 <body>
 <div class="topbar">
@@ -63,8 +63,10 @@
 
   <div id="formPage">
     <div class="error-banner" id="errorBanner"></div>
+
     <div class="section">
       <div class="section-label">Your Details</div>
+
       <div class="field-row">
         <div class="field" id="grp-first_name">
           <label>First Name <span class="req">*</span></label>
@@ -77,11 +79,20 @@
           <div class="err-msg">Required</div>
         </div>
       </div>
+
+      <div class="field" id="grp-screen_name">
+        <label>Username <span class="req">*</span></label>
+        <input type="text" id="screen_name" placeholder="e.g. dungeon_lord" autocomplete="off" maxlength="20"/>
+        <div class="field-hint">3–20 characters. Letters, numbers and underscores only. No spaces.</div>
+        <div class="err-msg">3–20 characters, letters, numbers and underscores only.</div>
+      </div>
+
       <div class="field" id="grp-email">
         <label>Email Address <span class="req">*</span></label>
         <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
         <div class="err-msg">A valid email is required</div>
       </div>
+
       <div class="field">
         <label>Phone Number</label>
         <input type="tel" id="phone" placeholder="Optional" autocomplete="tel"/>
@@ -97,7 +108,8 @@
           <option>English</option><option>Spanish</option><option>French</option>
           <option>Portuguese</option><option>German</option><option>Italian</option>
           <option>Arabic</option><option>Chinese (Simplified)</option>
-          <option>Japanese</option><option>Korean</option><option>Hindi</option><option>Other</option>
+          <option>Japanese</option><option>Korean</option><option>Hindi</option>
+          <option>Other</option>
         </select>
       </div>
       <div class="field">
@@ -120,30 +132,76 @@
     <div class="success-sub">Your request has been received.<br>The Warden will be in touch at your email address.</div>
   </div>
 </div>
+
 <script>
-  function validate(){
-    let ok=true;
-    const checks={first_name:v=>v.trim().length>0,last_name:v=>v.trim().length>0,screen_name:v=>/^[a-zA-Z0-9_]{3,20}$/.test(v.trim()),email:v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)};
-    for(const[id,check]of Object.entries(checks)){
-      const grp=document.getElementById('grp-'+id);
-      if(!check(document.getElementById(id).value)){grp.classList.add('field-error');ok=false}
-      else{grp.classList.remove('field-error')}
+  function validate() {
+    let ok = true;
+    const checks = {
+      first_name:  v => v.trim().length > 0,
+      last_name:   v => v.trim().length > 0,
+      screen_name: v => /^[a-zA-Z0-9_]{3,20}$/.test(v.trim()),
+      email:       v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),
+    };
+    for (const [id, check] of Object.entries(checks)) {
+      const grp = document.getElementById('grp-' + id);
+      const el  = document.getElementById(id);
+      if (!grp || !el) continue;
+      if (!check(el.value)) {
+        grp.classList.add('field-error'); ok = false;
+      } else {
+        grp.classList.remove('field-error');
+      }
     }
     return ok;
   }
-  async function submitForm(){
-    if(!validate())return;
-    const btn=document.getElementById('submitBtn'),banner=document.getElementById('errorBanner');
-    btn.disabled=true;btn.textContent='Submitting…';banner.style.display='none';
-    const body={screen_name:document.getElementById('screen_name').value.trim(),first_name:document.getElementById('first_name').value.trim(),last_name:document.getElementById('last_name').value.trim(),email:document.getElementById('email').value.trim(),phone:document.getElementById('phone').value.trim(),language:document.getElementById('language').value,referral:document.getElementById('referral').value.trim(),notes:document.getElementById('notes').value.trim()};
-    try{
-      const res=await fetch('/api/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-      const data=await res.json();
-      if(res.ok){document.getElementById('formPage').style.display='none';document.getElementById('successPage').style.display='block'}
-      else{banner.textContent=data.error||'Something went wrong.';banner.style.display='block';btn.disabled=false;btn.textContent='Submit Request'}
-    }catch{banner.textContent='Connection error. Please try again.';banner.style.display='block';btn.disabled=false;btn.textContent='Submit Request'}
+
+  async function submitForm() {
+    if (!validate()) return;
+    const btn    = document.getElementById('submitBtn');
+    const banner = document.getElementById('errorBanner');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    banner.style.display = 'none';
+
+    const body = {
+      screen_name: document.getElementById('screen_name').value.trim(),
+      first_name:  document.getElementById('first_name').value.trim(),
+      last_name:   document.getElementById('last_name').value.trim(),
+      email:       document.getElementById('email').value.trim(),
+      phone:       document.getElementById('phone').value.trim(),
+      language:    document.getElementById('language').value,
+      referral:    document.getElementById('referral').value.trim(),
+      notes:       document.getElementById('notes').value.trim(),
+    };
+
+    try {
+      const res  = await fetch('/api/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('formPage').style.display = 'none';
+        document.getElementById('successPage').style.display = 'block';
+      } else {
+        banner.textContent = data.error || 'Something went wrong.';
+        banner.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Submit Request';
+      }
+    } catch {
+      banner.textContent = 'Connection error. Please try again.';
+      banner.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Submit Request';
+    }
   }
-  ['first_name','last_name','screen_name','email'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('blur',validate)});
+
+  ['first_name', 'last_name', 'screen_name', 'email'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('blur', validate);
+  });
 </script>
 </body>
 </html>
