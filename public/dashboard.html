@@ -215,25 +215,25 @@
       /* Page padding — leave room for bottom nav */
       .page { padding: 24px 16px 40px; }
 
-      /* Subscription banner — single column, bigger text */
+      /* Subscription banner — compact on mobile */
       .sub-banner {
-        grid-template-columns: 1fr;
-        padding: 24px 20px 24px 26px;
-        margin-bottom: 32px;
-        gap: 15.3px;
+        grid-template-columns: 1fr auto;
+        padding: 14px 16px 14px 20px;
+        margin-bottom: 20px;
+        gap: 12px;
       }
 
-      .sub-label  { font-size: 16px; letter-spacing: 0.2em; }
-      .sub-status { font-size: 36px; }
-      .sub-dates  { font-size: 18px; letter-spacing: 0.04em; line-height: 2; }
+      .sub-label  { font-size: 11px; letter-spacing: 0.2em; }
+      .sub-status { font-size: 20px; }
+      .sub-dates  { font-size: 12px; letter-spacing: 0.03em; line-height: 1.7; }
 
-      /* Days remaining — inline next to status on mobile */
+      /* Days remaining — back to right column on mobile */
       .sub-days {
-        text-align: left;
-        display: flex; align-items: baseline; gap: 10.2px;
+        text-align: right;
+        display: block;
       }
-      .sub-days-num   { font-size: 64px; }
-      .sub-days-label { font-size: 16px; letter-spacing: 0.15em; margin-top: 0; }
+      .sub-days-num   { font-size: 36px; }
+      .sub-days-label { font-size: 10px; letter-spacing: 0.15em; margin-top: 2px; }
 
       /* Section head */
       .section-head { font-size: 18px; letter-spacing: 0.2em; margin-bottom: 16px; }
