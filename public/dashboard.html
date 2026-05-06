@@ -173,7 +173,7 @@
   fetch('/api/member/me').then(r=>r.json()).then(d=>{
     if(!d.authenticated){window.location.href='/login.html';return}
     const skipSetup = new URLSearchParams(window.location.search).get('skip_setup');
-    if(!d.setup_done && !skipSetup){window.location.href='/setup.html';return}
+    if(!d.member.setup_done && !skipSetup){window.location.href='/setup.html';return}
     const m=d.member;
     const tierColors={neut:'#e2e8e4',member:'#60a5fa',mod:'#34d399',admin:'#f87171',warden:'#fbbf24'};
     const tierLabels={neut:'Neut',member:'Member',mod:'Moderator',admin:'Admin',warden:'Warden'};

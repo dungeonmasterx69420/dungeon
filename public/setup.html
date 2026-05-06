@@ -138,16 +138,16 @@
   // Guard
   fetch('/api/member/me').then(r=>r.json()).then(d=>{
     if (!d.authenticated) { window.location.href='/login.html'; return; }
-    if (d.setup_done) { window.location.href='/dashboard.html'; return; }
+    if (d.member?.setup_done) { window.location.href='/dashboard.html'; return; }
     // Pre-fill with placeholder name (auto-generated from first name) as a suggestion
-    const sn = d.profile?.screen_name || d.member?.first_name || '';
+    const sn = d.member?.profile?.screen_name || d.member?.first_name || '';
     if (sn) {
       document.getElementById('screen_name').value = sn;
       updateInitials();
     }
     // Set avatar color from existing profile if any
-    if (d.profile?.avatar_color) {
-      selectedColor = d.profile.avatar_color;
+    if (d.member?.profile?.avatar_color) {
+      selectedColor = d.member.profile.avatar_color;
       document.querySelectorAll('.color-dot').forEach(dot => {
         dot.classList.toggle('selected', dot.style.background === selectedColor);
       });
@@ -184,7 +184,7 @@
       if (res.ok) {
         // Verify setup actually saved before redirecting
         const verify = await fetch('/api/member/me').then(r=>r.json());
-        if (verify.setup_done) {
+        if (verify.member?.setup_done) {
           window.location.href = '/dashboard.html';
         } else {
           // Force it — mark setup done directly and redirect
