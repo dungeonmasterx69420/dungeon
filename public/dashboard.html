@@ -151,23 +151,6 @@
 
 <div class="page">
 
-  <div class="sub-banner" id="subBanner">
-    <div>
-      <div class="sub-label">Subscription</div>
-      <div class="sub-status" id="subStatus">—</div>
-      <div class="sub-dates" id="subDates"></div>
-    </div>
-    <div class="sub-days">
-      <div class="sub-days-num" id="subDaysNum">—</div>
-      <div class="sub-days-label">days remaining</div>
-    </div>
-  </div>
-
-  <div class="welcome" id="welcomeMsg">
-    The Warden is glad to have you here. Your access is active — head to <a href="https://web.stremio.com" target="_blank">Stremio Web</a> to start watching, or check the <a href="/guides.html">Guides</a> if you need help getting set up on a new device.
-  </div>
-
-
   <!-- Profile card -->
   <div class="profile-card" id="profileCard" style="display:none">
     <div class="profile-avatar" id="profileAvatar" onclick="openUpload()">
@@ -181,7 +164,6 @@
     </div>
     <a href="/setup.html" class="profile-edit-btn">Edit Profile</a>
   </div>
-
   <!-- Avatar upload modal -->
   <div class="upload-veil" id="uploadVeil" onclick="if(event.target===this)closeUpload()">
     <div class="upload-modal">
@@ -198,7 +180,20 @@
       <div id="uploadErr" style="display:none;font-size:12px;color:var(--red);margin-top:8px"></div>
     </div>
   </div>
-
+  <div class="sub-banner" id="subBanner">
+    <div>
+      <div class="sub-label">Subscription</div>
+      <div class="sub-status" id="subStatus">—</div>
+      <div class="sub-dates" id="subDates"></div>
+    </div>
+    <div class="sub-days">
+      <div class="sub-days-num" id="subDaysNum">—</div>
+      <div class="sub-days-label">days remaining</div>
+    </div>
+  </div>
+  <div class="welcome" id="welcomeMsg">
+    The Warden is glad to have you here. Your access is active — head to <a href="https://web.stremio.com" target="_blank">Stremio Web</a> to start watching, or check the <a href="/guides.html">Guides</a> if you need help getting set up on a new device.
+  </div>
   <div class="section-head">Quick Access</div>
 
   <div class="tiles">
@@ -237,6 +232,7 @@
     &nbsp;·&nbsp;
     <a href="/admin.html">Warden</a>
   </footer>
+
 
 </div>
 
