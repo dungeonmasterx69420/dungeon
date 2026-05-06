@@ -273,7 +273,18 @@ app.get('/api/member/me', (req, res) => {
   if (!req.session?.member) return res.json({ authenticated: false });
   const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.session.member.id);
   if (!m) return res.json({ authenticated: false });
-  const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(m.id);
+
+  // Find profile — try member_id first, then email fallback for legacy accounts
+  let profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(m.id);
+  if (!profile) {
+    profile = db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(m.email);
+    // If found by email, fix the link so future lookups work
+    if (profile) {
+      db.prepare('UPDATE profiles SET member_id=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run(m.id, profile.id);
+      db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(profile.id, m.id);
+    }
+  }
+
   res.json({ authenticated: true, member: {
     id: m.id, first_name: m.first_name, last_name: m.last_name, email: m.email,
     subscription_start: m.subscription_start, subscription_end: m.subscription_end,
