@@ -8,6 +8,7 @@
   <title>Dungeon · Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
     *{box-sizing:border-box;margin:0;padding:0}
     :root{
       --bg:#0b0f0e;--surface:#111915;--surface2:#172118;
@@ -22,7 +23,7 @@
 
     /* Topbar */
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-    .logo{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;font-weight:400;color:var(--green);letter-spacing:0.04em;text-decoration:none}
+    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
     .topbar-right{display:flex;align-items:center;gap:20px}
     .greeting{font-size:13px;color:var(--muted2);font-weight:500}
     .leave-btn{font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;transition:color .2s}
