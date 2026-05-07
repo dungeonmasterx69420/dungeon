@@ -8,143 +8,362 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;--red-bg:rgba(248,113,113,0.1);--amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1)}
+    :root{
+      --bg:#0b0f0e;--surface:#111915;--surface2:#172118;--surface3:#1e2a20;
+      --border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
+      --green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);
+      --text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;
+      --red:#f87171;--red-bg:rgba(248,113,113,0.1);--red-border:rgba(248,113,113,0.25);
+      --amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1);
+    }
     html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
+
+    /* Topbar */
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
     .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
-    .topbar-right{display:flex;align-items:center;gap:20px}
-    .greeting{font-size:13px;color:var(--muted2)}
+    .topbar-right{display:flex;gap:16px;align-items:center}
     .topbar-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color .2s}
     .topbar-link:hover{color:var(--text)}
+    .greeting{font-size:13px;color:var(--muted2)}
 
-    /* Tier badge */
-    .tier-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
-    .tier-dot{width:6px;height:6px;border-radius:50%}
+    /* Stats */
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+    .stat-cell{background:var(--bg);padding:20px 28px}
+    .stat-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .stat-val{font-size:32px;font-weight:600;color:var(--text)}
 
-    .page{max-width:800px;margin:0 auto;padding:32px 28px 80px}
-    .page-title{font-family:'Cinzel',serif;font-size:24px;font-weight:700;color:var(--text);margin-bottom:6px}
-    .page-sub{font-size:14px;color:var(--muted2);margin-bottom:28px}
+    /* Notice */
+    .notice{background:var(--amber-bg);border-bottom:1px solid rgba(251,191,36,0.2);padding:12px 28px;font-size:13px;color:var(--amber);line-height:1.5}
+
+    /* Tabs */
+    .tabs{display:flex;border-bottom:1px solid var(--border);padding:0 28px;background:var(--surface)}
+    .tab-btn{font-size:13px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;padding:14px 0;margin-right:28px;transition:color .2s,border-color .2s;margin-bottom:-1px}
+    .tab-btn:hover{color:var(--text)}
+    .tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
+
+    /* Main */
+    .main{padding:28px}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+
+    /* List */
+    .list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .list-label{font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)}
+    .filters{display:flex;gap:4px}
+    .filter-btn{font-size:12px;font-weight:500;padding:5px 12px;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--muted2);cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+    .filter-btn:hover{color:var(--text);border-color:var(--border2)}
+    .filter-btn.active{color:var(--green);border-color:var(--border2);background:var(--green-bg)}
+
+    /* Rows */
     .divider{height:1px;background:var(--border);margin-bottom:0}
-
-    .section-head{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px}
-    .section-head::after{content:'';flex:1;height:1px;background:var(--border)}
-
-    /* Applicant rows */
     .row-list{display:flex;flex-direction:column}
     .app-row{border-bottom:1px solid var(--border);padding:18px 0;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
     .app-row:last-child{border-bottom:none}
     .row-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:3px}
-    .row-username{font-size:13px;color:var(--green);margin-bottom:4px}
-    .row-email{font-size:13px;color:var(--muted2);margin-bottom:8px}
+    .row-username{font-size:13px;color:var(--green);margin-bottom:4px;font-weight:500}
+    .row-email{font-size:13px;color:var(--muted2);margin-bottom:10px}
     .row-meta{display:flex;flex-wrap:wrap;gap:16px}
     .meta-lbl{font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
     .meta-val{font-size:13px;color:var(--muted2)}
     .row-notes{margin-top:8px;font-size:13px;color:var(--muted);font-style:italic}
     .row-date{font-size:11px;color:var(--muted);margin-top:6px}
     .row-actions{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+
+    /* Badges */
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    .badge-pending{background:var(--amber-bg);color:var(--amber)}
+    .badge-mod{background:var(--green-bg2);color:var(--green);font-size:10px;padding:2px 8px;border-radius:4px;margin-left:6px}
+
+    /* Action buttons */
     .act{font-size:12px;font-weight:500;background:none;border:none;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;padding:6px 12px;transition:background .15s,color .15s;color:var(--muted2)}
     .act:hover{background:var(--surface2);color:var(--text)}
+    .act:disabled{opacity:0.4;cursor:not-allowed}
     .act.green{color:var(--green)}
     .act.green:hover{background:var(--green-bg)}
     .act.red{color:var(--red)}
     .act.red:hover{background:var(--red-bg)}
 
+    /* Members tab */
+    .mem-row{border-bottom:1px solid var(--border);padding:18px 0;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+    .mem-row:last-child{border-bottom:none}
+    .avatar-sm{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#0b0f0e;flex-shrink:0;overflow:hidden;vertical-align:middle;margin-right:8px}
+    .avatar-sm img{width:100%;height:100%;object-fit:cover}
+    .profile-link{color:var(--green);text-decoration:none;font-weight:500}
+    .profile-link:hover{text-decoration:underline}
+    .sub-chip{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;margin-left:6px}
+    .sub-chip.active{background:var(--green-bg);color:var(--green)}
+    .sub-chip.expiring{background:var(--amber-bg);color:var(--amber)}
+    .sub-chip.expired{background:var(--red-bg);color:var(--red)}
+
+    /* Support */
+    .badge-open{background:var(--red-bg);color:var(--red)}
+    .badge-resolved{background:var(--green-bg);color:var(--green)}
+
+    /* Empty */
     .empty{text-align:center;padding:48px 0}
     .empty-title{font-size:15px;font-weight:500;color:var(--muted2);margin-bottom:6px}
     .empty-sub{font-size:13px;color:var(--muted)}
 
-    .notice{background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--amber);margin-bottom:24px;line-height:1.6}
-
-    footer{text-align:center;padding:32px 0 0;font-size:12px;color:var(--muted)}
-    footer a{color:var(--muted);text-decoration:none}
-    footer a:hover{color:var(--text)}
-
-    @media(max-width:767px){.page{padding:20px 14px 60px}.topbar{padding:12px 16px}}
+    @media(max-width:767px){
+      .stats{grid-template-columns:1fr 1fr}
+      .stat-cell{padding:14px 16px}
+      .stat-val{font-size:26px}
+      .main{padding:16px}
+      .tabs{padding:0 16px;overflow-x:auto}
+      .topbar{padding:12px 16px}
+    }
   </style>
 </head>
 <body>
+
 <div class="topbar">
   <a href="/" class="logo">Dungeon</a>
   <div class="topbar-right">
     <span class="greeting" id="greeting"></span>
     <a href="/dashboard.html" class="topbar-link">Dashboard</a>
+    <a href="/forum.html" class="topbar-link">Forum</a>
+    <button class="topbar-link" onclick="logout()">Sign out</button>
   </div>
 </div>
 
-<div class="page">
-  <div class="page-title">Moderator Panel</div>
-  <div class="page-sub">Review and action pending applications.</div>
+<div class="notice">
+  ⚡ When you approve an application, the Warden is notified by email to create the Stremio account and grant full access.
+</div>
 
-  <div class="notice">
-    When you approve an application, the Warden will be notified by email to create the Stremio account and grant full access.
+<div class="stats">
+  <div class="stat-cell"><div class="stat-label">Pending</div><div class="stat-val" id="statPending" style="color:var(--amber)">—</div></div>
+  <div class="stat-cell"><div class="stat-label">Members</div><div class="stat-val" id="statMembers" style="color:var(--green)">—</div></div>
+  <div class="stat-cell"><div class="stat-label">Open Messages</div><div class="stat-val" id="statSupport" style="color:var(--red)">—</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('applicants',this)">Applications</button>
+  <button class="tab-btn" onclick="switchTab('members',this)">Members</button>
+  <button class="tab-btn" onclick="switchTab('support',this)">Support <span id="suppBadge" style="display:none;color:var(--red)"></span></button>
+</div>
+
+<div class="main">
+
+  <!-- Applicants -->
+  <div class="tab-panel active" id="panel-applicants">
+    <div class="list-header">
+      <div class="list-label">Pending Applications</div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="setAppFilter('pending',this)">Pending</button>
+        <button class="filter-btn" onclick="setAppFilter('all',this)">All</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="row-list" id="applicantList"></div>
   </div>
 
-  <div class="section-head">Pending Applications</div>
-  <div class="divider" style="margin-bottom:0"></div>
-  <div class="row-list" id="applicantList"></div>
+  <!-- Members (read only) -->
+  <div class="tab-panel" id="panel-members">
+    <div class="list-header"><div class="list-label">Member Roster</div></div>
+    <div class="divider"></div>
+    <div class="row-list" id="memberList"></div>
+  </div>
 
-  <footer>
-    <a href="/dashboard.html">Members</a> &nbsp;·&nbsp; <a href="/directory.html">Directory</a>
-  </footer>
+  <!-- Support messages -->
+  <div class="tab-panel" id="panel-support">
+    <div class="list-header">
+      <div class="list-label">Support Messages</div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="setSuppFilter('open',this)">Open</button>
+        <button class="filter-btn" onclick="setSuppFilter('resolved',this)">Resolved</button>
+        <button class="filter-btn" onclick="setSuppFilter('all',this)">All</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="row-list" id="supportList"></div>
+  </div>
+
 </div>
 
 <script>
+  let appFilter = 'pending';
+  let suppFilter = 'open';
+
+  // ── Auth ──────────────────────────────────────────────────────────────────────
   fetch('/api/member/me').then(r=>r.json()).then(d=>{
-    if (!d.authenticated) { window.location.href='/login.html'; return; }
-    const tier = d.profile?.tier;
-    if (!['mod','admin','warden'].includes(tier)) { window.location.href='/dashboard.html'; return; }
-    const sn = d.profile?.screen_name || d.member?.first_name || '';
+    if(!d.authenticated){window.location.href='/login.html';return}
+    const tier = d.member?.profile?.tier;
+    if(!['mod','admin','warden'].includes(tier)){window.location.href='/dashboard.html';return}
+    const sn = d.member?.profile?.screen_name || d.member?.first_name || '';
     document.getElementById('greeting').textContent = sn ? '@'+sn : '';
-    loadApplicants();
+    loadAll();
   });
 
-  function fmt(dt) { return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+  async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html'}
 
-  async function loadApplicants() {
-    const rows = await fetch('/api/mod/applicants').then(r=>r.json());
-    const el = document.getElementById('applicantList');
-    if (!rows.length) {
-      el.innerHTML=`<div class="empty"><div class="empty-title">All clear</div><div class="empty-sub">No pending applications right now.</div></div>`;
+  function switchTab(name,el){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('panel-'+name).classList.add('active');
+    if(name==='members')loadMembers();
+    if(name==='support')loadSupport();
+  }
+
+  async function loadAll(){await Promise.all([loadStats(),loadApplicants()])}
+
+  async function loadStats(){
+    // Use admin stats endpoint if available, otherwise build from what we can
+    try{
+      const d = await fetch('/api/stats').then(r=>r.json());
+      document.getElementById('statPending').textContent = d.pending;
+      document.getElementById('statMembers').textContent = d.members;
+      document.getElementById('statSupport').textContent = d.support||0;
+      const b = document.getElementById('suppBadge');
+      if(b&&d.support>0){b.textContent='('+d.support+')';b.style.display='inline'}
+    }catch(e){}
+  }
+
+  // ── Applicants ────────────────────────────────────────────────────────────────
+  async function loadApplicants(){
+    const url = appFilter==='all' ? '/api/applicants' : '/api/mod/applicants';
+    // Mod endpoint only returns pending; use admin endpoint for all (admin/warden only — will 401 for mods)
+    let rows;
+    try{ rows = await fetch(url).then(r=>r.json()); }
+    catch(e){ rows = await fetch('/api/mod/applicants').then(r=>r.json()); }
+    if(!Array.isArray(rows)) rows = await fetch('/api/mod/applicants').then(r=>r.json());
+    renderApplicants(rows);
+  }
+
+  function setAppFilter(f,el){
+    appFilter=f;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active');
+    loadApplicants();
+  }
+
+  function fmt(dt){
+    if(!dt)return '';
+    if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';
+    return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+
+  function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,"\\'").replace(/"/g,'&quot;')}
+
+  function renderApplicants(rows){
+    const el=document.getElementById('applicantList');
+    if(!rows.length){
+      el.innerHTML='<div class="empty"><div class="empty-title">All clear</div><div class="empty-sub">No pending applications.</div></div>';
       return;
     }
-    el.innerHTML = rows.map(r => `
+    el.innerHTML=rows.map(r=>`
       <div class="app-row" id="row-${r.id}">
         <div>
-          <div class="row-name">${r.first_name} ${r.last_name}</div>
-          ${r.screen_name ? `<div class="row-username">@${r.screen_name}</div>` : ''}
+          <div class="row-name">${r.first_name} ${r.last_name} ${r.type==='renewal'?'<span class="badge-mod">Renewal</span>':''}</div>
+          ${r.screen_name?`<div class="row-username">@${r.screen_name}</div>`:''}
           <div class="row-email">${r.email}</div>
           <div class="row-meta">
-            ${r.phone    ? `<div><div class="meta-lbl">Phone</div><div class="meta-val">${r.phone}</div></div>` : ''}
-            ${r.language ? `<div><div class="meta-lbl">Language</div><div class="meta-val">${r.language}</div></div>` : ''}
-            ${r.referral ? `<div><div class="meta-lbl">Referred by</div><div class="meta-val">${r.referral}</div></div>` : ''}
+            <span class="badge badge-pending">Pending</span>
+            ${r.phone?`<div><div class="meta-lbl">Phone</div><div class="meta-val">${r.phone}</div></div>`:''}
+            ${r.language?`<div><div class="meta-lbl">Language</div><div class="meta-val">${r.language}</div></div>`:''}
+            ${r.referral?`<div><div class="meta-lbl">Referred by</div><div class="meta-val">${r.referral}</div></div>`:''}
           </div>
-          ${r.notes ? `<div class="row-notes">${r.notes}</div>` : ''}
+          ${r.notes?`<div class="row-notes">${r.notes}</div>`:''}
         </div>
         <div class="row-actions">
-          <button class="act green" onclick="approve('${r.id}', this)">Approve</button>
-          <button class="act red"   onclick="deny('${r.id}', this)">Deny</button>
+          <button class="act green" id="approve-${r.id}" onclick="approve('${r.id}')">Approve</button>
+          <button class="act red" id="deny-${r.id}" onclick="deny('${r.id}')">Deny</button>
           <div class="row-date">${fmt(r.created_at)}</div>
         </div>
       </div>`).join('');
   }
 
-  async function approve(id, btn) {
-    btn.disabled = true; btn.textContent = 'Approving…';
-    const res = await fetch(`/api/mod/applicants/${id}/approve`, { method:'POST' });
-    if (res.ok) {
-      document.getElementById('row-'+id).remove();
-      if (!document.querySelector('.app-row')) loadApplicants();
-    } else { btn.disabled=false; btn.textContent='Approve'; }
+  async function approve(id){
+    const btn=document.getElementById('approve-'+id);
+    btn.disabled=true;btn.textContent='Approving…';
+    const res=await fetch(`/api/mod/applicants/${id}/approve`,{method:'POST'});
+    if(res.ok){document.getElementById('row-'+id)?.remove();loadStats();}
+    else{btn.disabled=false;btn.textContent='Approve';}
   }
 
-  async function deny(id, btn) {
-    if (!confirm('Deny this application?')) return;
-    btn.disabled = true; btn.textContent = 'Denying…';
-    const res = await fetch(`/api/mod/applicants/${id}/deny`, { method:'POST' });
-    if (res.ok) {
-      document.getElementById('row-'+id).remove();
-      if (!document.querySelector('.app-row')) loadApplicants();
-    } else { btn.disabled=false; btn.textContent='Deny'; }
+  async function deny(id){
+    if(!confirm('Deny this application?'))return;
+    const btn=document.getElementById('deny-'+id);
+    btn.disabled=true;btn.textContent='Denying…';
+    const res=await fetch(`/api/mod/applicants/${id}/deny`,{method:'POST'});
+    if(res.ok){document.getElementById('row-'+id)?.remove();loadStats();}
+    else{btn.disabled=false;btn.textContent='Deny';}
+  }
+
+  // ── Members (read only) ───────────────────────────────────────────────────────
+  async function loadMembers(){
+    const rows=await fetch('/api/members').then(r=>r.json());
+    const el=document.getElementById('memberList');
+    if(!rows.length){el.innerHTML='<div class="empty"><div class="empty-title">No members yet</div></div>';return}
+
+    el.innerHTML=rows.map(r=>{
+      const initials=(r.screen_name||r.first_name||'?')[0].toUpperCase();
+      const days=r.subscription_end?Math.ceil((new Date(r.subscription_end)-new Date())/86400000):null;
+      let chip='';
+      if(days!==null){
+        if(days<=0)chip='<span class="sub-chip expired">Expired</span>';
+        else if(days<=5)chip=`<span class="sub-chip expiring">${days}d left</span>`;
+        else chip=`<span class="sub-chip active">${days}d left</span>`;
+      }
+      return `<div class="mem-row">
+        <div>
+          <div class="row-name">
+            <span class="avatar-sm" style="background:${r.avatar_color||'#60a5fa'}">
+              ${r.avatar_url?`<img src="${r.avatar_url}" alt=""/>`:initials}
+            </span>
+            ${r.screen_name?`<a class="profile-link" href="/profile.html?id=${r.profile_id_val||''}"}>@${r.screen_name}</a> — `:''}
+            ${r.first_name} ${r.last_name}${chip}
+          </div>
+          <div class="row-email">${r.email}</div>
+        </div>
+        <div class="row-actions">
+          <div class="row-date">Since ${fmt(r.created_at)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Support (read + resolve) ──────────────────────────────────────────────────
+  async function loadSupport(){
+    const rows=await fetch('/api/support').then(r=>r.json());
+    const filtered=suppFilter==='all'?rows:rows.filter(r=>r.status===suppFilter);
+    const el=document.getElementById('supportList');
+    if(!filtered.length){el.innerHTML='<div class="empty"><div class="empty-title">No messages</div><div class="empty-sub">All clear.</div></div>';return}
+    el.innerHTML=filtered.map(r=>`
+      <div class="app-row" id="supp-${r.id}">
+        <div>
+          <div class="row-name">${r.member_name}</div>
+          <div class="row-email">${r.member_email}</div>
+          <div class="row-meta" style="margin-top:8px">
+            ${r.status==='open'?'<span class="badge badge-open">Open</span>':'<span class="badge badge-resolved">Resolved</span>'}
+            <div><div class="meta-lbl">Subject</div><div class="meta-val">${r.subject}</div></div>
+          </div>
+          <div class="row-notes">${r.message}</div>
+        </div>
+        <div class="row-actions">
+          ${r.status==='open'
+            ?`<button class="act green" onclick="resolveSupport('${r.id}')">Resolve</button>`
+            :`<button class="act" onclick="reopenSupport('${r.id}')">Reopen</button>`}
+          <div class="row-date">${fmt(r.created_at)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  function setSuppFilter(f,el){
+    suppFilter=f;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active');
+    loadSupport();
+  }
+
+  async function resolveSupport(id){
+    await fetch(`/api/support/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'resolved'})});
+    loadSupport();loadStats();
+  }
+
+  async function reopenSupport(id){
+    await fetch(`/api/support/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'open'})});
+    loadSupport();loadStats();
   }
 </script>
 </body>
