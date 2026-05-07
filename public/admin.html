@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
   <title>Dungeon · Warden</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     :root{
@@ -20,7 +22,7 @@
     /* Lock */
     #lockScreen{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:center;justify-content:center}
     .lock-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px 36px;width:100%;max-width:360px;text-align:center}
-    .lock-logo{font-family:'Minecraft','Press Start 2P',monospace;font-size:14px;font-weight:400;color:var(--green);letter-spacing:0.04em;margin-bottom:6px}
+    .lock-logo{font-family:'Press Start 2P','Minecraft',monospace;font-size:10px;font-weight:400;color:var(--green);letter-spacing:0.04em;margin-bottom:6px}
     .lock-sub{font-size:13px;color:var(--muted2);margin-bottom:28px}
     .lock-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:16px;padding:12px 14px;outline:none;transition:border-color .2s;text-align:center;margin-bottom:16px}
     .lock-input:focus{border-color:var(--green)}
@@ -32,7 +34,7 @@
     /* App */
     #adminApp{display:none;min-height:100vh}
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-    .logo{font-family:'Minecraft','Press Start 2P',monospace;font-size:14px;font-weight:400;color:var(--green);letter-spacing:0.04em;image-rendering:pixelated;text-decoration:none}
+    .logo{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;font-weight:400;color:var(--green);letter-spacing:0.04em;text-decoration:none}
     .topbar-right{display:flex;gap:16px;align-items:center}
     .topbar-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color .2s}
     .topbar-link:hover{color:var(--text)}
@@ -147,6 +149,11 @@
       .tabs{padding:0 16px;overflow-x:auto}
       .topbar{padding:12px 16px}
     }
+
+    footer{text-align:center;padding:24px 0 16px;font-size:12px;color:var(--muted)}
+    footer a{color:var(--muted);text-decoration:none}
+    footer a:hover{color:var(--text)}
+    @media(max-width:767px){footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
   </style>
   <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
@@ -584,5 +591,15 @@
   document.querySelectorAll('.veil').forEach(v=>{v.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')})});
   document.getElementById('pinInput').focus();
 </script>
+
+  <footer id="pageFooter">
+    <a href="/profile.html">My Profile</a>
+    &nbsp;·&nbsp;
+    <a href="/directory.html">Directory</a>
+    &nbsp;·&nbsp;
+    <a href="/forum.html">Forum</a>
+    &nbsp;·&nbsp;
+    <a href="/dashboard.html">Members</a>
+  </footer>
 </body>
 </html>

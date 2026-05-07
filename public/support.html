@@ -40,6 +40,11 @@
     footer{text-align:center;padding:32px 0 0;font-size:12px;color:var(--muted)}
     footer a{color:var(--muted);text-decoration:none}
     footer a:hover{color:var(--text)}
+
+    footer{text-align:center;padding:24px 0 16px;font-size:12px;color:var(--muted)}
+    footer a{color:var(--muted);text-decoration:none}
+    footer a:hover{color:var(--text)}
+    @media(max-width:767px){footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
   </style>
   <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
@@ -89,12 +94,40 @@
       else{banner.textContent=data.error||'Something went wrong.';banner.style.display='block';btn.disabled=false;btn.textContent='Send Message'}
     }catch{banner.textContent='Connection error. Please try again.';banner.style.display='block';btn.disabled=false;btn.textContent='Send Message'}
   }
+
+
+  // Dynamic footer links based on tier
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if(!d.authenticated) return;
+    const tier = d.member?.profile?.tier;
+    const footer = document.getElementById('pageFooter');
+    if(!footer) return;
+    if(['mod','admin','warden'].includes(tier)){
+      const span=document.createElement('span');
+      span.style.whiteSpace='nowrap';
+      let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
+      if(['admin','warden'].includes(tier)){
+        extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Warden</a>';
+      }
+      span.innerHTML=extra;
+      footer.appendChild(span);
+    } else if(['admin','warden'].includes(tier)){
+      const span=document.createElement('span');
+      span.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Warden</a>';
+      footer.appendChild(span);
+    }
+  }).catch(()=>{});
 </script>
 
-  <footer>
-    <a href="/dashboard.html">Members</a>
+
+  <footer id="pageFooter">
+    <a href="/profile.html">My Profile</a>
     &nbsp;·&nbsp;
-    <a href="/admin.html">Warden</a>
+    <a href="/directory.html">Directory</a>
+    &nbsp;·&nbsp;
+    <a href="/forum.html">Forum</a>
+    &nbsp;·&nbsp;
+    <a href="/dashboard.html">Members</a>
   </footer>
 </body>
 </html>
