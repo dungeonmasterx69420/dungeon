@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
   <title>Dungeon · Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     :root{
@@ -20,7 +20,7 @@
 
     /* Topbar */
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-    .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
+    .logo{font-family:'Minecraft','Press Start 2P',monospace;font-size:14px;font-weight:400;color:var(--green);letter-spacing:0.04em;image-rendering:pixelated;text-decoration:none}
     .topbar-right{display:flex;align-items:center;gap:20px}
     .greeting{font-size:13px;color:var(--muted2);font-weight:500}
     .leave-btn{font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;transition:color .2s}
@@ -83,7 +83,7 @@
       .tile{padding:16px 10px;gap:8px}
       .tile-icon{font-size:24px}
       .tile-title{font-size:12px}
-      footer{display:none}
+      footer{font-size:13px;padding:24px 0 16px}
       /* Mobile tile order */
       .tile[data-mob-order="1"]{order:1}
       .tile[data-mob-order="2"]{order:2}
@@ -138,6 +138,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
   <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+  <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
 </head>
 <body>
 
@@ -232,8 +233,6 @@
     <a href="/forum.html">Forum</a>
     &nbsp;·&nbsp;
     <a href="/dashboard.html">Members</a>
-    &nbsp;·&nbsp;
-    <a href="/admin.html">Warden</a>
   </footer>
 
 
@@ -253,6 +252,10 @@
     if(['mod','admin','warden'].includes(tier)){
       const footer=document.getElementById('dashFooter');
       if(footer){const modLink=document.createElement('span');modLink.innerHTML=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';footer.appendChild(modLink);}
+    }
+    if(['admin','warden'].includes(tier)){
+      const footer=document.getElementById('dashFooter');
+      if(footer){const wLink=document.createElement('span');wLink.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Warden</a>';footer.appendChild(wLink);}
     }
     renderProfileCard(m);
     document.getElementById('greeting').innerHTML = `Welcome, ${m.first_name} <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${tColor}22;color:${tColor};margin-left:4px"><span style="width:6px;height:6px;border-radius:50%;background:${tColor};display:inline-block"></span>${tLabel}</span>`;
