@@ -136,6 +136,10 @@
       .profile-avatar{width:52px;height:52px;font-size:18px}
       .profile-screenname{font-size:14px}
     }
+
+    .msg-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:var(--muted2);font-size:15px;transition:border-color .2s,color .2s;cursor:pointer}
+    .msg-icon-btn:hover{border-color:var(--green);color:var(--green)}
+    .msg-icon-badge{position:absolute;top:-5px;right:-5px;background:var(--red,#f87171);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
   </style>
   <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
@@ -229,8 +233,6 @@
   </div>
 
   <footer id="dashFooter">
-    <a href="/messages.html">Messages <span id="msgBadge" style="display:none;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;vertical-align:middle"></span></a>
-    &nbsp;·&nbsp;
     <a href="/profile.html">My Profile</a>
     &nbsp;·&nbsp;
     <a href="/directory.html">Directory</a>
@@ -406,21 +408,19 @@
     };
     reader.readAsDataURL(pendingFile);
   }
-  // Load unread message count
-  async function loadMsgBadge(){
-    try{
-      const d = await fetch('/api/messages/unread').then(r=>r.json());
-      const badge = document.getElementById('msgBadge');
-      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='inline-block';}
-    }catch(e){}
-  }
-  loadMsgBadge();
-
   async function logout(){
     await fetch('/api/member/logout',{method:'POST'});
     window.location.href='/login.html';
   }
 
+
+  // Message unread badge in topbar
+  (function(){
+    fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
+      const badge = document.getElementById('msgIconBadge');
+      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
+    }).catch(()=>{});
+  })();
 </script>
 </body>
 </html>

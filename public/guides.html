@@ -69,6 +69,10 @@
     footer a{color:var(--muted);text-decoration:none}
     footer a:hover{color:var(--text)}
     @media(max-width:767px){footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
+
+    .msg-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:var(--muted2);font-size:15px;transition:border-color .2s,color .2s;cursor:pointer}
+    .msg-icon-btn:hover{border-color:var(--green);color:var(--green)}
+    .msg-icon-badge{position:absolute;top:-5px;right:-5px;background:var(--red,#f87171);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
   </style>
   <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
@@ -84,6 +88,66 @@
   <div class="page-title">Setup Guides</div>
   <div class="page-sub">Step-by-step instructions for every platform. Tap a guide to expand it.</div>
   <div class="divider"></div>
+
+
+  <!-- How to Watch -->
+  <div class="guide" id="guide-watch">
+    <div class="guide-header" onclick="toggleGuide('watch')">
+      <div class="guide-icon">🎬</div>
+      <div class="guide-head-text">
+        <div class="guide-tag">All Devices</div>
+        <div class="guide-name">How to Watch</div>
+        <div class="guide-desc">Finding shows, picking the right stream, and what to click</div>
+      </div>
+      <div class="guide-chevron">▼</div>
+    </div>
+    <div class="guide-body">
+
+      <div class="guide-section-label">Step 1 — Search &amp; Open a Title</div>
+      <ul class="steps">
+        <li><div class="step-num">1</div><div class="step-text">Go to <a href="https://web.stremio.com" target="_blank">web.stremio.com</a> and sign in with your credentials.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Use the <strong>search bar</strong> to find a movie or show. Tap or click on the result to open its detail page — you'll see a summary, cast, and ratings.</div></li>
+        <li><div class="step-num">3</div><div class="step-text">For TV shows, tap the <strong>season selector</strong> in the middle of the screen to choose the season you want to watch. Then scroll down and select an episode.<div class="step-note">The season selector looks like a pill button that says "Season 1", "Season 2" etc. Tap it to open a dropdown with all available seasons.</div></div></li>
+      </ul>
+
+      <div class="guide-section-label">Step 2 — Picking a Stream</div>
+      <ul class="steps">
+        <li><div class="step-num">1</div><div class="step-text">Once you tap an episode or movie, Stremio shows a list of available streams. Each row shows the <strong>source</strong> on the left and <strong>file details</strong> on the right — resolution, size, audio format, and language flags.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">The entries labeled <strong>[TB⚡] StremThru Torz</strong> are your primary streams — these are the ones connected to your Dungeon account. Always choose one of these.<div class="step-note">Look for [TB⚡] on the left side of each row. These are pre-cached and ready to play instantly.</div></div></li>
+        <li><div class="step-num">3</div><div class="step-text">Tap the stream you want to play. The first stream in the list is usually the highest quality — but read on before picking 4K.</div></li>
+      </ul>
+
+      <div class="guide-section-label">Choosing the Right Quality</div>
+      <ul class="steps">
+        <li>
+          <div class="step-num">!</div>
+          <div class="step-text">
+            <strong>On mobile — start with 1080p, not 4K.</strong>
+            <div class="step-note" style="background:rgba(251,191,36,0.08);border-left-color:var(--amber,#fbbf24);margin-top:8px">
+              Most phone screens cap out at 1080p — even high-end phones rarely render 4K video correctly. More importantly, 4K (2160p) files are enormous — often 14–181 GB — and require significantly more processing power and bandwidth to decode. On mobile these streams frequently stutter, buffer, or refuse to play entirely. Start with a <strong>1080p</strong> stream and only try 4K if you're casting to a capable TV.
+            </div>
+          </div>
+        </li>
+        <li><div class="step-num">1</div><div class="step-text">Look at the resolution label on the left side of each stream row. You'll see <strong>2160p</strong> (4K) and <strong>1080p</strong> options. On mobile, scroll past the 2160p entries and pick the first <strong>1080p</strong> one.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">On the right side of each row you'll see the <strong>file size</strong> — something like <strong>1.72 GB</strong> or <strong>2.35 GB</strong>. A 1080p WEB-DL around 1–3 GB is ideal for mobile — fast to start and smooth to play.</div></li>
+        <li><div class="step-num">3</div><div class="step-text">If you see <strong>BluRay REMUX</strong> or sizes like 16 GB, 58 GB, or 181 GB — those are archival-quality files for home theater setups. Skip these on mobile and on slower internet connections.</div></li>
+        <li><div class="step-num">4</div><div class="step-text">The <strong>flag icons</strong> at the bottom of each row show available subtitle/audio languages. 🇬🇧 = English. Look for English if you need subtitles or dubbed audio.</div></li>
+      </ul>
+
+      <div class="guide-section-label">Quick Reference</div>
+      <ul class="steps">
+        <li><div class="step-num">✓</div><div class="step-text"><strong>Good on mobile:</strong> 1080p · WEB-DL · 1–4 GB · 🇬🇧 flag</div></li>
+        <li><div class="step-num">✓</div><div class="step-text"><strong>Good on TV / desktop:</strong> 2160p · BluRay · any size</div></li>
+        <li><div class="step-num">✗</div><div class="step-text"><strong>Avoid on mobile:</strong> 2160p · BluRay REMUX · 14 GB+ files</div></li>
+      </ul>
+
+      <div class="tech-block">
+        <div class="tech-label">If a stream won't play or buffers</div>
+        <div class="tech-text">Go back and try a different stream — pick one with a smaller file size or lower resolution. If nothing plays, the content may not be cached yet. Wait a few minutes and try again, or try a WEB-DL version instead of BluRay.</div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- iOS -->
   <div class="guide" id="guide-ios">
@@ -187,6 +251,14 @@
       footer.appendChild(span);
     }
   }).catch(()=>{});
+
+  // Message unread badge in topbar
+  (function(){
+    fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
+      const badge = document.getElementById('msgIconBadge');
+      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
+    }).catch(()=>{});
+  })();
 </script>
 
 

@@ -102,6 +102,10 @@
     footer a{color:var(--muted);text-decoration:none}
     footer a:hover{color:var(--text)}
     @media(max-width:767px){.page{padding:20px 14px 60px}.topbar{padding:12px 16px}.msg-row{grid-template-columns:36px 1fr auto}.msg-avatar,.msg-avatar-wrap{width:36px;height:36px}.msg-preview{display:none}footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
+
+    .msg-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:var(--muted2);font-size:15px;transition:border-color .2s,color .2s;cursor:pointer}
+    .msg-icon-btn:hover{border-color:var(--green);color:var(--green)}
+    .msg-icon-badge{position:absolute;top:-5px;right:-5px;background:var(--red,#f87171);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
   </style>
 </head>
 <body>
@@ -395,6 +399,14 @@
   function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
   async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html'}
+
+  // Message unread badge in topbar
+  (function(){
+    fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
+      const badge = document.getElementById('msgIconBadge');
+      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
+    }).catch(()=>{});
+  })();
 </script>
 </body>
 </html>
