@@ -8,6 +8,7 @@
   <title>Dungeon</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
     *{box-sizing:border-box;margin:0;padding:0}
     :root{
       --bg:#0b0f0e;--surface:#111915;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
@@ -27,9 +28,9 @@
 
     .center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
 
-    .tagline{font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:32px}
+    .tagline{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:9px !important;font-weight:400 !important;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:32px;line-height:1.6}
 
-    .seek-btn{
+    .seek-btn{font-family:'Press Start 2P','Minecraft',monospace !important;
       display:inline-block;padding:14px 48px;
       background:var(--green-bg);border:1px solid var(--green);border-radius:8px;
       color:var(--green);font-family:'Inter',sans-serif;font-size:15px;font-weight:600;

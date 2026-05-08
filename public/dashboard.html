@@ -229,6 +229,8 @@
   </div>
 
   <footer id="dashFooter">
+    <a href="/messages.html">Messages <span id="msgBadge" style="display:none;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;vertical-align:middle"></span></a>
+    &nbsp;·&nbsp;
     <a href="/profile.html">My Profile</a>
     &nbsp;·&nbsp;
     <a href="/directory.html">Directory</a>
@@ -404,6 +406,16 @@
     };
     reader.readAsDataURL(pendingFile);
   }
+  // Load unread message count
+  async function loadMsgBadge(){
+    try{
+      const d = await fetch('/api/messages/unread').then(r=>r.json());
+      const badge = document.getElementById('msgBadge');
+      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='inline-block';}
+    }catch(e){}
+  }
+  loadMsgBadge();
+
   async function logout(){
     await fetch('/api/member/logout',{method:'POST'});
     window.location.href='/login.html';

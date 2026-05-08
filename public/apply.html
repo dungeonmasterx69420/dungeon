@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
   <title>Dungeon · Apply</title>
@@ -8,8 +10,9 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
   <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
     *{box-sizing:border-box;margin:0;padding:0}
     :root{
       --bg:#0b0f0e;--surface:#111915;--surface2:#172118;
@@ -19,10 +22,10 @@
     }
     html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center}
-    .logo{font-family:'Minecraft','Press Start 2P',monospace;font-size:14px;font-weight:400;color:var(--green);letter-spacing:0.04em;image-rendering:pixelated;text-decoration:none}
+    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
     .page{max-width:560px;margin:0 auto;padding:40px 24px 80px}
-    .page-title{font-family:'Minecraft','Press Start 2P',monospace;font-size:16px;font-weight:400;color:var(--text);margin-bottom:16px;line-height:1.6}
-    .page-sub{font-size:14px;color:var(--muted2);margin-bottom:36px;line-height:1.6}
+    .page-title{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;font-weight:400;color:var(--text);margin-bottom:16px;line-height:1.6}
+    .page-sub{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:9px !important;font-weight:400 !important;color:var(--muted2);margin-bottom:36px;line-height:1.9}
     .divider{height:1px;background:var(--border);margin-bottom:28px}
     .section-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
     .section{margin-bottom:28px}
@@ -50,6 +53,11 @@
     .success-title{font-size:22px;font-weight:600;color:var(--text);margin-bottom:10px}
     .success-sub{font-size:14px;color:var(--muted2);line-height:1.7}
     @media(max-width:767px){.page{padding:28px 20px 60px}}
+
+    footer{text-align:center;padding:24px 0 16px;font-size:12px;color:var(--muted)}
+    footer a{color:var(--muted);text-decoration:none}
+    footer a:hover{color:var(--text)}
+    @media(max-width:767px){footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
   </style>
   <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
 </head>
@@ -204,5 +212,17 @@
     if (el) el.addEventListener('blur', validate);
   });
 </script>
+
+  <footer id="pageFooter">
+    <a href="/messages.html">Messages</a>
+    &nbsp;·&nbsp;
+    <a href="/profile.html">My Profile</a>
+    &nbsp;·&nbsp;
+    <a href="/directory.html">Directory</a>
+    &nbsp;·&nbsp;
+    <a href="/forum.html">Forum</a>
+    &nbsp;·&nbsp;
+    <a href="/dashboard.html">Members</a>
+  </footer>
 </body>
 </html>

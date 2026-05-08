@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
   <title>Dungeon · Profile</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
     *{box-sizing:border-box;margin:0;padding:0}
     :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171}
     html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-    .logo{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-decoration:none}
+    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
+    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
     .back-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;transition:color .2s}
     .back-link:hover{color:var(--text)}
     .page{max-width:520px;margin:0 auto;padding:40px 24px 80px}
@@ -20,7 +24,7 @@
     .profile-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px;text-align:center;margin-bottom:24px;position:relative}
     .avatar{width:96px;height:96px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#0b0f0e;overflow:hidden}
     .avatar img{width:100%;height:100%;object-fit:cover}
-    .screen-name{font-size:22px;font-weight:600;color:var(--text);margin-bottom:8px}
+    .screen-name{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:12px !important;font-weight:400 !important;color:var(--text);margin-bottom:12px;line-height:1.6}
     .tier-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:20px}
     .tier-dot{width:8px;height:8px;border-radius:50%}
 
@@ -42,7 +46,13 @@
     footer{text-align:center;padding:32px 0 0;font-size:12px;color:var(--muted)}
     footer a{color:var(--muted);text-decoration:none}
     footer a:hover{color:var(--text)}
+
+    footer{text-align:center;padding:24px 0 16px;font-size:12px;color:var(--muted)}
+    footer a{color:var(--muted);text-decoration:none}
+    footer a:hover{color:var(--text)}
+    @media(max-width:767px){footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
   </style>
+  <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
 </head>
 <body>
 <div class="topbar">
@@ -54,9 +64,6 @@
     <div style="color:var(--muted);font-size:14px">Loading…</div>
   </div>
   <div id="subCard"></div>
-  <footer>
-    <a href="/dashboard.html">Members</a> &nbsp;·&nbsp; <a href="/admin.html">Warden</a>
-  </footer>
 </div>
 
 <script>
@@ -113,7 +120,10 @@
           <div class="meta-val">${joinDate}</div>
         </div>
       </div>
-      ${isOwn ? `<div style="margin-top:20px"><a href="/setup.html" style="font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--border2);padding:6px 14px;border-radius:6px">Edit Profile</a></div>` : ''}
+      ${isOwn
+        ? `<div style="margin-top:20px"><a href="/setup.html" style="font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--border2);padding:6px 14px;border-radius:6px">Edit Profile</a></div>`
+        : `<div style="margin-top:20px"><a href="/messages.html?to=${p.id}" style="font-size:12px;font-weight:600;color:#0b0f0e;text-decoration:none;background:var(--green);padding:7px 16px;border-radius:6px;display:inline-block">Message</a></div>`
+      }
     `;
 
     // Show sub status if own profile and is member+
@@ -137,6 +147,39 @@
         </div>`;
     }
   }
+
+
+  // Dynamic footer links based on tier
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if(!d.authenticated) return;
+    const tier = d.member?.profile?.tier;
+    const footer = document.getElementById('pageFooter');
+    if(!footer) return;
+    if(['mod','admin','warden'].includes(tier)){
+      const span=document.createElement('span');
+      span.style.whiteSpace='nowrap';
+      let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
+      if(['admin','warden'].includes(tier)){
+        extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Warden</a>';
+      }
+      span.innerHTML=extra;
+      footer.appendChild(span);
+    } else if(['admin','warden'].includes(tier)){
+      const span=document.createElement('span');
+      span.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Warden</a>';
+      footer.appendChild(span);
+    }
+  }).catch(()=>{});
 </script>
+
+  <footer id="pageFooter">
+    <a href="/profile.html">My Profile</a>
+    &nbsp;·&nbsp;
+    <a href="/directory.html">Directory</a>
+    &nbsp;·&nbsp;
+    <a href="/forum.html">Forum</a>
+    &nbsp;·&nbsp;
+    <a href="/dashboard.html">Members</a>
+  </footer>
 </body>
 </html>
