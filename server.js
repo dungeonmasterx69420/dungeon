@@ -75,6 +75,18 @@ db.exec(`
   );
 
 
+  CREATE TABLE IF NOT EXISTS messages (
+    id                  TEXT PRIMARY KEY,
+    sender_profile_id   TEXT NOT NULL,
+    recipient_profile_id TEXT NOT NULL,
+    subject             TEXT NOT NULL,
+    content             TEXT NOT NULL,
+    read                INTEGER DEFAULT 0,
+    deleted_by_sender   INTEGER DEFAULT 0,
+    deleted_by_recipient INTEGER DEFAULT 0,
+    created_at          DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS forum_categories (
     id          TEXT PRIMARY KEY,
     name        TEXT NOT NULL,
@@ -628,6 +640,99 @@ app.delete('/api/support/:id', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+
+
+// ── Private Messages ──────────────────────────────────────────────────────────
+
+function getProfile(req) {
+  return db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id)
+    || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
+}
+
+// Inbox
+app.get('/api/messages', requireMember, (req, res) => {
+  const profile = getProfile(req);
+  if (!profile) return res.json([]);
+  const rows = db.prepare(`
+    SELECT m.*, 
+      sp.screen_name as sender_name, sp.avatar_url as sender_avatar, sp.avatar_color as sender_color, sp.tier as sender_tier,
+      rp.screen_name as recipient_name
+    FROM messages m
+    JOIN profiles sp ON m.sender_profile_id = sp.id
+    JOIN profiles rp ON m.recipient_profile_id = rp.id
+    WHERE m.recipient_profile_id=? AND m.deleted_by_recipient=0
+    ORDER BY m.created_at DESC
+  `).all(profile.id);
+  res.json(rows);
+});
+
+// Sent
+app.get('/api/messages/sent', requireMember, (req, res) => {
+  const profile = getProfile(req);
+  if (!profile) return res.json([]);
+  const rows = db.prepare(`
+    SELECT m.*,
+      rp.screen_name as recipient_name, rp.avatar_url as recipient_avatar, rp.avatar_color as recipient_color, rp.tier as recipient_tier,
+      sp.screen_name as sender_name
+    FROM messages m
+    JOIN profiles rp ON m.recipient_profile_id = rp.id
+    JOIN profiles sp ON m.sender_profile_id = sp.id
+    WHERE m.sender_profile_id=? AND m.deleted_by_sender=0
+    ORDER BY m.created_at DESC
+  `).all(profile.id);
+  res.json(rows);
+});
+
+// Unread count
+app.get('/api/messages/unread', requireMember, (req, res) => {
+  const profile = getProfile(req);
+  if (!profile) return res.json({ count: 0 });
+  const n = db.prepare('SELECT COUNT(*) as n FROM messages WHERE recipient_profile_id=? AND read=0 AND deleted_by_recipient=0').get(profile.id);
+  res.json({ count: n.n });
+});
+
+// Send
+app.post('/api/messages', requireMember, submitLimiter, (req, res) => {
+  const { recipient_id, subject, content } = req.body;
+  if (!recipient_id || !subject?.trim() || !content?.trim())
+    return res.status(400).json({ error: 'Recipient, subject and content are required.' });
+
+  const sender = getProfile(req);
+  if (!sender) return res.status(403).json({ error: 'Profile required.' });
+  if (sender.id === recipient_id) return res.status(400).json({ error: 'You cannot message yourself.' });
+
+  const recipient = db.prepare('SELECT id FROM profiles WHERE id=?').get(recipient_id);
+  if (!recipient) return res.status(404).json({ error: 'Recipient not found.' });
+
+  db.prepare('INSERT INTO messages (id, sender_profile_id, recipient_profile_id, subject, content) VALUES (?,?,?,?,?)')
+    .run(genId(), sender.id, recipient_id, subject.trim(), content.trim());
+
+  res.json({ ok: true });
+});
+
+// Mark read
+app.patch('/api/messages/:id/read', requireMember, (req, res) => {
+  const profile = getProfile(req);
+  if (!profile) return res.status(403).json({ error: 'Forbidden' });
+  db.prepare('UPDATE messages SET read=1 WHERE id=? AND recipient_profile_id=?').run(req.params.id, profile.id);
+  res.json({ ok: true });
+});
+
+// Delete
+app.delete('/api/messages/:id', requireMember, (req, res) => {
+  const profile = getProfile(req);
+  if (!profile) return res.status(403).json({ error: 'Forbidden' });
+  // Soft delete — mark deleted for sender or recipient
+  const msg = db.prepare('SELECT * FROM messages WHERE id=?').get(req.params.id);
+  if (!msg) return res.status(404).json({ error: 'Not found' });
+  if (msg.sender_profile_id === profile.id)
+    db.prepare('UPDATE messages SET deleted_by_sender=1 WHERE id=?').run(req.params.id);
+  else if (msg.recipient_profile_id === profile.id)
+    db.prepare('UPDATE messages SET deleted_by_recipient=1 WHERE id=?').run(req.params.id);
+  else
+    return res.status(403).json({ error: 'Forbidden' });
+  res.json({ ok: true });
+});
 
 // ── Forum: categories ─────────────────────────────────────────────────────────
 app.get('/api/forum/categories', requireMember, (req, res) => {
