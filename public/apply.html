@@ -63,7 +63,7 @@
 </head>
 <body>
 <div class="topbar">
-  <a href="/" class="logo">Dungeon</a>
+  <a href="/" class="logo" id="logoLink">Dungeon</a>
 </div>
 <div class="page">
   <div class="page-title">Request Access</div>
@@ -211,6 +211,14 @@
     const el = document.getElementById(id);
     if (el) el.addEventListener('blur', validate);
   });
+
+  // Smart logo link — go to dashboard if logged in, home if not
+  (function(){
+    fetch('/api/member/me').then(r=>r.json()).then(d=>{
+      const logo = document.getElementById('logoLink');
+      if(logo && d.authenticated) logo.href = '/dashboard.html';
+    }).catch(()=>{});
+  })();
 </script>
 
   <footer id="pageFooter">
