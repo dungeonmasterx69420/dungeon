@@ -82,7 +82,7 @@
 </head>
 <body>
 <div class="topbar">
-  <a href="/" class="logo">Dungeon</a>
+  <a href="/" class="logo" id="logoLink">Dungeon</a>
 </div>
 <div class="page">
   <div class="page-title">Setup Guides</div>
@@ -203,24 +203,66 @@
     </div>
   </div>
 
-  <!-- Coming soon -->
-  <div class="guide dimmed">
-    <div class="guide-header">
+  <!-- Windows & Mac -->
+  <div class="guide" id="guide-desktop">
+    <div class="guide-header" onclick="toggleGuide('desktop')">
       <div class="guide-icon">💻</div>
       <div class="guide-head-text">
-        <div class="guide-tag">Coming Soon</div>
-        <div class="guide-name">Windows &amp; Mac Setup<span class="coming-badge">Soon</span></div>
+        <div class="guide-tag">Windows &amp; Mac</div>
+        <div class="guide-name">Desktop Setup</div>
+        <div class="guide-desc">Download the app or use Stremio in your browser</div>
+      </div>
+      <div class="guide-chevron">▼</div>
+    </div>
+    <div class="guide-body">
+      <div class="guide-section-label">Option 1 — Download the Desktop App (Recommended)</div>
+      <ul class="steps">
+        <li><div class="step-num">1</div><div class="step-text">Go to <a href="https://www.stremio.com/downloads" target="_blank">stremio.com/downloads</a> and download the version for your OS — Windows or macOS.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Run the installer and open Stremio once it's done.</div></li>
+        <li><div class="step-num">3</div><div class="step-text"><strong>Sign in</strong> with your Stremio credentials. Your addons and library sync automatically.</div></li>
+      </ul>
+      <div class="guide-section-label">Option 2 — Use Stremio Web (No Install)</div>
+      <ul class="steps">
+        <li><div class="step-num">1</div><div class="step-text">Open any browser and go to <a href="https://web.stremio.com" target="_blank">web.stremio.com</a>.</div></li>
+        <li><div class="step-num">2</div><div class="step-text"><strong>Sign in</strong> with your credentials — everything works the same as the desktop app, right in your browser. No download needed.</div></li>
+      </ul>
+      <div class="tech-block">
+        <div class="tech-label">Which should I use?</div>
+        <div class="tech-text">The desktop app handles high-quality streams more reliably. The web version is great if you're on a work computer or don't want to install anything.</div>
       </div>
     </div>
   </div>
 
-  <div class="guide dimmed" style="margin-top:10px">
-    <div class="guide-header">
+  <!-- Android -->
+  <div class="guide" id="guide-android" style="margin-top:10px">
+    <div class="guide-header" onclick="toggleGuide('android')">
       <div class="guide-icon">🤖</div>
       <div class="guide-head-text">
-        <div class="guide-tag">Coming Soon</div>
-        <div class="guide-name">Android Setup<span class="coming-badge">Soon</span></div>
+        <div class="guide-tag">Android Phone &amp; Tablet</div>
+        <div class="guide-name">Android Setup</div>
+        <div class="guide-desc">Play Store app or add web app to home screen</div>
       </div>
+      <div class="guide-chevron">▼</div>
+    </div>
+    <div class="guide-body">
+      <div class="guide-section-label">Option 1 — Download from the Play Store (Recommended)</div>
+      <ul class="steps">
+        <li><div class="step-num">1</div><div class="step-text">Open the <strong>Google Play Store</strong> and search for <strong>Stremio</strong>. Look for the official app — it has a purple icon with a white streaming logo.
+          <div class="step-note" style="margin-top:10px;display:flex;align-items:center;gap:14px">
+            <img src="https://play-lh.googleusercontent.com/k_ugBMWFCNXd3pAPBHMRCH3dR6aYFkKOKW_6Cd5FMVvVsOKcFR3hL8bGdUPeEkpGEQ" alt="Stremio icon" style="width:52px;height:52px;border-radius:12px;flex-shrink:0;"/>
+            <span>This is the Stremio icon — make sure you're downloading the right app.</span>
+          </div>
+        </div></li>
+        <li><div class="step-num">2</div><div class="step-text">Tap <strong>Install</strong> and open the app once it's downloaded.</div></li>
+        <li><div class="step-num">3</div><div class="step-text"><strong>Sign in</strong> with your Stremio credentials. Your addons and library sync automatically.</div></li>
+      </ul>
+      <div class="guide-section-label">Option 2 — Add Stremio Web to Home Screen</div>
+      <ul class="steps">
+        <li><div class="step-num">1</div><div class="step-text">Open <strong>Chrome</strong> on your Android device and go to <a href="https://web.stremio.com" target="_blank">web.stremio.com</a>. Sign in with your credentials.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Tap the <strong>three-dot menu</strong> (⋮) in the top-right corner of Chrome, then tap <strong>Add to Home screen</strong>.</div></li>
+        <li><div class="step-num">3</div><div class="step-text">Name it "Stremio" and tap <strong>Add</strong>. It opens full-screen like a native app.</div></li>
+        <li><div class="step-num">4</div><div class="step-text">For the best playback, go to <strong>Settings → Advanced</strong> inside Stremio Web and set an external player like <strong>MX Player</strong> or <strong>VLC</strong>.<div class="step-note">Both are free on the Play Store. MX Player handles the most formats.</div></div></li>
+      </ul>
     </div>
   </div>
 
@@ -257,6 +299,14 @@
     fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
       const badge = document.getElementById('msgIconBadge');
       if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
+    }).catch(()=>{});
+  })();
+
+  // Smart logo link — go to dashboard if logged in, home if not
+  (function(){
+    fetch('/api/member/me').then(r=>r.json()).then(d=>{
+      const logo = document.getElementById('logoLink');
+      if(logo && d.authenticated) logo.href = '/dashboard.html';
     }).catch(()=>{});
   })();
 </script>
