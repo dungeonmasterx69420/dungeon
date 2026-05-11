@@ -75,6 +75,24 @@ db.exec(`
   );
 
 
+
+  CREATE TABLE IF NOT EXISTS credits (
+    id         TEXT PRIMARY KEY,
+    profile_id TEXT NOT NULL,
+    amount     INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS credit_transactions (
+    id          TEXT PRIMARY KEY,
+    profile_id  TEXT NOT NULL,
+    amount      INTEGER NOT NULL,
+    type        TEXT NOT NULL,
+    note        TEXT,
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS messages (
     id                  TEXT PRIMARY KEY,
     sender_profile_id   TEXT NOT NULL,
@@ -641,6 +659,127 @@ app.delete('/api/support/:id', requireAuth, (req, res) => {
 });
 
 
+
+
+// ── Credits ───────────────────────────────────────────────────────────────────
+
+function getOrCreateCredits(profileId) {
+  let row = db.prepare('SELECT * FROM credits WHERE profile_id=?').get(profileId);
+  if (!row) {
+    db.prepare('INSERT INTO credits (id, profile_id, amount) VALUES (?,?,0)').run(genId(), profileId);
+    row = db.prepare('SELECT * FROM credits WHERE profile_id=?').get(profileId);
+  }
+  return row;
+}
+
+function addCredit(profileId, amount, type, note) {
+  getOrCreateCredits(profileId);
+  db.prepare('UPDATE credits SET amount=amount+?, updated_at=CURRENT_TIMESTAMP WHERE profile_id=?').run(amount, profileId);
+  db.prepare('INSERT INTO credit_transactions (id,profile_id,amount,type,note) VALUES (?,?,?,?,?)').run(genId(), profileId, amount, type, note||'');
+}
+
+function deductCredit(profileId, amount, type, note) {
+  const row = getOrCreateCredits(profileId);
+  if (row.amount < amount) return false;
+  db.prepare('UPDATE credits SET amount=amount-?, updated_at=CURRENT_TIMESTAMP WHERE profile_id=?').run(amount, profileId);
+  db.prepare('INSERT INTO credit_transactions (id,profile_id,amount,type,note) VALUES (?,?,?,?,?)').run(genId(), profileId, -amount, type, note||'');
+  return true;
+}
+
+// Get my balance + history
+app.get('/api/credits', requireMember, (req, res) => {
+  const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id)
+    || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
+  if (!profile) return res.json({ balance: 0, transactions: [] });
+  const row = getOrCreateCredits(profile.id);
+  const transactions = db.prepare(`
+    SELECT ct.*, p.screen_name as actor_name
+    FROM credit_transactions ct
+    LEFT JOIN profiles p ON p.id = ct.profile_id
+    WHERE ct.profile_id=?
+    ORDER BY ct.created_at DESC LIMIT 50
+  `).all(profile.id);
+  res.json({ balance: row.amount, transactions, profile_id: profile.id, screen_name: profile.screen_name });
+});
+
+// Leaderboard — top referrers
+app.get('/api/credits/leaderboard', requireMember, (req, res) => {
+  const rows = db.prepare(`
+    SELECT p.id, p.screen_name, p.avatar_url, p.avatar_color, p.tier,
+           COALESCE(SUM(CASE WHEN ct.type='referral' AND ct.amount > 0 THEN ct.amount ELSE 0 END), 0) as referral_credits
+    FROM profiles p
+    LEFT JOIN credit_transactions ct ON ct.profile_id = p.id
+    GROUP BY p.id
+    HAVING referral_credits > 0
+    ORDER BY referral_credits DESC
+    LIMIT 20
+  `).all();
+  res.json(rows);
+});
+
+// Admin: get all credit balances
+app.get('/api/admin/credits', requireAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT p.id, p.screen_name, p.email, p.tier, p.avatar_url, p.avatar_color,
+           COALESCE(c.amount, 0) as balance
+    FROM profiles p
+    LEFT JOIN credits c ON c.profile_id = p.id
+    ORDER BY balance DESC, p.screen_name ASC
+  `).all();
+  res.json(rows);
+});
+
+// Admin: add or remove credits — also fires referral credit automatically
+app.post('/api/admin/credits/:profileId', requireAuth, (req, res) => {
+  const { amount, type, note } = req.body;
+  const profileId = req.params.profileId;
+  const profile = db.prepare('SELECT * FROM profiles WHERE id=?').get(profileId);
+  if (!profile) return res.status(404).json({ error: 'Profile not found' });
+
+  const amt = parseInt(amount);
+  if (isNaN(amt) || amt === 0) return res.status(400).json({ error: 'Invalid amount' });
+
+  if (amt > 0) {
+    addCredit(profileId, amt, type || 'purchased', note || 'Added by Warden');
+  } else {
+    const ok = deductCredit(profileId, Math.abs(amt), type || 'deducted', note || 'Removed by Warden');
+    if (!ok) return res.status(400).json({ error: 'Insufficient credits' });
+  }
+
+  // If this is a purchase credit and the profile was referred by someone, reward the referrer
+  if (amt > 0 && (type === 'purchased' || !type)) {
+    const member = db.prepare('SELECT * FROM members WHERE profile_id=?').get(profileId)
+      || db.prepare('SELECT * FROM members WHERE id=(SELECT member_id FROM profiles WHERE id=?)').get(profileId);
+    if (member) {
+      const applicant = db.prepare('SELECT * FROM applicants WHERE id=?').get(member.applicant_id);
+      if (applicant?.referral) {
+        // Find referrer profile by screen_name
+        const referrer = db.prepare('SELECT * FROM profiles WHERE LOWER(screen_name)=LOWER(?)').get(applicant.referral.trim());
+        if (referrer && referrer.id !== profileId) {
+          // Check they haven't already received a referral credit for this person
+          const already = db.prepare(`SELECT id FROM credit_transactions WHERE profile_id=? AND type='referral' AND note=?`).get(referrer.id, `Referral: @${profile.screen_name}`);
+          if (!already) {
+            addCredit(referrer.id, 1, 'referral', `Referral: @${profile.screen_name}`);
+            console.log(`[credits] Referral credit awarded to @${referrer.screen_name} for referring @${profile.screen_name}`);
+          }
+        }
+      }
+    }
+  }
+
+  res.json({ ok: true });
+});
+
+// Admin: redeem credit for subscription (deducts 1 credit)
+app.post('/api/admin/credits/:profileId/redeem', requireAuth, (req, res) => {
+  const { service } = req.body; // 'stremio' or 'iptv'
+  const profileId = req.params.profileId;
+  const profile = db.prepare('SELECT * FROM profiles WHERE id=?').get(profileId);
+  if (!profile) return res.status(404).json({ error: 'Profile not found' });
+  const ok = deductCredit(profileId, 1, 'redeemed', `Redeemed for ${service || 'Stremio'} subscription`);
+  if (!ok) return res.status(400).json({ error: 'Insufficient credits' });
+  res.json({ ok: true });
+});
 
 // ── Private Messages ──────────────────────────────────────────────────────────
 

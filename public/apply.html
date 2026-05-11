@@ -207,6 +207,13 @@
     }
   }
 
+  // Pre-fill referral from URL param
+  const refParam = new URLSearchParams(window.location.search).get('ref');
+  if (refParam) {
+    const refEl = document.getElementById('referral');
+    if (refEl) { refEl.value = refParam; refEl.readOnly = true; refEl.style.opacity='0.7'; }
+  }
+
   ['first_name', 'last_name', 'screen_name', 'email'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('blur', validate);
