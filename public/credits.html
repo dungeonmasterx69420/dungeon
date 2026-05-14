@@ -213,7 +213,6 @@
 
   fetch('/api/member/me').then(r=>r.json()).then(d=>{
     if(!d.authenticated){window.location.href='/login.html';return}
-    document.body.style.opacity='1';
     const logo = document.getElementById('logoLink');
     if(logo) logo.href='/dashboard.html';
     myScreenName = d.member?.profile?.screen_name || '';

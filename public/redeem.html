@@ -13,7 +13,7 @@
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
     *{box-sizing:border-box;margin:0;padding:0}
     :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;--red-bg:rgba(248,113,113,0.1);--amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1)}
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;opacity:0;transition:opacity 0.15s}
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
     .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
     .nav{display:flex;align-items:center;gap:16px}
@@ -229,7 +229,6 @@
 
   fetch('/api/member/me').then(r=>r.json()).then(d=>{
     if(!d.authenticated){window.location.href='/login.html';return}
-    document.body.style.opacity='1';
     myMember = d.member;
     const logo=document.getElementById('logoLink');if(logo)logo.href='/dashboard.html';
     loadFooter(d.member?.profile?.tier);
@@ -237,7 +236,7 @@
     loadBalance();
     loadStremioStatus(d.member);
     loadIptvStatus();
-  }).catch(()=>{document.body.style.opacity='1';});
+  }).catch(()=>{});
 
   async function loadBalance(){
     const d = await fetch('/api/credits').then(r=>r.json()).catch(()=>({balance:0}));
