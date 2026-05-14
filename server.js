@@ -391,6 +391,7 @@ app.get('/api/member/me', (req, res) => {
     id: m.id, first_name: m.first_name, last_name: m.last_name, email: m.email,
     subscription_start: m.subscription_start, subscription_end: m.subscription_end,
     stremio_email: m.stremio_email,
+    stremio_pass: m.stremio_pass,
     profile: profile || null,
     setup_done: profile ? (profile.setup_done || 0) : 0,
   }});
