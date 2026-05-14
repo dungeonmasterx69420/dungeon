@@ -92,9 +92,9 @@
       .tile[data-mob-order="2"]{order:2}
       .tile[data-mob-order="3"]{order:3}
       .tile[data-mob-order="4"]{order:4}
-      .tile[data-mob-order="5"]{order:5}
-      .tile[data-mob-order="6"]{order:6}
-      .tile[data-mob-order="7"]{order:7}
+      .tile[data-mob-order="4"]{order:5}
+      .tile[data-mob-order="5"]{order:6}
+      .tile[data-mob-order="6"]{order:7}
       .tile[data-mob-order="8"]{order:8}
       .tiles{display:flex;flex-wrap:wrap}
       .tile{width:calc(50% - 4px)}
@@ -219,19 +219,16 @@
       <div class="tile-icon">📡</div>
       <div><div class="tile-label">Live TV</div><div class="tile-title">DungeonCast</div></div>
     </a>
-    <a class="tile" href="/renew.html" data-mob-order="4">
-      <div class="tile-icon">⚔️</div>
-      <div><div class="tile-label">Monthly</div><div class="tile-title">Renew Access</div></div>
-    </a>
-    <a class="tile" href="/redeem.html" data-mob-order="5">
+
+    <a class="tile" href="/redeem.html" data-mob-order="4">
       <div class="tile-icon">💳</div>
       <div><div class="tile-label">Balance &amp; Referrals</div><div class="tile-title">Credits</div></div>
     </a>
-    <a class="tile" href="https://buymeacoffee.com/enterdungeon" target="_blank" rel="noopener" data-mob-order="6">
+    <a class="tile" href="https://buymeacoffee.com/enterdungeon" target="_blank" rel="noopener" data-mob-order="5">
       <div class="tile-icon">☕</div>
       <div><div class="tile-label">Support Us</div><div class="tile-title">Buy Me a Coffee</div></div>
     </a>
-    <a class="tile" href="/support.html" data-mob-order="7">
+    <a class="tile" href="/support.html" data-mob-order="6">
       <div class="tile-icon">🛡️</div>
       <div><div class="tile-label">Help</div><div class="tile-title">Support</div></div>
     </a>
@@ -292,7 +289,7 @@
       status.textContent='No Active Subscription';
       dates.textContent='Contact the Warden to get started.';
       daysNum.textContent='—';
-      welcome.textContent='Your subscription is not currently active. Please contact the Warden or submit a renewal request.';
+      welcome.textContent='Your subscription is not currently active. Redeem a credit to get started.';
     } else {
       const now=new Date(),end=new Date(m.subscription_end);
       const start=m.subscription_start?new Date(m.subscription_start):null;
@@ -300,10 +297,10 @@
       const fmt=dt=>dt.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
       if(daysLeft<=0){
         banner.classList.add('expired');status.classList.add('expired');status.textContent='Expired';daysNum.textContent='0';
-        welcome.innerHTML='Your subscription has expired. <a href="/renew.html">Request a renewal</a> to restore access.';
+        welcome.innerHTML='Your subscription has expired. <a href="/redeem.html">Redeem a credit</a> to restore access.';
       } else if(daysLeft<=5){
         banner.classList.add('expiring');status.classList.add('expiring');status.textContent='Expiring Soon';daysNum.textContent=daysLeft;
-        welcome.innerHTML='Your subscription expires in '+daysLeft+' days. <a href="/renew.html">Renew now</a> to keep your access.';
+        welcome.innerHTML='Your subscription expires in '+daysLeft+' days. <a href="/redeem.html">Redeem a credit</a> to renew.';
       } else {
         banner.classList.add('active');status.classList.add('active');status.textContent='Active';daysNum.textContent=daysLeft;
       }
