@@ -831,6 +831,33 @@ app.post('/api/admin/credits/:profileId', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+
+// Member redeem credit
+app.post('/api/credits/redeem', requireMember, (req, res) => {
+  const { service } = req.body;
+  if (!['stremio','iptv'].includes(service))
+    return res.status(400).json({ error: 'Invalid service' });
+
+  const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id)
+    || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
+  if (!profile) return res.status(403).json({ error: 'Profile required' });
+
+  const ok = deductCredit(profile.id, 1, 'redeemed', `Redeemed for ${service === 'stremio' ? 'Stremio' : 'DungeonCast'} subscription`);
+  if (!ok) return res.status(400).json({ error: 'Insufficient credits' });
+
+  // Notify warden via internal message
+  const warden = db.prepare("SELECT * FROM profiles WHERE tier='warden' LIMIT 1").get();
+  if (warden) {
+    const member = db.prepare('SELECT * FROM members WHERE id=?').get(req.session.member.id);
+    const subject = `Credit Redemption — @${profile.screen_name} → ${service === 'stremio' ? 'Stremio' : 'DungeonCast'}`;
+    const content = `@${profile.screen_name} has redeemed 1 credit for a ${service === 'stremio' ? 'Stremio' : 'DungeonCast'} subscription.\n\nEmail: ${req.session.member.email}\n\nPlease set up their account and message them with their credentials.`;
+    db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
+      .run(genId(), profile.id, warden.id, subject, content);
+  }
+
+  res.json({ ok: true });
+});
+
 // Admin: redeem credit for subscription (deducts 1 credit)
 app.post('/api/admin/credits/:profileId/redeem', requireAuth, (req, res) => {
   const { service } = req.body; // 'stremio' or 'iptv'
