@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>Dungeon · Redeem Credits</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;--red-bg:rgba(248,113,113,0.1);--amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1)}
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;opacity:0;transition:opacity 0.15s}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
+    .nav{display:flex;align-items:center;gap:16px}
+    .nav a,.nav button{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color .2s}
+    .nav a:hover,.nav button:hover{color:var(--text)}
+    .msg-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:var(--muted2);font-size:15px;transition:border-color .2s,color .2s}
+    .msg-icon-btn:hover{border-color:var(--green);color:var(--green)}
+    .msg-icon-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
+
+    .page{max-width:760px;margin:0 auto;padding:36px 24px 80px}
+    .page-title{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:13px !important;font-weight:400 !important;color:var(--text);line-height:1.6;margin-bottom:8px}
+    .page-sub{font-size:14px;color:var(--muted2);margin-bottom:28px;line-height:1.7}
+
+    /* Balance bar */
+    .balance-bar{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+    .balance-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
+    .balance-num{font-size:42px;font-weight:700;color:var(--green);line-height:1}
+    .balance-sub{font-size:12px;color:var(--muted2);margin-top:4px}
+    .buy-link{display:inline-block;padding:10px 18px;background:var(--amber);border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:700;text-decoration:none;transition:opacity .2s}
+    .buy-link:hover{opacity:0.9}
+
+    /* Service cards */
+    .services{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+    .service-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;position:relative;overflow:hidden;transition:border-color .2s}
+    .service-card:hover{border-color:var(--border2)}
+    .service-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;background:var(--green)}
+    .service-icon{font-size:32px;margin-bottom:12px}
+    .service-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px}
+    .service-desc{font-size:13px;color:var(--muted2);line-height:1.6;margin-bottom:16px}
+    .service-status{font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:16px}
+    .service-status.active{background:var(--green-bg2);color:var(--green)}
+    .service-status.none{background:rgba(148,163,160,0.1);color:var(--muted2)}
+    .service-status.expiring{background:var(--amber-bg);color:var(--amber)}
+    .service-status.expired{background:var(--red-bg);color:var(--red)}
+    .redeem-btn{width:100%;padding:10px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;text-align:center}
+    .redeem-btn:hover{opacity:0.9}
+    .redeem-btn:disabled{opacity:0.35;cursor:not-allowed}
+    .redeem-btn.outline{background:transparent;border:1px solid var(--border2);color:var(--muted2)}
+    .redeem-btn.outline:hover{border-color:var(--green);color:var(--green);opacity:1}
+
+    /* How it works */
+    .how-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:28px}
+    .how-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:16px}
+    .how-steps{display:flex;flex-direction:column;gap:12px}
+    .how-step{display:flex;gap:14px;align-items:flex-start}
+    .how-num{width:28px;height:28px;border-radius:50%;background:var(--green-bg2);color:var(--green);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+    .how-text{font-size:13px;color:var(--muted2);line-height:1.65}
+    .how-text strong{color:var(--text)}
+
+    /* Buy credits section */
+    .buy-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:28px}
+    .buy-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+    .buy-sub{font-size:13px;color:var(--muted2);margin-bottom:16px;line-height:1.6}
+    .buy-options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .buy-option{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:16px;text-align:center;text-decoration:none;color:inherit;transition:border-color .2s,background .2s;display:block}
+    .buy-option:hover{border-color:var(--green);background:var(--green-bg)}
+    .buy-option-icon{font-size:28px;margin-bottom:8px}
+    .buy-option-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+    .buy-option-desc{font-size:12px;color:var(--muted2)}
+    .buy-option-price{font-size:18px;font-weight:700;color:var(--green);margin-top:8px}
+    .buy-note{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6}
+
+    /* Success modal */
+    .veil{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center;padding:24px}
+    .veil.open{display:flex}
+    .modal{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:32px;width:100%;max-width:400px;text-align:center}
+    .modal-icon{font-size:48px;margin-bottom:16px}
+    .modal-title{font-size:17px;font-weight:600;color:var(--text);margin-bottom:8px}
+    .modal-sub{font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:24px}
+    .modal-btn{display:inline-block;padding:10px 24px;background:var(--green);border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;font-family:'Inter',sans-serif}
+
+    footer{text-align:center;padding:24px 0 16px;font-size:12px;color:var(--muted)}
+    footer a{color:var(--muted);text-decoration:none}
+    footer a:hover{color:var(--text)}
+    @media(max-width:767px){.page{padding:24px 14px 60px}.topbar{padding:12px 16px}.services{grid-template-columns:1fr}.buy-options{grid-template-columns:1fr}.balance-bar{flex-direction:column;gap:16px;text-align:center}footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <a href="/" class="logo" id="logoLink">Dungeon</a>
+  <div class="nav">
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/messages.html" class="msg-icon-btn" id="msgIconBtn" title="Messages">✉<span class="msg-icon-badge" id="msgIconBadge"></span></a>
+    <button onclick="logout()">Sign out</button>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-title">Redeem Credits</div>
+  <div class="page-sub">Use your credits for Stremio or DungeonCast — or earn more by referring friends.</div>
+
+  <!-- Balance bar -->
+  <div class="balance-bar">
+    <div>
+      <div class="balance-label">Your Balance</div>
+      <div class="balance-num" id="balanceNum">—</div>
+      <div class="balance-sub">credits available</div>
+    </div>
+    <a href="https://buymeacoffee.com/enterdungeon" target="_blank" rel="noopener" class="buy-link">☕ Buy Credits — $5</a>
+  </div>
+
+  <!-- Service cards -->
+  <div class="services">
+    <!-- Stremio -->
+    <div class="service-card">
+      <div class="service-icon">📺</div>
+      <div class="service-name">Stremio</div>
+      <div class="service-desc">Movies, shows, and more. Stream on any device with your personal Stremio account.</div>
+      <div class="service-status none" id="stremioStatus">Checking…</div>
+      <button class="redeem-btn" id="stremioRedeemBtn" onclick="requestRedeem('stremio')" disabled>Redeem 1 Credit</button>
+      <div style="margin-top:8px">
+        <a href="/stremio.html" style="font-size:12px;color:var(--muted);text-decoration:none">View details →</a>
+      </div>
+    </div>
+
+    <!-- DungeonCast -->
+    <div class="service-card">
+      <div class="service-icon">📡</div>
+      <div class="service-name">DungeonCast</div>
+      <div class="service-desc">Live TV, sports, and PPV events. Stream hundreds of channels on any device.</div>
+      <div class="service-status none" id="iptvStatus">Checking…</div>
+      <button class="redeem-btn" id="iptvRedeemBtn" onclick="requestRedeem('iptv')" disabled>Redeem 1 Credit</button>
+      <div style="margin-top:8px">
+        <a href="/iptv.html" style="font-size:12px;color:var(--muted);text-decoration:none">View details →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="how-section">
+    <div class="how-title">How Redeeming Works</div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <div class="how-text"><strong>Click Redeem</strong> for the service you want. This sends a request to the Warden.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <div class="how-text"><strong>The Warden sets up your account</strong> — typically within 24 hours. 1 credit is deducted from your balance.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <div class="how-text"><strong>You get a message</strong> with your login credentials. Check your Dungeon inbox.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">4</div>
+        <div class="how-text"><strong>Start watching.</strong> Repeat each month to keep your access active.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buy credits -->
+  <div class="buy-section">
+    <div class="buy-title">Need More Credits?</div>
+    <div class="buy-sub">Buy credits for $5 each, or earn free credits by referring friends to Dungeon.</div>
+    <div class="buy-options">
+      <a href="https://buymeacoffee.com/enterdungeon" target="_blank" rel="noopener" class="buy-option">
+        <div class="buy-option-icon">☕</div>
+        <div class="buy-option-title">Buy a Credit</div>
+        <div class="buy-option-desc">Pay via Buy Me a Coffee. Include your @username in the message.</div>
+        <div class="buy-option-price">$5 / credit</div>
+      </a>
+      <a href="/credits.html" class="buy-option">
+        <div class="buy-option-icon">👥</div>
+        <div class="buy-option-title">Refer a Friend</div>
+        <div class="buy-option-desc">Share your referral link. Earn 1 free credit when they buy their first.</div>
+        <div class="buy-option-price">Free</div>
+      </a>
+    </div>
+    <div class="buy-note">Credits never expire. Your referral link and transaction history are on the <a href="/credits.html" style="color:var(--green)">Credits page</a>.</div>
+  </div>
+
+  <footer id="pageFooter">
+    <a href="/messages.html">Messages</a>
+    &nbsp;·&nbsp;
+    <a href="/profile.html">My Profile</a>
+    &nbsp;·&nbsp;
+    <a href="/directory.html">Directory</a>
+    &nbsp;·&nbsp;
+    <a href="/forum.html">Forum</a>
+    &nbsp;·&nbsp;
+    <a href="/dashboard.html">Members</a>
+  </footer>
+</div>
+
+<!-- Confirm modal -->
+<div class="veil" id="confirmVeil">
+  <div class="modal">
+    <div class="modal-icon" id="confirmIcon">📺</div>
+    <div class="modal-title" id="confirmTitle">Redeem for Stremio?</div>
+    <div class="modal-sub" id="confirmSub">This will deduct 1 credit from your balance and notify the Warden to set up your account. You'll receive your credentials via Dungeon message within 24 hours.</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="modal-btn" style="background:var(--surface2);color:var(--muted2);border:1px solid var(--border2)" onclick="closeConfirm()">Cancel</button>
+      <button class="modal-btn" id="confirmBtn" onclick="confirmRedeem()">Redeem 1 Credit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Success modal -->
+<div class="veil" id="successVeil">
+  <div class="modal">
+    <div class="modal-icon">✅</div>
+    <div class="modal-title">Request Sent!</div>
+    <div class="modal-sub">1 credit has been deducted. The Warden has been notified and will set up your account within 24 hours. Keep an eye on your Dungeon messages.</div>
+    <a href="/messages.html" class="modal-btn">Go to Messages</a>
+  </div>
+</div>
+
+<script>
+  let myBalance = 0;
+  let myMember = null;
+  let pendingService = null;
+
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if(!d.authenticated){window.location.href='/login.html';return}
+    document.body.style.opacity='1';
+    myMember = d.member;
+    const logo=document.getElementById('logoLink');if(logo)logo.href='/dashboard.html';
+    loadFooter(d.member?.profile?.tier);
+    loadMsgBadge();
+    loadBalance();
+    loadStremioStatus(d.member);
+    loadIptvStatus();
+  });
+
+  async function loadBalance(){
+    const d = await fetch('/api/credits').then(r=>r.json()).catch(()=>({balance:0}));
+    myBalance = d.balance || 0;
+    document.getElementById('balanceNum').textContent = myBalance;
+    updateRedeemBtns();
+  }
+
+  function loadStremioStatus(member){
+    const statusEl = document.getElementById('stremioStatus');
+    const btn = document.getElementById('stremioRedeemBtn');
+    if(member && member.stremio_email){
+      const exp = member.subscription_end;
+      const days = exp ? Math.ceil((new Date(exp)-new Date())/86400000) : 0;
+      if(days > 5){
+        statusEl.textContent = 'Active — ' + days + 'd left';
+        statusEl.className = 'service-status active';
+        btn.textContent = 'Renew (Redeem 1 Credit)';
+      } else if(days > 0){
+        statusEl.textContent = 'Expiring — ' + days + 'd left';
+        statusEl.className = 'service-status expiring';
+        btn.textContent = 'Renew Now';
+      } else {
+        statusEl.textContent = 'Expired';
+        statusEl.className = 'service-status expired';
+      }
+    } else {
+      statusEl.textContent = 'No Account';
+      statusEl.className = 'service-status none';
+    }
+    updateRedeemBtns();
+  }
+
+  async function loadIptvStatus(){
+    const account = await fetch('/api/iptv/me').then(r=>r.json()).catch(()=>null);
+    const statusEl = document.getElementById('iptvStatus');
+    const btn = document.getElementById('iptvRedeemBtn');
+    if(account && account.status === 'active'){
+      statusEl.textContent = 'Active';
+      statusEl.className = 'service-status active';
+      btn.textContent = 'Renew (Redeem 1 Credit)';
+    } else if(account && account.status === 'pending'){
+      statusEl.textContent = 'Pending Setup';
+      statusEl.className = 'service-status expiring';
+    } else {
+      statusEl.textContent = 'No Account';
+      statusEl.className = 'service-status none';
+    }
+    updateRedeemBtns();
+  }
+
+  function updateRedeemBtns(){
+    const hasCredits = myBalance >= 1;
+    document.getElementById('stremioRedeemBtn').disabled = !hasCredits;
+    document.getElementById('iptvRedeemBtn').disabled = !hasCredits;
+  }
+
+  function requestRedeem(service){
+    pendingService = service;
+    document.getElementById('confirmIcon').textContent = service === 'stremio' ? '📺' : '📡';
+    document.getElementById('confirmTitle').textContent = service === 'stremio' ? 'Redeem for Stremio?' : 'Redeem for DungeonCast?';
+    document.getElementById('confirmVeil').classList.add('open');
+  }
+
+  function closeConfirm(){
+    document.getElementById('confirmVeil').classList.remove('open');
+    pendingService = null;
+  }
+
+  async function confirmRedeem(){
+    if(!pendingService) return;
+    const btn = document.getElementById('confirmBtn');
+    btn.disabled = true; btn.textContent = 'Processing…';
+
+    // Send a message to Warden requesting the redemption
+    // Also deduct credit via the redeem endpoint
+    const profile = myMember?.profile;
+    const service = pendingService;
+
+    // First deduct the credit
+    const res = await fetch('/api/credits/redeem', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ service })
+    }).catch(()=>null);
+
+    closeConfirm();
+    document.getElementById('successVeil').classList.add('open');
+    myBalance--;
+    document.getElementById('balanceNum').textContent = myBalance;
+    updateRedeemBtns();
+    btn.disabled = false; btn.textContent = 'Redeem 1 Credit';
+  }
+
+  function loadFooter(tier){
+    const footer=document.getElementById('pageFooter');
+    if(!footer||!tier)return;
+    if(['mod','admin','warden'].includes(tier)){
+      const span=document.createElement('span');span.style.whiteSpace='nowrap';
+      let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
+      if(['admin','warden'].includes(tier)) extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Warden</a>';
+      span.innerHTML=extra;footer.appendChild(span);
+    }
+  }
+
+  async function loadMsgBadge(){
+    const d=await fetch('/api/messages/unread').then(r=>r.json()).catch(()=>({count:0}));
+    const b=document.getElementById('msgIconBadge');
+    if(b&&d.count>0){b.textContent=d.count;b.style.display='block';}
+  }
+
+  async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html'}
+</script>
+</body>
+</html>
