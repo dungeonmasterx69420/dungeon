@@ -237,7 +237,7 @@
     loadBalance();
     loadStremioStatus(d.member);
     loadIptvStatus();
-  });
+  }).catch(()=>{document.body.style.opacity='1';});
 
   async function loadBalance(){
     const d = await fetch('/api/credits').then(r=>r.json()).catch(()=>({balance:0}));
