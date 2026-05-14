@@ -75,23 +75,48 @@
 
 <div class="page">
 
-  <div class="construction-banner">
-    <span>🚧</span>
-    <div>Dungeon IPTV is currently under construction. This page is a preview of what's coming.</div>
+
+  <!-- Member IPTV account status -->
+  <div id="iptvAccountCard" style="display:none;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:32px">
+    <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px">
+      📡 Your DungeonCast Account
+      <span id="iptvStatusBadge" style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px"></span>
+    </div>
+    <div id="iptvAccountActive" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">DungeonCast Login</div>
+          <div style="font-size:14px;color:var(--text);font-weight:500" id="iptvDCLogin">—</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Access</div>
+          <a href="https://tv.enterdungeon.cc" target="_blank" style="font-size:14px;color:var(--green);font-weight:500;text-decoration:none">tv.enterdungeon.cc ↗</a>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted2);line-height:1.6">Your password was sent to you by the Warden. Check your messages if you need it again.</div>
+    </div>
+    <div id="iptvAccountPending" style="display:none">
+      <div style="font-size:13px;color:var(--muted2);line-height:1.7">Your IPTV account is being set up. The Warden will message you with your DungeonCast login details shortly. Make sure you have redeemed an IPTV credit first.</div>
+      <a href="/credits.html" style="display:inline-block;margin-top:12px;padding:8px 16px;background:var(--green);border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:600;text-decoration:none">View My Credits</a>
+    </div>
+    <div id="iptvAccountNone" style="display:none">
+      <div style="font-size:13px;color:var(--muted2);line-height:1.7">You don't have an active IPTV account yet. Redeem 1 credit to get started — the Warden will set up your account and send you your login details.</div>
+      <a href="/credits.html" style="display:inline-block;margin-top:12px;padding:8px 16px;background:var(--green);border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:600;text-decoration:none">Redeem a Credit</a>
+    </div>
   </div>
 
-  <div class="page-title">Dungeon IPTV</div>
-  <div class="page-sub">A whole new way to watch. <strong>Live TV, sports, and PPV events</strong> — streamed directly to any device, no cable required. Coming soon to Dungeon members.</div>
+  <div class="page-title">DungeonCast</div>
+  <div class="page-sub">A whole new way to watch. <strong>Live TV, sports, and PPV events</strong> — streamed directly to any device, no cable required. Now live for Dungeon members.</div>
 
   <div class="features">
     <div class="feature highlight">
       <div class="feature-icon">🏆</div>
-      <div class="feature-title">Live Sports <span class="coming-chip">Soon</span></div>
+      <div class="feature-title">Live Sports </div>
       <div class="feature-desc">Watch NFL, NBA, MLB, NHL, EPL and more live as they happen. Never miss a game again.</div>
     </div>
     <div class="feature highlight">
       <div class="feature-icon">🥊</div>
-      <div class="feature-title">PPV Events <span class="coming-chip">Soon</span></div>
+      <div class="feature-title">PPV Events </div>
       <div class="feature-desc">Boxing, UFC, WWE — all major pay-per-view events included. No extra charge per event.</div>
     </div>
     <div class="feature">
@@ -116,22 +141,25 @@
     </div>
   </div>
 
-  <div class="peek-label">Sneak Peek — What's Coming</div>
+  <div class="peek-label">What's Included</div>
   <ul class="peek-list">
-    <li>Every major US sports league covered — NFL, NBA, MLB, NHL, MLS and college sports</li>
+    <li>Every major US sports league — NFL, NBA, MLB, NHL, MLS and college sports</li>
     <li>International football — EPL, La Liga, Serie A, Champions League and more</li>
     <li>All major PPV combat sports events — UFC, boxing, WWE, AEW — included with subscription</li>
     <li>Live news channels — CNN, Fox News, MSNBC, BBC and more</li>
-    <li>Dedicated Dungeon IPTV app with separate credentials from your Stremio account</li>
+    <li>Dedicated Dungeon IPTV player — access at tv.enterdungeon.cc with separate credentials from your Stremio account</li>
     <li>Electronic Program Guide (EPG) — see what's on now and what's coming up</li>
-    <li>DVR-style catch-up on select channels</li>
+    <li>EPG TV Guide — see what's on now and what's coming up</li>
     <li>Multiple concurrent streams — watch on more than one device at a time</li>
   </ul>
 
   <div class="cta-card">
-    <div class="cta-title">Get Ready for Launch</div>
-    <div class="cta-sub">Stack up credits now so you're ready the moment IPTV goes live. Every credit you earn today works for both Stremio and IPTV when it launches.</div>
-    <a href="/credits.html" class="cta-btn">View My Credits</a>
+    <div class="cta-title">Ready to Watch?</div>
+    <div class="cta-sub">Redeem 1 credit for a full month of Dungeon IPTV access. The Warden will create your account and send you your login credentials.</div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="https://tv.enterdungeon.cc" target="_blank" rel="noopener" class="cta-btn">Open Dungeon IPTV ↗</a>
+      <a href="/credits.html" class="cta-btn" style="background:var(--surface2);color:var(--green);border:1px solid var(--green)">View My Credits</a>
+    </div>
   </div>
 
   <footer id="pageFooter">
@@ -157,6 +185,37 @@
       if(b&&d.count>0){b.textContent=d.count;b.style.display='block';}
     }).catch(()=>{});
   });
+
+
+  // Load member IPTV account status
+  fetch('/api/iptv/me').then(r=>r.json()).then(account => {
+    const card = document.getElementById('iptvAccountCard');
+    const badge = document.getElementById('iptvStatusBadge');
+    card.style.display = 'block';
+
+    if (!account) {
+      document.getElementById('iptvAccountNone').style.display = 'block';
+      badge.textContent = 'No Account';
+      badge.style.background = 'rgba(148,163,160,0.1)';
+      badge.style.color = 'var(--muted2)';
+    } else if (account.status === 'active') {
+      document.getElementById('iptvAccountActive').style.display = 'block';
+      document.getElementById('iptvDCLogin').textContent = account.nodecast_user || '—';
+      badge.textContent = 'Active';
+      badge.style.background = 'rgba(52,211,153,0.12)';
+      badge.style.color = 'var(--green)';
+    } else if (account.status === 'pending') {
+      document.getElementById('iptvAccountPending').style.display = 'block';
+      badge.textContent = 'Pending';
+      badge.style.background = 'rgba(251,191,36,0.1)';
+      badge.style.color = 'var(--amber)';
+    } else {
+      document.getElementById('iptvAccountNone').style.display = 'block';
+      badge.textContent = account.status;
+      badge.style.background = 'rgba(248,113,113,0.1)';
+      badge.style.color = 'var(--red)';
+    }
+  }).catch(() => {});
 
   function loadFooter(tier){
     const footer=document.getElementById('pageFooter');

@@ -201,6 +201,7 @@
     <button class="tab-btn" onclick="switchTab('support',this)">Support <span id="suppBadge" style="display:none;color:var(--red)"></span></button>
     <button class="tab-btn" onclick="switchTab('profiles',this)">Profiles</button>
     <button class="tab-btn" onclick="switchTab('credits',this)">Credits</button>
+    <button class="tab-btn" onclick="switchTab('iptv',this)">IPTV</button>
   </div>
 
   <div class="main">
@@ -237,6 +238,64 @@
       </div>
       <div class="divider"></div>
       <div class="row-list" id="supportList"></div>
+    </div>
+
+
+    <div class="tab-panel" id="panel-iptv">
+      <div class="list-header">
+        <div class="list-label">IPTV Accounts</div>
+        <button class="act green" onclick="showAddIptv()">+ Add Account</button>
+      </div>
+      <div class="divider"></div>
+      <div id="iptvList"></div>
+
+      <!-- Add/Edit modal -->
+      <div id="iptvModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px">
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:480px">
+          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:20px" id="iptvModalTitle">Add IPTV Account</div>
+          <input type="hidden" id="iptvProfileId"/>
+          <div class="field" style="margin-bottom:14px">
+            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Member</label>
+            <select id="iptvMemberSelect" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none">
+              <option value="">Select member…</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:14px">
+            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">DungeonCast Username</label>
+            <input type="text" id="iptvNodecastUser" placeholder="Their login on tv.enterdungeon.cc" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+          </div>
+          <div class="field" style="margin-bottom:14px">
+            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Xtream URL</label>
+            <input type="text" id="iptvXtreamUrl" placeholder="http://provider.com:port" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Xtream Username</label>
+              <input type="text" id="iptvXtreamUser" placeholder="Username" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Xtream Password</label>
+              <input type="text" id="iptvXtreamPass" placeholder="Password" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:14px">
+            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Status</label>
+            <select id="iptvStatus" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none">
+              <option value="pending">Pending</option>
+              <option value="active">Active</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:20px">
+            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Notes</label>
+            <input type="text" id="iptvNotes" placeholder="Any notes…" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px">
+            <button class="act" onclick="closeIptvModal()">Cancel</button>
+            <button class="act green" onclick="saveIptv()">Save</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="tab-panel" id="panel-credits">
@@ -339,6 +398,7 @@
     if(name==='support')loadSupport();
     if(name==='profiles')loadProfiles();
     if(name==='credits')loadCreditsTab();
+    if(name==='iptv')loadIptvTab();
   }
 
   async function loadAll(){await Promise.all([loadStats(),loadApplicants(),loadMembers()])}
@@ -649,6 +709,111 @@
     const d = await res.json();
     if(res.ok){amtEl.value='';loadCreditsTab();}
     else{alert(d.error||'Error');}
+  }
+
+
+  // ── IPTV tab ───────────────────────────────────────────────────────────────────
+  let allProfiles = [];
+
+  async function loadIptvTab() {
+    // Load all profiles for the select
+    const profiles = await fetch('/api/profiles').then(r=>r.json()).catch(()=>[]);
+    allProfiles = profiles;
+    const sel = document.getElementById('iptvMemberSelect');
+    sel.innerHTML = '<option value="">Select member…</option>';
+    profiles.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = '@' + p.screen_name;
+      sel.appendChild(opt);
+    });
+
+    const rows = await fetch('/api/admin/iptv').then(r=>r.json()).catch(()=>[]);
+    const el = document.getElementById('iptvList');
+    if (!rows.length) {
+      el.innerHTML = '<div class="empty"><div class="empty-title">No IPTV accounts yet</div><div class="empty-sub">Add an account when a member redeems an IPTV credit.</div></div>';
+      return;
+    }
+
+    const statusColor = {active:'var(--green)',pending:'var(--amber)',suspended:'var(--red)'};
+    el.innerHTML = rows.map(r => `
+      <div class="app-row" id="iptv-row-${r.profile_id}">
+        <div>
+          <div class="row-name" style="display:flex;align-items:center;gap:8px">
+            @${r.screen_name}
+            <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${statusColor[r.status]||'var(--muted)'}22;color:${statusColor[r.status]||'var(--muted)'}">${r.status}</span>
+          </div>
+          <div class="row-email">${r.email}</div>
+          <div class="row-meta" style="margin-top:8px;flex-wrap:wrap;gap:12px">
+            ${r.nodecast_user ? `<div><div class="meta-lbl">DungeonCast Login</div><div class="meta-val">${r.nodecast_user}</div></div>` : ''}
+            ${r.xtream_url ? `<div><div class="meta-lbl">Xtream URL</div><div class="meta-val" style="font-size:11px">${r.xtream_url}</div></div>` : ''}
+            ${r.xtream_user ? `<div><div class="meta-lbl">Xtream User</div><div class="meta-val">${r.xtream_user}</div></div>` : ''}
+            ${r.notes ? `<div><div class="meta-lbl">Notes</div><div class="meta-val">${r.notes}</div></div>` : ''}
+          </div>
+        </div>
+        <div class="row-actions">
+          <button class="act green" onclick="editIptv('${r.profile_id}')">Edit</button>
+          <button class="act red" onclick="deleteIptv('${r.profile_id}')">Remove</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function showAddIptv() {
+    document.getElementById('iptvModalTitle').textContent = 'Add IPTV Account';
+    document.getElementById('iptvProfileId').value = '';
+    document.getElementById('iptvMemberSelect').value = '';
+    document.getElementById('iptvMemberSelect').disabled = false;
+    document.getElementById('iptvNodecastUser').value = '';
+    document.getElementById('iptvXtreamUrl').value = '';
+    document.getElementById('iptvXtreamUser').value = '';
+    document.getElementById('iptvXtreamPass').value = '';
+    document.getElementById('iptvStatus').value = 'pending';
+    document.getElementById('iptvNotes').value = '';
+    document.getElementById('iptvModal').style.display = 'flex';
+  }
+
+  function editIptv(profileId) {
+    fetch('/api/admin/iptv').then(r=>r.json()).then(rows => {
+      const r = rows.find(x => x.profile_id === profileId);
+      if (!r) return;
+      document.getElementById('iptvModalTitle').textContent = 'Edit IPTV Account';
+      document.getElementById('iptvProfileId').value = profileId;
+      document.getElementById('iptvMemberSelect').value = profileId;
+      document.getElementById('iptvMemberSelect').disabled = true;
+      document.getElementById('iptvNodecastUser').value = r.nodecast_user || '';
+      document.getElementById('iptvXtreamUrl').value = r.xtream_url || '';
+      document.getElementById('iptvXtreamUser').value = r.xtream_user || '';
+      document.getElementById('iptvXtreamPass').value = r.xtream_pass || '';
+      document.getElementById('iptvStatus').value = r.status || 'pending';
+      document.getElementById('iptvNotes').value = r.notes || '';
+      document.getElementById('iptvModal').style.display = 'flex';
+    });
+  }
+
+  function closeIptvModal() {
+    document.getElementById('iptvModal').style.display = 'none';
+  }
+
+  async function saveIptv() {
+    const profileId = document.getElementById('iptvProfileId').value || document.getElementById('iptvMemberSelect').value;
+    if (!profileId) { alert('Select a member'); return; }
+    const body = {
+      nodecast_user: document.getElementById('iptvNodecastUser').value,
+      xtream_url:    document.getElementById('iptvXtreamUrl').value,
+      xtream_user:   document.getElementById('iptvXtreamUser').value,
+      xtream_pass:   document.getElementById('iptvXtreamPass').value,
+      status:        document.getElementById('iptvStatus').value,
+      notes:         document.getElementById('iptvNotes').value,
+    };
+    await fetch('/api/admin/iptv/' + profileId, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    closeIptvModal();
+    loadIptvTab();
+  }
+
+  async function deleteIptv(profileId) {
+    if (!confirm('Remove this IPTV account?')) return;
+    await fetch('/api/admin/iptv/' + profileId, { method:'DELETE' });
+    loadIptvTab();
   }
 
   function closeModal(id){document.getElementById(id).classList.remove('open');activeApplicantId=null;activeMemberId=null}
