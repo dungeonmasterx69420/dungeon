@@ -76,6 +76,20 @@ db.exec(`
 
 
 
+
+  CREATE TABLE IF NOT EXISTS iptv_accounts (
+    id              TEXT PRIMARY KEY,
+    profile_id      TEXT NOT NULL UNIQUE,
+    nodecast_user   TEXT,
+    xtream_url      TEXT,
+    xtream_user     TEXT,
+    xtream_pass     TEXT,
+    status          TEXT DEFAULT 'pending',
+    notes           TEXT,
+    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS credits (
     id         TEXT PRIMARY KEY,
     profile_id TEXT NOT NULL,
@@ -660,6 +674,53 @@ app.delete('/api/support/:id', requireAuth, (req, res) => {
 
 
 
+
+
+// ── IPTV Accounts ─────────────────────────────────────────────────────────────
+
+// Get all IPTV accounts (admin)
+app.get('/api/admin/iptv', requireAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT i.*, p.screen_name, p.email, p.avatar_url, p.avatar_color, p.tier
+    FROM iptv_accounts i
+    JOIN profiles p ON i.profile_id = p.id
+    ORDER BY i.created_at DESC
+  `).all();
+  res.json(rows);
+});
+
+// Get my IPTV account (member)
+app.get('/api/iptv/me', requireMember, (req, res) => {
+  const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id)
+    || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
+  if (!profile) return res.json(null);
+  const account = db.prepare('SELECT * FROM iptv_accounts WHERE profile_id=?').get(profile.id);
+  res.json(account || null);
+});
+
+// Create or update IPTV account (admin)
+app.post('/api/admin/iptv/:profileId', requireAuth, (req, res) => {
+  const { nodecast_user, xtream_url, xtream_user, xtream_pass, status, notes } = req.body;
+  const profileId = req.params.profileId;
+  const profile = db.prepare('SELECT * FROM profiles WHERE id=?').get(profileId);
+  if (!profile) return res.status(404).json({ error: 'Profile not found' });
+
+  const existing = db.prepare('SELECT * FROM iptv_accounts WHERE profile_id=?').get(profileId);
+  if (existing) {
+    db.prepare(`UPDATE iptv_accounts SET nodecast_user=?, xtream_url=?, xtream_user=?, xtream_pass=?, status=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE profile_id=?`)
+      .run(nodecast_user||existing.nodecast_user, xtream_url||existing.xtream_url, xtream_user||existing.xtream_user, xtream_pass||existing.xtream_pass, status||existing.status, notes||existing.notes, profileId);
+  } else {
+    db.prepare(`INSERT INTO iptv_accounts (id,profile_id,nodecast_user,xtream_url,xtream_user,xtream_pass,status,notes) VALUES (?,?,?,?,?,?,?,?)`)
+      .run(genId(), profileId, nodecast_user||'', xtream_url||'', xtream_user||'', xtream_pass||'', status||'pending', notes||'');
+  }
+  res.json({ ok: true });
+});
+
+// Delete IPTV account (admin)
+app.delete('/api/admin/iptv/:profileId', requireAuth, (req, res) => {
+  db.prepare('DELETE FROM iptv_accounts WHERE profile_id=?').run(req.params.profileId);
+  res.json({ ok: true });
+});
 
 // ── Credits ───────────────────────────────────────────────────────────────────
 
