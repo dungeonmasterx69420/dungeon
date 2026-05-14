@@ -215,6 +215,8 @@
     }
   }
 
+  }).catch(()=>{document.body.style.opacity='1';window.location.href='/login.html'});
+
   async function loadMsgBadge(){
     const d=await fetch('/api/messages/unread').then(r=>r.json()).catch(()=>({count:0}));
     const b=document.getElementById('msgIconBadge');
