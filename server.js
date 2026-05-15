@@ -226,7 +226,7 @@ function emailApplicationReceived(firstName, screenName) {
 
 function emailWelcome(firstName, screenName, stremioEmail, stremioPass, subEnd) {
   const fmtDate = new Date(subEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  return emailShell(`<h2>Access Granted</h2><div class="rule"></div><p>Welcome, <strong>${firstName}</strong>. Your application has been approved and your account is ready.</p><p>Dungeon gives you access to a world of film and television through Stremio — one app instead of paying for a separate subscription for every show or movie you want to watch.</p><div class="box"><div class="row"><span class="lbl">Username</span><span class="val">@${screenName}</span></div><div class="row"><span class="lbl">Stremio Email</span><span class="val">${stremioEmail}</span></div><div class="row"><span class="lbl">Stremio Password</span><span class="val">${stremioPass}</span></div><div class="row"><span class="lbl">Access Expires</span><span class="val">${fmtDate}</span></div></div><p>Head to web.stremio.com and sign in, then visit your dashboard for guides, support and more.</p><a href="${SITE_URL}/login.html" class="btn">Go to Dashboard</a><div class="rule"></div><p style="font-size:12px;color:#6b8f7a">Keep your credentials private. Your access is personal and non-transferable. — The Warden</p>`);
+  return emailShell(`<h2>Welcome to Dungeon</h2><div class="rule"></div><p>Welcome, <strong>${firstName}</strong>. Your application has been approved and your Dungeon account is ready.</p><div class="box"><div class="row"><span class="lbl">Username</span><span class="val">@${screenName}</span></div></div><p>Log into your dashboard to get started. When you're ready to activate a service, redeem a credit from your dashboard.</p><a href="${SITE_URL}/login.html" class="btn">Go to Dashboard</a><div class="rule"></div><p style="font-size:12px;color:#6b8f7a">— The Warden</p>`);
 }
 
 function emailExpiringSoon(firstName, subEnd) {
@@ -617,11 +617,9 @@ app.post('/api/applicants/:id/promote', requireAuth, async (req, res) => {
 
   const { stremio_email, stremio_pass } = req.body;
   const memberId = genId();
-  const now = new Date();
-  const end = new Date(now); end.setMonth(end.getMonth() + 1);
 
-  db.prepare(`INSERT INTO members (id, first_name, last_name, email, phone, language, referral, notes, stremio_email, stremio_pass, applicant_id, subscription_start, subscription_end) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(memberId, applicant.first_name, applicant.last_name, applicant.email, applicant.phone, applicant.language, applicant.referral, applicant.notes, stremio_email||'', stremio_pass||'', applicant.id, now.toISOString(), end.toISOString());
+  db.prepare(`INSERT INTO members (id, first_name, last_name, email, phone, language, referral, notes, stremio_email, stremio_pass, applicant_id) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
+    .run(memberId, applicant.first_name, applicant.last_name, applicant.email, applicant.phone, applicant.language, applicant.referral, applicant.notes, stremio_email||'', stremio_pass||'', applicant.id);
 
   db.prepare('UPDATE applicants SET status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run('approved', applicant.id);
 
@@ -644,7 +642,7 @@ app.post('/api/applicants/:id/promote', requireAuth, async (req, res) => {
     if (prof) db.prepare("UPDATE profiles SET tier='warden' WHERE id=?").run(prof.id);
   }
 
-  await sendMail(applicant.email, 'Access Granted — Dungeon', emailWelcome(applicant.first_name, applicant.screen_name||applicant.first_name, stremio_email||'', stremio_pass||'', end.toISOString()));
+  await sendMail(applicant.email, 'Welcome to Dungeon', emailWelcome(applicant.first_name, applicant.screen_name||applicant.first_name, '', '', ''));
   res.json({ ok: true });
 });
 
