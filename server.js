@@ -243,6 +243,23 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
 }
 
 
+
+  // ── Migrate: add Stremio + IPTV subscription columns ────────────────────────
+  const migrateSteps = [
+    'ALTER TABLE members ADD COLUMN stremio_start DATETIME',
+    'ALTER TABLE members ADD COLUMN stremio_end   DATETIME',
+    'ALTER TABLE members ADD COLUMN iptv_start    DATETIME',
+    'ALTER TABLE members ADD COLUMN iptv_end      DATETIME',
+  ];
+  for (const sql of migrateSteps) {
+    try { db.prepare(sql).run(); } catch(e) { /* column already exists */ }
+  }
+
+  // Reset all existing subscriptions to null (fresh launch)
+  try {
+    db.prepare("UPDATE members SET subscription_start=NULL, subscription_end=NULL, stremio_start=NULL, stremio_end=NULL, iptv_start=NULL, iptv_end=NULL").run();
+  } catch(e) {}
+
 // ── Seed forum categories ─────────────────────────────────────────────────────
 (function seedCategories() {
   const count = db.prepare('SELECT COUNT(*) as n FROM forum_categories').get().n;
@@ -392,6 +409,10 @@ app.get('/api/member/me', (req, res) => {
     subscription_start: m.subscription_start, subscription_end: m.subscription_end,
     stremio_email: m.stremio_email,
     stremio_pass: m.stremio_pass,
+    stremio_start: m.stremio_start,
+    stremio_end: m.stremio_end,
+    iptv_start: m.iptv_start,
+    iptv_end: m.iptv_end,
     profile: profile || null,
     setup_done: profile ? (profile.setup_done || 0) : 0,
   }});
@@ -676,6 +697,38 @@ app.delete('/api/support/:id', requireAuth, (req, res) => {
 
 
 
+
+
+// ── Admin: Stremio subscriptions ──────────────────────────────────────────────
+
+app.get('/api/admin/stremio', requireAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT m.id, m.first_name, m.last_name, m.email, m.stremio_email, m.stremio_pass,
+           m.stremio_start, m.stremio_end,
+           p.screen_name, p.avatar_url, p.avatar_color, p.tier, p.id as profile_id
+    FROM members m
+    LEFT JOIN profiles p ON p.member_id = m.id
+    ORDER BY m.created_at DESC
+  `).all();
+  res.json(rows);
+});
+
+app.post('/api/admin/stremio/:memberId', requireAuth, (req, res) => {
+  const { stremio_email, stremio_pass, stremio_start, stremio_end } = req.body;
+  const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.memberId);
+  if (!m) return res.status(404).json({ error: 'Member not found' });
+  db.prepare(`UPDATE members SET stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=? WHERE id=?`)
+    .run(stremio_email||m.stremio_email, stremio_pass||m.stremio_pass, stremio_start||null, stremio_end||null, req.params.memberId);
+  res.json({ ok: true });
+});
+
+// Admin: update IPTV subscription dates
+app.post('/api/admin/iptv-dates/:memberId', requireAuth, (req, res) => {
+  const { iptv_start, iptv_end } = req.body;
+  db.prepare('UPDATE members SET iptv_start=?, iptv_end=? WHERE id=?')
+    .run(iptv_start||null, iptv_end||null, req.params.memberId);
+  res.json({ ok: true });
+});
 
 // ── IPTV Accounts ─────────────────────────────────────────────────────────────
 

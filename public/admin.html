@@ -201,6 +201,7 @@
     <button class="tab-btn" onclick="switchTab('support',this)">Support <span id="suppBadge" style="display:none;color:var(--red)"></span></button>
     <button class="tab-btn" onclick="switchTab('profiles',this)">Profiles</button>
     <button class="tab-btn" onclick="switchTab('credits',this)">Credits</button>
+    <button class="tab-btn" onclick="switchTab('stremio-tab',this)">Stremio</button>
     <button class="tab-btn" onclick="switchTab('iptv',this)">IPTV</button>
   </div>
 
@@ -240,6 +241,45 @@
       <div class="row-list" id="supportList"></div>
     </div>
 
+
+
+    <div class="tab-panel" id="panel-stremio-tab">
+      <div class="list-header"><div class="list-label">Stremio Accounts</div></div>
+      <div class="divider"></div>
+      <div class="row-list" id="stremioTabList"></div>
+
+      <!-- Edit modal -->
+      <div id="stremioModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px">
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:480px">
+          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:20px">Edit Stremio Account</div>
+          <input type="hidden" id="stremioMemberId"/>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Stremio Email</label>
+              <input type="text" id="stremioTabEmail" placeholder="email@stremio.com" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Password</label>
+              <input type="text" id="stremioTabPass" placeholder="Password" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Start Date</label>
+              <input type="date" id="stremioTabStart" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">End Date</label>
+              <input type="date" id="stremioTabEnd" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px">
+            <button class="act" onclick="closeStremioModal()">Cancel</button>
+            <button class="act green" onclick="saveStremio()">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="tab-panel" id="panel-iptv">
       <div class="list-header">
@@ -399,6 +439,7 @@
     if(name==='profiles')loadProfiles();
     if(name==='credits')loadCreditsTab();
     if(name==='iptv')loadIptvTab();
+    if(name==='stremio-tab')loadStremioTab();
   }
 
   async function loadAll(){await Promise.all([loadStats(),loadApplicants(),loadMembers()])}
@@ -711,6 +752,63 @@
     else{alert(d.error||'Error');}
   }
 
+
+
+  // ── Stremio tab ────────────────────────────────────────────────────────────────
+  async function loadStremioTab(){
+    const rows = await fetch('/api/admin/stremio').then(r=>r.json()).catch(()=>[]);
+    const el = document.getElementById('stremioTabList');
+    if(!rows.length){el.innerHTML='<div class="empty"><div class="empty-title">No members yet</div></div>';return}
+
+    const fmtD = dt => { if(!dt)return '—'; if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z'; return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+    const getDays = dt => { if(!dt)return null; if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z'; return Math.ceil((new Date(dt)-new Date())/86400000); };
+
+    el.innerHTML = rows.map(r => {
+      const days = getDays(r.stremio_end);
+      const chip = days===null ? '<span style="font-size:11px;color:var(--muted)">No subscription</span>'
+        : days>0 ? `<span style="font-size:11px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:20px">${days}d left</span>`
+        : `<span style="font-size:11px;font-weight:600;color:var(--red);background:var(--red-bg);padding:2px 8px;border-radius:20px">Expired</span>`;
+      return `<div class="app-row">
+        <div>
+          <div class="row-name" style="display:flex;align-items:center;gap:8px">
+            ${r.screen_name?'@'+r.screen_name:r.first_name+' '+r.last_name} ${chip}
+          </div>
+          <div class="row-email">${r.email}</div>
+          <div class="row-meta" style="margin-top:8px;gap:16px">
+            ${r.stremio_email?`<div><div class="meta-lbl">Stremio Email</div><div class="meta-val">${r.stremio_email}</div></div>`:''}
+            ${r.stremio_end?`<div><div class="meta-lbl">Expires</div><div class="meta-val">${fmtD(r.stremio_end)}</div></div>`:''}
+          </div>
+        </div>
+        <div class="row-actions">
+          <button class="act green" onclick="editStremio('${r.id}','${esc(r.stremio_email||'')}','${esc(r.stremio_pass||'')}','${r.stremio_start||''}','${r.stremio_end||''}')">Edit</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function editStremio(memberId, email, pass, start, end){
+    document.getElementById('stremioMemberId').value = memberId;
+    document.getElementById('stremioTabEmail').value = email;
+    document.getElementById('stremioTabPass').value = pass;
+    document.getElementById('stremioTabStart').value = start ? start.split('T')[0] : '';
+    document.getElementById('stremioTabEnd').value = end ? end.split('T')[0] : '';
+    document.getElementById('stremioModal').style.display = 'flex';
+  }
+
+  function closeStremioModal(){ document.getElementById('stremioModal').style.display='none'; }
+
+  async function saveStremio(){
+    const memberId = document.getElementById('stremioMemberId').value;
+    const body = {
+      stremio_email: document.getElementById('stremioTabEmail').value,
+      stremio_pass:  document.getElementById('stremioTabPass').value,
+      stremio_start: document.getElementById('stremioTabStart').value||null,
+      stremio_end:   document.getElementById('stremioTabEnd').value||null,
+    };
+    await fetch('/api/admin/stremio/'+memberId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    closeStremioModal();
+    loadStremioTab();
+  }
 
   // ── IPTV tab ───────────────────────────────────────────────────────────────────
   let allProfiles = [];
