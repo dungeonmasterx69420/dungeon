@@ -312,13 +312,13 @@
 
     const fmtDate = dt => { if(!dt)return ''; if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z'; return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
     const getDays = dt => { if(!dt)return -999; if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z'; return Math.ceil((new Date(dt)-new Date())/86400000); };
-    const tier = m?.profile?.tier||'';
-    const isStaff = ['mod','admin','warden'].includes(tier);
+    const staffTier = m?.profile?.tier||'';
+    const isStaff = ['mod','admin','warden'].includes(staffTier);
 
     if(isStaff){
       document.getElementById('staffAccessCard').style.display='block';
       const tLabels={mod:'Moderator',admin:'Admin',warden:'Warden'};
-      document.getElementById('staffTierLabel').textContent = tLabels[tier]||tier;
+      document.getElementById('staffTierLabel').textContent = tLabels[staffTier]||staffTier;
     } else {
       let hasAny = false;
       if(m.stremio_end){
