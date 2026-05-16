@@ -829,7 +829,7 @@
     const rows = await fetch('/api/admin/iptv').then(r=>r.json()).catch(()=>[]);
     const el = document.getElementById('iptvList');
     if (!rows.length) {
-      el.innerHTML = '<div class="empty"><div class="empty-title">No IPTV accounts yet</div><div class="empty-sub">Add an account when a member redeems an IPTV credit.</div></div>';
+      el.innerHTML = '<div class="empty"><div class="empty-title">No DungeonCast accounts yet</div><div class="empty-sub">Add an account when a member redeems an DungeonCast credit.</div></div>';
       return;
     }
 
@@ -909,7 +909,7 @@
   }
 
   async function deleteIptv(profileId) {
-    if (!confirm('Remove this IPTV account?')) return;
+    if (!confirm('Remove this DungeonCast account?')) return;
     await fetch('/api/admin/iptv/' + profileId, { method:'DELETE' });
     loadIptvTab();
   }
