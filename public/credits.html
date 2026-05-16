@@ -149,7 +149,7 @@
       <div class="how-step">
         <div class="how-step-icon">💳</div>
         <div class="how-step-title">Buy a Credit</div>
-        <div class="how-step-desc">Pay $5 via Buy Me a Coffee. The Warden adds your credit manually.</div>
+        <div class="how-step-desc">Pay $5 via Buy Me a Coffee. The Dungeon Master adds your credit manually.</div>
         <div class="how-step-price">$5 / credit</div>
       </div>
       <div class="how-step">
@@ -161,7 +161,7 @@
       <div class="how-step">
         <div class="how-step-icon">🎬</div>
         <div class="how-step-title">Redeem</div>
-        <div class="how-step-desc">1 credit = 1 month of Stremio or IPTV access. Request redemption from your dashboard.</div>
+        <div class="how-step-desc">1 credit = 1 month of Stremio or DungeonCast access. Request redemption from your dashboard.</div>
         <div class="how-step-price">1 credit / mo</div>
       </div>
     </div>
@@ -180,9 +180,9 @@
   <!-- Buy credits -->
   <div class="buy-card">
     <div class="buy-title">☕ Buy Credits</div>
-    <div class="buy-sub">Credits are $5 each. Pay via Buy Me a Coffee — the Warden will be notified and add your credit within 24 hours.</div>
+    <div class="buy-sub">Credits are $5 each. Pay via Buy Me a Coffee — the Dungeon Master will be notified and add your credit within 24 hours.</div>
     <a href="https://buymeacoffee.com/enterdungeon" target="_blank" rel="noopener" class="buy-btn">Buy a Credit — $5 ☕</a>
-    <div class="buy-note">Include your @username in the message when you pay so the Warden knows who to credit.</div>
+    <div class="buy-note">Include your @username in the message when you pay so the Dungeon Master knows who to credit.</div>
   </div>
 
   <!-- Transaction history -->
@@ -207,7 +207,7 @@
 </div>
 
 <script>
-  const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Warden',color:'#fbbf24'}};
+  const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Dungeon Master',color:'#fbbf24'}};
   const SITE = window.location.origin;
   let myScreenName = '';
 
@@ -228,7 +228,7 @@
     if(['mod','admin','warden'].includes(tier)){
       const span=document.createElement('span');span.style.whiteSpace='nowrap';
       let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
-      if(['admin','warden'].includes(tier)) extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Warden</a>';
+      if(['admin','warden'].includes(tier)) extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
       span.innerHTML=extra;footer.appendChild(span);
     }
   }
@@ -250,7 +250,7 @@
     const el = document.getElementById('txList');
     if(!d.transactions.length){el.innerHTML='<div class="empty">No transactions yet.</div>';return}
     const icons = {purchased:'💳',referral:'👥',redeemed:'🎬',gifted:'🎁',deducted:'➖'};
-    const labels = {purchased:'Credit Purchased',referral:'Referral Bonus',redeemed:'Credit Redeemed',gifted:'Gift from Warden',deducted:'Credit Removed'};
+    const labels = {purchased:'Credit Purchased',referral:'Referral Bonus',redeemed:'Credit Redeemed',gifted:'Gift from Dungeon Master',deducted:'Credit Removed'};
     el.innerHTML = d.transactions.map(t=>`
       <div class="tx-row">
         <div style="display:flex;align-items:flex-start;gap:10px">

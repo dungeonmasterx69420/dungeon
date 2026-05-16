@@ -187,7 +187,7 @@ const TIERS = {
   member:  { label: 'Member',    color: '#60a5fa' },
   mod:     { label: 'Moderator', color: '#34d399' },
   admin:   { label: 'Admin',     color: '#f87171' },
-  warden:  { label: 'Warden',    color: '#fbbf24' },
+  warden:  { label: 'Dungeon Master',    color: '#fbbf24' },
 };
 
 function genId() { return crypto.randomBytes(8).toString('hex'); }
@@ -209,7 +209,7 @@ const transporter = GMAIL_USER && GMAIL_PASS
 async function sendMail(to, subject, html) {
   if (!transporter) { console.log(`[email skipped] To: ${to} | ${subject}`); return; }
   try {
-    await transporter.sendMail({ from: `"Warden" <${GMAIL_USER}>`, to, subject, html });
+    await transporter.sendMail({ from: `"Dungeon Master" <${GMAIL_USER}>`, to, subject, html });
     console.log(`[email sent] To: ${to} | ${subject}`);
   } catch (err) { console.error(`[email failed] ${err.message}`); }
 }
@@ -221,25 +221,25 @@ function emailShell(body) {
 }
 
 function emailApplicationReceived(firstName, screenName) {
-  return emailShell(`<h2>Application Received</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your application has been received. A moderator will review it shortly and you'll hear back at this email address.</p><p>Your username <strong>@${screenName}</strong> has been reserved while your application is pending.</p><br><p style="font-size:12px;color:#6b8f7a">— The Warden</p>`);
+  return emailShell(`<h2>Application Received</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your application has been received. A moderator will review it shortly and you'll hear back at this email address.</p><p>Your username <strong>@${screenName}</strong> has been reserved while your application is pending.</p><br><p style="font-size:12px;color:#6b8f7a">— The Dungeon Master</p>`);
 }
 
 function emailWelcome(firstName, screenName, stremioEmail, stremioPass, subEnd) {
   const fmtDate = new Date(subEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  return emailShell(`<h2>Welcome to Dungeon</h2><div class="rule"></div><p>Welcome, <strong>${firstName}</strong>. Your application has been approved and your Dungeon account is ready.</p><div class="box"><div class="row"><span class="lbl">Username</span><span class="val">@${screenName}</span></div></div><p>Log into your dashboard to get started. When you're ready to activate a service, redeem a credit from your dashboard.</p><a href="${SITE_URL}/login.html" class="btn">Go to Dashboard</a><div class="rule"></div><p style="font-size:12px;color:#6b8f7a">— The Warden</p>`);
+  return emailShell(`<h2>Welcome to Dungeon</h2><div class="rule"></div><p>Welcome, <strong>${firstName}</strong>. Your application has been approved and your Dungeon account is ready.</p><div class="box"><div class="row"><span class="lbl">Username</span><span class="val">@${screenName}</span></div></div><p>Log into your dashboard to get started. When you're ready to activate a service, redeem a credit from your dashboard.</p><a href="${SITE_URL}/login.html" class="btn">Go to Dashboard</a><div class="rule"></div><p style="font-size:12px;color:#6b8f7a">— The Dungeon Master</p>`);
 }
 
 function emailExpiringSoon(firstName, subEnd) {
   const fmtDate = new Date(subEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  return emailShell(`<h2>Subscription Expiring Soon</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your Dungeon subscription expires on <strong>${fmtDate}</strong> — 3 days from now. Submit a renewal request from your dashboard to keep your access.</p><a href="${SITE_URL}/renew.html" class="btn">Request Renewal</a><br><p style="margin-top:20px;font-size:12px;color:#6b8f7a">— The Warden</p>`);
+  return emailShell(`<h2>Subscription Expiring Soon</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your Dungeon subscription expires on <strong>${fmtDate}</strong> — 3 days from now. Submit a renewal request from your dashboard to keep your access.</p><a href="${SITE_URL}/renew.html" class="btn">Request Renewal</a><br><p style="margin-top:20px;font-size:12px;color:#6b8f7a">— The Dungeon Master</p>`);
 }
 
 function emailExpired(firstName) {
-  return emailShell(`<h2>Subscription Expired</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your Dungeon subscription has ended. Your Stremio access is no longer active.</p><p>If you'd like to return, submit a new application and the team will get you set up again.</p><a href="${SITE_URL}/apply.html" class="btn">Apply Again</a><br><p style="margin-top:20px;font-size:12px;color:#6b8f7a">— The Warden</p>`);
+  return emailShell(`<h2>Subscription Expired</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your Dungeon subscription has ended. Your Stremio access is no longer active.</p><p>If you'd like to return, submit a new application and the team will get you set up again.</p><a href="${SITE_URL}/apply.html" class="btn">Apply Again</a><br><p style="margin-top:20px;font-size:12px;color:#6b8f7a">— The Dungeon Master</p>`);
 }
 
 function emailModApproval(applicantName, screenName, applicantEmail, applicantId) {
-  return emailShell(`<h2>Mod Approval — Action Required</h2><div class="rule"></div><p>A moderator has approved an application. You need to create their Stremio account and grant access.</p><div class="box"><div class="row"><span class="lbl">Name</span><span class="val">${applicantName}</span></div><div class="row"><span class="lbl">Username</span><span class="val">@${screenName}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${applicantEmail}</span></div></div><p>Log into the admin panel and grant access to complete the process.</p><a href="${SITE_URL}/admin.html" class="btn">Open Admin Panel</a>`);
+  return emailShell(`<h2>Mod Approval — Action Required</h2><div class="rule"></div><p>A moderator has approved an application. You need to create their Stremio account and grant access.</p><div class="box"><div class="row"><span class="lbl">Name</span><span class="val">${applicantName}</span></div><div class="row"><span class="lbl">Username</span><span class="val">@${screenName}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${applicantEmail}</span></div></div><p>Log into the admin panel and grant access to complete the process.</p><a href="${SITE_URL}/admin.html" class="btn">Open Dungeon Master Panel</a>`);
 }
 
 
@@ -265,7 +265,7 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   const count = db.prepare('SELECT COUNT(*) as n FROM forum_categories').get().n;
   if (count > 0) return;
   const cats = [
-    { id: genId(), name: 'Announcements', description: 'Official updates from the Warden.', position: 0, restricted: 1 },
+    { id: genId(), name: 'Announcements', description: 'Official updates from the Dungeon Master.', position: 0, restricted: 1 },
     { id: genId(), name: 'General',       description: 'General discussion for members.',   position: 1, restricted: 0 },
     { id: genId(), name: 'Help & Support',description: 'Need help? Ask here.',              position: 2, restricted: 0 },
     { id: genId(), name: 'Recommendations',description: 'Share and discover great content.', position: 3, restricted: 0 },
@@ -853,9 +853,9 @@ app.post('/api/admin/credits/:profileId', requireAuth, (req, res) => {
   if (isNaN(amt) || amt === 0) return res.status(400).json({ error: 'Invalid amount' });
 
   if (amt > 0) {
-    addCredit(profileId, amt, type || 'purchased', note || 'Added by Warden');
+    addCredit(profileId, amt, type || 'purchased', note || 'Added by Dungeon Master');
   } else {
-    const ok = deductCredit(profileId, Math.abs(amt), type || 'deducted', note || 'Removed by Warden');
+    const ok = deductCredit(profileId, Math.abs(amt), type || 'deducted', note || 'Removed by Dungeon Master');
     if (!ok) return res.status(400).json({ error: 'Insufficient credits' });
   }
 
@@ -1089,7 +1089,7 @@ app.post('/api/forum/threads', requireMember, submitLimiter, (req, res) => {
   const cat = db.prepare('SELECT * FROM forum_categories WHERE id=?').get(category_id);
   if (!cat) return res.status(404).json({ error: 'Category not found.' });
   if (cat.restricted && !['warden','admin'].includes(profile.tier))
-    return res.status(403).json({ error: 'Only the Warden can post in Announcements.' });
+    return res.status(403).json({ error: 'Only the Dungeon Master can post in Announcements.' });
 
   const threadId = genId();
   const postId   = genId();

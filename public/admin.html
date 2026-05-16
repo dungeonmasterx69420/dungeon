@@ -5,7 +5,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon · Warden</title>
+  <title>Dungeon · Dungeon Master</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
@@ -472,7 +472,7 @@
 
   const BADGES={pending:'<span class="badge badge-pending">Pending</span>',approved:'<span class="badge badge-approved">Approved</span>',denied:'<span class="badge badge-denied">Denied</span>',mod_approved:'<span class="badge-mod-approved">Mod Approved</span>'};
 
-  const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Warden',color:'#fbbf24'}};
+  const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Dungeon Master',color:'#fbbf24'}};
 
   function renderApplicants(rows){
     const el=document.getElementById('applicantList');
@@ -742,7 +742,7 @@
     const amt = parseInt(amtEl.value);
     if(isNaN(amt)||amt===0){alert('Enter a non-zero amount');return}
     const type = typeEl.value;
-    const note = type==='redeemed'?`Redeemed for subscription`:`${type==='gifted'?'Gift from Warden':type} for @${screenName}`;
+    const note = type==='redeemed'?`Redeemed for subscription`:`${type==='gifted'?'Gift from Dungeon Master':type} for @${screenName}`;
     const res = await fetch('/api/admin/credits/'+profileId,{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({amount:amt,type,note})
