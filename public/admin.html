@@ -196,13 +196,9 @@
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('applicants',this)">Applicants</button>
+    <button class="tab-btn active" onclick="switchTab('applicants',this)">Applications</button>
     <button class="tab-btn" onclick="switchTab('members',this)">Members</button>
     <button class="tab-btn" onclick="switchTab('support',this)">Support <span id="suppBadge" style="display:none;color:var(--red)"></span></button>
-    <button class="tab-btn" onclick="switchTab('profiles',this)">Profiles</button>
-    <button class="tab-btn" onclick="switchTab('credits',this)">Credits</button>
-    <button class="tab-btn" onclick="switchTab('stremio-tab',this)">Stremio</button>
-    <button class="tab-btn" onclick="switchTab('iptv',this)">IPTV</button>
   </div>
 
   <div class="main">
@@ -211,8 +207,9 @@
       <div class="list-header">
         <div class="list-label">Applications</div>
         <div class="filters">
-          <button class="filter-btn active" onclick="setAppFilter('all',this)">All</button>
-          <button class="filter-btn" onclick="setAppFilter('pending',this)">Pending</button>
+          <button class="filter-btn active" onclick="setAppFilter('pending',this)">Pending</button>
+          <button class="filter-btn" onclick="setAppFilter('all',this)">All</button>
+          <button class="filter-btn" onclick="setAppFilter('archived',this)">Archived</button>
           <button class="filter-btn" onclick="setAppFilter('approved',this)">Approved</button>
           <button class="filter-btn" onclick="setAppFilter('denied',this)">Denied</button>
           <button class="filter-btn" onclick="setAppFilter('mod_approved',this)" style="color:var(--green)">Mod Approved</button>
@@ -281,9 +278,9 @@
       </div>
     </div>
 
-    <div class="tab-panel" id="panel-iptv">
+    <div class="tab-panel" id="panel-dungeoncast">
       <div class="list-header">
-        <div class="list-label">IPTV Accounts</div>
+        <div class="list-label">DungeonCast Accounts</div>
         <button class="act green" onclick="showAddIptv()">+ Add Account</button>
       </div>
       <div class="divider"></div>
@@ -429,16 +426,29 @@
     else{document.getElementById('pinInput').focus()}
   });
 
+
+  function switchMemberSub(name, el) {
+    ['roster','credits','stremio','dc'].forEach(n => {
+      document.getElementById('member-sub-'+n).style.display = n===name ? 'block' : 'none';
+      document.getElementById('msub-'+n).style.borderBottomColor = n===name ? 'var(--green)' : 'transparent';
+      document.getElementById('msub-'+n).style.color = n===name ? 'var(--green)' : '';
+    });
+    if(name==='credits') loadCreditsTab();
+    if(name==='stremio') loadStremioTab();
+    if(name==='dc') loadDCTab();
+    if(name==='roster') loadMembers();
+  }
+
   function switchTab(name,el){
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     el.classList.add('active');
     document.getElementById('panel-'+name).classList.add('active');
-    if(name==='members')loadMembers();
+    if(name==='members'){loadMembers();}
     if(name==='support')loadSupport();
-    if(name==='profiles')loadProfiles();
+    // profiles now inside members tab
     if(name==='credits')loadCreditsTab();
-    if(name==='iptv')loadIptvTab();
+    if(name==='dungeoncast')loadDCTab();
     if(name==='stremio-tab')loadStremioTab();
   }
 
@@ -458,6 +468,12 @@
     const url=appFilter==='all'?'/api/applicants':`/api/applicants?status=${appFilter}`;
     const rows=await fetch(url).then(r=>r.json());
     renderApplicants(rows);
+  }
+
+  // Mark application as archived
+  async function archiveApp(id){
+    await fetch('/api/applicants/'+id+'/archive',{method:'POST'}).catch(()=>{});
+    loadApplicants();
   }
 
   function setAppFilter(f,el){
@@ -810,10 +826,10 @@
     loadStremioTab();
   }
 
-  // ── IPTV tab ───────────────────────────────────────────────────────────────────
+  // ── DungeonCast tab ───────────────────────────────────────────────────────────────────
   let allProfiles = [];
 
-  async function loadIptvTab() {
+  async function loadDCTab() {
     // Load all profiles for the select
     const profiles = await fetch('/api/profiles').then(r=>r.json()).catch(()=>[]);
     allProfiles = profiles;
@@ -905,13 +921,13 @@
     };
     await fetch('/api/admin/iptv/' + profileId, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
     closeIptvModal();
-    loadIptvTab();
+    loadDCTab();
   }
 
   async function deleteIptv(profileId) {
     if (!confirm('Remove this DungeonCast account?')) return;
     await fetch('/api/admin/iptv/' + profileId, { method:'DELETE' });
-    loadIptvTab();
+    loadDCTab();
   }
 
   function closeModal(id){document.getElementById(id).classList.remove('open');activeApplicantId=null;activeMemberId=null}
@@ -934,7 +950,7 @@
     &nbsp;·&nbsp;
     <a href="/forum.html">Forum</a>
     &nbsp;·&nbsp;
-    <a href="/dashboard.html">Members</a>
+    <a href="/dashboard.html">Dashboard</a>
   </footer>
 </body>
 </html>

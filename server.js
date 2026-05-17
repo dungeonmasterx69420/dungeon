@@ -244,6 +244,10 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
 
 
 
+
+  // Add archived column to applicants if not exists
+  try { db.prepare('ALTER TABLE applicants ADD COLUMN archived INTEGER DEFAULT 0').run(); } catch(e) {}
+
   // ── Migrate: add Stremio + IPTV subscription columns ────────────────────────
   const migrateSteps = [
     'ALTER TABLE members ADD COLUMN stremio_start DATETIME',
@@ -1206,6 +1210,13 @@ app.get('/api/forum/notifications', requireMember, (req, res) => {
     ORDER BY n.created_at DESC LIMIT 20
   `).all(profile.id);
   res.json(notifs);
+});
+
+
+// Archive applicant
+app.post('/api/applicants/:id/archive', requireAuth, (req, res) => {
+  db.prepare('UPDATE applicants SET archived=1 WHERE id=?').run(req.params.id);
+  res.json({ ok: true });
 });
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
