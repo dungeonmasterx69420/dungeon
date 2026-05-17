@@ -250,6 +250,15 @@
           <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px" id="fulfillTitle">Fulfill Redemption</div>
           <div style="font-size:13px;color:var(--muted2);margin-bottom:20px" id="fulfillSubtitle"></div>
           <input type="hidden" id="fulfillId"/>
+          <!-- Auto-create Stremio account option (shown for stremio only) -->
+          <div id="stremioAutoCreate" style="display:none;background:var(--green-bg);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px">
+            <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px">⚡ Auto-Create Stremio Account</div>
+            <div style="font-size:12px;color:var(--muted2);margin-bottom:10px">Generate credentials and create the account automatically.</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+              <input type="text" id="autoStremioEmail" placeholder="email@domain.com" style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:Inter,sans-serif;font-size:12px;padding:7px 10px;outline:none"/>
+            </div>
+            <button class="act green" style="width:100%;font-size:12px" onclick="autoCreateStremio()">Create Account & Fill In</button>
+          </div>
           <div style="margin-bottom:14px">
             <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em" id="fulfillUserLabel">Username / Email</label>
             <input type="text" id="fulfillUser" placeholder="" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
@@ -428,9 +437,10 @@
     <div class="modal-sub" id="approveDesc"></div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px;text-align:left">
       <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Generated Password</div>
-      <div style="display:flex;align-items:center;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span id="genPassDisplay" style="font-size:18px;font-weight:700;color:var(--green);font-family:monospace;letter-spacing:0.12em"></span>
         <button class="act" style="font-size:11px;padding:3px 10px" onclick="regeneratePass()">↺ New</button>
+        <button class="act" style="font-size:11px;padding:3px 10px" id="copyGenPass" onclick="copyGenPass()">Copy</button>
       </div>
       <div style="font-size:11px;color:var(--muted2);margin-top:8px;line-height:1.5">This password will be emailed to the member automatically with their login details.</div>
     </div>
@@ -511,6 +521,154 @@
   }
 
 
+
+  async function resendAppEmail(appId, email) {
+    const btn = event.target;
+    btn.textContent = 'Sending…'; btn.disabled = true;
+    const r = await fetch('/api/admin/resend/application/' + appId, { method:'POST' });
+    btn.textContent = r.ok ? '✓ Sent' : '✗ Failed';
+    setTimeout(() => { btn.textContent = '↺ Email'; btn.disabled = false; }, 3000);
+  }
+
+  function toggleMemberPass(id, pass) {
+    const el = document.getElementById('mpw-' + id);
+    const btn = el.nextElementSibling;
+    if (el.textContent === '••••••••') {
+      el.textContent = pass || '(hashed — use resend to set new)';
+      el.style.color = 'var(--green)';
+      btn.textContent = 'Hide';
+    } else {
+      el.textContent = '••••••••';
+      el.style.color = 'var(--muted2)';
+      btn.textContent = 'Show';
+    }
+  }
+
+  function copyMemberPass(id, pass) {
+    navigator.clipboard.writeText(pass).then(() => {
+      const btn = document.getElementById('cpmw-' + id);
+      if(btn){btn.textContent='✓ Copied';setTimeout(()=>btn.textContent='Copy',2000);}
+    });
+  }
+
+
+
+  function openDCDemo(profileId, screenName, email) {
+    document.getElementById('dcDemoSubtitle').textContent = 'Sending 24-hour demo to @' + screenName;
+    document.getElementById('dcDemoToEmail').value = email;
+    document.getElementById('dcDemoUser').value = '';
+    document.getElementById('dcDemoPass').value = '';
+    document.getElementById('dcDemoModal').style.display = 'flex';
+  }
+
+  function openDCDemoManual() {
+    document.getElementById('dcDemoSubtitle').textContent = 'Send a 24-hour DungeonCast demo';
+    document.getElementById('dcDemoToEmail').value = '';
+    document.getElementById('dcDemoUser').value = '';
+    document.getElementById('dcDemoPass').value = '';
+    document.getElementById('dcDemoModal').style.display = 'flex';
+  }
+
+  function closeDCDemo() {
+    document.getElementById('dcDemoModal').style.display = 'none';
+  }
+
+  async function submitDCDemo() {
+    const toEmail = document.getElementById('dcDemoToEmail').value.trim();
+    const user = document.getElementById('dcDemoUser').value.trim();
+    const pass = document.getElementById('dcDemoPass').value.trim();
+    if (!toEmail || !user || !pass) { alert('Fill in all fields'); return; }
+
+    const btn = event.target;
+    btn.textContent = 'Sending…'; btn.disabled = true;
+
+    const res = await fetch('/api/admin/dc-demo', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email: toEmail, username: user, password: pass })
+    }).then(r=>r.json()).catch(e=>({error:e.message}));
+
+    if (res.error) { alert('Error: ' + res.error); btn.textContent = 'Send Demo Email'; btn.disabled = false; return; }
+
+    closeDCDemo();
+    btn.textContent = 'Send Demo Email'; btn.disabled = false;
+    alert('Demo email sent to ' + toEmail + '!');
+  }
+
+  function openCreateStremio(memberId, name, email) {
+    document.getElementById('createStremioMemberId').value = memberId;
+    document.getElementById('createStremioName').textContent = 'For @' + name;
+    document.getElementById('createStremioEmail').value = email;
+    document.getElementById('createStremioResult').style.display = 'none';
+    document.getElementById('createStremioBtn').style.display = 'inline-block';
+    regenCreatePass();
+    document.getElementById('createStremioModal').style.display = 'flex';
+  }
+
+  function regenCreatePass() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    document.getElementById('createStremioPass').textContent = Array.from({length:10}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  }
+
+  function closeCreateStremio() {
+    document.getElementById('createStremioModal').style.display = 'none';
+    loadStremioTab();
+  }
+
+  async function submitCreateStremio() {
+    const memberId = document.getElementById('createStremioMemberId').value;
+    const email = document.getElementById('createStremioEmail').value.trim();
+    const password = document.getElementById('createStremioPass').textContent.trim();
+    if (!email) { alert('Enter an email'); return; }
+
+    const btn = document.getElementById('createStremioBtn');
+    btn.textContent = 'Creating…'; btn.disabled = true;
+
+    const res = await fetch('/api/admin/stremio/create-account', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ memberId, email, password })
+    }).then(r=>r.json()).catch(e=>({error:e.message}));
+
+    if (res.error) {
+      alert('Error: ' + res.error);
+      btn.textContent = 'Create Account'; btn.disabled = false;
+      return;
+    }
+
+    // Show auth key
+    document.getElementById('createStremioAuthKey').textContent = res.authKey || 'N/A';
+    document.getElementById('createStremioResult').style.display = 'block';
+    btn.style.display = 'none';
+  }
+
+  function openResendWelcome(memberId, name) {
+    document.getElementById('resendWelcomeMemberId').value = memberId;
+    document.getElementById('resendWelcomeName').textContent = name;
+    document.getElementById('resendPassDisplay').textContent = '';
+    document.getElementById('resendWelcomeModal').style.display = 'flex';
+  }
+
+  function genResendPass() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    document.getElementById('resendPassDisplay').textContent = Array.from({length:8}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  }
+
+  function closeResendWelcome() {
+    document.getElementById('resendWelcomeModal').style.display = 'none';
+  }
+
+  async function submitResendWelcome() {
+    const memberId = document.getElementById('resendWelcomeMemberId').value;
+    const new_pass = document.getElementById('resendPassDisplay').textContent.trim();
+    const btn = document.querySelector('#resendWelcomeModal .act.green');
+    btn.textContent = 'Sending…'; btn.disabled = true;
+    const r = await fetch('/api/admin/resend/welcome/' + memberId, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ new_pass: new_pass || null })
+    });
+    closeResendWelcome();
+    btn.textContent = 'Send Email'; btn.disabled = false;
+  }
+
   function openCreditEdit(profileId, name, balance) {
     document.getElementById('creditEditProfileId').value = profileId;
     document.getElementById('creditEditName').textContent = '@' + name;
@@ -587,6 +745,7 @@
     document.getElementById('fulfillTitle').textContent = service === 'stremio' ? '📺 Fulfill Stremio' : '📡 Fulfill DungeonCast';
     document.getElementById('fulfillSubtitle').textContent = 'Setting up account for @' + screenName;
     document.getElementById('fulfillUserLabel').textContent = service === 'stremio' ? 'Stremio Email' : 'DungeonCast Username';
+    document.getElementById('stremioAutoCreate').style.display = service === 'stremio' ? 'block' : 'none';
     document.getElementById('fulfillUser').placeholder = service === 'stremio' ? 'stremio@email.com' : 'username';
     document.getElementById('fulfillUser').value = '';
     document.getElementById('fulfillPass').value = '';
@@ -595,6 +754,63 @@
   }
 
   function closeFulfill() { document.getElementById('fulfillModal').style.display = 'none'; }
+
+  async function autoCreateStremio() {
+    const redemId = document.getElementById('fulfillId').value;
+    const email = document.getElementById('autoStremioEmail').value.trim();
+    if (!email) { alert('Enter an email address for the Stremio account'); return; }
+
+    // Generate a password
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    const pass = Array.from({length:10}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+
+    const btn = event.target;
+    btn.textContent = 'Creating…'; btn.disabled = true;
+
+    // Get member ID from redemption
+    const reds = await fetch('/api/admin/redemptions?status=all').then(r=>r.json()).catch(()=>[]);
+    const red = reds.find(r => r.id === redemId);
+    const memberId = red ? await getMemberIdFromProfile(red.profile_id) : null;
+
+    const res = await fetch('/api/admin/stremio/create-account', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password: pass, memberId })
+    }).then(r=>r.json()).catch(e=>({error:e.message}));
+
+    if (res.error) {
+      alert('Error: ' + res.error);
+      btn.textContent = 'Create Account & Fill In'; btn.disabled = false;
+      return;
+    }
+
+    // Fill in the credential fields
+    document.getElementById('fulfillUser').value = email;
+    document.getElementById('fulfillPass').value = pass;
+
+    // Show auth key
+    let keyDiv = document.getElementById('newStremioAuthKey');
+    if (!keyDiv) {
+      keyDiv = document.createElement('div');
+      keyDiv.id = 'newStremioAuthKey';
+      keyDiv.style.cssText = 'background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-top:10px';
+      document.getElementById('stremioAutoCreate').appendChild(keyDiv);
+    }
+    keyDiv.innerHTML = `
+      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">Auth Key (for AIOManager)</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;font-family:monospace;color:var(--green);word-break:break-all;flex:1">${res.authKey}</span>
+        <button class="act" style="font-size:11px;padding:3px 10px;flex-shrink:0" onclick="navigator.clipboard.writeText('${res.authKey}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>
+      </div>`;
+
+    btn.textContent = '✓ Account Created!';
+    setTimeout(() => { btn.textContent = 'Create Account & Fill In'; btn.disabled = false; }, 3000);
+  }
+
+  async function getMemberIdFromProfile(profileId) {
+    const members = await fetch('/api/members').then(r=>r.json()).catch(()=>[]);
+    const m = members.find(m => m.profile_id_val === profileId);
+    return m ? m.id : null;
+  }
 
   async function submitFulfill() {
     const id = document.getElementById('fulfillId').value;
@@ -756,6 +972,14 @@
                 <button class="act" style="font-size:11px;padding:2px 8px" onclick="openCreditEdit('${r.profile_id_val}','${r.screen_name||r.first_name}',${r.credit_balance||0})">Edit</button>
               </div>
             </div>
+            <div>
+              <div class="cred-lbl">Password</div>
+              <div class="cred-val" style="display:flex;align-items:center;gap:8px">
+                <span id="mpw-${r.id}" style="font-family:monospace;color:var(--muted2)">••••••••</span>
+                <button class="act" style="font-size:11px;padding:2px 8px" onclick="toggleMemberPass('${r.id}','${esc(r.plain_pass||'')}')">Show</button>
+                ${r.plain_pass?`<button class="act" style="font-size:11px;padding:2px 8px" id="cpmw-${r.id}" onclick="copyMemberPass('${r.id}','${esc(r.plain_pass||'')}')">Copy</button>`:''}
+              </div>
+            </div>
             ${r.stremio_end?`<div><div class="cred-lbl">Stremio</div><div class="cred-val"><a href="#" onclick="switchTab('members',document.querySelector('.tab-btn:nth-child(2)'));setTimeout(()=>switchMemberSub('stremio',document.getElementById('msub-stremio')),100);return false;" style="color:var(--green);font-size:12px">View account →</a></div></div>`:''}
             ${r.iptv_end?`<div><div class="cred-lbl">DungeonCast</div><div class="cred-val"><a href="#" onclick="switchTab('members',document.querySelector('.tab-btn:nth-child(2)'));setTimeout(()=>switchMemberSub('dc',document.getElementById('msub-dc')),100);return false;" style="color:var(--green);font-size:12px">View account →</a></div></div>`:''}
           </div>
@@ -765,6 +989,7 @@
           <select class="tier-select" onchange="promoteTier('${r.profile_id_val}',this.value)" style="margin-bottom:6px">
             ${Object.entries(TIERS).map(([k,v])=>`<option value="${k}" ${r.tier===k?'selected':''}>${v.label}</option>`).join('')}
           </select>
+          <button class="act" onclick="openResendWelcome('${r.id}','${esc(r.first_name||'')} ${esc(r.last_name||'')}')">↺ Welcome Email</button>
           <button class="act" onclick="openEdit('${r.id}','${esc(r.stremio_email||'')}','${esc(r.stremio_pass||'')}','${esc(r.notes||'')}','${esc(r.first_name||'')}','${esc(r.last_name||'')}')" >Edit</button>
           <button class="act red" onclick="deleteMember('${r.id}')">Remove</button>
           <div class="row-date">Since ${fmt(r.created_at)}</div>
@@ -967,11 +1192,19 @@
           <div class="row-email">${r.email}</div>
           <div class="row-meta" style="margin-top:8px;gap:16px">
             ${r.stremio_email?`<div><div class="meta-lbl">Stremio Email</div><div class="meta-val">${r.stremio_email}</div></div>`:''}
+          ${r.stremio_auth_key?`<div>
+            <div class="meta-lbl">Auth Key</div>
+            <div class="meta-val" style="display:flex;align-items:center;gap:6px">
+              <span style="font-family:monospace;font-size:11px;color:var(--green)">${r.stremio_auth_key.substring(0,20)}…</span>
+              <button class="act" style="font-size:10px;padding:2px 6px" onclick="navigator.clipboard.writeText('${esc(r.stremio_auth_key)}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>
+            </div>
+          </div>`:''}
             ${r.stremio_end?`<div><div class="meta-lbl">Expires</div><div class="meta-val">${fmtD(r.stremio_end)}</div></div>`:''}
           </div>
         </div>
         <div class="row-actions">
-          <button class="act green" onclick="editStremio('${r.id}','${esc(r.stremio_email||'')}','${esc(r.stremio_pass||'')}','${r.stremio_start||''}','${r.stremio_end||''}')">Edit</button>
+          <button class="act green" onclick="openCreateStremio('${r.id}','${esc(r.screen_name||r.first_name)}','${esc(r.email)}')">Create Account</button>
+          <button class="act" onclick="editStremio('${r.id}','${esc(r.stremio_email||'')}','${esc(r.stremio_pass||'')}','${r.stremio_start||''}','${r.stremio_end||''}')">Edit</button>
         </div>
       </div>`;
     }).join('');
@@ -1041,6 +1274,7 @@
           </div>
         </div>
         <div class="row-actions">
+          <button class="act" style="background:var(--amber);color:#0b0f0e" onclick="openDCDemo('${r.profile_id}','${esc(r.screen_name)}','${esc(r.email)}')">Demo</button>
           <button class="act green" onclick="editIptv('${r.profile_id}')">Edit</button>
           <button class="act red" onclick="deleteIptv('${r.profile_id}')">Remove</button>
         </div>

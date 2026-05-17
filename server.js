@@ -262,6 +262,10 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE applicants ADD COLUMN archived INTEGER DEFAULT 0').run(); } catch(e) {}
   // Add password column to members if not exists
   try { db.prepare('ALTER TABLE members ADD COLUMN password TEXT').run(); } catch(e) {}
+  // Add plain_pass column for admin visibility
+  try { db.prepare('ALTER TABLE members ADD COLUMN plain_pass TEXT').run(); } catch(e) {}
+  // Add stremio_auth_key column
+  try { db.prepare('ALTER TABLE members ADD COLUMN stremio_auth_key TEXT').run(); } catch(e) {}
 
   // ── Migrate: add Stremio + IPTV subscription columns ────────────────────────
   const migrateSteps = [
@@ -690,17 +694,28 @@ app.delete('/api/applicants/:id', requireAuth, (req, res) => {
 
 // Promote applicant → member + profile upgrade
 app.post('/api/applicants/:id/promote', requireAuth, async (req, res) => {
+  try {
   const applicant = db.prepare('SELECT * FROM applicants WHERE id=?').get(req.params.id);
   if (!applicant) return res.status(404).json({ error: 'Not found' });
 
   const { stremio_email, stremio_pass } = req.body;
   const memberId = genId();
 
-  // Hash the generated password
-  const hashedPass = bcrypt.hashSync(stremio_pass, 10);
+  // Hash the generated password if provided
+  let hashedPass = null;
+  if (stremio_pass && stremio_pass.trim()) {
+    try { hashedPass = bcrypt.hashSync(stremio_pass.trim(), 10); } catch(e) { console.error('bcrypt error:', e); }
+  }
 
-  db.prepare(`INSERT INTO members (id, first_name, last_name, email, phone, language, referral, notes, password, applicant_id) VALUES (?,?,?,?,?,?,?,?,?,?)`)
-    .run(memberId, applicant.first_name, applicant.last_name, applicant.email, applicant.phone, applicant.language, applicant.referral, applicant.notes, hashedPass, applicant.id);
+  // Insert member - try with password column, fall back without if column doesn't exist yet
+  try {
+    db.prepare(`INSERT INTO members (id, first_name, last_name, email, phone, language, referral, notes, password, plain_pass, applicant_id) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
+      .run(memberId, applicant.first_name, applicant.last_name, applicant.email, applicant.phone, applicant.language, applicant.referral, applicant.notes, hashedPass, stremio_pass||'', applicant.id);
+  } catch(e) {
+    // Fall back if password column doesn't exist yet
+    db.prepare(`INSERT INTO members (id, first_name, last_name, email, phone, language, referral, notes, plain_pass, applicant_id) VALUES (?,?,?,?,?,?,?,?,?,?)`)
+      .run(memberId, applicant.first_name, applicant.last_name, applicant.email, applicant.phone, applicant.language, applicant.referral, applicant.notes, stremio_pass||'', applicant.id);
+  }
 
   db.prepare('UPDATE applicants SET status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run('approved', applicant.id);
 
@@ -723,8 +738,9 @@ app.post('/api/applicants/:id/promote', requireAuth, async (req, res) => {
     if (prof) db.prepare("UPDATE profiles SET tier='warden' WHERE id=?").run(prof.id);
   }
 
-  await sendMail(applicant.email, 'Welcome to Dungeon', emailWelcome(applicant.first_name, applicant.screen_name||applicant.first_name, applicant.email, stremio_pass, ''));
+  await sendMail(applicant.email, 'Welcome to Dungeon', emailWelcome(applicant.first_name, applicant.screen_name||applicant.first_name, applicant.email, stremio_pass||'', ''));
   res.json({ ok: true });
+  } catch(e) { console.error('Promote error:', e); res.status(500).json({ error: e.message }); }
 });
 
 // Renew member
@@ -740,7 +756,7 @@ app.post('/api/members/:id/renew', requireAuth, (req, res) => {
 
 // ── Admin: members ────────────────────────────────────────────────────────────
 app.get('/api/members', requireAuth, (req, res) => {
-  const members = db.prepare('SELECT m.*, p.id as profile_id_val, p.screen_name, p.tier, p.avatar_url, p.avatar_color, COALESCE(c.amount,0) as credit_balance FROM members m LEFT JOIN profiles p ON p.member_id=m.id LEFT JOIN credits c ON c.profile_id=p.id ORDER BY m.created_at DESC').all();
+  const members = db.prepare('SELECT m.id, m.first_name, m.last_name, m.email, m.stremio_email, m.stremio_pass, m.stremio_start, m.stremio_end, m.iptv_start, m.iptv_end, m.notes, m.created_at, m.plain_pass, m.stremio_auth_key, p.id as profile_id_val, p.screen_name, p.tier, p.avatar_url, p.avatar_color, COALESCE(c.amount,0) as credit_balance FROM members m LEFT JOIN profiles p ON p.member_id=m.id LEFT JOIN credits c ON c.profile_id=p.id ORDER BY m.created_at DESC').all();
   res.json(members);
 });
 
@@ -778,6 +794,87 @@ app.delete('/api/support/:id', requireAuth, (req, res) => {
 
 
 
+
+// ── Stremio API Integration ────────────────────────────────────────────────────
+
+const STREMIO_AUTH_KEY = process.env.STREMIO_AUTH_KEY || '';
+
+async function stremioRequest(path, body = null) {
+  const https = require('https');
+  return new Promise((resolve, reject) => {
+    const data = body ? JSON.stringify(body) : null;
+    const opts = {
+      hostname: 'api.strem.io',
+      path: path,
+      port: 443,
+      method: body ? 'POST' : 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        'Origin': 'https://web.stremio.com',
+        ...(data ? { 'Content-Length': Buffer.byteLength(data) } : {})
+      }
+    };
+    const req = require('https').request(opts, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, body: JSON.parse(d) }); }
+        catch(e) { resolve({ status: res.statusCode, body: d }); }
+      });
+    });
+    req.on('error', reject);
+    if (data) req.write(data);
+    req.end();
+  });
+}
+
+// Create a Stremio sub-account for a member
+app.post('/api/admin/stremio/create-account', requireAuth, async (req, res) => {
+  const { memberId, email, password } = req.body;
+  if (!STREMIO_AUTH_KEY) return res.status(400).json({ error: 'Stremio API key not configured. Add STREMIO_AUTH_KEY to environment variables.' });
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+
+  try {
+    // Register a new Stremio account
+    const result = await stremioRequest('/api/register', {
+      email,
+      password,
+      gdpr_consent: true,
+      tos_accepted: true
+    });
+
+    if (result.status !== 200 || !result.body?.result?.authKey) {
+      return res.status(400).json({ error: result.body?.error || result.body?.result?.error || 'Registration failed', raw: result.body });
+    }
+
+    const newAuthKey = result.body.result.authKey;
+
+    // Update member record with Stremio credentials and auth key
+    if (memberId) {
+      const now = new Date();
+      const end = new Date(now); end.setMonth(end.getMonth() + 1);
+      db.prepare('UPDATE members SET stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, stremio_auth_key=? WHERE id=?')
+        .run(email, password, now.toISOString(), end.toISOString(), newAuthKey, memberId);
+    }
+
+    res.json({ ok: true, authKey: newAuthKey, email, password });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Get Stremio account info
+app.get('/api/admin/stremio/account-info', requireAuth, async (req, res) => {
+  if (!STREMIO_AUTH_KEY) return res.status(400).json({ error: 'Stremio API key not configured' });
+  try {
+    const result = await stremioRequest('/api/userData', { authKey: STREMIO_AUTH_KEY });
+    res.json(result.body);
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── Admin: Stremio subscriptions ──────────────────────────────────────────────
 
 app.get('/api/admin/stremio', requireAuth, (req, res) => {
@@ -809,6 +906,41 @@ app.post('/api/admin/iptv-dates/:memberId', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+
+
+// ── DungeonCast Demo ──────────────────────────────────────────────────────────
+app.post('/api/admin/dc-demo', requireAuth, async (req, res) => {
+  const { email, username, password } = req.body;
+  if (!email || !username || !password) return res.status(400).json({ error: 'All fields required' });
+
+  const now = new Date();
+  const expiry = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const fmtExpiry = expiry.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+
+  const html = emailShell(`
+    <h2>Your DungeonCast Demo</h2>
+    <div class="rule"></div>
+    <p>You've been granted a <strong>24-hour demo</strong> of DungeonCast — our live TV streaming service with hundreds of channels including sports, news, entertainment, and Formula 1.</p>
+    <div class="box">
+      <div class="row"><span class="lbl">URL</span><span class="val">http://dungeoncast.cc</span></div>
+      <div class="row"><span class="lbl">Username</span><span class="val">${username}</span></div>
+      <div class="row"><span class="lbl">Password</span><span class="val">${password}</span></div>
+      <div class="row"><span class="lbl">Expires</span><span class="val">${fmtExpiry}</span></div>
+    </div>
+    <p>Open <a href="http://dungeoncast.cc" style="color:#34d399">dungeoncast.cc</a> in your browser and sign in with the credentials above. On iPhone, use Safari for the best experience.</p>
+    <p>If you enjoy the service, you can get full access through Dungeon — 1 credit per month.</p>
+    <a href="https://enterdungeon.cc" class="btn">Learn More</a>
+    <div class="rule"></div>
+    <p style="font-size:12px;color:#6b8f7a">Demo access expires ${fmtExpiry}. Credentials are single-use and non-transferable. — The Dungeon Master</p>
+  `);
+
+  try {
+    await sendMail(email, 'Your DungeonCast Demo — 24 Hours Starting Now', html);
+    res.json({ ok: true });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // ── Redemptions ────────────────────────────────────────────────────────────────
 
@@ -1417,6 +1549,37 @@ app.get('/api/forum/notifications', requireMember, (req, res) => {
 app.post('/api/applicants/:id/archive', requireAuth, (req, res) => {
   db.prepare('UPDATE applicants SET archived=1 WHERE id=?').run(req.params.id);
   res.json({ ok: true });
+});
+
+
+// ── Resend Emails ──────────────────────────────────────────────────────────────
+
+// Resend application received email
+app.post('/api/admin/resend/application/:id', requireAuth, async (req, res) => {
+  try {
+    const applicant = db.prepare('SELECT * FROM applicants WHERE id=?').get(req.params.id);
+    if (!applicant) return res.status(404).json({ error: 'Not found' });
+    await sendMail(applicant.email, 'Application Received — Dungeon', emailApplicationReceived(applicant.first_name, applicant.screen_name||applicant.first_name));
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Resend welcome/grant access email
+app.post('/api/admin/resend/welcome/:memberId', requireAuth, async (req, res) => {
+  try {
+    const member = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.memberId);
+    if (!member) return res.status(404).json({ error: 'Not found' });
+    const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.params.memberId);
+    const { new_pass } = req.body;
+    // If new password provided, update it
+    if (new_pass && new_pass.trim()) {
+      const hashed = bcrypt.hashSync(new_pass.trim(), 10);
+      db.prepare('UPDATE members SET password=?, plain_pass=? WHERE id=?').run(hashed, new_pass.trim(), member.id);
+    }
+    const pass = new_pass || '(your existing password)';
+    await sendMail(member.email, 'Welcome to Dungeon', emailWelcome(member.first_name, profile?.screen_name||member.first_name, member.email, pass, ''));
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
