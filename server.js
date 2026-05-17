@@ -663,7 +663,7 @@ app.post('/api/members/:id/renew', requireAuth, (req, res) => {
 
 // ── Admin: members ────────────────────────────────────────────────────────────
 app.get('/api/members', requireAuth, (req, res) => {
-  const members = db.prepare('SELECT m.*, p.id as profile_id_val, p.screen_name, p.tier, p.avatar_url, p.avatar_color FROM members m LEFT JOIN profiles p ON p.member_id=m.id ORDER BY m.created_at DESC').all();
+  const members = db.prepare('SELECT m.*, p.id as profile_id_val, p.screen_name, p.tier, p.avatar_url, p.avatar_color, COALESCE(c.amount,0) as credit_balance FROM members m LEFT JOIN profiles p ON p.member_id=m.id LEFT JOIN credits c ON c.profile_id=p.id ORDER BY m.created_at DESC').all();
   res.json(members);
 });
 
@@ -776,6 +776,68 @@ app.post('/api/admin/iptv/:profileId', requireAuth, (req, res) => {
 app.delete('/api/admin/iptv/:profileId', requireAuth, (req, res) => {
   db.prepare('DELETE FROM iptv_accounts WHERE profile_id=?').run(req.params.profileId);
   res.json({ ok: true });
+});
+
+
+// ── Buy Me a Coffee Webhook ───────────────────────────────────────────────────
+// Each "extra" purchase = 1 credit. Member must include @screenname in message.
+app.post('/api/webhook/bmac', express.raw({type:'application/json'}), (req, res) => {
+  try {
+    const payload = JSON.parse(req.body.toString());
+    const type = payload.type || payload.response_message_type;
+
+    // Only handle successful payments
+    if (!['succeeded','payment_succeeded','extra.purchased'].some(t => JSON.stringify(payload).includes(t))) {
+      return res.json({ ok: true });
+    }
+
+    const data = payload.data || payload.response || payload;
+    const message = (data.message || data.supporter_message || data.note || '').toLowerCase();
+    const amount = parseFloat(data.amount || data.total_amount || 5);
+    const creditsToAdd = Math.max(1, Math.floor(amount / 5));
+
+    // Extract @screenname from message
+    const match = message.match(/@([a-z0-9_]+)/i);
+    if (!match) {
+      console.log('[BMAC] No @screenname in message:', message);
+      return res.json({ ok: true, note: 'No screenname found' });
+    }
+
+    const screenName = match[1].toLowerCase();
+    const profile = db.prepare("SELECT * FROM profiles WHERE LOWER(screen_name)=?").get(screenName);
+    if (!profile) {
+      console.log('[BMAC] Profile not found for:', screenName);
+      return res.json({ ok: true, note: 'Profile not found' });
+    }
+
+    // Add credits
+    addCredit(profile.id, creditsToAdd, 'purchased', `Buy Me a Coffee — $${amount}`);
+
+    // Check referral credit
+    const member = db.prepare('SELECT * FROM members WHERE id=?').get(profile.member_id);
+    if (member && member.referral) {
+      const referrerProfile = db.prepare("SELECT * FROM profiles WHERE LOWER(screen_name)=LOWER(?)").get(member.referral);
+      if (referrerProfile) {
+        const alreadyRewarded = db.prepare("SELECT * FROM credit_transactions WHERE profile_id=? AND note LIKE ?").get(referrerProfile.id, `%Referral%${profile.screen_name}%`);
+        if (!alreadyRewarded) {
+          addCredit(referrerProfile.id, 1, 'referral', `Referral bonus — @${profile.screen_name} made their first purchase`);
+        }
+      }
+    }
+
+    // Notify via Dungeon message
+    const warden = db.prepare("SELECT * FROM profiles WHERE tier='warden' LIMIT 1").get();
+    if (warden) {
+      db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
+        .run(genId(), warden.id, profile.id, 'Credits Added', `${creditsToAdd} credit${creditsToAdd>1?'s':''} have been added to your account from your Buy Me a Coffee purchase. Enjoy!`);
+    }
+
+    console.log('[BMAC] Added', creditsToAdd, 'credits to', screenName);
+    res.json({ ok: true, credits_added: creditsToAdd, profile: screenName });
+  } catch(e) {
+    console.error('[BMAC] Webhook error:', e);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ── Credits ───────────────────────────────────────────────────────────────────

@@ -439,6 +439,36 @@
     if(name==='roster') loadMembers();
   }
 
+
+  function openCreditEdit(profileId, name, balance) {
+    document.getElementById('creditEditProfileId').value = profileId;
+    document.getElementById('creditEditName').textContent = '@' + name;
+    document.getElementById('creditEditBalance').textContent = balance;
+    document.getElementById('creditEditAmount').value = 1;
+    document.getElementById('creditEditAction').value = 'add';
+    document.getElementById('creditEditNote').value = '';
+    document.getElementById('creditEditModal').style.display = 'flex';
+  }
+
+  function closeCreditEdit() {
+    document.getElementById('creditEditModal').style.display = 'none';
+  }
+
+  async function saveCreditEdit() {
+    const profileId = document.getElementById('creditEditProfileId').value;
+    const amount = parseInt(document.getElementById('creditEditAmount').value) || 1;
+    const action = document.getElementById('creditEditAction').value;
+    const note = document.getElementById('creditEditNote').value || (action === 'add' ? 'Admin credit' : 'Admin deduction');
+    const finalAmount = action === 'remove' ? -Math.abs(amount) : Math.abs(amount);
+    await fetch('/api/admin/credits/' + profileId, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ amount: finalAmount, note })
+    });
+    closeCreditEdit();
+    loadMembers();
+  }
+
   function switchTab(name,el){
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
@@ -570,26 +600,22 @@
       const shown=showPasswords[r.id];
       return `<div class="mem-row">
         <div>
-          <div class="row-name">${r.avatar_url||r.avatar_color?`<span class="avatar-sm" style="background:${r.avatar_color||'#60a5fa'}">${r.avatar_url?`<img src="${r.avatar_url}" alt=""/>`:(r.screen_name||r.first_name)[0].toUpperCase()}</span>`:''} ${r.screen_name?`<a class="profile-link" href="/profile.html?sn=${r.screen_name}">@${r.screen_name}</a> &mdash; `:''} ${r.first_name} ${r.last_name} ${subChip(r.subscription_end)}</div>
+          <div class="row-name">${r.avatar_url||r.avatar_color?`<span class="avatar-sm" style="background:${r.avatar_color||'#60a5fa'}">${r.avatar_url?`<img src="${r.avatar_url}" alt=""/>`:(r.screen_name||r.first_name)[0].toUpperCase()}</span>`:''} ${r.screen_name?`<a class="profile-link" href="/profile.html?sn=${r.screen_name}">@${r.screen_name}</a> &mdash; `:''} ${r.first_name} ${r.last_name}</div>
           <div class="row-email">${r.email}</div>
-          <div class="mem-creds">
+          <div class="mem-creds" style="margin-top:10px">
             <div>
-              <div class="cred-lbl">Stremio Email</div>
-              <div class="cred-val">${r.stremio_email||'—'} ${r.stremio_email?`<button class="copy-btn" id="cpe-${r.id}" onclick="copyVal('${esc(r.stremio_email)}','cpe-${r.id}')">Copy</button>`:''}</div>
-            </div>
-            <div>
-              <div class="cred-lbl">Password</div>
-              <div class="cred-val">
-                <span id="pw-${r.id}">${shown?(r.stremio_pass||'—'):'••••••••'}</span>
-                ${r.stremio_pass?`<button class="show-btn" onclick="togglePw('${r.id}')">${shown?'Hide':'Show'}</button><button class="copy-btn" id="cpp-${r.id}" onclick="copyVal('${esc(r.stremio_pass)}','cpp-${r.id}')">Copy</button>`:''}
+              <div class="cred-lbl">Credits</div>
+              <div class="cred-val" style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:15px;font-weight:600;color:var(--green)">${r.credit_balance||0}</span>
+                <button class="act" style="font-size:11px;padding:2px 8px" onclick="openCreditEdit('${r.profile_id_val}','${r.screen_name||r.first_name}',${r.credit_balance||0})">Edit</button>
               </div>
             </div>
-            ${r.subscription_end?`<div><div class="cred-lbl">Expires</div><div class="meta-val" style="font-size:13px">${fmt(r.subscription_end)}</div></div>`:''}
+            ${r.stremio_end?`<div><div class="cred-lbl">Stremio</div><div class="cred-val"><a href="#" onclick="switchTab('members',document.querySelector('.tab-btn:nth-child(2)'));setTimeout(()=>switchMemberSub('stremio',document.getElementById('msub-stremio')),100);return false;" style="color:var(--green);font-size:12px">View account →</a></div></div>`:''}
+            ${r.iptv_end?`<div><div class="cred-lbl">DungeonCast</div><div class="cred-val"><a href="#" onclick="switchTab('members',document.querySelector('.tab-btn:nth-child(2)'));setTimeout(()=>switchMemberSub('dc',document.getElementById('msub-dc')),100);return false;" style="color:var(--green);font-size:12px">View account →</a></div></div>`:''}
           </div>
           ${r.notes?`<div class="row-notes">${r.notes}</div>`:''}
         </div>
         <div class="row-actions">
-          <button class="act green" onclick="renewMember('${r.id}')">Renew</button>
           <button class="act" onclick="openEdit('${r.id}','${esc(r.stremio_email)}','${esc(r.stremio_pass)}','${esc(r.notes)}','${esc(r.first_name)}','${esc(r.last_name)}')">Edit</button>
           <button class="act red" onclick="deleteMember('${r.id}')">Remove</button>
           <div class="row-date">Since ${fmt(r.created_at)}</div>
