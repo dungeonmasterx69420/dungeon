@@ -713,7 +713,7 @@
 
   function openApprove(id,firstName,lastName,email){
     activeApplicantId=id;
-    document.getElementById('approveDesc').innerHTML=`Create a Stremio account for <strong>${firstName} ${lastName}</strong> (${email}), then enter the credentials below.`;
+    document.getElementById('approveDesc').innerHTML=`Grant Dungeon access to <strong>${firstName} ${lastName}</strong> (${email}). A welcome email with their login details will be sent automatically.`;
     document.getElementById('approveModal').classList.add('open');
   }
 
