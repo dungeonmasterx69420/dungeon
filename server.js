@@ -77,6 +77,19 @@ db.exec(`
 
 
 
+
+  CREATE TABLE IF NOT EXISTS redemptions (
+    id          TEXT PRIMARY KEY,
+    profile_id  TEXT NOT NULL,
+    service     TEXT NOT NULL,
+    status      TEXT DEFAULT 'pending',
+    fulfilled_at DATETIME,
+    account_user TEXT,
+    account_pass TEXT,
+    notes       TEXT,
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS iptv_accounts (
     id              TEXT PRIMARY KEY,
     profile_id      TEXT NOT NULL UNIQUE,
@@ -732,6 +745,73 @@ app.post('/api/admin/iptv-dates/:memberId', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+
+// ── Redemptions ────────────────────────────────────────────────────────────────
+
+// Get all redemptions (admin)
+app.get('/api/admin/redemptions', requireAuth, (req, res) => {
+  const status = req.query.status || 'pending';
+  const rows = db.prepare(`
+    SELECT r.*, p.screen_name, p.email, p.avatar_url, p.avatar_color, p.tier,
+           m.email as member_email
+    FROM redemptions r
+    JOIN profiles p ON r.profile_id = p.id
+    LEFT JOIN members m ON m.id = (SELECT member_id FROM profiles WHERE id = r.profile_id)
+    ${status === 'all' ? '' : 'WHERE r.status = ?'}
+    ORDER BY r.created_at DESC
+  `).all(...(status === 'all' ? [] : [status]));
+  res.json(rows);
+});
+
+// Fulfill a redemption (admin)
+app.post('/api/admin/redemptions/:id/fulfill', requireAuth, (req, res) => {
+  const { account_user, account_pass, notes } = req.body;
+  const redemption = db.prepare('SELECT * FROM redemptions WHERE id=?').get(req.params.id);
+  if (!redemption) return res.status(404).json({ error: 'Redemption not found' });
+
+  // Update redemption record
+  db.prepare(`UPDATE redemptions SET status='fulfilled', fulfilled_at=CURRENT_TIMESTAMP, account_user=?, account_pass=?, notes=? WHERE id=?`)
+    .run(account_user, account_pass, notes||'', req.params.id);
+
+  // Update member's subscription dates
+  const profile = db.prepare('SELECT * FROM profiles WHERE id=?').get(redemption.profile_id);
+  const member = profile ? db.prepare('SELECT * FROM members WHERE id=?').get(profile.member_id) : null;
+  if (member) {
+    const now = new Date();
+    const end = new Date(now); end.setMonth(end.getMonth() + 1);
+    if (redemption.service === 'stremio') {
+      db.prepare('UPDATE members SET stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=? WHERE id=?')
+        .run(account_user, account_pass, now.toISOString(), end.toISOString(), member.id);
+    } else {
+      // Update IPTV account
+      const existing = db.prepare('SELECT * FROM iptv_accounts WHERE profile_id=?').get(profile.id);
+      if (existing) {
+        db.prepare('UPDATE iptv_accounts SET nodecast_user=?, xtream_pass=?, status=?, updated_at=CURRENT_TIMESTAMP WHERE profile_id=?')
+          .run(account_user, account_pass, 'active', profile.id);
+      } else {
+        db.prepare('INSERT INTO iptv_accounts (id,profile_id,nodecast_user,xtream_url,xtream_user,xtream_pass,status) VALUES (?,?,?,?,?,?,?)')
+          .run(genId(), profile.id, account_user, 'http://line.dungeoncast.cc', account_user, account_pass, 'active');
+      }
+      db.prepare('UPDATE members SET iptv_start=?, iptv_end=? WHERE id=?')
+        .run(now.toISOString(), end.toISOString(), member.id);
+    }
+  }
+
+  // Send credentials message to member
+  const warden = db.prepare("SELECT * FROM profiles WHERE tier='warden' LIMIT 1").get();
+  if (warden && profile) {
+    const service = redemption.service === 'stremio' ? 'Stremio' : 'DungeonCast';
+    const subject = `Your ${service} Account is Ready`;
+    const content = redemption.service === 'stremio'
+      ? `Your Stremio account has been set up and is ready to use.\n\nEmail: ${account_user}\nPassword: ${account_pass}\n\nLog in at web.stremio.com or the Stremio app on any device.${notes ? '\n\nNotes: ' + notes : ''}`
+      : `Your DungeonCast account has been set up and is ready to use.\n\nUsername: ${account_user}\nPassword: ${account_pass}\n\nLog in at http://dungeoncast.cc${notes ? '\n\nNotes: ' + notes : ''}`;
+    db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
+      .run(genId(), warden.id, profile.id, subject, content);
+  }
+
+  res.json({ ok: true });
+});
+
 // ── IPTV Accounts ─────────────────────────────────────────────────────────────
 
 // Get all IPTV accounts (admin)
@@ -963,17 +1043,11 @@ app.post('/api/credits/redeem', requireMember, (req, res) => {
   const ok = deductCredit(profile.id, 1, 'redeemed', `Redeemed for ${service === 'stremio' ? 'Stremio' : 'DungeonCast'} subscription`);
   if (!ok) return res.status(400).json({ error: 'Insufficient credits' });
 
-  // Notify warden via internal message
-  const warden = db.prepare("SELECT * FROM profiles WHERE tier='warden' LIMIT 1").get();
-  if (warden) {
-    const member = db.prepare('SELECT * FROM members WHERE id=?').get(req.session.member.id);
-    const subject = `Credit Redemption — @${profile.screen_name} → ${service === 'stremio' ? 'Stremio' : 'DungeonCast'}`;
-    const content = `@${profile.screen_name} has redeemed 1 credit for a ${service === 'stremio' ? 'Stremio' : 'DungeonCast'} subscription.\n\nEmail: ${req.session.member.email}\n\nPlease set up their account and message them with their credentials.`;
-    db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
-      .run(genId(), profile.id, warden.id, subject, content);
-  }
+  // Create redemption record
+  const redemptionId = genId();
+  db.prepare('INSERT INTO redemptions (id,profile_id,service,status) VALUES (?,?,?,?)').run(redemptionId, profile.id, service, 'pending');
 
-  res.json({ ok: true });
+  res.json({ ok: true, redemption_id: redemptionId });
 });
 
 // Admin: redeem credit for subscription (deducts 1 credit)
