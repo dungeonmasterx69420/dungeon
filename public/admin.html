@@ -189,7 +189,7 @@
   </div>
 
   <div class="stats">
-    <div class="stat-cell"><div class="stat-label">Applicants</div><div class="stat-val" id="statApplicants">—</div></div>
+    <div class="stat-cell"><div class="stat-label">Pending Apps</div><div class="stat-val" id="statApplicants" style="color:var(--amber)">—</div></div>
     <div class="stat-cell"><div class="stat-label">Pending</div><div class="stat-val" id="statPending" style="color:var(--amber)">—</div></div>
     <div class="stat-cell"><div class="stat-label">Members</div><div class="stat-val" id="statMembers" style="color:var(--green)">—</div></div>
     <div class="stat-cell"><div class="stat-label">Support</div><div class="stat-val" id="statSupport" style="color:var(--red)">—</div></div>
@@ -247,14 +247,11 @@
 
     <div class="tab-panel" id="panel-applicants">
       <div class="list-header">
-        <div class="list-label">Applications</div>
+        <div class="list-label" id="appListLabel">Pending Applications</div>
         <div class="filters">
-          <button class="filter-btn active" onclick="setAppFilter('pending',this)">Pending</button>
-          <button class="filter-btn" onclick="setAppFilter('all',this)">All</button>
-          <button class="filter-btn" onclick="setAppFilter('archived',this)">Archived</button>
-          <button class="filter-btn" onclick="setAppFilter('approved',this)">Approved</button>
-          <button class="filter-btn" onclick="setAppFilter('denied',this)">Denied</button>
-          <button class="filter-btn" onclick="setAppFilter('mod_approved',this)" style="color:var(--green)">Mod Approved</button>
+          <button class="filter-btn active" id="appf-pending" onclick="setAppFilter('pending',this)">Pending</button>
+          <button class="filter-btn" id="appf-all" onclick="setAppFilter('all',this)">All</button>
+          <button class="filter-btn" id="appf-archived" onclick="setAppFilter('archived',this)">Archived</button>
         </div>
       </div>
       <div class="divider"></div>
@@ -433,7 +430,7 @@
 </div>
 
 <script>
-  let appFilter='all', suppFilter='open';
+  let appFilter='pending', suppFilter='open';
   let activeApplicantId=null, activeMemberId=null;
   let showPasswords={};
 
@@ -601,7 +598,7 @@
 
   async function loadStats(){
     const d=await fetch('/api/stats').then(r=>r.json());
-    document.getElementById('statApplicants').textContent=d.applicants;
+    document.getElementById('statApplicants').textContent=d.pending||d.applicants;
     document.getElementById('statPending').textContent=d.pending;
     document.getElementById('statMembers').textContent=d.members;
     document.getElementById('statSupport').textContent=d.support||0;
@@ -610,7 +607,7 @@
   }
 
   async function loadApplicants(){
-    const url=appFilter==='all'?'/api/applicants':`/api/applicants?status=${appFilter}`;
+    const url=appFilter==='archived'?'/api/applicants?archived=1':appFilter==='all'?'/api/applicants':appFilter==='pending'?'/api/applicants?status=pending':`/api/applicants?status=${appFilter}`;
     const rows=await fetch(url).then(r=>r.json());
     renderApplicants(rows);
   }
@@ -623,6 +620,10 @@
 
   function setAppFilter(f,el){
     appFilter=f;
+    document.querySelectorAll('#panel-applicants .filter-btn').forEach(b=>b.classList.remove('active'));
+    if(el) el.classList.add('active');
+    const lbl=document.getElementById('appListLabel');
+    if(lbl) lbl.textContent = f==='pending'?'Pending Applications':f==='archived'?'Archived Applications':'All Applications';
     document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
     el.classList.add('active');
     loadApplicants();
