@@ -239,7 +239,7 @@ function emailApplicationReceived(firstName, screenName) {
 
 function emailWelcome(firstName, screenName, stremioEmail, stremioPass, subEnd) {
   const fmtDate = new Date(subEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  return emailShell(`<h2>Welcome to Dungeon</h2><div class="rule"></div><p>Welcome, <strong>${firstName}</strong>. Your application has been approved and your Dungeon account is ready.</p><div class="box"><div class="row"><span class="lbl">Username</span><span class="val">@${screenName}</span></div></div><p>Log into your dashboard to get started. When you're ready to activate a service, redeem a credit from your dashboard.</p><a href="${SITE_URL}/login.html" class="btn">Go to Dashboard</a><div class="rule"></div><p style="font-size:12px;color:#6b8f7a">— The Dungeon Master</p>`);
+  return emailShell(`<h2>Welcome to Dungeon</h2><div class="rule"></div><p>Welcome, <strong>${firstName}</strong>. Your application has been approved and your Dungeon account is ready.</p><div class="box"><div class="row"><span class="lbl">Screen Name</span><span class="val">@${screenName}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${stremioEmail}</span></div><div class="row"><span class="lbl">Password</span><span class="val">${stremioPass}</span></div></div><p>Use the email and password above to log into your dashboard. Keep your credentials safe — do not share them.</p><a href="${SITE_URL}/login.html" class="btn">Go to Dashboard</a><div class="rule"></div><p style="font-size:12px;color:#6b8f7a">— The Dungeon Master</p>`);
 }
 
 function emailExpiringSoon(firstName, subEnd) {
@@ -260,6 +260,8 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
 
   // Add archived column to applicants if not exists
   try { db.prepare('ALTER TABLE applicants ADD COLUMN archived INTEGER DEFAULT 0').run(); } catch(e) {}
+  // Add password column to members if not exists
+  try { db.prepare('ALTER TABLE members ADD COLUMN password TEXT').run(); } catch(e) {}
 
   // ── Migrate: add Stremio + IPTV subscription columns ────────────────────────
   const migrateSteps = [
@@ -315,6 +317,16 @@ setInterval(runSubscriptionCron, 60 * 60 * 1000);
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ── Security headers ──────────────────────────────────────────────────────────
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Serve avatars
@@ -324,11 +336,43 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'dungeon-secret-change-me',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, httpOnly: true, maxAge: 24 * 60 * 60 * 1000 },
+  cookie: { secure: process.env.NODE_ENV === 'production', httpOnly: true, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 },
 }));
 
 const submitLimiter = rateLimit({ windowMs: 60*60*1000, max: 10, message: { error: 'Too many requests.' } });
-const loginLimiter  = rateLimit({ windowMs: 15*60*1000, max: 20, message: { error: 'Too many attempts.' } });
+const loginLimiter = rateLimit({ windowMs: 5*60*1000, max: 10, message: { error: 'Too many attempts. Try again in 5 minutes.' } });
+
+// Per-email lockout tracking
+const loginAttempts = new Map(); // email -> { count, lockedUntil }
+
+function checkLockout(email) {
+  const key = email.toLowerCase();
+  const record = loginAttempts.get(key);
+  if (!record) return null;
+  if (record.lockedUntil && Date.now() < record.lockedUntil) {
+    const mins = Math.ceil((record.lockedUntil - Date.now()) / 60000);
+    return `Account locked. Try again in ${mins} minute${mins>1?'s':''}.`;
+  }
+  if (record.lockedUntil && Date.now() >= record.lockedUntil) {
+    loginAttempts.delete(key);
+  }
+  return null;
+}
+
+function recordFailedAttempt(email) {
+  const key = email.toLowerCase();
+  const record = loginAttempts.get(key) || { count: 0, lockedUntil: null };
+  record.count++;
+  if (record.count >= 3) {
+    record.lockedUntil = Date.now() + 5 * 60 * 1000;
+    record.count = 0;
+  }
+  loginAttempts.set(key, record);
+}
+
+function clearAttempts(email) {
+  loginAttempts.delete(email.toLowerCase());
+}
 
 function requireAuth(req, res, next) {
   if (req.session?.authenticated) return next();
@@ -373,8 +417,25 @@ app.get('/api/me', (req, res) => res.json({ authenticated: !!(req.session?.authe
 app.post('/api/member/login', loginLimiter, (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
-  const member = db.prepare('SELECT * FROM members WHERE LOWER(stremio_email)=LOWER(?)').get(email.trim());
-  if (!member || member.stremio_pass !== password.trim()) return res.status(401).json({ error: 'Incorrect email or password.' });
+  // Check per-email lockout
+  const lockMsg = checkLockout(email.trim());
+  if (lockMsg) return res.status(429).json({ error: lockMsg });
+
+  const member = db.prepare('SELECT * FROM members WHERE LOWER(email)=LOWER(?)').get(email.trim())
+    || db.prepare('SELECT * FROM members WHERE LOWER(stremio_email)=LOWER(?)').get(email.trim());
+  if (!member) { recordFailedAttempt(email.trim()); return res.status(401).json({ error: 'Incorrect email or password.' }); }
+
+  // Check new hashed password first, then fall back to legacy stremio_pass
+  const passMatch = member.password
+    ? bcrypt.compareSync(password.trim(), member.password)
+    : member.stremio_pass === password.trim();
+  if (!passMatch) {
+    recordFailedAttempt(email.trim());
+    const remaining = 3 - ((loginAttempts.get(email.toLowerCase()) || {}).count || 0);
+    const msg = remaining > 0 ? `Incorrect email or password. ${remaining} attempt${remaining>1?'s':''} remaining.` : 'Account locked for 5 minutes.';
+    return res.status(401).json({ error: msg });
+  }
+  clearAttempts(email.trim());
   req.session.member = { id: member.id, first_name: member.first_name, last_name: member.last_name, email: member.email };
 
   // Ensure a profile exists for existing members who predate the profile system
@@ -635,8 +696,11 @@ app.post('/api/applicants/:id/promote', requireAuth, async (req, res) => {
   const { stremio_email, stremio_pass } = req.body;
   const memberId = genId();
 
-  db.prepare(`INSERT INTO members (id, first_name, last_name, email, phone, language, referral, notes, stremio_email, stremio_pass, applicant_id) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(memberId, applicant.first_name, applicant.last_name, applicant.email, applicant.phone, applicant.language, applicant.referral, applicant.notes, stremio_email||'', stremio_pass||'', applicant.id);
+  // Hash the generated password
+  const hashedPass = bcrypt.hashSync(stremio_pass, 10);
+
+  db.prepare(`INSERT INTO members (id, first_name, last_name, email, phone, language, referral, notes, password, applicant_id) VALUES (?,?,?,?,?,?,?,?,?,?)`)
+    .run(memberId, applicant.first_name, applicant.last_name, applicant.email, applicant.phone, applicant.language, applicant.referral, applicant.notes, hashedPass, applicant.id);
 
   db.prepare('UPDATE applicants SET status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run('approved', applicant.id);
 
@@ -659,7 +723,7 @@ app.post('/api/applicants/:id/promote', requireAuth, async (req, res) => {
     if (prof) db.prepare("UPDATE profiles SET tier='warden' WHERE id=?").run(prof.id);
   }
 
-  await sendMail(applicant.email, 'Welcome to Dungeon', emailWelcome(applicant.first_name, applicant.screen_name||applicant.first_name, '', '', ''));
+  await sendMail(applicant.email, 'Welcome to Dungeon', emailWelcome(applicant.first_name, applicant.screen_name||applicant.first_name, applicant.email, stremio_pass, ''));
   res.json({ ok: true });
 });
 
