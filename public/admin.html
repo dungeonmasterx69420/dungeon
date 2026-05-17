@@ -714,8 +714,6 @@
   function openApprove(id,firstName,lastName,email){
     activeApplicantId=id;
     document.getElementById('approveDesc').innerHTML=`Create a Stremio account for <strong>${firstName} ${lastName}</strong> (${email}), then enter the credentials below.`;
-    document.getElementById('approveStremioEmail').value=email;
-    document.getElementById('approveStremioPass').value='';
     document.getElementById('approveModal').classList.add('open');
   }
 
