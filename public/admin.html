@@ -709,10 +709,15 @@
     loadRedemptions();
   }
 
+  async function updateRedemBadge() {
+    const pending = await fetch('/api/admin/redemptions?status=pending').then(r=>r.json()).catch(()=>[]);
+    const badge = document.getElementById('redemBadge');
+    if(badge){ badge.textContent = pending.length ? `(${pending.length})` : ''; badge.style.display = pending.length ? 'inline' : 'none'; }
+  }
+
   async function loadRedemptions() {
     const rows = await fetch('/api/admin/redemptions?status=' + redemFilter).then(r=>r.json()).catch(()=>[]);
-    const badge = document.getElementById('redemBadge');
-    if(badge){ badge.textContent = rows.length&&redemFilter==='pending' ? `(${rows.length})` : ''; badge.style.display = rows.length&&redemFilter==='pending' ? 'inline' : 'none'; }
+    updateRedemBadge();
     const el = document.getElementById('redemptionList');
     if (!rows.length) { el.innerHTML = `<div class="empty"><div class="empty-title">No ${redemFilter} redemptions</div></div>`; return; }
     const svcIcon = s => s === 'stremio' ? '📺' : '📡';
@@ -840,6 +845,13 @@
     if(name==='credits')loadCreditsTab();
     if(name==='dungeoncast')loadDCTab();
     if(name==='stremio-tab')loadStremioTab();
+    if(name==='redemptions'){
+      redemFilter='pending';
+      document.querySelectorAll('#panel-redemptions .filter-btn').forEach(b=>b.classList.remove('active'));
+      const firstBtn=document.querySelector('#panel-redemptions .filter-btn');
+      if(firstBtn)firstBtn.classList.add('active');
+      loadRedemptions();
+    }
   }
 
   async function loadAll(){await Promise.all([loadStats(),loadApplicants(),loadMembers()])}
