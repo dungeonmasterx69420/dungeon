@@ -8,6 +8,7 @@
   <title>Dungeon · Sign In</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
     *{box-sizing:border-box;margin:0;padding:0}
     :root{
       --bg:#0b0f0e;--surface:#111915;--surface2:#172118;
@@ -17,7 +18,7 @@
     }
     html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;display:flex;flex-direction:column}
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
-    .logo{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;font-weight:400;color:var(--green);letter-spacing:0.04em;text-decoration:none}
+    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
     .center{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px}
     .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 32px;width:100%;max-width:380px}
     .card-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px}
@@ -41,6 +42,10 @@
     footer a{color:var(--muted);text-decoration:none}
     footer a:hover{color:var(--text)}
     @media(max-width:767px){footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
+
+    .msg-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:var(--muted2);font-size:15px;transition:border-color .2s,color .2s;cursor:pointer}
+    .msg-icon-btn:hover{border-color:var(--green);color:var(--green)}
+    .msg-icon-badge{position:absolute;top:-5px;right:-5px;background:var(--red,#f87171);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
   </style>
   <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
@@ -50,14 +55,14 @@
 </head>
 <body>
 <div class="topbar">
-  <a href="/" class="logo">Dungeon</a>
+  <a href="/" class="logo" id="logoLink">Dungeon</a>
 </div>
 <div class="center">
   <div class="card">
     <div class="card-title">Member Sign In</div>
-    <div class="card-sub">Sign in with your Stremio credentials.</div>
+    
     <div class="field">
-      <label>Stremio Email</label>
+      <label>Email</label>
       <input type="email" id="email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')login()"/>
     </div>
     <div class="field">
@@ -97,16 +102,32 @@
       span.style.whiteSpace='nowrap';
       let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
       if(['admin','warden'].includes(tier)){
-        extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Warden</a>';
+        extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
       }
       span.innerHTML=extra;
       footer.appendChild(span);
     } else if(['admin','warden'].includes(tier)){
       const span=document.createElement('span');
-      span.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Warden</a>';
+      span.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
       footer.appendChild(span);
     }
   }).catch(()=>{});
+
+  // Message unread badge in topbar
+  (function(){
+    fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
+      const badge = document.getElementById('msgIconBadge');
+      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
+    }).catch(()=>{});
+  })();
+
+  // Smart logo link — go to dashboard if logged in, home if not
+  (function(){
+    fetch('/api/member/me').then(r=>r.json()).then(d=>{
+      const logo = document.getElementById('logoLink');
+      if(logo && d.authenticated) logo.href = '/dashboard.html';
+    }).catch(()=>{});
+  })();
 </script>
 
 
@@ -117,7 +138,7 @@
     &nbsp;·&nbsp;
     <a href="/forum.html">Forum</a>
     &nbsp;·&nbsp;
-    <a href="/dashboard.html">Members</a>
+    <a href="/dashboard.html">Dashboard</a>
   </footer>
 </body>
 </html>
