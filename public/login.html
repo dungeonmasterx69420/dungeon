@@ -86,7 +86,18 @@
       const res=await fetch('/api/member/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
       const data=await res.json();
       if(res.ok){window.location.href='/dashboard.html'}
-      else{err.textContent=data.error||'Incorrect email or password.';err.style.display='block';btn.disabled=false;btn.textContent='Sign In'}
+      else{
+        err.textContent=data.error||'Incorrect email or password.';
+        err.style.display='block';
+        btn.disabled=false;
+        btn.textContent='Sign In';
+        // If locked out, disable form temporarily
+        if(data.error && data.error.includes('locked')) {
+          btn.disabled=true;
+          btn.textContent='Locked — try again in 5 min';
+          setTimeout(()=>{btn.disabled=false;btn.textContent='Sign In';err.style.display='none';},5*60*1000);
+        }
+      }
     }catch{err.textContent='Connection error. Please try again.';err.style.display='block';btn.disabled=false;btn.textContent='Sign In'}
   }
 
