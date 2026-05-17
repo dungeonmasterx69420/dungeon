@@ -616,6 +616,9 @@
           ${r.notes?`<div class="row-notes">${r.notes}</div>`:''}
         </div>
         <div class="row-actions">
+          <select class="tier-select" onchange="promoteTier('${r.profile_id_val}',this.value)" style="margin-bottom:6px">
+            ${Object.entries(TIERS).map(([k,v])=>`<option value="${k}" ${r.tier===k?'selected':''}>${v.label}</option>`).join('')}
+          </select>
           <button class="act" onclick="openEdit('${r.id}','${esc(r.stremio_email)}','${esc(r.stremio_pass)}','${esc(r.notes)}','${esc(r.first_name)}','${esc(r.last_name)}')">Edit</button>
           <button class="act red" onclick="deleteMember('${r.id}')">Remove</button>
           <div class="row-date">Since ${fmt(r.created_at)}</div>
