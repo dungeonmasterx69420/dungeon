@@ -227,6 +227,7 @@
     <button class="tab-btn active" onclick="switchTab('redemptions',this)">Redemptions <span id="redemBadge" style="display:none;color:var(--red);font-size:11px"></span></button>
     <button class="tab-btn" onclick="switchTab('applicants',this)">Applications</button>
     <button class="tab-btn" onclick="switchTab('members',this)">Members</button>
+    <button class="tab-btn" onclick="switchTab('demos',this)">Demos <span id="demoBadge" style="display:none;color:var(--amber);font-size:10px"></span></button>
     <button class="tab-btn" onclick="switchTab('support',this)">Support <span id="suppBadge" style="display:none;color:var(--red)"></span></button>
   </div>
 
@@ -299,6 +300,44 @@
       <div class="list-header"><div class="list-label">Members</div></div>
       <div class="divider"></div>
       <div class="row-list" id="memberList"></div>
+    </div>
+
+
+    <div class="tab-panel" id="panel-demos">
+      <div class="list-header">
+        <div class="list-label">Demo Requests</div>
+        <div class="filters">
+          <button class="filter-btn active" onclick="setDemoFilter('pending',this)">Pending</button>
+          <button class="filter-btn" onclick="setDemoFilter('fulfilled',this)">Fulfilled</button>
+          <button class="filter-btn" onclick="setDemoFilter('all',this)">All</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div id="demoRequestList"></div>
+
+      <!-- Fulfill Demo Modal -->
+      <div id="fulfillDemoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px">
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:440px">
+          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px" id="fulfillDemoTitle">Fulfill Demo</div>
+          <div style="font-size:13px;color:var(--muted2);margin-bottom:20px" id="fulfillDemoSubtitle"></div>
+          <input type="hidden" id="fulfillDemoId"/>
+          <div style="margin-bottom:14px">
+            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em" id="fulfillDemoUserLabel">Username</label>
+            <input type="text" id="fulfillDemoUser" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+          </div>
+          <div style="margin-bottom:20px">
+            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Password</label>
+            <input type="text" id="fulfillDemoPass" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:20px;font-size:12px;color:var(--muted2);line-height:1.6">
+            Clicking <strong style="color:var(--text)">Send Demo</strong> will email the member their 24-hour credentials immediately.
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px">
+            <button class="act" onclick="closeFulfillDemo()">Cancel</button>
+            <button class="act" style="background:var(--amber);color:#0b0f0e" onclick="submitFulfillDemo()">Send Demo</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="tab-panel" id="panel-support">
@@ -699,6 +738,90 @@
   }
 
 
+
+  // ── Demos tab ─────────────────────────────────────────────────────────────────
+  let demoFilter = 'pending';
+
+  function setDemoFilter(f, el) {
+    demoFilter = f;
+    document.querySelectorAll('#panel-demos .filter-btn').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active');
+    loadDemosTab();
+  }
+
+  async function loadDemosTab() {
+    const rows = await fetch('/api/admin/demo-requests?status=' + demoFilter).then(r=>r.json()).catch(()=>[]);
+    const badge = document.getElementById('demoBadge');
+    // Always show pending count
+    const pending = demoFilter === 'pending' ? rows : await fetch('/api/admin/demo-requests?status=pending').then(r=>r.json()).catch(()=>[]);
+    if(badge){ badge.textContent = pending.length ? `(${pending.length})` : ''; badge.style.display = pending.length ? 'inline' : 'none'; }
+
+    const el = document.getElementById('demoRequestList');
+    if (!rows.length) { el.innerHTML = `<div class="empty"><div class="empty-title">No ${demoFilter} demo requests</div></div>`; return; }
+
+    const svcIcon = s => s === 'stream' ? '📺' : '📡';
+    const svcName = s => s === 'stream' ? 'DungeonStream' : 'DungeonCast';
+    const statusColor = {pending:'var(--amber)',fulfilled:'var(--green)',dismissed:'var(--muted)'};
+
+    el.innerHTML = rows.map(r => `
+      <div class="app-row">
+        <div style="flex:1">
+          <div class="row-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            @${r.screen_name||'Unknown'}
+            <span style="font-size:12px;padding:2px 10px;border-radius:20px;font-weight:600;background:${r.service==='stream'?'rgba(96,165,250,0.1)':'rgba(52,211,153,0.1)'};color:${r.service==='stream'?'#60a5fa':'var(--green)'}">${svcIcon(r.service)} ${svcName(r.service)}</span>
+            <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:${statusColor[r.status]||'var(--muted)'}22;color:${statusColor[r.status]||'var(--muted)'}">${r.status}</span>
+          </div>
+          <div class="row-email">${r.email||''}</div>
+          <div class="row-meta" style="margin-top:6px">
+            <div><div class="meta-lbl">Requested</div><div class="meta-val">${fmt(r.created_at)}</div></div>
+            ${r.fulfilled_at?`<div><div class="meta-lbl">Fulfilled</div><div class="meta-val">${fmt(r.fulfilled_at)}</div></div>`:''}
+            ${r.notes?`<div><div class="meta-lbl">Credentials</div><div class="meta-val">${r.notes}</div></div>`:''}
+          </div>
+        </div>
+        <div class="row-actions">
+          ${r.status==='pending'?`
+            <button class="act" style="background:var(--amber);color:#0b0f0e" onclick="openFulfillDemo('${r.id}','${r.service}','${esc(r.screen_name||'')}','${esc(r.email||'')}')">Fulfill</button>
+            <button class="act red" onclick="dismissDemo('${r.id}')">Dismiss</button>
+          `:`<button class="act" onclick="openFulfillDemo('${r.id}','${r.service}','${esc(r.screen_name||'')}','${esc(r.email||'')}')">Resend</button>`}
+        </div>
+      </div>`).join('');
+  }
+
+  function openFulfillDemo(id, service, name, email) {
+    document.getElementById('fulfillDemoId').value = id;
+    document.getElementById('fulfillDemoTitle').textContent = service==='stream' ? '📺 Fulfill DungeonStream Demo' : '📡 Fulfill DungeonCast Demo';
+    document.getElementById('fulfillDemoSubtitle').textContent = `Sending demo to @${name} (${email})`;
+    document.getElementById('fulfillDemoUserLabel').textContent = service==='stream' ? 'DungeonStream Username' : 'DungeonCast Username';
+    document.getElementById('fulfillDemoUser').value = '';
+    document.getElementById('fulfillDemoPass').value = '';
+    document.getElementById('fulfillDemoModal').style.display = 'flex';
+  }
+
+  function closeFulfillDemo() { document.getElementById('fulfillDemoModal').style.display = 'none'; }
+
+  async function submitFulfillDemo() {
+    const id = document.getElementById('fulfillDemoId').value;
+    const username = document.getElementById('fulfillDemoUser').value.trim();
+    const password = document.getElementById('fulfillDemoPass').value.trim();
+    if (!username || !password) { alert('Enter both credentials'); return; }
+    const btn = document.querySelector('#fulfillDemoModal .act:last-child');
+    btn.textContent = 'Sending…'; btn.disabled = true;
+    const res = await fetch('/api/admin/demo-requests/' + id + '/fulfill', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ username, password })
+    }).then(r=>r.json()).catch(e=>({error:e.message}));
+    closeFulfillDemo();
+    loadDemosTab();
+    btn.textContent = 'Send Demo'; btn.disabled = false;
+    if (res.error) alert('Error: ' + res.error);
+  }
+
+  async function dismissDemo(id) {
+    if (!confirm('Dismiss this demo request?')) return;
+    await fetch('/api/admin/demo-requests/' + id + '/dismiss', { method:'POST' });
+    loadDemosTab();
+  }
+
   // ── Redemptions ───────────────────────────────────────────────────────────────
   let redemFilter = 'pending';
 
@@ -716,7 +839,12 @@
   }
 
   async function loadRedemptions() {
-    const rows = await fetch('/api/admin/redemptions?status=' + redemFilter).then(r=>r.json()).catch(()=>[]);
+    const res = await fetch('/api/admin/redemptions?status=' + redemFilter).catch(()=>null);
+    if (!res || !res.ok) {
+      document.getElementById('redemptionList').innerHTML = '<div class="empty"><div class="empty-title">Error loading redemptions</div></div>';
+      return;
+    }
+    const rows = await res.json().catch(()=>[]);
     updateRedemBadge();
     const el = document.getElementById('redemptionList');
     if (!rows.length) { el.innerHTML = `<div class="empty"><div class="empty-title">No ${redemFilter} redemptions</div></div>`; return; }
@@ -841,6 +969,7 @@
     document.getElementById('panel-'+name).classList.add('active');
     if(name==='members'){loadMembers();}
     if(name==='support')loadSupport();
+    if(name==='demos'){demoFilter='pending';document.querySelectorAll('#panel-demos .filter-btn').forEach(b=>b.classList.remove('active'));document.querySelector('#panel-demos .filter-btn')?.classList.add('active');loadDemosTab();}
     // profiles now inside members tab
     if(name==='credits')loadCreditsTab();
     if(name==='dungeoncast')loadDCTab();
@@ -854,7 +983,7 @@
     }
   }
 
-  async function loadAll(){await Promise.all([loadStats(),loadApplicants(),loadMembers()])}
+  async function loadAll(){await Promise.all([loadStats(),loadApplicants(),loadMembers(),loadRedemptions(),loadDemosTab()])}
 
   async function loadStats(){
     const d=await fetch('/api/stats').then(r=>r.json());

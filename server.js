@@ -78,6 +78,19 @@ db.exec(`
 
 
 
+
+  CREATE TABLE IF NOT EXISTS demo_requests (
+    id          TEXT PRIMARY KEY,
+    profile_id  TEXT NOT NULL,
+    service     TEXT NOT NULL,
+    status      TEXT DEFAULT 'pending',
+    email       TEXT,
+    screen_name TEXT,
+    notes       TEXT,
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fulfilled_at DATETIME
+  );
+
   CREATE TABLE IF NOT EXISTS redemptions (
     id          TEXT PRIMARY KEY,
     profile_id  TEXT NOT NULL,
@@ -252,7 +265,7 @@ function emailExpired(firstName) {
 }
 
 function emailModApproval(applicantName, screenName, applicantEmail, applicantId) {
-  return emailShell(`<h2>Mod Approval — Action Required</h2><div class="rule"></div><p>A moderator has approved an application. You need to create their Stremio account and grant access.</p><div class="box"><div class="row"><span class="lbl">Name</span><span class="val">${applicantName}</span></div><div class="row"><span class="lbl">Username</span><span class="val">@${screenName}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${applicantEmail}</span></div></div><p>Log into the admin panel and grant access to complete the process.</p><a href="${SITE_URL}/admin.html" class="btn">Open Dungeon Master Panel</a>`);
+  return emailShell(`<h2>Mod Approval — Action Required</h2><div class="rule"></div><p>A moderator has approved an application. You need to create their DungeonStream account and grant access.</p><div class="box"><div class="row"><span class="lbl">Name</span><span class="val">${applicantName}</span></div><div class="row"><span class="lbl">Username</span><span class="val">@${screenName}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${applicantEmail}</span></div></div><p>Log into the admin panel and grant access to complete the process.</p><a href="${SITE_URL}/admin.html" class="btn">Open Dungeon Master Panel</a>`);
 }
 
 
@@ -836,7 +849,7 @@ app.post('/api/admin/stremio/create-account', requireAuth, async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
   try {
-    // Register a new Stremio account
+    // Register a new DungeonStream account
     const result = await stremioRequest('/api/register', {
       email,
       password,
@@ -864,7 +877,7 @@ app.post('/api/admin/stremio/create-account', requireAuth, async (req, res) => {
   }
 });
 
-// Get Stremio account info
+// Get DungeonStream account info
 app.get('/api/admin/stremio/account-info', requireAuth, async (req, res) => {
   if (!STREMIO_AUTH_KEY) return res.status(400).json({ error: 'Stremio API key not configured' });
   try {
@@ -875,7 +888,7 @@ app.get('/api/admin/stremio/account-info', requireAuth, async (req, res) => {
   }
 });
 
-// ── Admin: Stremio subscriptions ──────────────────────────────────────────────
+// ── Admin: DungeonStream subscriptions ──────────────────────────────────────────────
 
 app.get('/api/admin/stremio', requireAuth, (req, res) => {
   const rows = db.prepare(`
@@ -907,6 +920,92 @@ app.post('/api/admin/iptv-dates/:memberId', requireAuth, (req, res) => {
 });
 
 
+
+
+// ── Demo Requests ─────────────────────────────────────────────────────────────
+
+app.post('/api/demo-request', requireMember, (req, res) => {
+  const { service } = req.body;
+  if (!['stream','cast'].includes(service)) return res.status(400).json({ error: 'Invalid service' });
+
+  const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id)
+    || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
+  if (!profile) return res.status(403).json({ error: 'Profile required' });
+
+  // Check for recent pending request
+  const recent = db.prepare("SELECT * FROM demo_requests WHERE profile_id=? AND service=? AND status='pending' AND datetime(created_at) > datetime('now','-24 hours')").get(profile.id, service);
+  if (recent) return res.status(400).json({ error: 'You already have a pending demo request for this service.' });
+
+  db.prepare('INSERT INTO demo_requests (id,profile_id,service,email,screen_name) VALUES (?,?,?,?,?)')
+    .run(genId(), profile.id, service, req.session.member.email, profile.screen_name);
+
+  // Notify warden
+  const warden = db.prepare("SELECT * FROM profiles WHERE tier='warden' LIMIT 1").get();
+  if (warden) {
+    const svcName = service === 'stream' ? 'DungeonStream' : 'DungeonCast';
+    db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
+      .run(genId(), profile.id, warden.id, `Demo Request — ${svcName}`,
+        `@${profile.screen_name} has requested a 24-hour ${svcName} demo.\n\nEmail: ${req.session.member.email}\n\nReview in the Admin Panel → Demos tab.`);
+  }
+
+  res.json({ ok: true });
+});
+
+// Admin: get all demo requests
+app.get('/api/admin/demo-requests', requireAuth, (req, res) => {
+  const status = req.query.status || 'pending';
+  const rows = db.prepare(`
+    SELECT * FROM demo_requests
+    ${status === 'all' ? '' : 'WHERE status = ?'}
+    ORDER BY created_at DESC
+  `).all(...(status === 'all' ? [] : [status]));
+  res.json(rows);
+});
+
+// Admin: fulfill demo request
+app.post('/api/admin/demo-requests/:id/fulfill', requireAuth, async (req, res) => {
+  const { username, password } = req.body;
+  const demo = db.prepare('SELECT * FROM demo_requests WHERE id=?').get(req.params.id);
+  if (!demo) return res.status(404).json({ error: 'Not found' });
+
+  db.prepare("UPDATE demo_requests SET status='fulfilled', fulfilled_at=CURRENT_TIMESTAMP, notes=? WHERE id=?")
+    .run(`${username} / ${password}`, req.params.id);
+
+  const svcName = demo.service === 'stream' ? 'DungeonStream' : 'DungeonCast';
+  const now = new Date();
+  const expiry = new Date(now.getTime() + 24*60*60*1000);
+  const fmtExpiry = expiry.toLocaleString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
+
+  const html = emailShell(`
+    <h2>Your ${svcName} Demo</h2>
+    <div class="rule"></div>
+    <p>Your 24-hour demo is ready. Here are your credentials:</p>
+    <div class="box">
+      <div class="row"><span class="lbl">Service</span><span class="val">${svcName}</span></div>
+      <div class="row"><span class="lbl">URL</span><span class="val">${demo.service==='stream'?'http://dungeonstream.enterdungeon.cc':'http://dungeoncast.cc'}</span></div>
+      <div class="row"><span class="lbl">Username</span><span class="val">${username}</span></div>
+      <div class="row"><span class="lbl">Password</span><span class="val">${password}</span></div>
+      <div class="row"><span class="lbl">Expires</span><span class="val">${fmtExpiry}</span></div>
+    </div>
+    <p>Enjoying the demo? Get full access through Dungeon for just 1 credit per month.</p>
+    <a href="https://enterdungeon.cc/redeem.html" class="btn">Get Full Access</a>
+    <div class="rule"></div>
+    <p style="font-size:12px;color:#6b8f7a">Demo expires ${fmtExpiry}. — The Dungeon Master</p>
+  `);
+
+  try {
+    await sendMail(demo.email, `Your ${svcName} Demo is Ready`, html);
+    res.json({ ok: true });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Admin: dismiss demo request
+app.post('/api/admin/demo-requests/:id/dismiss', requireAuth, (req, res) => {
+  db.prepare("UPDATE demo_requests SET status='dismissed' WHERE id=?").run(req.params.id);
+  res.json({ ok: true });
+});
 
 // ── DungeonCast Demo ──────────────────────────────────────────────────────────
 app.post('/api/admin/dc-demo', requireAuth, async (req, res) => {
@@ -951,7 +1050,7 @@ app.get('/api/admin/redemptions', requireAuth, (req, res) => {
     SELECT r.*, p.screen_name, p.email, p.avatar_url, p.avatar_color, p.tier,
            m.email as member_email
     FROM redemptions r
-    JOIN profiles p ON r.profile_id = p.id
+    LEFT JOIN profiles p ON r.profile_id = p.id
     LEFT JOIN members m ON m.id = (SELECT member_id FROM profiles WHERE id = r.profile_id)
     ${status === 'all' ? '' : 'WHERE r.status = ?'}
     ORDER BY r.created_at DESC
@@ -996,10 +1095,10 @@ app.post('/api/admin/redemptions/:id/fulfill', requireAuth, (req, res) => {
   // Send credentials message to member
   const warden = db.prepare("SELECT * FROM profiles WHERE tier='warden' LIMIT 1").get();
   if (warden && profile) {
-    const service = redemption.service === 'stremio' ? 'Stremio' : 'DungeonCast';
+    const service = redemption.service === 'stremio' ? 'DungeonStream' : 'DungeonCast';
     const subject = `Your ${service} Account is Ready`;
     const content = redemption.service === 'stremio'
-      ? `Your Stremio account has been set up and is ready to use.\n\nEmail: ${account_user}\nPassword: ${account_pass}\n\nLog in at web.stremio.com or the Stremio app on any device.${notes ? '\n\nNotes: ' + notes : ''}`
+      ? `Your DungeonStream account has been set up and is ready to use.\n\nEmail: ${account_user}\nPassword: ${account_pass}\n\nLog in at dungeonstream.enterdungeon.cc or download the Stremio app and use these credentials.${notes ? '\n\nNotes: ' + notes : ''}`
       : `Your DungeonCast account has been set up and is ready to use.\n\nUsername: ${account_user}\nPassword: ${account_pass}\n\nLog in at http://dungeoncast.cc${notes ? '\n\nNotes: ' + notes : ''}`;
     db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
       .run(genId(), warden.id, profile.id, subject, content);
@@ -1236,7 +1335,7 @@ app.post('/api/credits/redeem', requireMember, (req, res) => {
     || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
   if (!profile) return res.status(403).json({ error: 'Profile required' });
 
-  const ok = deductCredit(profile.id, 1, 'redeemed', `Redeemed for ${service === 'stremio' ? 'Stremio' : 'DungeonCast'} subscription`);
+  const ok = deductCredit(profile.id, 1, 'redeemed', `Redeemed for ${service === 'stremio' ? 'DungeonStream' : 'DungeonCast'} subscription`);
   if (!ok) return res.status(400).json({ error: 'Insufficient credits' });
 
   // Create redemption record
@@ -1252,7 +1351,7 @@ app.post('/api/admin/credits/:profileId/redeem', requireAuth, (req, res) => {
   const profileId = req.params.profileId;
   const profile = db.prepare('SELECT * FROM profiles WHERE id=?').get(profileId);
   if (!profile) return res.status(404).json({ error: 'Profile not found' });
-  const ok = deductCredit(profileId, 1, 'redeemed', `Redeemed for ${service || 'Stremio'} subscription`);
+  const ok = deductCredit(profileId, 1, 'redeemed', `Redeemed for ${service || 'DungeonStream'} subscription`);
   if (!ok) return res.status(400).json({ error: 'Insufficient credits' });
   res.json({ ok: true });
 });
