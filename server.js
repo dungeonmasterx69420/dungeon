@@ -1358,7 +1358,8 @@ app.post('/api/applicants/:id/archive', requireAuth, (req, res) => {
 // ── Stats ─────────────────────────────────────────────────────────────────────
 app.get('/api/stats', requireAuth, (req, res) => {
   res.json({
-    applicants: db.prepare('SELECT COUNT(*) as n FROM applicants').get().n,
+    applicants: db.prepare('SELECT COUNT(*) as n FROM applicants WHERE archived=0').get().n,
+    pending: db.prepare("SELECT COUNT(*) as n FROM applicants WHERE status='pending' AND archived=0").get().n,
     pending:    db.prepare("SELECT COUNT(*) as n FROM applicants WHERE status='pending'").get().n,
     members:    db.prepare('SELECT COUNT(*) as n FROM members').get().n,
     denied:     db.prepare("SELECT COUNT(*) as n FROM applicants WHERE status='denied'").get().n,
