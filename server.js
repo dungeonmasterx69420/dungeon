@@ -845,7 +845,6 @@ async function stremioRequest(path, body = null) {
 // Create a Stremio sub-account for a member
 app.post('/api/admin/stremio/create-account', requireAuth, async (req, res) => {
   const { memberId, email, password } = req.body;
-  if (!STREMIO_AUTH_KEY) return res.status(400).json({ error: 'Stremio API key not configured. Add STREMIO_AUTH_KEY to environment variables.' });
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
   try {
