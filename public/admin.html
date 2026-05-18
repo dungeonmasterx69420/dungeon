@@ -248,6 +248,41 @@
       <div id="redemptionList"></div>
 
       <!-- Fulfill modal -->
+
+      <!-- Credit edit modal -->
+      <div id="creditEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px">
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:400px">
+          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px">Edit Credits</div>
+          <div style="font-size:13px;color:var(--muted2);margin-bottom:20px" id="creditEditName"></div>
+          <input type="hidden" id="creditEditProfileId"/>
+          <div style="margin-bottom:14px">
+            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Current Balance</label>
+            <div style="font-size:24px;font-weight:700;color:var(--green)" id="creditEditBalance">0</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Amount</label>
+              <input type="number" id="creditEditAmount" value="1" min="1" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:14px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Action</label>
+              <select id="creditEditAction" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:14px;padding:9px 12px;outline:none">
+                <option value="add">Add</option>
+                <option value="remove">Remove</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:20px">
+            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Note</label>
+            <input type="text" id="creditEditNote" placeholder="Reason (optional)" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px">
+            <button class="act" onclick="closeCreditEdit()">Cancel</button>
+            <button class="act green" onclick="saveCreditEdit()">Save</button>
+          </div>
+        </div>
+      </div>
+
       <div id="fulfillModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px">
         <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:440px">
           <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px" id="fulfillTitle">Fulfill Redemption</div>
