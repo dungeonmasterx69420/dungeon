@@ -250,7 +250,7 @@
       <!-- Fulfill modal -->
 
       <!-- Credit edit modal -->
-      <div id="creditEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px">
+      <div id="creditEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;padding:24px">
         <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:400px">
           <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px">Edit Credits</div>
           <div style="font-size:13px;color:var(--muted2);margin-bottom:20px" id="creditEditName"></div>
@@ -1183,7 +1183,7 @@
               <div class="cred-lbl">Credits</div>
               <div class="cred-val" style="display:flex;align-items:center;gap:8px">
                 <span style="font-size:15px;font-weight:600;color:var(--green)">${r.credit_balance||0}</span>
-                <button class="act" style="font-size:11px;padding:2px 8px" onclick="openCreditEdit('${r.profile_id_val}','${r.screen_name||r.first_name}',${r.credit_balance||0})">Edit</button>
+                ${r.profile_id_val ? `<button class="act" style="font-size:11px;padding:2px 8px" onclick="openCreditEdit('${r.profile_id_val}','${r.screen_name||r.first_name}',${r.credit_balance||0})">Edit</button>` : '<span style="font-size:11px;color:var(--muted2)">No profile</span>'}
               </div>
             </div>
             <div>
