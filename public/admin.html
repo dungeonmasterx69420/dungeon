@@ -492,16 +492,32 @@ let activeApplicantId=null, activeMemberId=null, showPasswords={}, allProfiles=[
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 async function adminLogin(){
-  const pass=document.getElementById('adminPass').value;
+  const pass=document.getElementById('adminPass').value.trim();
   const err=document.getElementById('lockErr');
-  const res=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})}).then(r=>r.json()).catch(()=>({error:'Network error'}));
-  if(res.error){err.textContent=res.error;err.style.display='block';return}
-  document.getElementById('lockScreen').style.display='none';
-  document.getElementById('adminApp').classList.add('visible');
-  loadAll();
+  if(!pass){err.textContent='Enter password';err.style.display='block';return}
+  err.style.display='none';
+  const btn=document.querySelector('.lock-btn');
+  btn.textContent='Signing in…';btn.disabled=true;
+  try{
+    const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})});
+    const res=await r.json();
+    if(!r.ok||res.error){
+      err.textContent=res.error||'Incorrect password';
+      err.style.display='block';
+      btn.textContent='Sign In';btn.disabled=false;
+      return;
+    }
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('adminApp').classList.add('visible');
+    loadAll();
+  }catch(e){
+    err.textContent='Network error — try again';
+    err.style.display='block';
+    btn.textContent='Sign In';btn.disabled=false;
+  }
 }
 document.getElementById('adminPass').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin()});
-async function adminLogout(){await fetch('/api/logout',{method:'POST'}).catch(()=>{});window.location.href='/login.html'}
+async function adminLogout(){await fetch('/api/admin/logout',{method:'POST'}).catch(()=>{});await fetch('/api/member/logout',{method:'POST'}).catch(()=>{});window.location.reload()}
 fetch('/api/me').then(r=>r.json()).then(d=>{
   if(d.authenticated&&d.role==='admin'){
     document.getElementById('lockScreen').style.display='none';
@@ -1117,8 +1133,14 @@ function copyGenPass(){
   navigator.clipboard.writeText(pass).then(()=>{const b=document.getElementById('copyGenPass');b.textContent='✓';setTimeout(()=>b.textContent='Copy',2000)});
 }
 
-// Check if already logged in
-fetch('/api/stats').then(r=>{if(r.ok){document.getElementById('lockScreen').style.display='none';document.getElementById('adminApp').classList.add('visible');loadAll()}}).catch(()=>{});
+// Check if already logged in as admin
+fetch('/api/me').then(r=>r.json()).then(d=>{
+  if(d.authenticated){
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('adminApp').classList.add('visible');
+    loadAll();
+  }
+}).catch(()=>{});
 </script>
 </body>
 </html>
