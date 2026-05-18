@@ -826,7 +826,7 @@ async function saveStremio(){
 
 // ── DungeonCast tab ───────────────────────────────────────────────────────────
 async function loadDCTab(){
-  const profiles=await fetch('/api/profiles').then(r=>r.json()).catch(()=>[]);
+  const profiles=await fetch('/api/admin/profiles').then(r=>r.json()).catch(()=>[]);
   allProfiles=profiles;
   const sel=document.getElementById('iptvMemberSelect');
   sel.innerHTML='<option value="">Select member…</option>';
@@ -835,7 +835,7 @@ async function loadDCTab(){
   const rows=await fetch('/api/admin/iptv').then(r=>r.json()).catch(()=>[]);
   const el=document.getElementById('iptvList');
   const statusColor={active:'var(--green)',pending:'var(--amber)',suspended:'var(--red)'};
-  const addBtn=`<div style="margin-bottom:12px"><button class="btn btn-green" onclick="showAddIptv()">+ Add Account</button></div>`;
+  const addBtn=`<div style="margin-bottom:12px"><button class="btn btn-green" onclick="showAddIptv()">+ Add Account</button><button class="btn btn-ghost" style="margin-left:8px" onclick="openDCDemoManual()">Send Demo</button></div>`;
   if(!rows.length){el.innerHTML=addBtn+'<div class="empty">No DungeonCast accounts yet</div>';return}
   el.innerHTML=addBtn+rows.map(r=>`
     <div class="card">
