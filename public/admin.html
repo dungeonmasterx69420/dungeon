@@ -1354,18 +1354,19 @@
           </div>
         </div>
         <div class="row-actions">
-<button class="act" onclick="editStremio('${r.id}','${esc(r.stremio_email||'')}','${esc(r.stremio_pass||'')}','${r.stremio_start||''}','${r.stremio_end||''}')">Edit</button>
+<button class="act" onclick="editStremio('${r.id}','${esc(r.stremio_email||'')}','${esc(r.stremio_pass||'')}','${r.stremio_start||''}','${r.stremio_end||''}','${esc(r.stremio_auth_key||'')}')" >Edit</button>
         </div>
       </div>`;
     }).join('');
   }
 
-  function editStremio(memberId, email, pass, start, end){
+  function editStremio(memberId, email, pass, start, end, authKey=''){
     document.getElementById('stremioMemberId').value = memberId;
     document.getElementById('stremioTabEmail').value = email;
     document.getElementById('stremioTabPass').value = pass;
     document.getElementById('stremioTabStart').value = start ? start.split('T')[0] : '';
     document.getElementById('stremioTabEnd').value = end ? end.split('T')[0] : '';
+    document.getElementById('stremioTabAuthKey').value = authKey;
     document.getElementById('stremioModal').style.display = 'flex';
   }
 
@@ -1378,6 +1379,7 @@
       stremio_pass:  document.getElementById('stremioTabPass').value,
       stremio_start: document.getElementById('stremioTabStart').value||null,
       stremio_end:   document.getElementById('stremioTabEnd').value||null,
+      stremio_auth_key: document.getElementById('stremioTabAuthKey').value||null,
     };
     await fetch('/api/admin/stremio/'+memberId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     closeStremioModal();
