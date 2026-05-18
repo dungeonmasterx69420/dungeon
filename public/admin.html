@@ -41,7 +41,7 @@
     .topbar-link:hover{color:var(--text)}
 
     /* Stats */
-    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
     .stat-cell{background:var(--bg);padding:20px 28px}
     .stats-inner,.tabs-inner{max-width:1100px;margin:0 auto}
     .stat-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
@@ -69,7 +69,7 @@
     /* Rows */
     .divider{height:1px;background:var(--border);margin-bottom:0}
     .row-list{display:flex;flex-direction:column}
-    .app-row,.mem-row{border-bottom:1px solid var(--border);padding:18px 0;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+    .app-row,.mem-row{border-bottom:1px solid var(--border);padding:16px 0;display:flex;gap:16px;align-items:flex-start}
     .app-row:last-child,.mem-row:last-child{border-bottom:none}
 
     .row-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
@@ -193,10 +193,6 @@
       .tier-select{width:100%;font-size:12px;padding:6px}
       .topbar{padding:10px 12px}
       .mem-creds{flex-wrap:wrap;gap:8px}footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
-  
-    /* ── Mobile ─────────────────────────────────────────────────── */
-    @media(max-width:767px){
-      body{font-size:14px}
       .topbar{padding:10px 14px}
       .topbar-logo{font-size:10px}
       .stats{grid-template-columns:1fr 1fr}
@@ -222,6 +218,52 @@
       .sub-chip{font-size:10px}
       .modal{padding:20px}
       .m-input{font-size:14px;padding:10px}
+    }
+
+  
+    /* ── Mobile ──────────────────────────────────────── */
+    @media(max-width:767px){
+      .topbar{padding:10px 14px}
+      .topbar-logo{font-size:10px !important}
+
+      /* Stats - 3 in a row on mobile too, just smaller */
+      .stats{grid-template-columns:repeat(3,1fr)}
+      .stat-cell{padding:10px 8px}
+      .stat-val{font-size:20px}
+      .stat-label{font-size:9px;letter-spacing:0}
+
+      /* Tabs - horizontal scroll, no overflow */
+      .tabs{padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+      .tabs::-webkit-scrollbar{display:none}
+      .tab-btn{font-size:10px;padding:10px 8px;white-space:nowrap;flex-shrink:0}
+
+      /* Main content */
+      .main{padding:10px;max-width:100%}
+      .list-header{flex-wrap:wrap;gap:6px;margin-bottom:10px}
+      .list-label{font-size:12px}
+      .filters{flex-wrap:wrap;gap:3px}
+      .filter-btn{font-size:10px;padding:4px 8px}
+
+      /* Rows - stack vertically */
+      .app-row,.mem-row{flex-direction:column;gap:8px;padding:12px 0}
+      .row-name{font-size:13px;flex-wrap:wrap;gap:4px}
+      .row-email{font-size:12px;margin-bottom:6px}
+      .row-meta{flex-wrap:wrap;gap:8px}
+      .meta-lbl{font-size:10px}
+      .meta-val{font-size:12px}
+      .row-actions{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:6px;width:100%}
+      .row-actions .act{font-size:12px;padding:6px 10px}
+      .row-date{font-size:11px}
+
+      /* Member specific */
+      .mem-creds{flex-wrap:wrap;gap:10px;margin-top:8px}
+      .cred-lbl{font-size:10px}
+      .cred-val{font-size:12px}
+      .tier-select{width:100%;max-width:180px}
+
+      /* Modals */
+      .modal{padding:20px;margin:10px}
+      .veil{padding:10px}
     }
 
   </style>
@@ -803,13 +845,21 @@
   }
 
   function openCreditEdit(profileId, name, balance) {
+    console.log('openCreditEdit called:', profileId, name, balance);
+    if (!profileId || profileId === 'undefined') {
+      alert('This member has no profile yet — they need to complete account setup first.');
+      return;
+    }
+    const modal = document.getElementById('creditEditModal');
+    if (!modal) { alert('Credit edit modal not found in DOM'); return; }
     document.getElementById('creditEditProfileId').value = profileId;
     document.getElementById('creditEditName').textContent = '@' + name;
     document.getElementById('creditEditBalance').textContent = balance;
     document.getElementById('creditEditAmount').value = 1;
     document.getElementById('creditEditAction').value = 'add';
     document.getElementById('creditEditNote').value = '';
-    document.getElementById('creditEditModal').style.display = 'flex';
+    modal.style.display = 'flex';
+    console.log('modal display set to flex');
   }
 
   function closeCreditEdit() {
