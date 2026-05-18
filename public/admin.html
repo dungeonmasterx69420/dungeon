@@ -492,6 +492,14 @@
       </div>
       <div style="font-size:11px;color:var(--muted2);margin-top:6px">Type your own or generate one. This will be emailed to the member.</div>
     </div>
+    <div style="margin-top:16px;margin-bottom:4px">
+      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">DungeonStream API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional)</span></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="text" id="approveApiKey" placeholder="Paste from get-stremio-key.js…" style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--green);font-family:monospace;font-size:12px;padding:9px 12px;outline:none;min-width:0"/>
+        <button class="act" style="font-size:11px;padding:9px 10px;flex-shrink:0" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('approveApiKey').value=t}).catch(()=>{})">Paste</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted2);margin-top:4px">Stored for AIOManager. Leave blank to add later in the DungeonStream tab.</div>
+    </div>
     <div class="modal-divider"></div>
     <div class="modal-actions">
       <button class="modal-btn cancel" onclick="closeModal('approveModal')">Cancel</button>
@@ -1106,7 +1114,8 @@
   async function confirmApprove(){
     const stremio_email='';
     const stremio_pass=document.getElementById('genPassDisplay').value.trim();
-    await fetch(`/api/applicants/${activeApplicantId}/promote`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email,stremio_pass})});
+    const stremio_auth_key=document.getElementById('approveApiKey').value.trim();
+    await fetch(`/api/applicants/${activeApplicantId}/promote`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email,stremio_pass,stremio_auth_key})});
     closeModal('approveModal');
     loadAll();
     document.querySelectorAll('.tab-btn')[1].click();

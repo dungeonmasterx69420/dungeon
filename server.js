@@ -711,7 +711,7 @@ app.post('/api/applicants/:id/promote', requireAuth, async (req, res) => {
   const applicant = db.prepare('SELECT * FROM applicants WHERE id=?').get(req.params.id);
   if (!applicant) return res.status(404).json({ error: 'Not found' });
 
-  const { stremio_email, stremio_pass } = req.body;
+  const { stremio_email, stremio_pass, stremio_auth_key } = req.body;
   const memberId = genId();
 
   // Hash the generated password if provided
@@ -753,6 +753,11 @@ app.post('/api/applicants/:id/promote', requireAuth, async (req, res) => {
 
   await sendMail(applicant.email, 'Welcome to Dungeon', emailWelcome(applicant.first_name, applicant.screen_name||applicant.first_name, applicant.email, stremio_pass||'', ''));
   res.json({ ok: true });
+  // Store auth key if provided
+  if (stremio_auth_key) {
+    try { db.prepare('UPDATE members SET stremio_auth_key=? WHERE id=?').run(stremio_auth_key, memberId); } catch(e) {}
+  }
+
   } catch(e) { console.error('Promote error:', e); res.status(500).json({ error: e.message }); }
 });
 
@@ -911,7 +916,7 @@ app.post('/api/admin/demo-requests/:id/fulfill', requireAuth, async (req, res) =
     <p>Your 24-hour demo is ready. Here are your credentials:</p>
     <div class="box">
       <div class="row"><span class="lbl">Service</span><span class="val">${svcName}</span></div>
-      <div class="row"><span class="lbl">URL</span><span class="val">${demo.service==='stream'?'http://web.stremio.com':'http://dungeoncast.cc'}</span></div>
+      <div class="row"><span class="lbl">URL</span><span class="val">${demo.service==='stream'?'http://dungeonstream.enterdungeon.cc':'http://dungeoncast.cc'}</span></div>
       <div class="row"><span class="lbl">Username</span><span class="val">${username}</span></div>
       <div class="row"><span class="lbl">Password</span><span class="val">${password}</span></div>
       <div class="row"><span class="lbl">Expires</span><span class="val">${fmtExpiry}</span></div>
