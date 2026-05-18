@@ -1078,6 +1078,25 @@
     loadAll();
   }
 
+
+  function genPass() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    return Array.from({length:8}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  }
+
+  function regeneratePass() {
+    document.getElementById('genPassDisplay').value = genPass();
+  }
+
+  function copyGenPass() {
+    const pass = document.getElementById('genPassDisplay').value;
+    if (!pass) return;
+    navigator.clipboard.writeText(pass).then(() => {
+      const btn = document.getElementById('copyGenPass');
+      if(btn){ btn.textContent = '✓ Copied'; setTimeout(() => btn.textContent = 'Copy', 2000); }
+    });
+  }
+
   function openApprove(id,firstName,lastName,email){
     activeApplicantId=id;
     document.getElementById('approveDesc').innerHTML=`Grant Dungeon access to <strong>${firstName} ${lastName}</strong> (${email}). A welcome email with their login details will be sent automatically.`;
