@@ -514,6 +514,57 @@
 </div>
 
 <!-- Grant Entry Modal -->
+
+      <!-- Resend Welcome Email Modal -->
+      <div id="resendWelcomeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;padding:24px">
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:420px">
+          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px">Resend Welcome Email</div>
+          <div style="font-size:13px;color:var(--muted2);margin-bottom:20px" id="resendWelcomeName"></div>
+          <input type="hidden" id="resendWelcomeMemberId"/>
+          <div style="margin-bottom:8px">
+            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">New Password (optional)</label>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <span id="resendPassDisplay" style="font-size:16px;font-weight:700;color:var(--green);font-family:monospace;letter-spacing:0.1em"></span>
+              <button class="act" style="font-size:11px;padding:3px 10px" onclick="genResendPass()">↺ New</button>
+              <button class="act" style="font-size:11px;padding:3px 10px" onclick="document.getElementById('resendPassDisplay').textContent=''">Clear</button>
+            </div>
+            <div style="font-size:11px;color:var(--muted2)">Leave blank to resend with existing password shown as placeholder.</div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
+            <button class="act" onclick="closeResendWelcome()">Cancel</button>
+            <button class="act green" onclick="submitResendWelcome()">Send Email</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DungeonCast Demo Modal -->
+      <div id="dcDemoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;padding:24px">
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:440px">
+          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">📡 DungeonCast Demo</div>
+          <div style="font-size:13px;color:var(--muted2);margin-bottom:20px" id="dcDemoSubtitle">Send 24-hour demo credentials</div>
+          <input type="hidden" id="dcDemoEmail"/>
+          <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.3);border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--amber);line-height:1.6">
+            ⚡ This will email the member their demo credentials with a 24-hour expiry starting now.
+          </div>
+          <div style="margin-bottom:14px">
+            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Send To (Email)</label>
+            <input type="text" id="dcDemoToEmail" placeholder="email@example.com" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+          </div>
+          <div style="margin-bottom:14px">
+            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">DungeonCast Username</label>
+            <input type="text" id="dcDemoUser" placeholder="demo_username" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+          </div>
+          <div style="margin-bottom:20px">
+            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">DungeonCast Password</label>
+            <input type="text" id="dcDemoPass" placeholder="demo_password" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px">
+            <button class="act" onclick="closeDCDemo()">Cancel</button>
+            <button class="act" style="background:var(--amber);color:#0b0f0e" onclick="submitDCDemo()">Send Demo Email</button>
+          </div>
+        </div>
+      </div>
+
 <div class="veil" id="approveModal">
   <div class="modal">
     <div class="modal-title">Grant Access</div>
