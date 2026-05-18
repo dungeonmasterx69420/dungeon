@@ -43,6 +43,7 @@
     /* Stats */
     .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
     .stat-cell{background:var(--bg);padding:20px 28px}
+    .stats-inner,.tabs-inner{max-width:1100px;margin:0 auto}
     .stat-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
     .stat-val{font-size:32px;font-weight:600;color:var(--text)}
 
@@ -53,7 +54,7 @@
     .tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
 
     /* Main */
-    .main{padding:28px}
+    .main{padding:28px;max-width:1100px;margin:0 auto;width:100%}
     .tab-panel{display:none}
     .tab-panel.active{display:block}
 
@@ -153,7 +154,7 @@
       .stat-label{font-size:10px}
       .tabs{padding:0 8px;gap:0;overflow-x:auto}
       .tab-btn{font-size:11px;padding:12px 10px;white-space:nowrap}
-      .main{padding:16px 12px}
+      .main{padding:16px 12px;max-width:100%}
       .list-header{flex-wrap:wrap;gap:8px}
       .filters{flex-wrap:wrap;gap:4px}
       .filter-btn{font-size:11px;padding:4px 10px}
@@ -179,7 +180,7 @@
       .stat-label{font-size:10px}
       .tabs{padding:0 8px;gap:0;overflow-x:auto}
       .tab-btn{font-size:11px;padding:12px 10px;white-space:nowrap}
-      .main{padding:16px 12px}
+      .main{padding:16px 12px;max-width:100%}
       .list-header{flex-wrap:wrap;gap:8px}
       .filters{flex-wrap:wrap;gap:4px}
       .filter-btn{font-size:11px;padding:4px 10px}
@@ -217,8 +218,8 @@
   </div>
 
   <div class="stats">
-    <div class="stat-cell"><div class="stat-label">Pending Apps</div><div class="stat-val" id="statApplicants" style="color:var(--amber)">—</div></div>
-    <div class="stat-cell"><div class="stat-label">Pending</div><div class="stat-val" id="statPending" style="color:var(--amber)">—</div></div>
+  <div class="stats-inner" style="display:contents">
+    <div class="stat-cell"><div class="stat-label">Applications</div><div class="stat-val" id="statApplicants" style="color:var(--amber)">—</div></div>
     <div class="stat-cell"><div class="stat-label">Members</div><div class="stat-val" id="statMembers" style="color:var(--green)">—</div></div>
     <div class="stat-cell"><div class="stat-label">Support</div><div class="stat-val" id="statSupport" style="color:var(--red)">—</div></div>
   </div>
@@ -482,14 +483,14 @@
   <div class="modal">
     <div class="modal-title">Grant Access</div>
     <div class="modal-sub" id="approveDesc"></div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px;text-align:left">
-      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Generated Password</div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <span id="genPassDisplay" style="font-size:18px;font-weight:700;color:var(--green);font-family:monospace;letter-spacing:0.12em"></span>
-        <button class="act" style="font-size:11px;padding:3px 10px" onclick="regeneratePass()">↺ New</button>
-        <button class="act" style="font-size:11px;padding:3px 10px" id="copyGenPass" onclick="copyGenPass()">Copy</button>
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Password</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="text" id="genPassDisplay" style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--green);font-family:monospace;font-size:15px;font-weight:700;padding:10px 12px;outline:none;letter-spacing:0.08em"/>
+        <button class="act" style="font-size:11px;padding:10px 10px;flex-shrink:0" onclick="regeneratePass()">↺ Generate</button>
+        <button class="act" style="font-size:11px;padding:10px 10px;flex-shrink:0" id="copyGenPass" onclick="copyGenPass()">Copy</button>
       </div>
-      <div style="font-size:11px;color:var(--muted2);margin-top:8px;line-height:1.5">This password will be emailed to the member automatically with their login details.</div>
+      <div style="font-size:11px;color:var(--muted2);margin-top:6px">Type your own or generate one. This will be emailed to the member.</div>
     </div>
     <div class="modal-divider"></div>
     <div class="modal-actions">
@@ -998,7 +999,6 @@
   async function loadStats(){
     const d=await fetch('/api/stats').then(r=>r.json());
     document.getElementById('statApplicants').textContent=d.pending||d.applicants;
-    document.getElementById('statPending').textContent=d.pending;
     document.getElementById('statMembers').textContent=d.members;
     document.getElementById('statSupport').textContent=d.support||0;
     const b=document.getElementById('suppBadge');
@@ -1086,7 +1086,7 @@
 
   async function confirmApprove(){
     const stremio_email='';
-    const stremio_pass=document.getElementById('genPassDisplay').textContent.trim();
+    const stremio_pass=document.getElementById('genPassDisplay').value.trim();
     await fetch(`/api/applicants/${activeApplicantId}/promote`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email,stremio_pass})});
     closeModal('approveModal');
     loadAll();

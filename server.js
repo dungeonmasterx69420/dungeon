@@ -911,7 +911,7 @@ app.post('/api/admin/demo-requests/:id/fulfill', requireAuth, async (req, res) =
     <p>Your 24-hour demo is ready. Here are your credentials:</p>
     <div class="box">
       <div class="row"><span class="lbl">Service</span><span class="val">${svcName}</span></div>
-      <div class="row"><span class="lbl">URL</span><span class="val">${demo.service==='stream'?'http://dungeonstream.enterdungeon.cc':'http://dungeoncast.cc'}</span></div>
+      <div class="row"><span class="lbl">URL</span><span class="val">${demo.service==='stream'?'http://web.stremio.com':'http://dungeoncast.cc'}</span></div>
       <div class="row"><span class="lbl">Username</span><span class="val">${username}</span></div>
       <div class="row"><span class="lbl">Password</span><span class="val">${password}</span></div>
       <div class="row"><span class="lbl">Expires</span><span class="val">${fmtExpiry}</span></div>
@@ -1028,7 +1028,7 @@ app.post('/api/admin/redemptions/:id/fulfill', requireAuth, async (req, res) => 
 
   if (warden && profile) {
     const content = redemption.service === 'stremio'
-      ? `Your DungeonStream account has been set up.\n\nEmail: ${account_user}\nPassword: ${account_pass}\n\nLog in at dungeonstream.enterdungeon.cc${notes ? '\n\nNotes: ' + notes : ''}`
+      ? `Your DungeonStream account has been set up.\n\nEmail: ${account_user}\nPassword: ${account_pass}\n\nLog in at web.stremio.com using these credentials.\n\nCheck out the Guides on your dashboard for setup help on all devices.${notes ? '\n\nNotes: ' + notes : ''}`
       : `Your DungeonCast account has been set up.\n\nUsername: ${account_user}\nPassword: ${account_pass}\n\nLog in at http://dungeoncast.cc${notes ? '\n\nNotes: ' + notes : ''}`;
     db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
       .run(genId(), warden.id, profile.id, subject, content);
@@ -1044,7 +1044,8 @@ app.post('/api/admin/redemptions/:id/fulfill', requireAuth, async (req, res) => 
         <div class="row"><span class="lbl">Email</span><span class="val">${account_user}</span></div>
         <div class="row"><span class="lbl">Password</span><span class="val">${account_pass}</span></div>
       </div>
-      <p>Log in at <a href="https://web.stremio.com" style="color:#34d399">web.stremio.com</a> or the Stremio app on any device using these credentials.${notes ? '<br><br>Notes: ' + notes : ''}</p>
+      <p>Log in at <a href="https://web.stremio.com" style="color:#34d399">web.stremio.com</a> or download the Stremio app and use these credentials to sign in.${notes ? '<br><br>Notes: ' + notes : ''}</p>
+      <p>Check out the <a href="https://enterdungeon.cc/guides.html" style="color:#34d399">Setup Guides</a> on your dashboard for step-by-step instructions on every device.</p>
       <a href="https://web.stremio.com" class="btn">Open DungeonStream</a>
       <div class="rule"></div>
       <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. — The Dungeon Master</p>
