@@ -1,154 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon · Dungeon Master</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <title>Dungeon · Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
-    *{box-sizing:border-box;margin:0;padding:0}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     :root{
-      --bg:#0b0f0e;--surface:#111915;--surface2:#172118;--surface3:#1e2a20;
+      --bg:#0b0f0e;--surface:#111915;--surface2:#172118;
       --border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
       --green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);
       --text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;
-      --red:#f87171;--red-bg:rgba(248,113,113,0.1);--red-border:rgba(248,113,113,0.25);
+      --red:#f87171;--red-bg:rgba(248,113,113,0.1);
       --amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1);
+      --blue:#60a5fa;
     }
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden}
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden}
 
-    /* Lock */
-    #lockScreen{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:center;justify-content:center}
-    .lock-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px 36px;width:100%;max-width:360px;text-align:center}
-    .lock-logo{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);letter-spacing:0.04em;margin-bottom:6px}
-    .lock-sub{font-size:13px;color:var(--muted2);margin-bottom:28px}
-    .lock-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:16px;padding:12px 14px;outline:none;text-align:center;margin-bottom:16px}
+    /* ── Lock screen ── */
+    #lockScreen{position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+    .lock-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 28px;width:100%;max-width:340px;text-align:center}
+    .lock-logo{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);letter-spacing:0.04em;margin-bottom:4px}
+    .lock-sub{font-size:13px;color:var(--muted2);margin-bottom:24px}
+    .lock-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:16px;padding:12px 14px;outline:none;text-align:center;margin-bottom:14px;-webkit-appearance:none}
     .lock-input:focus{border-color:var(--green)}
-    .lock-btn{width:100%;padding:12px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer}
-    .lock-error{display:none;margin-top:14px;font-size:13px;color:var(--red)}
+    .lock-btn{width:100%;padding:13px;background:var(--green);border:none;border-radius:10px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+    .lock-error{display:none;margin-top:12px;font-size:13px;color:var(--red)}
 
-    /* App */
-    #adminApp{display:none;min-height:100vh;overflow-x:hidden}
-    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-    .logo{font-family:'Press Start 2P',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
-    .topbar-right{display:flex;gap:12px;align-items:center}
-    .topbar-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif}
+    /* ── App shell ── */
+    #adminApp{display:none;min-height:100vh;flex-direction:column}
+    #adminApp.visible{display:flex}
 
-    /* Stats */
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
-    .stat-cell{background:var(--bg);padding:16px 20px}
-    .stat-label{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-    .stat-val{font-size:28px;font-weight:600;color:var(--text)}
+    /* ── Top bar ── */
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-shrink:0}
+    .topbar-logo{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);text-decoration:none;letter-spacing:0.04em}
+    .topbar-nav{display:flex;gap:12px;align-items:center}
+    .topbar-btn{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;text-decoration:none;padding:0}
 
-    /* Tabs - horizontal scroll, no page overflow */
-    .tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 12px}
-    .tabs::-webkit-scrollbar{display:none}
-    .tab-btn{font-size:12px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;padding:12px 10px;white-space:nowrap;flex-shrink:0;transition:color .2s,border-color .2s}
-    .tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
+    /* ── Stats strip ── */
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border)}
+    .stat{padding:12px 16px;border-right:1px solid var(--border)}
+    .stat:last-child{border-right:none}
+    .stat-label{font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+    .stat-num{font-size:24px;font-weight:700}
 
-    /* Main */
-    .main{padding:16px;width:100%;max-width:1100px;margin:0 auto}
-    .tab-panel{display:none}
-    .tab-panel.active{display:block}
+    /* ── Tab bar ── */
+    .tabbar{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0}
+    .tabbar::-webkit-scrollbar{display:none}
+    .tabbar-btn{font-size:11px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;padding:11px 14px;white-space:nowrap;flex-shrink:0;transition:color .2s,border-color .2s}
+    .tabbar-btn.active{color:var(--green);border-bottom-color:var(--green)}
 
-    /* List */
-    .list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-    .list-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)}
-    .filters{display:flex;gap:4px;flex-wrap:wrap}
-    .filter-btn{font-size:11px;font-weight:500;padding:5px 10px;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap}
+    /* ── Main content ── */
+    .main{flex:1;padding:14px;overflow-y:auto}
+
+    /* ── Panel ── */
+    .panel{display:none}
+    .panel.active{display:block}
+    .panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+    .panel-title{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)}
+    .filter-row{display:flex;gap:4px;flex-wrap:wrap}
+    .filter-btn{font-size:11px;font-weight:500;padding:5px 10px;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
     .filter-btn.active{color:var(--green);border-color:var(--border2);background:var(--green-bg)}
-    .divider{height:1px;background:var(--border);margin-bottom:0}
-    .row-list{display:flex;flex-direction:column}
 
-    /* Rows */
-    .app-row,.mem-row{border-bottom:1px solid var(--border);padding:14px 0;display:flex;gap:12px;align-items:flex-start}
-    .app-row:last-child,.mem-row:last-child{border-bottom:none}
-    .row-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px;flex-wrap:wrap;display:flex;align-items:center;gap:6px}
-    .row-email{font-size:12px;color:var(--muted2);margin-bottom:8px}
-    .row-meta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-    .meta-lbl{font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
-    .meta-val{font-size:12px;color:var(--muted2)}
-    .row-notes{margin-top:6px;font-size:12px;color:var(--muted);font-style:italic}
-    .row-date{font-size:11px;color:var(--muted);margin-top:4px}
-    .row-actions{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+    /* ── Card (each row) ── */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:8px}
+    .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .card-info{flex:1;min-width:0}
+    .card-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .card-email{font-size:12px;color:var(--muted2)}
+    .card-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+    .meta-item{display:flex;flex-direction:column}
+    .meta-label{font-size:9px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+    .meta-value{font-size:12px;color:var(--text)}
+    .card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
 
-    /* Badges */
-    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    /* ── Buttons ── */
+    .btn{font-size:12px;font-weight:500;padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .2s;white-space:nowrap}
+    .btn-green{background:var(--green-bg2);color:var(--green)}
+    .btn-red{background:var(--red-bg);color:var(--red)}
+    .btn-amber{background:var(--amber-bg);color:var(--amber)}
+    .btn-ghost{background:var(--surface2);color:var(--muted2)}
+    .btn-sm{font-size:11px;padding:4px 8px}
+    .btn:active{opacity:0.7}
+
+    /* ── Badges ── */
+    .badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
     .badge-pending{background:var(--amber-bg);color:var(--amber)}
     .badge-approved{background:var(--green-bg2);color:var(--green)}
     .badge-denied{background:rgba(107,143,122,0.1);color:var(--muted)}
-    .badge-open{background:var(--red-bg);color:var(--red)}
-    .badge-resolved{background:var(--green-bg);color:var(--green)}
-    .avatar-sm{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0b0f0e;flex-shrink:0;overflow:hidden;vertical-align:middle;margin-right:6px}
-    .avatar-sm img{width:100%;height:100%;object-fit:cover}
-    .tier-select{background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;padding:5px 8px;outline:none;cursor:pointer}
-    .profile-link{color:var(--green);text-decoration:none;font-weight:500}
-    .sub-chip{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;margin-left:6px}
-    .sub-chip.active{background:var(--green-bg);color:var(--green)}
-    .sub-chip.expiring{background:var(--amber-bg);color:var(--amber)}
-    .sub-chip.expired{background:var(--red-bg);color:var(--red)}
+    .badge-stream{background:rgba(96,165,250,0.1);color:var(--blue)}
+    .badge-cast{background:var(--green-bg);color:var(--green)}
+    .badge-active{background:var(--green-bg2);color:var(--green)}
+    .badge-expired{background:var(--red-bg);color:var(--red)}
+    .badge-expiring{background:var(--amber-bg);color:var(--amber)}
 
-    /* Actions */
-    .act{font-size:12px;font-weight:500;background:none;border:none;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;padding:5px 10px;color:var(--muted2);white-space:nowrap}
-    .act:hover{background:var(--surface2);color:var(--text)}
-    .act.green{color:var(--green)}
-    .act.red{color:var(--red)}
+    /* ── Avatar ── */
+    .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#0b0f0e;flex-shrink:0;overflow:hidden}
+    .avatar img{width:100%;height:100%;object-fit:cover}
 
-    /* Creds */
-    .mem-creds{margin-top:8px;display:flex;gap:16px;flex-wrap:wrap}
-    .cred-lbl{font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
-    .cred-val{font-size:12px;color:var(--text);display:flex;align-items:center;gap:6px}
-    .show-btn,.copy-btn{font-size:10px;font-weight:500;background:none;border:1px solid var(--border2);border-radius:4px;color:var(--muted);cursor:pointer;padding:2px 6px;font-family:'Inter',sans-serif}
+    /* ── Tier select ── */
+    .tier-select{background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;padding:5px 8px;outline:none;cursor:pointer;-webkit-appearance:none}
 
-    /* Empty */
-    .empty{text-align:center;padding:40px 0}
-    .empty-title{font-size:14px;font-weight:500;color:var(--muted2);margin-bottom:6px}
-    .empty-sub{font-size:12px;color:var(--muted)}
+    /* ── Empty ── */
+    .empty{text-align:center;padding:40px 0;color:var(--muted2);font-size:13px}
 
-    /* Modal */
-    .veil{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;padding:16px}
-    .veil.open{display:flex}
-    .modal{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:24px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto}
-    .modal-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px}
-    .modal-sub{font-size:13px;color:var(--muted2);margin-bottom:20px;line-height:1.6}
-    .m-label{font-size:11px;font-weight:600;color:var(--muted2);margin-bottom:6px;display:block;letter-spacing:0.04em;text-transform:uppercase}
-    .m-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 12px;outline:none;margin-bottom:14px}
-    .m-input:focus{border-color:var(--green)}
-    .modal-divider{height:1px;background:var(--border);margin:14px 0}
-    .modal-actions{display:flex;justify-content:flex-end;gap:10px}
-    .modal-btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:none}
-    .modal-btn.cancel{background:var(--surface2);color:var(--muted2)}
-    .modal-btn.confirm{background:var(--green);color:#0b0f0e}
+    /* ── Sub-tabs ── */
+    .sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:14px;overflow-x:auto;scrollbar-width:none}
+    .sub-tabs::-webkit-scrollbar{display:none}
+    .sub-tab{font-size:12px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;padding:8px 14px;white-space:nowrap;flex-shrink:0}
+    .sub-tab.active{color:var(--green);border-bottom-color:var(--green)}
 
-    /* Mobile */
-    @media(max-width:600px){
-      .topbar{padding:10px 14px}
-      .logo{font-size:10px !important}
-      .topbar-link{font-size:12px}
-      .stats{grid-template-columns:repeat(3,1fr)}
-      .stat-cell{padding:10px 8px}
-      .stat-val{font-size:20px}
-      .stat-label{font-size:9px}
-      .tabs{padding:0}
-      .tab-btn{font-size:10px;padding:10px 8px}
-      .main{padding:10px}
-      .app-row,.mem-row{flex-direction:column;gap:0}
-      .row-actions{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:4px;width:100%;margin-top:8px}
-      .row-name{font-size:13px}
-      .tier-select{width:100%;margin-bottom:6px}
-      .mem-creds{gap:10px}
-      .modal{padding:16px;margin:0}
-      .modal-title{font-size:14px}
-    }
+    /* ── Overlay modal ── */
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;align-items:flex-end;justify-content:center;padding:0}
+    .overlay.open{display:flex}
+    .sheet{background:var(--surface);border-top:1px solid var(--border2);border-radius:16px 16px 0 0;padding:20px 16px;width:100%;max-height:92vh;overflow-y:auto}
+    .sheet-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
+    .sheet-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+    .sheet-sub{font-size:13px;color:var(--muted2);margin-bottom:18px;line-height:1.5}
+    .field{margin-bottom:14px}
+    .field label{display:block;font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:6px}
+    .field input,.field select,.field textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 12px;outline:none;-webkit-appearance:none}
+    .field input:focus,.field select:focus{border-color:var(--green)}
+    .field textarea{resize:vertical;min-height:80px}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .sheet-actions{display:flex;gap:8px;margin-top:16px}
+    .sheet-actions .btn{flex:1;padding:12px;font-size:13px;font-weight:600;text-align:center}
+
+    /* ── Password field ── */
+    .pass-row{display:flex;align-items:center;gap:8px}
+    .pass-display{font-family:monospace;font-size:16px;font-weight:700;color:var(--green);letter-spacing:0.1em;flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;min-width:0}
+
+    /* ── Info notice ── */
+    .notice{background:var(--green-bg);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--muted2);line-height:1.6;margin-bottom:14px}
+    .notice-amber{background:var(--amber-bg);border-color:rgba(251,191,36,0.2);color:var(--amber)}
   </style>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
-  <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
 </head>
 <body>
 
@@ -156,1451 +143,982 @@
 <div id="lockScreen">
   <div class="lock-card">
     <div class="lock-logo">Dungeon</div>
-    <div class="lock-sub">Dungeon Master Access</div>
-    <input class="lock-input" type="password" id="pinInput" placeholder="Password" onkeydown="if(event.key==='Enter')unlock()"/>
-    <button class="lock-btn" onclick="unlock()">Sign In</button>
-    <div class="lock-error" id="lockError">Incorrect password.</div>
+    <div class="lock-sub">Dungeon Master Panel</div>
+    <input class="lock-input" type="password" id="adminPass" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()"/>
+    <button class="lock-btn" onclick="adminLogin()">Sign In</button>
+    <div class="lock-error" id="lockErr">Incorrect password</div>
   </div>
 </div>
 
-<!-- Admin -->
+<!-- App -->
 <div id="adminApp">
+
+  <!-- Topbar -->
   <div class="topbar">
-    <a href="/" class="logo" id="logoLink">Dungeon</a>
-    <div class="topbar-right">
-      <a href="/" class="topbar-link">View Site</a>
-      <button class="topbar-link" onclick="logout()">Sign Out</button>
+    <a href="/" class="topbar-logo">Dungeon</a>
+    <div class="topbar-nav">
+      <a href="/dashboard.html" class="topbar-btn">View Site</a>
+      <button class="topbar-btn" onclick="adminLogout()">Sign Out</button>
     </div>
   </div>
 
+  <!-- Stats -->
   <div class="stats">
-  <div class="stats-inner" style="display:contents">
-    <div class="stat-cell"><div class="stat-label">Applications</div><div class="stat-val" id="statApplicants" style="color:var(--amber)">—</div></div>
-    <div class="stat-cell"><div class="stat-label">Members</div><div class="stat-val" id="statMembers" style="color:var(--green)">—</div></div>
-    <div class="stat-cell"><div class="stat-label">Support</div><div class="stat-val" id="statSupport" style="color:var(--red)">—</div></div>
+    <div class="stat">
+      <div class="stat-label">Applications</div>
+      <div class="stat-num" id="statApplicants" style="color:var(--amber)">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Members</div>
+      <div class="stat-num" id="statMembers" style="color:var(--green)">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Support</div>
+      <div class="stat-num" id="statSupport" style="color:var(--red)">—</div>
+    </div>
   </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('redemptions',this)">Redemptions <span id="redemBadge" style="display:none;color:var(--red);font-size:11px"></span></button>
-    <button class="tab-btn" onclick="switchTab('applicants',this)">Applications</button>
-    <button class="tab-btn" onclick="switchTab('members',this)">Members</button>
-    <button class="tab-btn" onclick="switchTab('subscribers',this)">Subscribers</button>
-    <button class="tab-btn" onclick="switchTab('demos',this)">Demos <span id="demoBadge" style="display:none;color:var(--amber);font-size:10px"></span></button>
-    <button class="tab-btn" onclick="switchTab('support',this)">Support <span id="suppBadge" style="display:none;color:var(--red)"></span></button>
+  <!-- Tab bar -->
+  <div class="tabbar">
+    <button class="tabbar-btn active" onclick="switchTab('redemptions',this)">Redemptions <span id="redemBadge" style="display:none;color:var(--amber)"></span></button>
+    <button class="tabbar-btn" onclick="switchTab('applications',this)">Applications</button>
+    <button class="tabbar-btn" onclick="switchTab('members',this)">Members</button>
+    <button class="tabbar-btn" onclick="switchTab('subscribers',this)">Subscribers</button>
+    <button class="tabbar-btn" onclick="switchTab('demos',this)">Demos <span id="demoBadge" style="display:none;color:var(--amber)"></span></button>
+    <button class="tabbar-btn" onclick="switchTab('support',this)">Support</button>
   </div>
 
+  <!-- Main -->
   <div class="main">
 
-    <div class="tab-panel active" id="panel-redemptions">
-      <div class="list-header">
-        <div class="list-label">Credit Redemptions</div>
-        <div class="filters">
+    <!-- Redemptions -->
+    <div class="panel active" id="panel-redemptions">
+      <div class="panel-header">
+        <div class="panel-title">Credit Redemptions</div>
+        <div class="filter-row">
           <button class="filter-btn active" onclick="setRedemFilter('pending',this)">Pending</button>
           <button class="filter-btn" onclick="setRedemFilter('fulfilled',this)">Fulfilled</button>
           <button class="filter-btn" onclick="setRedemFilter('all',this)">All</button>
         </div>
       </div>
-      <div class="divider"></div>
       <div id="redemptionList"></div>
-
-      <!-- Fulfill modal -->
-
-      <!-- Credit edit modal -->
-      <div id="creditEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;padding:24px">
-        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:400px">
-          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px">Edit Credits</div>
-          <div style="font-size:13px;color:var(--muted2);margin-bottom:20px" id="creditEditName"></div>
-          <input type="hidden" id="creditEditProfileId"/>
-          <div style="margin-bottom:14px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Current Balance</label>
-            <div style="font-size:24px;font-weight:700;color:var(--green)" id="creditEditBalance">0</div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
-            <div>
-              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Amount</label>
-              <input type="number" id="creditEditAmount" value="1" min="1" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:14px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-            </div>
-            <div>
-              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Action</label>
-              <select id="creditEditAction" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:14px;padding:9px 12px;outline:none">
-                <option value="add">Add</option>
-                <option value="remove">Remove</option>
-              </select>
-            </div>
-          </div>
-          <div style="margin-bottom:20px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Note</label>
-            <input type="text" id="creditEditNote" placeholder="Reason (optional)" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-          </div>
-          <div style="display:flex;justify-content:flex-end;gap:10px">
-            <button class="act" onclick="closeCreditEdit()">Cancel</button>
-            <button class="act green" onclick="saveCreditEdit()">Save</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="fulfillModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px">
-        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:440px">
-          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px" id="fulfillTitle">Fulfill Redemption</div>
-          <div style="font-size:13px;color:var(--muted2);margin-bottom:20px" id="fulfillSubtitle"></div>
-          <input type="hidden" id="fulfillId"/>
-
-          <div style="margin-bottom:14px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em" id="fulfillUserLabel">Username / Email</label>
-            <input type="text" id="fulfillUser" placeholder="" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-          </div>
-          <div style="margin-bottom:14px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Password</label>
-            <input type="text" id="fulfillPass" placeholder="" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-          </div>
-          <div style="margin-bottom:20px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Notes (optional)</label>
-            <input type="text" id="fulfillNotes" placeholder="Any extra info for the member…" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-          </div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:20px;font-size:12px;color:var(--muted2);line-height:1.6">
-            Clicking <strong style="color:var(--text)">Send Credentials</strong> will automatically message the member with their account info and update their subscription.
-          </div>
-          <div style="display:flex;justify-content:flex-end;gap:10px">
-            <button class="act" onclick="closeFulfill()">Cancel</button>
-            <button class="act green" onclick="submitFulfill()">Send Credentials</button>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <div class="tab-panel" id="panel-applicants">
-      <div class="list-header">
-        <div class="list-label" id="appListLabel">Pending Applications</div>
-        <div class="filters">
+    <!-- Applications -->
+    <div class="panel" id="panel-applications">
+      <div class="panel-header">
+        <div class="panel-title" id="appListLabel">Pending Applications</div>
+        <div class="filter-row">
           <button class="filter-btn active" id="appf-pending" onclick="setAppFilter('pending',this)">Pending</button>
           <button class="filter-btn" id="appf-all" onclick="setAppFilter('all',this)">All</button>
           <button class="filter-btn" id="appf-archived" onclick="setAppFilter('archived',this)">Archived</button>
         </div>
       </div>
-      <div class="divider"></div>
-      <div class="row-list" id="applicantList"></div>
+      <div id="appList"></div>
     </div>
 
-    <div class="tab-panel" id="panel-members">
-      <div class="list-header"><div class="list-label">Members</div></div>
-      <div class="divider"></div>
-      <div class="row-list" id="memberList"></div>
+    <!-- Members -->
+    <div class="panel" id="panel-members">
+      <div class="sub-tabs">
+        <button class="sub-tab active" id="msub-roster" onclick="switchMemberSub('roster',this)">Roster</button>
+        <button class="sub-tab" id="msub-credits" onclick="switchMemberSub('credits',this)">Credits</button>
+        <button class="sub-tab" id="msub-stremio" onclick="switchMemberSub('stremio',this)">DungeonStream</button>
+        <button class="sub-tab" id="msub-dc" onclick="switchMemberSub('dc',this)">DungeonCast</button>
+      </div>
+      <div id="member-sub-roster"><div id="memberList"></div></div>
+      <div id="member-sub-credits" style="display:none"><div id="creditList"></div></div>
+      <div id="member-sub-stremio" style="display:none"><div id="stremioTabList"></div></div>
+      <div id="member-sub-dc" style="display:none"><div id="iptvList"></div></div>
     </div>
 
+    <!-- Subscribers -->
+    <div class="panel" id="panel-subscribers">
+      <div class="panel-header">
+        <div class="panel-title">Active Subscribers</div>
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="setSubFilter('all',this)">All Active</button>
+          <button class="filter-btn" onclick="setSubFilter('stream',this)">DungeonStream</button>
+          <button class="filter-btn" onclick="setSubFilter('cast',this)">DungeonCast</button>
+          <button class="filter-btn" onclick="setSubFilter('expired',this)">Expired</button>
+        </div>
+      </div>
+      <div id="subscriberList"></div>
+    </div>
 
-    <div class="tab-panel" id="panel-demos">
-      <div class="list-header">
-        <div class="list-label">Demo Requests</div>
-        <div class="filters">
+    <!-- Demos -->
+    <div class="panel" id="panel-demos">
+      <div class="panel-header">
+        <div class="panel-title">Demo Requests</div>
+        <div class="filter-row">
           <button class="filter-btn active" onclick="setDemoFilter('pending',this)">Pending</button>
           <button class="filter-btn" onclick="setDemoFilter('fulfilled',this)">Fulfilled</button>
           <button class="filter-btn" onclick="setDemoFilter('all',this)">All</button>
         </div>
       </div>
-      <div class="divider"></div>
       <div id="demoRequestList"></div>
-
-      <!-- Fulfill Demo Modal -->
-      <div id="fulfillDemoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px">
-        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:440px">
-          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px" id="fulfillDemoTitle">Fulfill Demo</div>
-          <div style="font-size:13px;color:var(--muted2);margin-bottom:20px" id="fulfillDemoSubtitle"></div>
-          <input type="hidden" id="fulfillDemoId"/>
-          <div style="margin-bottom:14px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em" id="fulfillDemoUserLabel">Username</label>
-            <input type="text" id="fulfillDemoUser" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-          </div>
-          <div style="margin-bottom:20px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Password</label>
-            <input type="text" id="fulfillDemoPass" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-          </div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:20px;font-size:12px;color:var(--muted2);line-height:1.6">
-            Clicking <strong style="color:var(--text)">Send Demo</strong> will email the member their 24-hour credentials immediately.
-          </div>
-          <div style="display:flex;justify-content:flex-end;gap:10px">
-            <button class="act" onclick="closeFulfillDemo()">Cancel</button>
-            <button class="act" style="background:var(--amber);color:#0b0f0e" onclick="submitFulfillDemo()">Send Demo</button>
-          </div>
-        </div>
-      </div>
     </div>
 
-
-    <div class="tab-panel" id="panel-subscribers">
-      <div class="list-header">
-        <div class="list-label">Active Subscribers</div>
-        <div class="filters">
-          <button class="filter-btn active" id="subf-all" onclick="setSubFilter('all',this)">All</button>
-          <button class="filter-btn" id="subf-stream" onclick="setSubFilter('stream',this)">DungeonStream</button>
-          <button class="filter-btn" id="subf-cast" onclick="setSubFilter('cast',this)">DungeonCast</button>
-          <button class="filter-btn" id="subf-expired" onclick="setSubFilter('expired',this)">Expired</button>
-        </div>
-      </div>
-      <div class="divider"></div>
-      <div id="subscriberList"></div>
-    </div>
-
-    <div class="tab-panel" id="panel-support">
-      <div class="list-header">
-        <div class="list-label">Messages</div>
-        <div class="filters">
+    <!-- Support -->
+    <div class="panel" id="panel-support">
+      <div class="panel-header">
+        <div class="panel-title">Support Messages</div>
+        <div class="filter-row">
           <button class="filter-btn active" onclick="setSuppFilter('open',this)">Open</button>
           <button class="filter-btn" onclick="setSuppFilter('resolved',this)">Resolved</button>
           <button class="filter-btn" onclick="setSuppFilter('all',this)">All</button>
         </div>
       </div>
-      <div class="divider"></div>
-      <div class="row-list" id="supportList"></div>
+      <div id="suppList"></div>
     </div>
 
+  </div><!-- /main -->
+</div><!-- /adminApp -->
 
+<!-- ══ SHEETS (bottom-sheet modals) ══════════════════════════════════════ -->
 
-    <div class="tab-panel" id="panel-stremio-tab">
-      <div class="list-header"><div class="list-label">Stremio Accounts</div></div>
-      <div class="divider"></div>
-      <div class="row-list" id="stremioTabList"></div>
-
-      <!-- Edit modal -->
-      <div id="stremioModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px">
-        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:480px">
-          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:20px">Edit Stremio Account</div>
-          <input type="hidden" id="stremioMemberId"/>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-            <div>
-              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Stremio Email</label>
-              <input type="text" id="stremioTabEmail" placeholder="email@stremio.com" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-            </div>
-            <div>
-              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Password</label>
-              <input type="text" id="stremioTabPass" placeholder="Password" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
-            <div>
-              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Start Date</label>
-              <input type="date" id="stremioTabStart" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-            </div>
-            <div>
-              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">End Date</label>
-              <input type="date" id="stremioTabEnd" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-            </div>
-          </div>
-          <div style="display:flex;justify-content:flex-end;gap:10px">
-            <button class="act" onclick="closeStremioModal()">Cancel</button>
-            <button class="act green" onclick="saveStremio()">Save</button>
-          </div>
-        </div>
+<!-- Grant Access -->
+<div class="overlay" id="approveSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Grant Access</div>
+    <div class="sheet-sub" id="approveDesc"></div>
+    <div class="notice">A welcome email with login details will be sent automatically.</div>
+    <div class="field">
+      <label>Password</label>
+      <div class="pass-row">
+        <input type="text" class="pass-display" id="genPassDisplay" placeholder="Password"/>
+        <button class="btn btn-ghost btn-sm" onclick="regeneratePass()">↺</button>
+        <button class="btn btn-ghost btn-sm" id="copyGenPass" onclick="copyGenPass()">Copy</button>
       </div>
     </div>
-
-    <div class="tab-panel" id="panel-dungeoncast">
-      <div class="list-header">
-        <div class="list-label">DungeonCast Accounts</div>
-        <button class="act green" onclick="showAddIptv()">+ Add Account</button>
-      </div>
-      <div class="divider"></div>
-      <div id="iptvList"></div>
-
-      <!-- Add/Edit modal -->
-      <div id="iptvModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px">
-        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:480px">
-          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:20px" id="iptvModalTitle">Add IPTV Account</div>
-          <input type="hidden" id="iptvProfileId"/>
-          <div class="field" style="margin-bottom:14px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Member</label>
-            <select id="iptvMemberSelect" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none">
-              <option value="">Select member…</option>
-            </select>
-          </div>
-          <div class="field" style="margin-bottom:14px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">DungeonCast Username</label>
-            <input type="text" id="iptvNodecastUser" placeholder="Their login on tv.enterdungeon.cc" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-          </div>
-          <div class="field" style="margin-bottom:14px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Xtream URL</label>
-            <input type="text" id="iptvXtreamUrl" placeholder="http://provider.com:port" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-            <div>
-              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Xtream Username</label>
-              <input type="text" id="iptvXtreamUser" placeholder="Username" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-            </div>
-            <div>
-              <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Xtream Password</label>
-              <input type="text" id="iptvXtreamPass" placeholder="Password" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-            </div>
-          </div>
-          <div class="field" style="margin-bottom:14px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Status</label>
-            <select id="iptvStatus" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none">
-              <option value="pending">Pending</option>
-              <option value="active">Active</option>
-              <option value="suspended">Suspended</option>
-            </select>
-          </div>
-          <div class="field" style="margin-bottom:20px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Notes</label>
-            <input type="text" id="iptvNotes" placeholder="Any notes…" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-          </div>
-          <div style="display:flex;justify-content:flex-end;gap:10px">
-            <button class="act" onclick="closeIptvModal()">Cancel</button>
-            <button class="act green" onclick="saveIptv()">Save</button>
-          </div>
-        </div>
+    <div class="field">
+      <label>DungeonStream API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional)</span></label>
+      <div class="pass-row">
+        <input type="text" id="approveApiKey" placeholder="Paste from get-stremio-key.js…" style="flex:1;font-family:monospace;font-size:12px"/>
+        <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('approveApiKey').value=t}).catch(()=>{})">Paste</button>
       </div>
     </div>
-
-    <div class="tab-panel" id="panel-credits">
-      <div class="list-header">
-        <div class="list-label">Member Credits</div>
-      </div>
-      <div class="divider"></div>
-      <div class="row-list" id="creditList"></div>
-    </div>
-
-    <div class="tab-panel" id="panel-profiles">
-      <div class="list-header">
-        <div class="list-label">All Profiles</div>
-      </div>
-      <div class="divider"></div>
-      <div class="row-list" id="profileList"></div>
-    </div>
-
-  </div>
-</div>
-
-<!-- Grant Entry Modal -->
-
-      <!-- Resend Welcome Email Modal -->
-      <div id="resendWelcomeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;padding:24px">
-        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:420px">
-          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px">Resend Welcome Email</div>
-          <div style="font-size:13px;color:var(--muted2);margin-bottom:20px" id="resendWelcomeName"></div>
-          <input type="hidden" id="resendWelcomeMemberId"/>
-          <div style="margin-bottom:8px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">New Password (optional)</label>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-              <span id="resendPassDisplay" style="font-size:16px;font-weight:700;color:var(--green);font-family:monospace;letter-spacing:0.1em"></span>
-              <button class="act" style="font-size:11px;padding:3px 10px" onclick="genResendPass()">↺ New</button>
-              <button class="act" style="font-size:11px;padding:3px 10px" onclick="document.getElementById('resendPassDisplay').textContent=''">Clear</button>
-            </div>
-            <div style="font-size:11px;color:var(--muted2)">Leave blank to resend with existing password shown as placeholder.</div>
-          </div>
-          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
-            <button class="act" onclick="closeResendWelcome()">Cancel</button>
-            <button class="act green" onclick="submitResendWelcome()">Send Email</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- DungeonCast Demo Modal -->
-      <div id="dcDemoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;padding:24px">
-        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:440px">
-          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">📡 DungeonCast Demo</div>
-          <div style="font-size:13px;color:var(--muted2);margin-bottom:20px" id="dcDemoSubtitle">Send 24-hour demo credentials</div>
-          <input type="hidden" id="dcDemoEmail"/>
-          <div style="background:var(--amber-bg);border:1px solid rgba(251,191,36,0.3);border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--amber);line-height:1.6">
-            ⚡ This will email the member their demo credentials with a 24-hour expiry starting now.
-          </div>
-          <div style="margin-bottom:14px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Send To (Email)</label>
-            <input type="text" id="dcDemoToEmail" placeholder="email@example.com" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-          </div>
-          <div style="margin-bottom:14px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">DungeonCast Username</label>
-            <input type="text" id="dcDemoUser" placeholder="demo_username" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-          </div>
-          <div style="margin-bottom:20px">
-            <label style="font-size:11px;font-weight:600;color:var(--muted2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">DungeonCast Password</label>
-            <input type="text" id="dcDemoPass" placeholder="demo_password" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none;box-sizing:border-box"/>
-          </div>
-          <div style="display:flex;justify-content:flex-end;gap:10px">
-            <button class="act" onclick="closeDCDemo()">Cancel</button>
-            <button class="act" style="background:var(--amber);color:#0b0f0e" onclick="submitDCDemo()">Send Demo Email</button>
-          </div>
-        </div>
-      </div>
-
-<div class="veil" id="approveModal">
-  <div class="modal">
-    <div class="modal-title">Grant Access</div>
-    <div class="modal-sub" id="approveDesc"></div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Password</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <input type="text" id="genPassDisplay" style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--green);font-family:monospace;font-size:15px;font-weight:700;padding:10px 12px;outline:none;letter-spacing:0.08em"/>
-        <button class="act" style="font-size:11px;padding:10px 10px;flex-shrink:0" onclick="regeneratePass()">↺ Generate</button>
-        <button class="act" style="font-size:11px;padding:10px 10px;flex-shrink:0" id="copyGenPass" onclick="copyGenPass()">Copy</button>
-      </div>
-      <div style="font-size:11px;color:var(--muted2);margin-top:6px">Type your own or generate one. This will be emailed to the member.</div>
-    </div>
-    <div style="margin-top:16px;margin-bottom:4px">
-      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">DungeonStream API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional)</span></div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <input type="text" id="approveApiKey" placeholder="Paste from get-stremio-key.js…" style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--green);font-family:monospace;font-size:12px;padding:9px 12px;outline:none;min-width:0"/>
-        <button class="act" style="font-size:11px;padding:9px 10px;flex-shrink:0" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('approveApiKey').value=t}).catch(()=>{})">Paste</button>
-      </div>
-      <div style="font-size:11px;color:var(--muted2);margin-top:4px">Stored for AIOManager. Leave blank to add later in the DungeonStream tab.</div>
-    </div>
-    <div class="modal-divider"></div>
-    <div class="modal-actions">
-      <button class="modal-btn cancel" onclick="closeModal('approveModal')">Cancel</button>
-      <button class="modal-btn confirm" onclick="confirmApprove()">Grant Access & Send Email</button>
+    <div id="approveErr" style="display:none;color:var(--red);font-size:12px;margin-bottom:10px"></div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeSheet('approveSheet')">Cancel</button>
+      <button class="btn btn-green" onclick="confirmApprove()">Grant Access & Send Email</button>
     </div>
   </div>
 </div>
 
-<!-- Edit Member Modal -->
-<div class="veil" id="editModal">
-  <div class="modal">
-    <div class="modal-title">Edit Member</div>
-    <div class="modal-sub" id="editDesc"></div>
-    <label class="m-label">Stremio Email</label>
-    <input class="m-input" id="editStremioEmail" type="email" placeholder="their@stremio.com"/>
-    <label class="m-label">Stremio Password</label>
-    <input class="m-input" id="editStremioPass" type="text" placeholder="Password"/>
-    <label class="m-label">Notes</label>
-    <input class="m-input" id="editNotes" type="text" placeholder="—"/>
-    <div class="modal-divider"></div>
-    <div class="modal-actions">
-      <button class="modal-btn cancel" onclick="closeModal('editModal')">Cancel</button>
-      <button class="modal-btn confirm" onclick="confirmEdit()">Save Changes</button>
+<!-- Edit Member -->
+<div class="overlay" id="editSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Edit Member</div>
+    <input type="hidden" id="editMemberId"/>
+    <div class="field-row">
+      <div class="field"><label>First Name</label><input type="text" id="editFirstName"/></div>
+      <div class="field"><label>Last Name</label><input type="text" id="editLastName"/></div>
+    </div>
+    <div class="field"><label>Notes</label><textarea id="editNotes"></textarea></div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeSheet('editSheet')">Cancel</button>
+      <button class="btn btn-green" onclick="confirmEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Credit Edit -->
+<div class="overlay" id="creditSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Edit Credits</div>
+    <div class="sheet-sub" id="creditSheetName"></div>
+    <input type="hidden" id="creditEditProfileId"/>
+    <div style="font-size:32px;font-weight:700;color:var(--green);margin-bottom:16px" id="creditEditBalance">0</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Amount</label>
+        <input type="number" id="creditEditAmount" value="1" min="1"/>
+      </div>
+      <div class="field">
+        <label>Action</label>
+        <select id="creditEditAction">
+          <option value="add">Add</option>
+          <option value="remove">Remove</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Note (optional)</label><input type="text" id="creditEditNote" placeholder="Reason…"/></div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeSheet('creditSheet')">Cancel</button>
+      <button class="btn btn-green" id="creditSaveBtn" onclick="saveCreditEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Fulfill Redemption -->
+<div class="overlay" id="fulfillSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="fulfillTitle">Fulfill</div>
+    <div class="sheet-sub" id="fulfillSubtitle"></div>
+    <input type="hidden" id="fulfillId"/>
+    <div class="notice">Sending credentials will email the member and update their subscription.</div>
+    <div class="field"><label id="fulfillUserLabel">Username / Email</label><input type="text" id="fulfillUser"/></div>
+    <div class="field"><label>Password</label><input type="text" id="fulfillPass"/></div>
+    <div class="field"><label>Notes (optional)</label><input type="text" id="fulfillNotes" placeholder="Any extra info…"/></div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeSheet('fulfillSheet')">Cancel</button>
+      <button class="btn btn-green" id="fulfillBtn" onclick="submitFulfill()">Send Credentials</button>
+    </div>
+  </div>
+</div>
+
+<!-- Fulfill Demo -->
+<div class="overlay" id="fulfillDemoSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="fulfillDemoTitle">Fulfill Demo</div>
+    <div class="sheet-sub" id="fulfillDemoSubtitle"></div>
+    <input type="hidden" id="fulfillDemoId"/>
+    <div class="notice notice-amber">⚡ Sends 24-hour demo credentials via email immediately.</div>
+    <div class="field"><label id="fulfillDemoUserLabel">Username</label><input type="text" id="fulfillDemoUser"/></div>
+    <div class="field"><label>Password</label><input type="text" id="fulfillDemoPass"/></div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeSheet('fulfillDemoSheet')">Cancel</button>
+      <button class="btn btn-amber" id="fulfillDemoBtn" onclick="submitFulfillDemo()" style="background:var(--amber-bg);color:var(--amber)">Send Demo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Resend Welcome -->
+<div class="overlay" id="resendSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Resend Welcome Email</div>
+    <div class="sheet-sub" id="resendWelcomeName"></div>
+    <input type="hidden" id="resendWelcomeMemberId"/>
+    <div class="field">
+      <label>New Password <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional)</span></label>
+      <div class="pass-row">
+        <input type="text" id="resendPassDisplay" placeholder="Leave blank to keep existing"/>
+        <button class="btn btn-ghost btn-sm" onclick="genResendPass()">↺</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted2);margin-top:4px">Leave blank to resend with placeholder text.</div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeSheet('resendSheet')">Cancel</button>
+      <button class="btn btn-green" onclick="submitResendWelcome()">Send Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- DungeonCast Demo -->
+<div class="overlay" id="dcDemoSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📡 DungeonCast Demo</div>
+    <div class="sheet-sub" id="dcDemoSubtitle">Send 24-hour demo credentials</div>
+    <div class="notice notice-amber">⚡ Emails demo credentials with 24-hour expiry starting now.</div>
+    <div class="field"><label>Send To (Email)</label><input type="text" id="dcDemoToEmail" placeholder="email@example.com"/></div>
+    <div class="field"><label>DungeonCast Username</label><input type="text" id="dcDemoUser" placeholder="username"/></div>
+    <div class="field"><label>DungeonCast Password</label><input type="text" id="dcDemoPass" placeholder="password"/></div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeSheet('dcDemoSheet')">Cancel</button>
+      <button class="btn btn-amber" onclick="submitDCDemo()" style="background:var(--amber-bg);color:var(--amber)">Send Demo Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- Stremio Edit -->
+<div class="overlay" id="stremioSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Edit DungeonStream Account</div>
+    <input type="hidden" id="stremioMemberId"/>
+    <div class="field"><label>Stremio Email</label><input type="text" id="stremioTabEmail"/></div>
+    <div class="field"><label>Password</label><input type="text" id="stremioTabPass"/></div>
+    <div class="field-row">
+      <div class="field"><label>Start Date</label><input type="date" id="stremioTabStart"/></div>
+      <div class="field"><label>End Date</label><input type="date" id="stremioTabEnd"/></div>
+    </div>
+    <div class="field">
+      <label>API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(for AIOManager)</span></label>
+      <div class="pass-row">
+        <input type="text" id="stremioTabAuthKey" placeholder="Paste auth key…" style="flex:1;font-family:monospace;font-size:12px"/>
+        <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('stremioTabAuthKey').value=t}).catch(()=>{})">Paste</button>
+      </div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeSheet('stremioSheet')">Cancel</button>
+      <button class="btn btn-green" onclick="saveStremio()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- IPTV Edit -->
+<div class="overlay" id="iptvSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="iptvModalTitle">Add DungeonCast Account</div>
+    <input type="hidden" id="iptvProfileId"/>
+    <div class="field">
+      <label>Member</label>
+      <select id="iptvMemberSelect"><option value="">Select member…</option></select>
+    </div>
+    <div class="field"><label>DungeonCast Username</label><input type="text" id="iptvNodecastUser" placeholder="Their login on dungeoncast.cc"/></div>
+    <div class="field"><label>Xtream URL</label><input type="text" id="iptvXtreamUrl" placeholder="http://line.dungeoncast.cc"/></div>
+    <div class="field-row">
+      <div class="field"><label>Xtream Username</label><input type="text" id="iptvXtreamUser"/></div>
+      <div class="field"><label>Xtream Password</label><input type="text" id="iptvXtreamPass"/></div>
+    </div>
+    <div class="field">
+      <label>Status</label>
+      <select id="iptvStatus">
+        <option value="pending">Pending</option>
+        <option value="active">Active</option>
+        <option value="suspended">Suspended</option>
+      </select>
+    </div>
+    <div class="field"><label>Notes</label><input type="text" id="iptvNotes" placeholder="Any notes…"/></div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeSheet('iptvSheet')">Cancel</button>
+      <button class="btn btn-green" onclick="saveIptv()">Save</button>
     </div>
   </div>
 </div>
 
 <script>
-  let appFilter='pending', suppFilter='open';
-  let activeApplicantId=null, activeMemberId=null;
-  let showPasswords={};
+const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Dungeon Master',color:'#fbbf24'}};
+let appFilter='pending', suppFilter='open', redemFilter='pending', demoFilter='pending', subFilter='all';
+let activeApplicantId=null, activeMemberId=null, showPasswords={}, allProfiles=[];
 
-  async function unlock(){
-    const pw=document.getElementById('pinInput').value;
-    try{
-      const res=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
-      if(res.ok){
-        document.getElementById('lockScreen').style.display='none';
-        document.getElementById('adminApp').style.display='block';
-        loadAll();
-      } else {
-        const d=await res.json();
-        document.getElementById('lockError').textContent=d.error||'Incorrect password.';
-        document.getElementById('lockError').style.display='block';
-        document.getElementById('pinInput').value='';
-        document.getElementById('pinInput').focus();
-      }
-    }catch{document.getElementById('lockError').textContent='Connection error.';document.getElementById('lockError').style.display='block'}
+// ── Auth ─────────────────────────────────────────────────────────────────────
+async function adminLogin(){
+  const pass=document.getElementById('adminPass').value;
+  const err=document.getElementById('lockErr');
+  const res=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})}).then(r=>r.json()).catch(()=>({error:'Network error'}));
+  if(res.error){err.textContent=res.error;err.style.display='block';return}
+  document.getElementById('lockScreen').style.display='none';
+  document.getElementById('adminApp').classList.add('visible');
+  loadAll();
+}
+document.getElementById('adminPass').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin()});
+async function adminLogout(){await fetch('/api/logout',{method:'POST'}).catch(()=>{});window.location.href='/login.html'}
+fetch('/api/me').then(r=>r.json()).then(d=>{
+  if(d.authenticated&&d.role==='admin'){
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('adminApp').classList.add('visible');
+    loadAll();
   }
+}).catch(()=>{});
 
-  async function logout(){
-    await fetch('/api/logout',{method:'POST'});
-    document.getElementById('lockScreen').style.display='flex';
-    document.getElementById('adminApp').style.display='none';
-    document.getElementById('pinInput').value='';
-    document.getElementById('lockError').style.display='none';
+// ── Sheets ────────────────────────────────────────────────────────────────────
+function openSheet(id){document.getElementById(id).classList.add('open')}
+function closeSheet(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.overlay').forEach(el=>{
+  el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')})
+});
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+function switchTab(name,el){
+  document.querySelectorAll('.tabbar-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+  if(name==='applications'){
+    appFilter='pending';
+    document.querySelectorAll('#panel-applications .filter-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('appf-pending')?.classList.add('active');
+    document.getElementById('appListLabel').textContent='Pending Applications';
+    loadApplicants();
   }
+  if(name==='members') loadMembers();
+  if(name==='redemptions') loadRedemptions();
+  if(name==='demos') loadDemosTab();
+  if(name==='subscribers') loadSubscribers();
+  if(name==='support') loadSupport();
+}
 
-  fetch('/api/me').then(r=>r.json()).then(d=>{
-    if(d.authenticated){document.getElementById('lockScreen').style.display='none';document.getElementById('adminApp').style.display='block';loadAll()}
-    else{document.getElementById('pinInput').focus()}
+function switchMemberSub(name,el){
+  ['roster','credits','stremio','dc'].forEach(n=>{
+    const el2=document.getElementById('member-sub-'+n);
+    if(el2)el2.style.display=n===name?'block':'none';
+    document.getElementById('msub-'+n)?.classList.toggle('active',n===name);
   });
+  if(name==='credits')loadCreditsTab();
+  if(name==='stremio')loadStremioTab();
+  if(name==='dc')loadDCTab();
+  if(name==='roster')loadMembers();
+}
 
+// ── Load all ──────────────────────────────────────────────────────────────────
+async function loadAll(){
+  loadStats();loadApplicants();loadMembers();loadRedemptions();loadDemosTab();
+}
 
-  function switchMemberSub(name, el) {
-    ['roster','credits','stremio','dc'].forEach(n => {
-      document.getElementById('member-sub-'+n).style.display = n===name ? 'block' : 'none';
-      document.getElementById('msub-'+n).style.borderBottomColor = n===name ? 'var(--green)' : 'transparent';
-      document.getElementById('msub-'+n).style.color = n===name ? 'var(--green)' : '';
-    });
-    if(name==='credits') loadCreditsTab();
-    if(name==='stremio') loadStremioTab();
-    if(name==='dc') loadDCTab();
-    if(name==='roster') loadMembers();
-  }
+async function loadStats(){
+  const d=await fetch('/api/stats').then(r=>r.json()).catch(()=>({}));
+  document.getElementById('statApplicants').textContent=d.pending??d.applicants??'—';
+  document.getElementById('statMembers').textContent=d.members??'—';
+  document.getElementById('statSupport').textContent=d.support??'—';
+}
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmt(dt){if(!dt)return'—';try{if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}catch{return dt}}
+function esc(s){return(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}
+function getDays(dt){if(!dt)return-999;try{if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';return Math.ceil((new Date(dt)-new Date())/86400000)}catch{return-999}}
 
+// ── Applications ──────────────────────────────────────────────────────────────
+function setAppFilter(f,el){
+  appFilter=f;
+  document.querySelectorAll('#panel-applications .filter-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const labels={pending:'Pending Applications',all:'All Applications',archived:'Archived Applications'};
+  document.getElementById('appListLabel').textContent=labels[f]||'Applications';
+  loadApplicants();
+}
 
-  async function resendAppEmail(appId, email) {
-    const btn = event.target;
-    btn.textContent = 'Sending…'; btn.disabled = true;
-    const r = await fetch('/api/admin/resend/application/' + appId, { method:'POST' });
-    btn.textContent = r.ok ? '✓ Sent' : '✗ Failed';
-    setTimeout(() => { btn.textContent = '↺ Email'; btn.disabled = false; }, 3000);
-  }
-
-  function toggleMemberPass(id, pass) {
-    const el = document.getElementById('mpw-' + id);
-    const btn = el.nextElementSibling;
-    if (el.textContent === '••••••••') {
-      el.textContent = pass || '(hashed — use resend to set new)';
-      el.style.color = 'var(--green)';
-      btn.textContent = 'Hide';
-    } else {
-      el.textContent = '••••••••';
-      el.style.color = 'var(--muted2)';
-      btn.textContent = 'Show';
-    }
-  }
-
-  function copyMemberPass(id, pass) {
-    navigator.clipboard.writeText(pass).then(() => {
-      const btn = document.getElementById('cpmw-' + id);
-      if(btn){btn.textContent='✓ Copied';setTimeout(()=>btn.textContent='Copy',2000);}
-    });
-  }
-
-
-
-  function openDCDemo(profileId, screenName, email) {
-    document.getElementById('dcDemoSubtitle').textContent = 'Sending 24-hour demo to @' + screenName;
-    document.getElementById('dcDemoToEmail').value = email;
-    document.getElementById('dcDemoUser').value = '';
-    document.getElementById('dcDemoPass').value = '';
-    document.getElementById('dcDemoModal').style.display = 'flex';
-  }
-
-  function openDCDemoManual() {
-    document.getElementById('dcDemoSubtitle').textContent = 'Send a 24-hour DungeonCast demo';
-    document.getElementById('dcDemoToEmail').value = '';
-    document.getElementById('dcDemoUser').value = '';
-    document.getElementById('dcDemoPass').value = '';
-    document.getElementById('dcDemoModal').style.display = 'flex';
-  }
-
-  function closeDCDemo() {
-    document.getElementById('dcDemoModal').style.display = 'none';
-  }
-
-  async function submitDCDemo() {
-    const toEmail = document.getElementById('dcDemoToEmail').value.trim();
-    const user = document.getElementById('dcDemoUser').value.trim();
-    const pass = document.getElementById('dcDemoPass').value.trim();
-    if (!toEmail || !user || !pass) { alert('Fill in all fields'); return; }
-
-    const btn = event.target;
-    btn.textContent = 'Sending…'; btn.disabled = true;
-
-    const res = await fetch('/api/admin/dc-demo', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ email: toEmail, username: user, password: pass })
-    }).then(r=>r.json()).catch(e=>({error:e.message}));
-
-    if (res.error) { alert('Error: ' + res.error); btn.textContent = 'Send Demo Email'; btn.disabled = false; return; }
-
-    closeDCDemo();
-    btn.textContent = 'Send Demo Email'; btn.disabled = false;
-    alert('Demo email sent to ' + toEmail + '!');
-  }
-
-  function openResendWelcome(memberId, name) {
-    document.getElementById('resendWelcomeMemberId').value = memberId;
-    document.getElementById('resendWelcomeName').textContent = name;
-    document.getElementById('resendPassDisplay').textContent = '';
-    document.getElementById('resendWelcomeModal').style.display = 'flex';
-  }
-
-  function genResendPass() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-    document.getElementById('resendPassDisplay').textContent = Array.from({length:8}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
-  }
-
-  function closeResendWelcome() {
-    document.getElementById('resendWelcomeModal').style.display = 'none';
-  }
-
-  async function submitResendWelcome() {
-    const memberId = document.getElementById('resendWelcomeMemberId').value;
-    const new_pass = document.getElementById('resendPassDisplay').textContent.trim();
-    const btn = document.querySelector('#resendWelcomeModal .act.green');
-    btn.textContent = 'Sending…'; btn.disabled = true;
-    const r = await fetch('/api/admin/resend/welcome/' + memberId, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ new_pass: new_pass || null })
-    });
-    closeResendWelcome();
-    btn.textContent = 'Send Email'; btn.disabled = false;
-  }
-
-  function openCreditEdit(profileId, name, balance) {
-    console.log('openCreditEdit called:', profileId, name, balance);
-    if (!profileId || profileId === 'undefined') {
-      alert('This member has no profile yet — they need to complete account setup first.');
-      return;
-    }
-    const modal = document.getElementById('creditEditModal');
-    if (!modal) { alert('Credit edit modal not found in DOM'); return; }
-    document.getElementById('creditEditProfileId').value = profileId;
-    document.getElementById('creditEditName').textContent = '@' + name;
-    document.getElementById('creditEditBalance').textContent = balance;
-    document.getElementById('creditEditAmount').value = 1;
-    document.getElementById('creditEditAction').value = 'add';
-    document.getElementById('creditEditNote').value = '';
-    modal.style.display = 'flex';
-    console.log('modal display set to flex');
-  }
-
-  function closeCreditEdit() {
-    document.getElementById('creditEditModal').style.display = 'none';
-  }
-
-  async function saveCreditEdit() {
-    const profileId = document.getElementById('creditEditProfileId').value;
-    if (!profileId) { alert('Error: No profile ID. This member may not have completed setup.'); return; }
-    const amount = parseInt(document.getElementById('creditEditAmount').value) || 1;
-    const action = document.getElementById('creditEditAction').value;
-    const note = document.getElementById('creditEditNote').value || (action === 'add' ? 'Admin credit' : 'Admin deduction');
-    const finalAmount = action === 'remove' ? -Math.abs(amount) : Math.abs(amount);
-    const btn = document.querySelector('#creditEditModal .act.green');
-    if(btn){btn.textContent='Saving…';btn.disabled=true;}
-    try {
-      const res = await fetch('/api/admin/credits/' + profileId, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ amount: finalAmount, note })
-      });
-      const data = await res.json();
-      if (!res.ok) { alert('Error: ' + (data.error || 'Failed')); return; }
-      closeCreditEdit();
-      loadMembers();
-    } catch(e) {
-      alert('Network error: ' + e.message);
-    } finally {
-      if(btn){btn.textContent='Save';btn.disabled=false;}
-    }
-  }
-
-
-
-
-  // ── Subscribers tab ───────────────────────────────────────────────────────────
-  let subFilter = 'all';
-
-  function setSubFilter(f, el) {
-    subFilter = f;
-    document.querySelectorAll('#panel-subscribers .filter-btn').forEach(b=>b.classList.remove('active'));
-    el.classList.add('active');
-    loadSubscribers();
-  }
-
-  async function loadSubscribers() {
-    const members = await fetch('/api/members').then(r=>r.json()).catch(()=>[]);
-    const el = document.getElementById('subscriberList');
-
-    const now = new Date();
-    const getDays = dt => { if(!dt)return -999; if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z'; return Math.ceil((new Date(dt)-now)/86400000); };
-    const fmtD = dt => { if(!dt)return '—'; if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z'; return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
-
-    // Build subscription rows
-    let rows = [];
-
-    members.forEach(m => {
-      const streamDays = getDays(m.stremio_end);
-      const castDays = getDays(m.iptv_end);
-
-      if (m.stremio_end) {
-        rows.push({
-          id: m.id, name: m.screen_name||`${m.first_name} ${m.last_name}`, email: m.email,
-          service: 'stream', start: m.stremio_start, end: m.stremio_end,
-          days: streamDays, active: streamDays > 0,
-          credential: m.stremio_email
-        });
-      }
-      if (m.iptv_end) {
-        rows.push({
-          id: m.id, name: m.screen_name||`${m.first_name} ${m.last_name}`, email: m.email,
-          service: 'cast', start: m.iptv_start, end: m.iptv_end,
-          days: castDays, active: castDays > 0,
-          credential: null
-        });
-      }
-    });
-
-    // Filter
-    if (subFilter === 'stream') rows = rows.filter(r => r.service === 'stream');
-    else if (subFilter === 'cast') rows = rows.filter(r => r.service === 'cast');
-    else if (subFilter === 'expired') rows = rows.filter(r => !r.active);
-    else rows = rows.filter(r => r.active); // 'all' shows only active
-
-    // Sort by expiry
-    rows.sort((a,b) => new Date(a.end) - new Date(b.end));
-
-    if (!rows.length) {
-      el.innerHTML = '<div class="empty"><div class="empty-title">No ' + (subFilter==='expired'?'expired':'active') + ' subscribers</div></div>';
-      return;
-    }
-
-    const svcIcon = s => s === 'stream' ? '📺' : '📡';
-    const svcName = s => s === 'stream' ? 'DungeonStream' : 'DungeonCast';
-    const chipColor = days => days > 7 ? 'var(--green)' : days > 0 ? 'var(--amber)' : 'var(--red)';
-    const chipBg = days => days > 7 ? 'rgba(52,211,153,0.1)' : days > 0 ? 'var(--amber-bg)' : 'var(--red-bg)';
-    const chipText = days => days > 0 ? `${days}d left` : 'Expired';
-
-    el.innerHTML = rows.map(r => `
-      <div class="app-row">
-        <div style="flex:1">
-          <div class="row-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            ${r.name}
-            <span style="font-size:12px;padding:2px 10px;border-radius:20px;font-weight:600;background:${r.service==='stream'?'rgba(96,165,250,0.1)':'rgba(52,211,153,0.1)'};color:${r.service==='stream'?'#60a5fa':'var(--green)'}">${svcIcon(r.service)} ${svcName(r.service)}</span>
-            <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${chipBg(r.days)};color:${chipColor(r.days)}">${chipText(r.days)}</span>
+async function loadApplicants(){
+  const url=appFilter==='archived'?'/api/applicants?archived=1':appFilter==='all'?'/api/applicants':'/api/applicants?status=pending';
+  const rows=await fetch(url).then(r=>r.json()).catch(()=>[]);
+  const el=document.getElementById('appList');
+  if(!rows.length){el.innerHTML='<div class="empty">No applications</div>';return}
+  el.innerHTML=rows.map(r=>`
+    <div class="card">
+      <div class="card-top">
+        <div class="card-info">
+          <div class="card-name">
+            ${r.screen_name?`<span style="color:var(--green)">@${r.screen_name}</span> —`:''} ${r.first_name} ${r.last_name}
+            <span class="badge badge-${r.status||'pending'}">${r.status||'pending'}</span>
           </div>
-          <div class="row-email">${r.email}</div>
-          <div class="row-meta" style="margin-top:8px">
-            <div><div class="meta-lbl">Started</div><div class="meta-val">${fmtD(r.start)}</div></div>
-            <div><div class="meta-lbl">Expires</div><div class="meta-val">${fmtD(r.end)}</div></div>
-            ${r.credential?`<div><div class="meta-lbl">Account</div><div class="meta-val">${r.credential}</div></div>`:''}
+          <div class="card-email">${r.email}</div>
+        </div>
+      </div>
+      <div class="card-meta">
+        ${r.phone?`<div class="meta-item"><div class="meta-label">Phone</div><div class="meta-value">${r.phone}</div></div>`:''}
+        ${r.language?`<div class="meta-item"><div class="meta-label">Language</div><div class="meta-value">${r.language}</div></div>`:''}
+        ${r.referral?`<div class="meta-item"><div class="meta-label">Referred by</div><div class="meta-value">${r.referral}</div></div>`:''}
+        <div class="meta-item"><div class="meta-label">Date</div><div class="meta-value">${fmt(r.created_at)}</div></div>
+      </div>
+      <div class="card-actions">
+        ${r.status==='pending'||!r.status?`<button class="btn btn-green" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Access</button><button class="btn btn-ghost" onclick="deny('${r.id}')">Deny</button>`:''}
+        <button class="btn btn-ghost" onclick="archiveApp('${r.id}')">Archive</button>
+        <button class="btn btn-ghost" onclick="resendAppEmail('${r.id}','${esc(r.email)}')">↺ Email</button>
+        <button class="btn btn-red" onclick="deleteApp('${r.id}')">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function openApprove(id,fn,ln,email){
+  activeApplicantId=id;
+  document.getElementById('approveDesc').innerHTML=`Grant Dungeon access to <strong>${fn} ${ln}</strong> (${email}).`;
+  document.getElementById('genPassDisplay').value=genPass();
+  document.getElementById('approveApiKey').value='';
+  document.getElementById('approveErr').style.display='none';
+  openSheet('approveSheet');
+}
+
+async function confirmApprove(){
+  const pass=document.getElementById('genPassDisplay').value.trim();
+  const apiKey=document.getElementById('approveApiKey').value.trim();
+  const err=document.getElementById('approveErr');
+  if(!pass){err.textContent='Password is required';err.style.display='block';return}
+  const btn=document.querySelector('#approveSheet .btn-green');
+  btn.textContent='Granting…';btn.disabled=true;
+  const res=await fetch(`/api/applicants/${activeApplicantId}/promote`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:'',stremio_pass:pass,stremio_auth_key:apiKey})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.textContent='Grant Access & Send Email';btn.disabled=false;
+  if(res.error){err.textContent=res.error;err.style.display='block';return}
+  closeSheet('approveSheet');loadAll();
+}
+
+async function deny(id){
+  if(!confirm('Deny this application?'))return;
+  await fetch(`/api/applicants/${id}/deny`,{method:'POST'}).catch(()=>{});
+  loadApplicants();
+}
+
+async function deleteApp(id){
+  if(!confirm('Delete this application?'))return;
+  await fetch(`/api/applicants/${id}`,{method:'DELETE'}).catch(()=>{});
+  loadApplicants();
+}
+
+async function archiveApp(id){
+  await fetch(`/api/applicants/${id}/archive`,{method:'POST'}).catch(()=>{});
+  loadApplicants();
+}
+
+async function resendAppEmail(id,email){
+  const r=await fetch('/api/admin/resend/application/'+id,{method:'POST'});
+  alert(r.ok?`Email sent to ${email}`:'Failed to send email');
+}
+
+// ── Members ───────────────────────────────────────────────────────────────────
+async function loadMembers(){
+  const rows=await fetch('/api/members').then(r=>r.json()).catch(()=>[]);
+  const el=document.getElementById('memberList');
+  if(!rows.length){el.innerHTML='<div class="empty">No members yet</div>';return}
+  el.innerHTML=rows.map(r=>`
+    <div class="card">
+      <div class="card-top">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+          <div class="avatar" style="background:${r.avatar_color||'#60a5fa'}">
+            ${r.avatar_url?`<img src="${r.avatar_url}" alt=""/>`:(r.screen_name||r.first_name)[0].toUpperCase()}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="card-name">${r.screen_name?`<a href="/profile.html?sn=${r.screen_name}" style="color:var(--green);text-decoration:none">@${r.screen_name}</a> —`:''} ${r.first_name} ${r.last_name}</div>
+            <div class="card-email">${r.email}</div>
           </div>
         </div>
-        <div class="row-actions">
-          <button class="act green" onclick="extendSub('${r.id}','${r.service}','${r.end}')">+30 Days</button>
-        </div>
-      </div>`).join('');
-  }
-
-  async function extendSub(memberId, service, currentEnd) {
-    if (!confirm('Extend subscription by 30 days?')) return;
-    const end = new Date(currentEnd.endsWith('Z')||currentEnd.includes('+')?currentEnd:currentEnd.replace(' ','T')+'Z');
-    const newEnd = new Date(Math.max(end, new Date())); // if expired, start from today
-    newEnd.setMonth(newEnd.getMonth() + 1);
-    const field = service === 'stream' ? 'stremio_end' : 'iptv_end';
-    await fetch('/api/admin/members/' + memberId + '/extend', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ service, new_end: newEnd.toISOString() })
-    });
-    loadSubscribers();
-  }
-
-  // ── Demos tab ─────────────────────────────────────────────────────────────────
-  let demoFilter = 'pending';
-
-  function setDemoFilter(f, el) {
-    demoFilter = f;
-    document.querySelectorAll('#panel-demos .filter-btn').forEach(b=>b.classList.remove('active'));
-    el.classList.add('active');
-    loadDemosTab();
-  }
-
-  async function loadDemosTab() {
-    const rows = await fetch('/api/admin/demo-requests?status=' + demoFilter).then(r=>r.json()).catch(()=>[]);
-    const badge = document.getElementById('demoBadge');
-    // Always show pending count
-    const pending = demoFilter === 'pending' ? rows : await fetch('/api/admin/demo-requests?status=pending').then(r=>r.json()).catch(()=>[]);
-    if(badge){ badge.textContent = pending.length ? `(${pending.length})` : ''; badge.style.display = pending.length ? 'inline' : 'none'; }
-
-    const el = document.getElementById('demoRequestList');
-    if (!rows.length) { el.innerHTML = `<div class="empty"><div class="empty-title">No ${demoFilter} demo requests</div></div>`; return; }
-
-    const svcIcon = s => s === 'stream' ? '📺' : '📡';
-    const svcName = s => s === 'stream' ? 'DungeonStream' : 'DungeonCast';
-    const statusColor = {pending:'var(--amber)',fulfilled:'var(--green)',dismissed:'var(--muted)'};
-
-    el.innerHTML = rows.map(r => `
-      <div class="app-row">
-        <div style="flex:1">
-          <div class="row-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            @${r.screen_name||'Unknown'}
-            <span style="font-size:12px;padding:2px 10px;border-radius:20px;font-weight:600;background:${r.service==='stream'?'rgba(96,165,250,0.1)':'rgba(52,211,153,0.1)'};color:${r.service==='stream'?'#60a5fa':'var(--green)'}">${svcIcon(r.service)} ${svcName(r.service)}</span>
-            <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:${statusColor[r.status]||'var(--muted)'}22;color:${statusColor[r.status]||'var(--muted)'}">${r.status}</span>
-          </div>
-          <div class="row-email">${r.email||''}</div>
-          <div class="row-meta" style="margin-top:6px">
-            <div><div class="meta-lbl">Requested</div><div class="meta-val">${fmt(r.created_at)}</div></div>
-            ${r.fulfilled_at?`<div><div class="meta-lbl">Fulfilled</div><div class="meta-val">${fmt(r.fulfilled_at)}</div></div>`:''}
-            ${r.notes?`<div><div class="meta-lbl">Credentials</div><div class="meta-val">${r.notes}</div></div>`:''}
+        <select class="tier-select" onchange="promoteTier('${r.profile_id_val}',this.value)">
+          ${Object.entries(TIERS).map(([k,v])=>`<option value="${k}" ${r.tier===k?'selected':''}>${v.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="card-meta">
+        <div class="meta-item">
+          <div class="meta-label">Credits</div>
+          <div class="meta-value" style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:16px;font-weight:700;color:var(--green)">${r.credit_balance||0}</span>
+            ${r.profile_id_val?`<button class="btn btn-ghost btn-sm" onclick="openCreditEdit('${r.profile_id_val}','${esc(r.screen_name||r.first_name)}',${r.credit_balance||0})">Edit</button>`:'<span style="font-size:11px;color:var(--muted)">No profile</span>'}
           </div>
         </div>
-        <div class="row-actions">
-          ${r.status==='pending'?`
-            <button class="act" style="background:var(--amber);color:#0b0f0e" onclick="openFulfillDemo('${r.id}','${r.service}','${esc(r.screen_name||'')}','${esc(r.email||'')}')">Fulfill</button>
-            <button class="act red" onclick="dismissDemo('${r.id}')">Dismiss</button>
-          `:`<button class="act" onclick="openFulfillDemo('${r.id}','${r.service}','${esc(r.screen_name||'')}','${esc(r.email||'')}')">Resend</button>`}
-        </div>
-      </div>`).join('');
-  }
-
-  function openFulfillDemo(id, service, name, email) {
-    document.getElementById('fulfillDemoId').value = id;
-    document.getElementById('fulfillDemoTitle').textContent = service==='stream' ? '📺 Fulfill DungeonStream Demo' : '📡 Fulfill DungeonCast Demo';
-    document.getElementById('fulfillDemoSubtitle').textContent = `Sending demo to @${name} (${email})`;
-    document.getElementById('fulfillDemoUserLabel').textContent = service==='stream' ? 'DungeonStream Username' : 'DungeonCast Username';
-    document.getElementById('fulfillDemoUser').value = '';
-    document.getElementById('fulfillDemoPass').value = '';
-    document.getElementById('fulfillDemoModal').style.display = 'flex';
-  }
-
-  function closeFulfillDemo() { document.getElementById('fulfillDemoModal').style.display = 'none'; }
-
-  async function submitFulfillDemo() {
-    const id = document.getElementById('fulfillDemoId').value;
-    const username = document.getElementById('fulfillDemoUser').value.trim();
-    const password = document.getElementById('fulfillDemoPass').value.trim();
-    if (!username || !password) { alert('Enter both credentials'); return; }
-    const btn = document.querySelector('#fulfillDemoModal .act:last-child');
-    btn.textContent = 'Sending…'; btn.disabled = true;
-    const res = await fetch('/api/admin/demo-requests/' + id + '/fulfill', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ username, password })
-    }).then(r=>r.json()).catch(e=>({error:e.message}));
-    closeFulfillDemo();
-    loadDemosTab();
-    btn.textContent = 'Send Demo'; btn.disabled = false;
-    if (res.error) alert('Error: ' + res.error);
-  }
-
-  async function dismissDemo(id) {
-    if (!confirm('Dismiss this demo request?')) return;
-    await fetch('/api/admin/demo-requests/' + id + '/dismiss', { method:'POST' });
-    loadDemosTab();
-  }
-
-  // ── Redemptions ───────────────────────────────────────────────────────────────
-  let redemFilter = 'pending';
-
-  function setRedemFilter(f, el) {
-    redemFilter = f;
-    document.querySelectorAll('#panel-redemptions .filter-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    loadRedemptions();
-  }
-
-  async function updateRedemBadge() {
-    const pending = await fetch('/api/admin/redemptions?status=pending').then(r=>r.json()).catch(()=>[]);
-    const badge = document.getElementById('redemBadge');
-    if(badge){ badge.textContent = pending.length ? `(${pending.length})` : ''; badge.style.display = pending.length ? 'inline' : 'none'; }
-  }
-
-  async function loadRedemptions() {
-    const res = await fetch('/api/admin/redemptions?status=' + redemFilter).catch(()=>null);
-    if (!res || !res.ok) {
-      document.getElementById('redemptionList').innerHTML = '<div class="empty"><div class="empty-title">Error loading redemptions</div></div>';
-      return;
-    }
-    const rows = await res.json().catch(()=>[]);
-    updateRedemBadge();
-    const el = document.getElementById('redemptionList');
-    if (!rows.length) { el.innerHTML = `<div class="empty"><div class="empty-title">No ${redemFilter} redemptions</div></div>`; return; }
-    const svcIcon = s => s === 'stremio' ? '📺' : '📡';
-    const svcName = s => s === 'stremio' ? 'Stremio' : 'DungeonCast';
-    el.innerHTML = rows.map(r => `
-      <div class="app-row" id="redem-${r.id}">
-        <div style="flex:1">
-          <div class="row-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            @${r.screen_name}
-            <span style="font-size:12px;padding:2px 10px;border-radius:20px;font-weight:600;background:${r.service==='stremio'?'rgba(96,165,250,0.1)':'rgba(52,211,153,0.1)'};color:${r.service==='stremio'?'#60a5fa':'var(--green)'}">${svcIcon(r.service)} ${svcName(r.service)}</span>
-            <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:${r.status==='pending'?'var(--amber-bg)':'rgba(52,211,153,0.1)'};color:${r.status==='pending'?'var(--amber)':'var(--green)'}">${r.status}</span>
-          </div>
-          <div class="row-email">${r.member_email||r.email||''}</div>
-          <div class="row-meta" style="margin-top:6px">
-            <div><div class="meta-lbl">Requested</div><div class="meta-val">${fmt(r.created_at)}</div></div>
-            ${r.fulfilled_at?`<div><div class="meta-lbl">Fulfilled</div><div class="meta-val">${fmt(r.fulfilled_at)}</div></div>`:''}
-            ${r.account_user?`<div><div class="meta-lbl">${r.service==='stremio'?'Stremio Email':'DC Username'}</div><div class="meta-val">${r.account_user}</div></div>`:''}
+        <div class="meta-item">
+          <div class="meta-label">Password</div>
+          <div class="meta-value" style="display:flex;align-items:center;gap:6px">
+            <span id="mpw-${r.id}" style="font-family:monospace">••••••••</span>
+            <button class="btn btn-ghost btn-sm" onclick="toggleMemberPass('${r.id}','${esc(r.plain_pass||'')}')">Show</button>
+            ${r.plain_pass?`<button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${esc(r.plain_pass)}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>`:''}
           </div>
         </div>
-        <div class="row-actions">
-          ${r.status==='pending'
-            ? `<button class="act green" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name)}')">Fulfill</button>`
-            : `<button class="act" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name)}')">Edit</button>`}
-        </div>
-      </div>`).join('');
-  }
+        ${r.stremio_end?`<div class="meta-item"><div class="meta-label">DungeonStream</div><div class="meta-value"><span class="badge ${getDays(r.stremio_end)>0?'badge-active':'badge-expired'}">${getDays(r.stremio_end)>0?getDays(r.stremio_end)+'d left':'Expired'}</span></div></div>`:''}
+        ${r.iptv_end?`<div class="meta-item"><div class="meta-label">DungeonCast</div><div class="meta-value"><span class="badge ${getDays(r.iptv_end)>0?'badge-active':'badge-expired'}">${getDays(r.iptv_end)>0?getDays(r.iptv_end)+'d left':'Expired'}</span></div></div>`:''}
+        ${r.notes?`<div class="meta-item" style="flex-basis:100%"><div class="meta-label">Notes</div><div class="meta-value">${r.notes}</div></div>`:''}
+        <div class="meta-item"><div class="meta-label">Since</div><div class="meta-value">${fmt(r.created_at)}</div></div>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-ghost" onclick="openResendWelcome('${r.id}','${esc(r.first_name+' '+r.last_name)}')">↺ Welcome Email</button>
+        <button class="btn btn-ghost" onclick="openEdit('${r.id}','${esc(r.notes||'')}','${esc(r.first_name||'')}','${esc(r.last_name||'')}')">Edit</button>
+        <button class="btn btn-red" onclick="deleteMember('${r.id}')">Remove</button>
+      </div>
+    </div>`).join('');
+}
 
-  function openFulfill(id, service, screenName) {
-    document.getElementById('fulfillId').value = id;
-    document.getElementById('fulfillTitle').textContent = service === 'stremio' ? '📺 Fulfill Stremio' : '📡 Fulfill DungeonCast';
-    document.getElementById('fulfillSubtitle').textContent = 'Setting up account for @' + screenName;
-    document.getElementById('fulfillUserLabel').textContent = service === 'stremio' ? 'Stremio Email' : 'DungeonCast Username';
-    document.getElementById('fulfillUser').placeholder = service === 'stremio' ? 'stremio@email.com' : 'username';
-    document.getElementById('fulfillUser').value = '';
-    document.getElementById('fulfillPass').value = '';
-    document.getElementById('fulfillNotes').value = '';
-    document.getElementById('fulfillModal').style.display = 'flex';
-  }
+function toggleMemberPass(id,pass){
+  const el=document.getElementById('mpw-'+id);
+  const btn=el.nextElementSibling;
+  if(el.textContent==='••••••••'){el.textContent=pass||'(use resend to reset)';btn.textContent='Hide'}
+  else{el.textContent='••••••••';btn.textContent='Show'}
+}
 
-  function closeFulfill() { document.getElementById('fulfillModal').style.display = 'none'; }
+function openEdit(id,notes,fn,ln){
+  activeMemberId=id;
+  document.getElementById('editMemberId').value=id;
+  document.getElementById('editFirstName').value=fn;
+  document.getElementById('editLastName').value=ln;
+  document.getElementById('editNotes').value=notes;
+  openSheet('editSheet');
+}
 
+async function confirmEdit(){
+  const id=document.getElementById('editMemberId').value;
+  await fetch(`/api/members/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({first_name:document.getElementById('editFirstName').value,last_name:document.getElementById('editLastName').value,notes:document.getElementById('editNotes').value})});
+  closeSheet('editSheet');loadMembers();
+}
 
-  async function getMemberIdFromProfile(profileId) {
-    const members = await fetch('/api/members').then(r=>r.json()).catch(()=>[]);
-    const m = members.find(m => m.profile_id_val === profileId);
-    return m ? m.id : null;
-  }
+async function deleteMember(id){
+  if(!confirm('Remove this member? This cannot be undone.'))return;
+  await fetch(`/api/members/${id}`,{method:'DELETE'}).catch(()=>{});
+  loadAll();
+}
 
-  async function submitFulfill() {
-    const id = document.getElementById('fulfillId').value;
-    const account_user = document.getElementById('fulfillUser').value.trim();
-    const account_pass = document.getElementById('fulfillPass').value.trim();
-    const notes = document.getElementById('fulfillNotes').value.trim();
-    if (!account_user || !account_pass) { alert('Enter both credentials'); return; }
-    const btn = document.querySelector('#fulfillModal .act.green');
-    btn.textContent = 'Sending…'; btn.disabled = true;
-    await fetch('/api/admin/redemptions/' + id + '/fulfill', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ account_user, account_pass, notes })
-    });
-    closeFulfill();
-    loadRedemptions();
-    btn.textContent = 'Send Credentials'; btn.disabled = false;
-  }
+async function promoteTier(profileId,tier){
+  if(!profileId)return;
+  await fetch(`/api/admin/profiles/${profileId}/tier`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tier})});
+}
 
-  function switchTab(name,el){
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById('panel-'+name).classList.add('active');
-    if(name==='members'){loadMembers();}
-    if(name==='subscribers')loadSubscribers();
-    if(name==='support')loadSupport();
-    if(name==='demos'){demoFilter='pending';document.querySelectorAll('#panel-demos .filter-btn').forEach(b=>b.classList.remove('active'));document.querySelector('#panel-demos .filter-btn')?.classList.add('active');loadDemosTab();}
-    // profiles now inside members tab
-    if(name==='credits')loadCreditsTab();
-    if(name==='dungeoncast')loadDCTab();
-    if(name==='stremio-tab')loadStremioTab();
-    if(name==='redemptions'){
-      redemFilter='pending';
-      document.querySelectorAll('#panel-redemptions .filter-btn').forEach(b=>b.classList.remove('active'));
-      const firstBtn=document.querySelector('#panel-redemptions .filter-btn');
-      if(firstBtn)firstBtn.classList.add('active');
-      loadRedemptions();
-    }
-  }
+// ── Credits ───────────────────────────────────────────────────────────────────
+function openCreditEdit(profileId,name,balance){
+  if(!profileId||profileId==='undefined'){alert('This member has no profile yet — they need to complete account setup first.');return}
+  document.getElementById('creditEditProfileId').value=profileId;
+  document.getElementById('creditSheetName').textContent='@'+name;
+  document.getElementById('creditEditBalance').textContent=balance;
+  document.getElementById('creditEditAmount').value=1;
+  document.getElementById('creditEditAction').value='add';
+  document.getElementById('creditEditNote').value='';
+  openSheet('creditSheet');
+}
 
-  async function loadAll(){await Promise.all([loadStats(),loadApplicants(),loadMembers(),loadRedemptions(),loadDemosTab()])}
+async function saveCreditEdit(){
+  const profileId=document.getElementById('creditEditProfileId').value;
+  if(!profileId){alert('No profile ID');return}
+  const amount=parseInt(document.getElementById('creditEditAmount').value)||1;
+  const action=document.getElementById('creditEditAction').value;
+  const note=document.getElementById('creditEditNote').value||(action==='add'?'Admin credit':'Admin deduction');
+  const finalAmount=action==='remove'?-Math.abs(amount):Math.abs(amount);
+  const btn=document.getElementById('creditSaveBtn');
+  btn.textContent='Saving…';btn.disabled=true;
+  const res=await fetch('/api/admin/credits/'+profileId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:finalAmount,note})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.textContent='Save';btn.disabled=false;
+  if(res&&res.error){alert('Error: '+res.error);return}
+  closeSheet('creditSheet');loadMembers();
+}
 
-  async function loadStats(){
-    const d=await fetch('/api/stats').then(r=>r.json());
-    document.getElementById('statApplicants').textContent=d.pending||d.applicants;
-    document.getElementById('statMembers').textContent=d.members;
-    document.getElementById('statSupport').textContent=d.support||0;
-    const b=document.getElementById('suppBadge');
-    if(b&&d.support>0){b.textContent='('+d.support+')';b.style.display='inline'}
-  }
+async function loadCreditsTab(){
+  const rows=await fetch('/api/admin/credits').then(r=>r.json()).catch(()=>[]);
+  const el=document.getElementById('creditList');
+  if(!rows.length){el.innerHTML='<div class="empty">No credit history</div>';return}
+  el.innerHTML=rows.map(r=>`
+    <div class="card">
+      <div class="card-name">@${r.screen_name||'Unknown'} <span style="font-size:16px;font-weight:700;color:var(--green)">${r.balance||0} credits</span></div>
+      <div class="card-email">${r.email||''}</div>
+    </div>`).join('');
+}
 
-  async function loadApplicants(){
-    const url=appFilter==='archived'?'/api/applicants?archived=1':appFilter==='all'?'/api/applicants':appFilter==='pending'?'/api/applicants?status=pending':`/api/applicants?status=${appFilter}`;
-    const rows=await fetch(url).then(r=>r.json());
-    renderApplicants(rows);
-  }
+// ── Stremio tab ───────────────────────────────────────────────────────────────
+async function loadStremioTab(){
+  const rows=await fetch('/api/admin/stremio').then(r=>r.json()).catch(()=>[]);
+  const el=document.getElementById('stremioTabList');
+  if(!rows.length){el.innerHTML='<div class="empty">No DungeonStream accounts</div>';return}
+  el.innerHTML=rows.map(r=>`
+    <div class="card">
+      <div class="card-name">${r.screen_name?`@${r.screen_name} —`:''} ${r.first_name} ${r.last_name}
+        ${r.stremio_end?`<span class="badge ${getDays(r.stremio_end)>0?'badge-active':'badge-expired'}">${getDays(r.stremio_end)>0?getDays(r.stremio_end)+'d':'Expired'}</span>`:''}
+      </div>
+      <div class="card-email">${r.email}</div>
+      <div class="card-meta">
+        ${r.stremio_email?`<div class="meta-item"><div class="meta-label">Email</div><div class="meta-value">${r.stremio_email}</div></div>`:''}
+        ${r.stremio_end?`<div class="meta-item"><div class="meta-label">Expires</div><div class="meta-value">${fmt(r.stremio_end)}</div></div>`:''}
+        ${r.stremio_auth_key?`<div class="meta-item" style="flex-basis:100%"><div class="meta-label">API Key</div><div class="meta-value" style="display:flex;align-items:center;gap:6px"><span style="font-family:monospace;font-size:11px;color:var(--green)">${r.stremio_auth_key.substring(0,24)}…</span><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${esc(r.stremio_auth_key)}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button></div></div>`:''}
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-green" onclick="editStremio('${r.id}','${esc(r.stremio_email||'')}','${esc(r.stremio_pass||'')}','${r.stremio_start||''}','${r.stremio_end||''}','${esc(r.stremio_auth_key||'')}')">Edit</button>
+      </div>
+    </div>`).join('');
+}
 
-  // Mark application as archived
-  async function archiveApp(id){
-    await fetch('/api/applicants/'+id+'/archive',{method:'POST'}).catch(()=>{});
-    loadApplicants();
-  }
+function editStremio(memberId,email,pass,start,end,authKey=''){
+  document.getElementById('stremioMemberId').value=memberId;
+  document.getElementById('stremioTabEmail').value=email;
+  document.getElementById('stremioTabPass').value=pass;
+  document.getElementById('stremioTabStart').value=start?start.split('T')[0]:'';
+  document.getElementById('stremioTabEnd').value=end?end.split('T')[0]:'';
+  document.getElementById('stremioTabAuthKey').value=authKey;
+  openSheet('stremioSheet');
+}
 
-  function setAppFilter(f,el){
-    appFilter=f;
-    document.querySelectorAll('#panel-applicants .filter-btn').forEach(b=>b.classList.remove('active'));
-    if(el) el.classList.add('active');
-    const lbl=document.getElementById('appListLabel');
-    if(lbl) lbl.textContent = f==='pending'?'Pending Applications':f==='archived'?'Archived Applications':'All Applications';
-    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-    el.classList.add('active');
-    loadApplicants();
-  }
+async function saveStremio(){
+  const memberId=document.getElementById('stremioMemberId').value;
+  const body={stremio_email:document.getElementById('stremioTabEmail').value,stremio_pass:document.getElementById('stremioTabPass').value,stremio_start:document.getElementById('stremioTabStart').value||null,stremio_end:document.getElementById('stremioTabEnd').value||null,stremio_auth_key:document.getElementById('stremioTabAuthKey').value||null};
+  await fetch('/api/admin/stremio/'+memberId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  closeSheet('stremioSheet');loadStremioTab();
+}
 
-  function fmt(dt){if(!dt)return '';return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
-  function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,"\\'").replace(/"/g,'&quot;')}
+// ── DungeonCast tab ───────────────────────────────────────────────────────────
+async function loadDCTab(){
+  const profiles=await fetch('/api/profiles').then(r=>r.json()).catch(()=>[]);
+  allProfiles=profiles;
+  const sel=document.getElementById('iptvMemberSelect');
+  sel.innerHTML='<option value="">Select member…</option>';
+  profiles.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent='@'+p.screen_name;sel.appendChild(o)});
 
-  const BADGES={pending:'<span class="badge badge-pending">Pending</span>',approved:'<span class="badge badge-approved">Approved</span>',denied:'<span class="badge badge-denied">Denied</span>',mod_approved:'<span class="badge-mod-approved">Mod Approved</span>'};
+  const rows=await fetch('/api/admin/iptv').then(r=>r.json()).catch(()=>[]);
+  const el=document.getElementById('iptvList');
+  const statusColor={active:'var(--green)',pending:'var(--amber)',suspended:'var(--red)'};
+  const addBtn=`<div style="margin-bottom:12px"><button class="btn btn-green" onclick="showAddIptv()">+ Add Account</button></div>`;
+  if(!rows.length){el.innerHTML=addBtn+'<div class="empty">No DungeonCast accounts yet</div>';return}
+  el.innerHTML=addBtn+rows.map(r=>`
+    <div class="card">
+      <div class="card-name">@${r.screen_name} <span class="badge" style="background:${statusColor[r.status]||'var(--muted)'}22;color:${statusColor[r.status]||'var(--muted)'}">${r.status}</span></div>
+      <div class="card-email">${r.email}</div>
+      <div class="card-meta">
+        ${r.nodecast_user?`<div class="meta-item"><div class="meta-label">DungeonCast Login</div><div class="meta-value">${r.nodecast_user}</div></div>`:''}
+        ${r.xtream_url?`<div class="meta-item"><div class="meta-label">Xtream URL</div><div class="meta-value" style="font-size:11px">${r.xtream_url}</div></div>`:''}
+        ${r.notes?`<div class="meta-item"><div class="meta-label">Notes</div><div class="meta-value">${r.notes}</div></div>`:''}
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-amber" style="background:var(--amber-bg);color:var(--amber)" onclick="openDCDemo('${r.profile_id}','${esc(r.screen_name)}','${esc(r.email)}')">Demo</button>
+        <button class="btn btn-green" onclick="editIptv('${r.profile_id}')">Edit</button>
+        <button class="btn btn-red" onclick="deleteIptv('${r.profile_id}')">Remove</button>
+      </div>
+    </div>`).join('');
+}
 
-  const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Dungeon Master',color:'#fbbf24'}};
+function showAddIptv(){
+  document.getElementById('iptvModalTitle').textContent='Add DungeonCast Account';
+  document.getElementById('iptvProfileId').value='';
+  document.getElementById('iptvMemberSelect').value='';
+  document.getElementById('iptvMemberSelect').disabled=false;
+  document.getElementById('iptvNodecastUser').value='';
+  document.getElementById('iptvXtreamUrl').value='';
+  document.getElementById('iptvXtreamUser').value='';
+  document.getElementById('iptvXtreamPass').value='';
+  document.getElementById('iptvStatus').value='pending';
+  document.getElementById('iptvNotes').value='';
+  openSheet('iptvSheet');
+}
 
-  function renderApplicants(rows){
-    const el=document.getElementById('applicantList');
-    if(!rows.length){el.innerHTML='<div class="empty"><div class="empty-title">No applications</div><div class="empty-sub">Nothing here yet.</div></div>';return}
-    el.innerHTML=rows.map(r=>`
-      <div class="app-row">
-        <div>
-          <div class="row-name">${r.screen_name?`<a class="profile-link" href="/profile.html?sn=${r.screen_name}">@${r.screen_name}</a> &mdash; `:''} ${r.first_name} ${r.last_name} ${r.type==='renewal'?'<span class="badge-renewal">Renewal</span>':''}${r.status==='mod_approved'?'<span class="badge-renewal" style="color:var(--green)">⚡ Mod Approved</span>':''}</div>
-          <div class="row-email">${r.email}</div>
-          <div class="row-meta">
-            ${BADGES[r.status]||r.status}
-            ${r.phone?`<div><div class="meta-lbl">Phone</div><div class="meta-val">${r.phone}</div></div>`:''}
-            ${r.language?`<div><div class="meta-lbl">Language</div><div class="meta-val">${r.language}</div></div>`:''}
-            ${r.referral?`<div><div class="meta-lbl">Referred by</div><div class="meta-val">${r.referral}</div></div>`:''}
-          </div>
-          ${r.notes?`<div class="row-notes">${r.notes}</div>`:''}
-        </div>
-        <div class="row-actions">
-          ${r.status==='pending'?`
-            <button class="act green" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Access</button>
-            <button class="act" onclick="setAppStatus('${r.id}','denied')">Deny</button>
-          `:r.status==='approved'?`
-            <button class="act" onclick="setAppStatus('${r.id}','pending')">Reopen</button>
-          `:`
-            <button class="act green" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Access</button>
-            <button class="act" onclick="setAppStatus('${r.id}','pending')">Reopen</button>
-          `}
-          <button class="act red" onclick="deleteApplicant('${r.id}')">Delete</button>
-          <div class="row-date">${fmt(r.created_at)}</div>
-        </div>
-      </div>`).join('');
-  }
+function editIptv(profileId){
+  fetch('/api/admin/iptv').then(r=>r.json()).then(rows=>{
+    const r=rows.find(x=>x.profile_id===profileId);
+    if(!r)return;
+    document.getElementById('iptvModalTitle').textContent='Edit DungeonCast Account';
+    document.getElementById('iptvProfileId').value=profileId;
+    document.getElementById('iptvMemberSelect').value=profileId;
+    document.getElementById('iptvMemberSelect').disabled=true;
+    document.getElementById('iptvNodecastUser').value=r.nodecast_user||'';
+    document.getElementById('iptvXtreamUrl').value=r.xtream_url||'';
+    document.getElementById('iptvXtreamUser').value=r.xtream_user||'';
+    document.getElementById('iptvXtreamPass').value=r.xtream_pass||'';
+    document.getElementById('iptvStatus').value=r.status||'pending';
+    document.getElementById('iptvNotes').value=r.notes||'';
+    openSheet('iptvSheet');
+  });
+}
 
-  async function setAppStatus(id,status){
-    await fetch(`/api/applicants/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
-    loadAll();
-  }
+async function saveIptv(){
+  const profileId=document.getElementById('iptvProfileId').value||document.getElementById('iptvMemberSelect').value;
+  if(!profileId){alert('Select a member');return}
+  const body={nodecast_user:document.getElementById('iptvNodecastUser').value,xtream_url:document.getElementById('iptvXtreamUrl').value,xtream_user:document.getElementById('iptvXtreamUser').value,xtream_pass:document.getElementById('iptvXtreamPass').value,status:document.getElementById('iptvStatus').value,notes:document.getElementById('iptvNotes').value};
+  await fetch('/api/admin/iptv/'+profileId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  closeSheet('iptvSheet');loadDCTab();
+}
 
-  async function deleteApplicant(id){
-    if(!confirm('Delete this application?'))return;
-    await fetch(`/api/applicants/${id}`,{method:'DELETE'});
-    loadAll();
-  }
+async function deleteIptv(profileId){
+  if(!confirm('Remove this DungeonCast account?'))return;
+  await fetch('/api/admin/iptv/'+profileId,{method:'DELETE'});
+  loadDCTab();
+}
 
+// ── DungeonCast Demo ──────────────────────────────────────────────────────────
+function openDCDemo(profileId,name,email){
+  document.getElementById('dcDemoSubtitle').textContent='Sending 24-hour demo to @'+name;
+  document.getElementById('dcDemoToEmail').value=email;
+  document.getElementById('dcDemoUser').value='';
+  document.getElementById('dcDemoPass').value='';
+  openSheet('dcDemoSheet');
+}
 
-  function genPass() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-    return Array.from({length:8}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
-  }
+function openDCDemoManual(){
+  document.getElementById('dcDemoSubtitle').textContent='Send a 24-hour DungeonCast demo';
+  document.getElementById('dcDemoToEmail').value='';
+  document.getElementById('dcDemoUser').value='';
+  document.getElementById('dcDemoPass').value='';
+  openSheet('dcDemoSheet');
+}
 
-  function regeneratePass() {
-    document.getElementById('genPassDisplay').value = genPass();
-  }
+async function submitDCDemo(){
+  const email=document.getElementById('dcDemoToEmail').value.trim();
+  const user=document.getElementById('dcDemoUser').value.trim();
+  const pass=document.getElementById('dcDemoPass').value.trim();
+  if(!email||!user||!pass){alert('Fill in all fields');return}
+  const btn=event.target;btn.textContent='Sending…';btn.disabled=true;
+  const res=await fetch('/api/admin/dc-demo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,username:user,password:pass})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.textContent='Send Demo Email';btn.disabled=false;
+  if(res.error){alert('Error: '+res.error);return}
+  closeSheet('dcDemoSheet');alert('Demo email sent!');
+}
 
-  function copyGenPass() {
-    const pass = document.getElementById('genPassDisplay').value;
-    if (!pass) return;
-    navigator.clipboard.writeText(pass).then(() => {
-      const btn = document.getElementById('copyGenPass');
-      if(btn){ btn.textContent = '✓ Copied'; setTimeout(() => btn.textContent = 'Copy', 2000); }
-    });
-  }
+// ── Subscribers ───────────────────────────────────────────────────────────────
+let subFilter='all';
+function setSubFilter(f,el){subFilter=f;document.querySelectorAll('#panel-subscribers .filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadSubscribers()}
+async function loadSubscribers(){
+  const members=await fetch('/api/members').then(r=>r.json()).catch(()=>[]);
+  const el=document.getElementById('subscriberList');
+  const now=new Date();
+  let rows=[];
+  members.forEach(m=>{
+    if(m.stremio_end)rows.push({id:m.id,name:m.screen_name||`${m.first_name} ${m.last_name}`,email:m.email,service:'stream',start:m.stremio_start,end:m.stremio_end,days:getDays(m.stremio_end),credential:m.stremio_email});
+    if(m.iptv_end)rows.push({id:m.id,name:m.screen_name||`${m.first_name} ${m.last_name}`,email:m.email,service:'cast',start:m.iptv_start,end:m.iptv_end,days:getDays(m.iptv_end),credential:null});
+  });
+  if(subFilter==='stream')rows=rows.filter(r=>r.service==='stream'&&r.days>0);
+  else if(subFilter==='cast')rows=rows.filter(r=>r.service==='cast'&&r.days>0);
+  else if(subFilter==='expired')rows=rows.filter(r=>r.days<=0);
+  else rows=rows.filter(r=>r.days>0);
+  rows.sort((a,b)=>new Date(a.end)-new Date(b.end));
+  if(!rows.length){el.innerHTML='<div class="empty">No subscribers</div>';return}
+  const chipClass=d=>d>7?'badge-active':d>0?'badge-expiring':'badge-expired';
+  el.innerHTML=rows.map(r=>`
+    <div class="card">
+      <div class="card-name">${r.name} <span class="badge ${r.service==='stream'?'badge-stream':'badge-cast'}">${r.service==='stream'?'📺 DungeonStream':'📡 DungeonCast'}</span> <span class="badge ${chipClass(r.days)}">${r.days>0?r.days+'d left':'Expired'}</span></div>
+      <div class="card-email">${r.email}</div>
+      <div class="card-meta">
+        <div class="meta-item"><div class="meta-label">Started</div><div class="meta-value">${fmt(r.start)}</div></div>
+        <div class="meta-item"><div class="meta-label">Expires</div><div class="meta-value">${fmt(r.end)}</div></div>
+        ${r.credential?`<div class="meta-item"><div class="meta-label">Account</div><div class="meta-value">${r.credential}</div></div>`:''}
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-green" onclick="extendSub('${r.id}','${r.service}','${r.end}')">+30 Days</button>
+      </div>
+    </div>`).join('');
+}
 
-  function openApprove(id,firstName,lastName,email){
-    activeApplicantId=id;
-    document.getElementById('approveDesc').innerHTML=`Grant Dungeon access to <strong>${firstName} ${lastName}</strong> (${email}). A welcome email with their login details will be sent automatically.`;
-    document.getElementById('approveModal').classList.add('open');
-  }
+async function extendSub(memberId,service,currentEnd){
+  if(!confirm('Extend by 30 days?'))return;
+  const end=new Date(currentEnd.includes('T')||currentEnd.endsWith('Z')?currentEnd:currentEnd.replace(' ','T')+'Z');
+  const newEnd=new Date(Math.max(end,new Date()));newEnd.setMonth(newEnd.getMonth()+1);
+  await fetch('/api/admin/members/'+memberId+'/extend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service,new_end:newEnd.toISOString()})});
+  loadSubscribers();
+}
 
-  async function confirmApprove(){
-    const stremio_email='';
-    const stremio_pass=document.getElementById('genPassDisplay').value.trim();
-    const stremio_auth_key=document.getElementById('approveApiKey').value.trim();
-    await fetch(`/api/applicants/${activeApplicantId}/promote`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email,stremio_pass,stremio_auth_key})});
-    closeModal('approveModal');
-    loadAll();
-    document.querySelectorAll('.tab-btn')[1].click();
-  }
+// ── Redemptions ───────────────────────────────────────────────────────────────
+function setRedemFilter(f,el){redemFilter=f;document.querySelectorAll('#panel-redemptions .filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadRedemptions()}
+async function updateRedemBadge(){
+  const p=await fetch('/api/admin/redemptions?status=pending').then(r=>r.json()).catch(()=>[]);
+  const b=document.getElementById('redemBadge');
+  b.textContent=p.length?`(${p.length})`:'';b.style.display=p.length?'inline':'none';
+}
+async function loadRedemptions(){
+  const res=await fetch('/api/admin/redemptions?status='+redemFilter).catch(()=>null);
+  if(!res||!res.ok){document.getElementById('redemptionList').innerHTML='<div class="empty">Error loading</div>';return}
+  const rows=await res.json().catch(()=>[]);
+  updateRedemBadge();
+  const el=document.getElementById('redemptionList');
+  if(!rows.length){el.innerHTML=`<div class="empty">No ${redemFilter} redemptions</div>`;return}
+  el.innerHTML=rows.map(r=>`
+    <div class="card">
+      <div class="card-name">@${r.screen_name||'Unknown'} <span class="badge ${r.service==='stremio'?'badge-stream':'badge-cast'}">${r.service==='stremio'?'📺 DungeonStream':'📡 DungeonCast'}</span> <span class="badge badge-${r.status}">${r.status}</span></div>
+      <div class="card-email">${r.member_email||r.email||''}</div>
+      <div class="card-meta">
+        <div class="meta-item"><div class="meta-label">Requested</div><div class="meta-value">${fmt(r.created_at)}</div></div>
+        ${r.fulfilled_at?`<div class="meta-item"><div class="meta-label">Fulfilled</div><div class="meta-value">${fmt(r.fulfilled_at)}</div></div>`:''}
+        ${r.account_user?`<div class="meta-item"><div class="meta-label">Account</div><div class="meta-value">${r.account_user}</div></div>`:''}
+      </div>
+      <div class="card-actions">
+        ${r.status==='pending'?`<button class="btn btn-green" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name||'')}')">Fulfill</button>`:`<button class="btn btn-ghost" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name||'')}')">Edit</button>`}
+      </div>
+    </div>`).join('');
+}
 
-  async function loadMembers(){
-    const rows=await fetch('/api/members').then(r=>r.json()).catch(()=>[]);
-    renderMembers(rows||[]);
-  }
+function openFulfill(id,service,name){
+  document.getElementById('fulfillId').value=id;
+  document.getElementById('fulfillTitle').textContent=service==='stremio'?'📺 Fulfill DungeonStream':'📡 Fulfill DungeonCast';
+  document.getElementById('fulfillSubtitle').textContent=`Setting up account for @${name}`;
+  document.getElementById('fulfillUserLabel').textContent=service==='stremio'?'Stremio Email':'DungeonCast Username';
+  document.getElementById('fulfillUser').value='';
+  document.getElementById('fulfillPass').value='';
+  document.getElementById('fulfillNotes').value='';
+  openSheet('fulfillSheet');
+}
 
-  function subChip(subEnd){
-    if(!subEnd)return '';
-    const days=Math.ceil((new Date(subEnd)-new Date())/86400000);
-    if(days<=0)return '<span class="sub-chip expired">Expired</span>';
-    if(days<=5)return `<span class="sub-chip expiring">${days}d left</span>`;
-    return `<span class="sub-chip active">${days}d left</span>`;
-  }
+async function submitFulfill(){
+  const id=document.getElementById('fulfillId').value;
+  const account_user=document.getElementById('fulfillUser').value.trim();
+  const account_pass=document.getElementById('fulfillPass').value.trim();
+  const notes=document.getElementById('fulfillNotes').value.trim();
+  if(!account_user||!account_pass){alert('Enter both credentials');return}
+  const btn=document.getElementById('fulfillBtn');btn.textContent='Sending…';btn.disabled=true;
+  await fetch('/api/admin/redemptions/'+id+'/fulfill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account_user,account_pass,notes})});
+  closeSheet('fulfillSheet');loadRedemptions();
+  btn.textContent='Send Credentials';btn.disabled=false;
+}
 
-  function renderMembers(rows){
-    const el=document.getElementById('memberList');
-    if(!rows.length){el.innerHTML='<div class="empty"><div class="empty-title">No members yet</div><div class="empty-sub">Grant access to an applicant to add them here.</div></div>';return}
-    el.innerHTML=rows.map(r=>{
-      const shown=showPasswords[r.id];
-      return `<div class="mem-row">
-        <div>
-          <div class="row-name">${r.avatar_url||r.avatar_color?`<span class="avatar-sm" style="background:${r.avatar_color||'#60a5fa'}">${r.avatar_url?`<img src="${r.avatar_url}" alt=""/>`:(r.screen_name||r.first_name)[0].toUpperCase()}</span>`:''} ${r.screen_name?`<a class="profile-link" href="/profile.html?sn=${r.screen_name}">@${r.screen_name}</a> &mdash; `:''} ${r.first_name} ${r.last_name}</div>
-          <div class="row-email">${r.email}</div>
-          <div class="mem-creds" style="margin-top:10px">
-            <div>
-              <div class="cred-lbl">Credits</div>
-              <div class="cred-val" style="display:flex;align-items:center;gap:8px">
-                <span style="font-size:15px;font-weight:600;color:var(--green)">${r.credit_balance||0}</span>
-                ${r.profile_id_val ? `<button class="act" style="font-size:11px;padding:2px 8px" onclick="openCreditEdit('${r.profile_id_val}','${r.screen_name||r.first_name}',${r.credit_balance||0})">Edit</button>` : '<span style="font-size:11px;color:var(--muted2)">No profile</span>'}
-              </div>
-            </div>
-            <div>
-              <div class="cred-lbl">Password</div>
-              <div class="cred-val" style="display:flex;align-items:center;gap:8px">
-                <span id="mpw-${r.id}" style="font-family:monospace;color:var(--muted2)">••••••••</span>
-                <button class="act" style="font-size:11px;padding:2px 8px" onclick="toggleMemberPass('${r.id}','${esc(r.plain_pass||'')}')">Show</button>
-                ${r.plain_pass?`<button class="act" style="font-size:11px;padding:2px 8px" id="cpmw-${r.id}" onclick="copyMemberPass('${r.id}','${esc(r.plain_pass||'')}')">Copy</button>`:''}
-              </div>
-            </div>
-            ${r.stremio_end?`<div><div class="cred-lbl">Stremio</div><div class="cred-val"><a href="#" onclick="switchTab('members',document.querySelector('.tab-btn:nth-child(2)'));setTimeout(()=>switchMemberSub('stremio',document.getElementById('msub-stremio')),100);return false;" style="color:var(--green);font-size:12px">View account →</a></div></div>`:''}
-            ${r.iptv_end?`<div><div class="cred-lbl">DungeonCast</div><div class="cred-val"><a href="#" onclick="switchTab('members',document.querySelector('.tab-btn:nth-child(2)'));setTimeout(()=>switchMemberSub('dc',document.getElementById('msub-dc')),100);return false;" style="color:var(--green);font-size:12px">View account →</a></div></div>`:''}
-          </div>
-          ${r.notes?`<div class="row-notes">${r.notes}</div>`:''}
-        </div>
-        <div class="row-actions">
-          <select class="tier-select" onchange="promoteTier('${r.profile_id_val}',this.value)" style="margin-bottom:6px">
-            ${Object.entries(TIERS).map(([k,v])=>`<option value="${k}" ${r.tier===k?'selected':''}>${v.label}</option>`).join('')}
-          </select>
-          <button class="act" onclick="openResendWelcome('${r.id}','${esc(r.first_name||'')} ${esc(r.last_name||'')}')">↺ Welcome Email</button>
-          <button class="act" onclick="openEdit('${r.id}','${esc(r.stremio_email||'')}','${esc(r.stremio_pass||'')}','${esc(r.notes||'')}','${esc(r.first_name||'')}','${esc(r.last_name||'')}')" >Edit</button>
-          <button class="act red" onclick="deleteMember('${r.id}')">Remove</button>
-          <div class="row-date">Since ${fmt(r.created_at)}</div>
-        </div>
-      </div>`;
-    }).join('');
-  }
+// ── Demos ─────────────────────────────────────────────────────────────────────
+function setDemoFilter(f,el){demoFilter=f;document.querySelectorAll('#panel-demos .filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadDemosTab()}
+async function loadDemosTab(){
+  const rows=await fetch('/api/admin/demo-requests?status='+demoFilter).then(r=>r.json()).catch(()=>[]);
+  const pending=demoFilter==='pending'?rows:await fetch('/api/admin/demo-requests?status=pending').then(r=>r.json()).catch(()=>[]);
+  const b=document.getElementById('demoBadge');
+  b.textContent=pending.length?`(${pending.length})`:'';b.style.display=pending.length?'inline':'none';
+  const el=document.getElementById('demoRequestList');
+  if(!rows.length){el.innerHTML=`<div class="empty">No ${demoFilter} demo requests</div>`;return}
+  el.innerHTML=rows.map(r=>`
+    <div class="card">
+      <div class="card-name">@${r.screen_name||'Unknown'} <span class="badge ${r.service==='stream'?'badge-stream':'badge-cast'}">${r.service==='stream'?'📺 DungeonStream':'📡 DungeonCast'}</span> <span class="badge badge-${r.status}">${r.status}</span></div>
+      <div class="card-email">${r.email||''}</div>
+      <div class="card-meta">
+        <div class="meta-item"><div class="meta-label">Requested</div><div class="meta-value">${fmt(r.created_at)}</div></div>
+        ${r.notes?`<div class="meta-item"><div class="meta-label">Credentials</div><div class="meta-value">${r.notes}</div></div>`:''}
+      </div>
+      <div class="card-actions">
+        ${r.status==='pending'?`<button class="btn btn-amber" style="background:var(--amber-bg);color:var(--amber)" onclick="openFulfillDemo('${r.id}','${r.service}','${esc(r.screen_name||'')}','${esc(r.email||'')}')">Fulfill</button><button class="btn btn-red" onclick="dismissDemo('${r.id}')">Dismiss</button>`:
+        `<button class="btn btn-ghost" onclick="openFulfillDemo('${r.id}','${r.service}','${esc(r.screen_name||'')}','${esc(r.email||'')}')">Resend</button>`}
+      </div>
+    </div>`).join('');
+}
 
-  function togglePw(id){showPasswords[id]=!showPasswords[id];loadMembers()}
+function openFulfillDemo(id,service,name,email){
+  document.getElementById('fulfillDemoId').value=id;
+  document.getElementById('fulfillDemoTitle').textContent=service==='stream'?'📺 DungeonStream Demo':'📡 DungeonCast Demo';
+  document.getElementById('fulfillDemoSubtitle').textContent=`Sending demo to @${name} (${email})`;
+  document.getElementById('fulfillDemoUserLabel').textContent=service==='stream'?'DungeonStream Username':'DungeonCast Username';
+  document.getElementById('fulfillDemoUser').value='';
+  document.getElementById('fulfillDemoPass').value='';
+  openSheet('fulfillDemoSheet');
+}
 
-  function copyVal(text,btnId){
-    navigator.clipboard.writeText(text).catch(()=>{});
-    const btn=document.getElementById(btnId);
-    if(!btn)return;
-    const orig=btn.textContent;
-    btn.textContent='Copied';btn.classList.add('copied');
-    setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied')},1500);
-  }
+async function submitFulfillDemo(){
+  const id=document.getElementById('fulfillDemoId').value;
+  const username=document.getElementById('fulfillDemoUser').value.trim();
+  const password=document.getElementById('fulfillDemoPass').value.trim();
+  if(!username||!password){alert('Enter both credentials');return}
+  const btn=document.getElementById('fulfillDemoBtn');btn.textContent='Sending…';btn.disabled=true;
+  const res=await fetch('/api/admin/demo-requests/'+id+'/fulfill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  closeSheet('fulfillDemoSheet');loadDemosTab();
+  btn.textContent='Send Demo';btn.disabled=false;
+  if(res.error)alert('Error: '+res.error);
+}
 
-  async function renewMember(id){
-    if(!confirm('Extend this member\'s subscription by 1 month?'))return;
-    await fetch(`/api/members/${id}/renew`,{method:'POST'});
-    loadMembers();loadStats();
-  }
+async function dismissDemo(id){
+  if(!confirm('Dismiss this demo request?'))return;
+  await fetch('/api/admin/demo-requests/'+id+'/dismiss',{method:'POST'});
+  loadDemosTab();
+}
 
-  function openEdit(id,stremio_email,stremio_pass,notes,firstName,lastName){
-    activeMemberId=id;
-    document.getElementById('editDesc').innerHTML=`Editing credentials for <strong>${firstName} ${lastName}</strong>.`;
-    document.getElementById('editStremioEmail').value=stremio_email;
-    document.getElementById('editStremioPass').value=stremio_pass;
-    document.getElementById('editNotes').value=notes;
-    document.getElementById('editModal').classList.add('open');
-  }
+// ── Support ───────────────────────────────────────────────────────────────────
+function setSuppFilter(f,el){suppFilter=f;document.querySelectorAll('#panel-support .filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadSupport()}
+async function loadSupport(){
+  const url=suppFilter==='all'?'/api/support':suppFilter==='resolved'?'/api/support?status=resolved':'/api/support?status=open';
+  const rows=await fetch(url).then(r=>r.json()).catch(()=>[]);
+  const el=document.getElementById('suppList');
+  if(!rows.length){el.innerHTML='<div class="empty">All clear</div>';return}
+  el.innerHTML=rows.map(r=>`
+    <div class="card">
+      <div class="card-name">${r.subject||'(no subject)'} <span class="badge badge-${r.status==='resolved'?'approved':'open'}">${r.status}</span></div>
+      <div class="card-email">${r.email||''} · ${fmt(r.created_at)}</div>
+      <div style="font-size:13px;color:var(--muted2);margin-top:8px;line-height:1.6">${(r.message||'').substring(0,200)}</div>
+      <div class="card-actions">
+        ${r.status!=='resolved'?`<button class="btn btn-green" onclick="resolveSupport('${r.id}')">Resolve</button>`:`<button class="btn btn-ghost" onclick="reopenSupport('${r.id}')">Reopen</button>`}
+      </div>
+    </div>`).join('');
+}
 
-  async function confirmEdit(){
-    await fetch(`/api/members/${activeMemberId}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:document.getElementById('editStremioEmail').value.trim(),stremio_pass:document.getElementById('editStremioPass').value.trim(),notes:document.getElementById('editNotes').value.trim()})});
-    closeModal('editModal');loadMembers();
-  }
+async function resolveSupport(id){await fetch('/api/support/'+id+'/resolve',{method:'POST'});loadSupport()}
+async function reopenSupport(id){await fetch('/api/support/'+id+'/reopen',{method:'POST'});loadSupport()}
 
-  async function deleteMember(id){
-    if(!confirm('Remove this member?'))return;
-    await fetch(`/api/members/${id}`,{method:'DELETE'});
-    loadAll();
-  }
+// ── Resend Welcome ────────────────────────────────────────────────────────────
+function openResendWelcome(memberId,name){
+  document.getElementById('resendWelcomeMemberId').value=memberId;
+  document.getElementById('resendWelcomeName').textContent=name;
+  document.getElementById('resendPassDisplay').value='';
+  openSheet('resendSheet');
+}
 
-  async function loadSupport(){
-    const rows=await fetch('/api/support').then(r=>r.json());
-    const filtered=suppFilter==='all'?rows:rows.filter(r=>r.status===suppFilter);
-    renderSupport(filtered);
-  }
+function genResendPass(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  document.getElementById('resendPassDisplay').value=Array.from({length:8},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+}
 
-  function setSuppFilter(f,el){
-    suppFilter=f;
-    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-    el.classList.add('active');
-    loadSupport();
-  }
+async function submitResendWelcome(){
+  const memberId=document.getElementById('resendWelcomeMemberId').value;
+  const new_pass=document.getElementById('resendPassDisplay').value.trim();
+  const btn=event.target;btn.textContent='Sending…';btn.disabled=true;
+  await fetch('/api/admin/resend/welcome/'+memberId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({new_pass:new_pass||null})});
+  closeSheet('resendSheet');
+  btn.textContent='Send Email';btn.disabled=false;
+}
 
-  function renderSupport(rows){
-    const el=document.getElementById('supportList');
-    if(!rows.length){el.innerHTML='<div class="empty"><div class="empty-title">No messages</div><div class="empty-sub">All clear.</div></div>';return}
-    el.innerHTML=rows.map(r=>`
-      <div class="app-row">
-        <div>
-          <div class="row-name">${r.member_name}</div>
-          <div class="row-email">${r.member_email}</div>
-          <div class="row-meta" style="margin-top:8px">
-            ${r.status==='open'?'<span class="badge badge-open">Open</span>':'<span class="badge badge-resolved">Resolved</span>'}
-            <div><div class="meta-lbl">Subject</div><div class="meta-val">${r.subject}</div></div>
-          </div>
-          <div class="row-notes">${r.message}</div>
-        </div>
-        <div class="row-actions">
-          ${r.status==='open'?`<button class="act green" onclick="resolveSupport('${r.id}')">Resolve</button>`:`<button class="act" onclick="reopenSupport('${r.id}')">Reopen</button>`}
-          <button class="act red" onclick="deleteSupport('${r.id}')">Delete</button>
-          <div class="row-date">${fmt(r.created_at)}</div>
-        </div>
-      </div>`).join('');
-  }
+// ── Password helpers ──────────────────────────────────────────────────────────
+function genPass(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  return Array.from({length:8},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+}
+function regeneratePass(){document.getElementById('genPassDisplay').value=genPass()}
+function copyGenPass(){
+  const pass=document.getElementById('genPassDisplay').value;
+  if(!pass)return;
+  navigator.clipboard.writeText(pass).then(()=>{const b=document.getElementById('copyGenPass');b.textContent='✓';setTimeout(()=>b.textContent='Copy',2000)});
+}
 
-  async function resolveSupport(id){await fetch(`/api/support/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'resolved'})});loadSupport();loadStats()}
-  async function reopenSupport(id){await fetch(`/api/support/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'open'})});loadSupport();loadStats()}
-  async function deleteSupport(id){if(!confirm('Delete this message?'))return;await fetch(`/api/support/${id}`,{method:'DELETE'});loadSupport();loadStats()}
-
-
-  // ── Profiles ──────────────────────────────────────────────────────────────────
-  async function loadProfiles() {
-    const rows = await fetch('/api/admin/profiles').then(r=>r.json());
-    renderProfiles(rows);
-  }
-
-  function renderProfiles(rows) {
-    const el = document.getElementById('profileList');
-    if (!rows.length) { el.innerHTML='<div class="empty"><div class="empty-title">No profiles</div></div>'; return; }
-    el.innerHTML = rows.map(r => {
-      const tier = TIERS[r.tier] || {label:r.tier,color:'#e2e8e4'};
-      const initials = r.screen_name ? r.screen_name[0].toUpperCase() : '?';
-      return `<div class="app-row">
-        <div style="display:flex;align-items:center;gap:12px">
-          <span class="avatar-sm" style="background:${r.avatar_color||'#60a5fa'};width:40px;height:40px;font-size:14px;flex-shrink:0">
-            ${r.avatar_url?`<img src="${r.avatar_url}" alt=""/>`:initials}
-          </span>
-          <div>
-            <div class="row-name"><a class="profile-link" href="/profile.html?id=${r.id}">@${r.screen_name}</a></div>
-            <div class="row-email">${r.email}</div>
-            <div style="margin-top:6px;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${tier.color}22;color:${tier.color}">
-              <div style="width:6px;height:6px;border-radius:50%;background:${tier.color}"></div>${tier.label}
-            </div>
-          </div>
-        </div>
-        <div class="row-actions">
-          <select class="tier-select" onchange="promoteTier('${r.id}',this.value)">
-            ${Object.entries(TIERS).map(([k,v])=>`<option value="${k}" ${r.tier===k?'selected':''}>${v.label}</option>`).join('')}
-          </select>
-          <div class="row-date">Joined ${fmt(r.created_at)}</div>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  async function promoteTier(profileId, tier) {
-    await fetch(`/api/admin/profiles/${profileId}/tier`, {
-      method:'PATCH', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({tier}),
-    });
-    loadProfiles();
-  }
-
-
-  // ── Credits tab ────────────────────────────────────────────────────────────────
-  async function loadCreditsTab() {
-    const rows = await fetch('/api/admin/credits').then(r=>r.json());
-    const el = document.getElementById('creditList');
-    if(!rows.length){el.innerHTML='<div class="empty"><div class="empty-title">No profiles yet</div></div>';return}
-    el.innerHTML = rows.map(r => {
-      const initials = r.screen_name?r.screen_name[0].toUpperCase():'?';
-      return `<div class="app-row">
-        <div style="display:flex;align-items:center;gap:12px">
-          <span class="avatar-sm" style="background:${r.avatar_color||'#60a5fa'};width:40px;height:40px;font-size:14px;flex-shrink:0">
-            ${r.avatar_url?`<img src="${r.avatar_url}" alt=""/>`:initials}
-          </span>
-          <div>
-            <div class="row-name"><a class="profile-link" href="/profile.html?id=${r.id}">@${r.screen_name}</a></div>
-            <div class="row-email">${r.email}</div>
-          </div>
-        </div>
-        <div class="row-actions" style="flex-direction:row;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-          <span class="credit-badge">${r.balance} cr</span>
-          <input class="credit-input" type="number" id="cr-amt-${r.id}" placeholder="±" min="-99" max="99"/>
-          <select class="tier-select" id="cr-type-${r.id}">
-            <option value="purchased">Purchased</option>
-            <option value="referral">Referral</option>
-            <option value="gifted">Gift</option>
-            <option value="redeemed">Redeem</option>
-            <option value="deducted">Remove</option>
-          </select>
-          <button class="act green" onclick="applyCredit('${r.id}', '${esc(r.screen_name)}')">Apply</button>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  async function applyCredit(profileId, screenName) {
-    const amtEl = document.getElementById('cr-amt-'+profileId);
-    const typeEl = document.getElementById('cr-type-'+profileId);
-    const amt = parseInt(amtEl.value);
-    if(isNaN(amt)||amt===0){alert('Enter a non-zero amount');return}
-    const type = typeEl.value;
-    const note = type==='redeemed'?`Redeemed for subscription`:`${type==='gifted'?'Gift from Dungeon Master':type} for @${screenName}`;
-    const res = await fetch('/api/admin/credits/'+profileId,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({amount:amt,type,note})
-    });
-    const d = await res.json();
-    if(res.ok){amtEl.value='';loadCreditsTab();}
-    else{alert(d.error||'Error');}
-  }
-
-
-
-  // ── Stremio tab ────────────────────────────────────────────────────────────────
-  async function loadStremioTab(){
-    const rows = await fetch('/api/admin/stremio').then(r=>r.json()).catch(()=>[]);
-    const el = document.getElementById('stremioTabList');
-    if(!rows.length){el.innerHTML='<div class="empty"><div class="empty-title">No members yet</div></div>';return}
-
-    const fmtD = dt => { if(!dt)return '—'; if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z'; return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
-    const getDays = dt => { if(!dt)return null; if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z'; return Math.ceil((new Date(dt)-new Date())/86400000); };
-
-    el.innerHTML = rows.map(r => {
-      const days = getDays(r.stremio_end);
-      const chip = days===null ? '<span style="font-size:11px;color:var(--muted)">No subscription</span>'
-        : days>0 ? `<span style="font-size:11px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:20px">${days}d left</span>`
-        : `<span style="font-size:11px;font-weight:600;color:var(--red);background:var(--red-bg);padding:2px 8px;border-radius:20px">Expired</span>`;
-      return `<div class="app-row">
-        <div>
-          <div class="row-name" style="display:flex;align-items:center;gap:8px">
-            ${r.screen_name?'@'+r.screen_name:r.first_name+' '+r.last_name} ${chip}
-          </div>
-          <div class="row-email">${r.email}</div>
-          <div class="row-meta" style="margin-top:8px;gap:16px">
-            ${r.stremio_email?`<div><div class="meta-lbl">Stremio Email</div><div class="meta-val">${r.stremio_email}</div></div>`:''}
-          ${r.stremio_auth_key?`<div>
-            <div class="meta-lbl">Auth Key</div>
-            <div class="meta-val" style="display:flex;align-items:center;gap:6px">
-              <span style="font-family:monospace;font-size:11px;color:var(--green)">${r.stremio_auth_key.substring(0,20)}…</span>
-              <button class="act" style="font-size:10px;padding:2px 6px" onclick="navigator.clipboard.writeText('${esc(r.stremio_auth_key)}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>
-            </div>
-          </div>`:''}
-            ${r.stremio_end?`<div><div class="meta-lbl">Expires</div><div class="meta-val">${fmtD(r.stremio_end)}</div></div>`:''}
-          </div>
-        </div>
-        <div class="row-actions">
-<button class="act" onclick="editStremio('${r.id}','${esc(r.stremio_email||'')}','${esc(r.stremio_pass||'')}','${r.stremio_start||''}','${r.stremio_end||''}','${esc(r.stremio_auth_key||'')}')" >Edit</button>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  function editStremio(memberId, email, pass, start, end, authKey=''){
-    document.getElementById('stremioMemberId').value = memberId;
-    document.getElementById('stremioTabEmail').value = email;
-    document.getElementById('stremioTabPass').value = pass;
-    document.getElementById('stremioTabStart').value = start ? start.split('T')[0] : '';
-    document.getElementById('stremioTabEnd').value = end ? end.split('T')[0] : '';
-    document.getElementById('stremioTabAuthKey').value = authKey;
-    document.getElementById('stremioModal').style.display = 'flex';
-  }
-
-  function closeStremioModal(){ document.getElementById('stremioModal').style.display='none'; }
-
-  async function saveStremio(){
-    const memberId = document.getElementById('stremioMemberId').value;
-    const body = {
-      stremio_email: document.getElementById('stremioTabEmail').value,
-      stremio_pass:  document.getElementById('stremioTabPass').value,
-      stremio_start: document.getElementById('stremioTabStart').value||null,
-      stremio_end:   document.getElementById('stremioTabEnd').value||null,
-      stremio_auth_key: document.getElementById('stremioTabAuthKey').value||null,
-    };
-    await fetch('/api/admin/stremio/'+memberId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    closeStremioModal();
-    loadStremioTab();
-  }
-
-  // ── DungeonCast tab ───────────────────────────────────────────────────────────────────
-  let allProfiles = [];
-
-  async function loadDCTab() {
-    // Load all profiles for the select
-    const profiles = await fetch('/api/profiles').then(r=>r.json()).catch(()=>[]);
-    allProfiles = profiles;
-    const sel = document.getElementById('iptvMemberSelect');
-    sel.innerHTML = '<option value="">Select member…</option>';
-    profiles.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.id;
-      opt.textContent = '@' + p.screen_name;
-      sel.appendChild(opt);
-    });
-
-    const rows = await fetch('/api/admin/iptv').then(r=>r.json()).catch(()=>[]);
-    const el = document.getElementById('iptvList');
-    if (!rows.length) {
-      el.innerHTML = '<div class="empty"><div class="empty-title">No DungeonCast accounts yet</div><div class="empty-sub">Add an account when a member redeems an DungeonCast credit.</div></div>';
-      return;
-    }
-
-    const statusColor = {active:'var(--green)',pending:'var(--amber)',suspended:'var(--red)'};
-    el.innerHTML = rows.map(r => `
-      <div class="app-row" id="iptv-row-${r.profile_id}">
-        <div>
-          <div class="row-name" style="display:flex;align-items:center;gap:8px">
-            @${r.screen_name}
-            <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${statusColor[r.status]||'var(--muted)'}22;color:${statusColor[r.status]||'var(--muted)'}">${r.status}</span>
-          </div>
-          <div class="row-email">${r.email}</div>
-          <div class="row-meta" style="margin-top:8px;flex-wrap:wrap;gap:12px">
-            ${r.nodecast_user ? `<div><div class="meta-lbl">DungeonCast Login</div><div class="meta-val">${r.nodecast_user}</div></div>` : ''}
-            ${r.xtream_url ? `<div><div class="meta-lbl">Xtream URL</div><div class="meta-val" style="font-size:11px">${r.xtream_url}</div></div>` : ''}
-            ${r.xtream_user ? `<div><div class="meta-lbl">Xtream User</div><div class="meta-val">${r.xtream_user}</div></div>` : ''}
-            ${r.notes ? `<div><div class="meta-lbl">Notes</div><div class="meta-val">${r.notes}</div></div>` : ''}
-          </div>
-        </div>
-        <div class="row-actions">
-          <button class="act" style="background:var(--amber);color:#0b0f0e" onclick="openDCDemo('${r.profile_id}','${esc(r.screen_name)}','${esc(r.email)}')">Demo</button>
-          <button class="act green" onclick="editIptv('${r.profile_id}')">Edit</button>
-          <button class="act red" onclick="deleteIptv('${r.profile_id}')">Remove</button>
-        </div>
-      </div>`).join('');
-  }
-
-  function showAddIptv() {
-    document.getElementById('iptvModalTitle').textContent = 'Add IPTV Account';
-    document.getElementById('iptvProfileId').value = '';
-    document.getElementById('iptvMemberSelect').value = '';
-    document.getElementById('iptvMemberSelect').disabled = false;
-    document.getElementById('iptvNodecastUser').value = '';
-    document.getElementById('iptvXtreamUrl').value = '';
-    document.getElementById('iptvXtreamUser').value = '';
-    document.getElementById('iptvXtreamPass').value = '';
-    document.getElementById('iptvStatus').value = 'pending';
-    document.getElementById('iptvNotes').value = '';
-    document.getElementById('iptvModal').style.display = 'flex';
-  }
-
-  function editIptv(profileId) {
-    fetch('/api/admin/iptv').then(r=>r.json()).then(rows => {
-      const r = rows.find(x => x.profile_id === profileId);
-      if (!r) return;
-      document.getElementById('iptvModalTitle').textContent = 'Edit IPTV Account';
-      document.getElementById('iptvProfileId').value = profileId;
-      document.getElementById('iptvMemberSelect').value = profileId;
-      document.getElementById('iptvMemberSelect').disabled = true;
-      document.getElementById('iptvNodecastUser').value = r.nodecast_user || '';
-      document.getElementById('iptvXtreamUrl').value = r.xtream_url || '';
-      document.getElementById('iptvXtreamUser').value = r.xtream_user || '';
-      document.getElementById('iptvXtreamPass').value = r.xtream_pass || '';
-      document.getElementById('iptvStatus').value = r.status || 'pending';
-      document.getElementById('iptvNotes').value = r.notes || '';
-      document.getElementById('iptvModal').style.display = 'flex';
-    });
-  }
-
-  function closeIptvModal() {
-    document.getElementById('iptvModal').style.display = 'none';
-  }
-
-  async function saveIptv() {
-    const profileId = document.getElementById('iptvProfileId').value || document.getElementById('iptvMemberSelect').value;
-    if (!profileId) { alert('Select a member'); return; }
-    const body = {
-      nodecast_user: document.getElementById('iptvNodecastUser').value,
-      xtream_url:    document.getElementById('iptvXtreamUrl').value,
-      xtream_user:   document.getElementById('iptvXtreamUser').value,
-      xtream_pass:   document.getElementById('iptvXtreamPass').value,
-      status:        document.getElementById('iptvStatus').value,
-      notes:         document.getElementById('iptvNotes').value,
-    };
-    await fetch('/api/admin/iptv/' + profileId, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-    closeIptvModal();
-    loadDCTab();
-  }
-
-  async function deleteIptv(profileId) {
-    if (!confirm('Remove this DungeonCast account?')) return;
-    await fetch('/api/admin/iptv/' + profileId, { method:'DELETE' });
-    loadDCTab();
-  }
-
-  function closeModal(id){document.getElementById(id).classList.remove('open');activeApplicantId=null;activeMemberId=null}
-  document.querySelectorAll('.veil').forEach(v=>{v.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')})});
-  document.getElementById('pinInput').focus();
-
-  // Smart logo link — go to dashboard if logged in, home if not
-  (function(){
-    fetch('/api/member/me').then(r=>r.json()).then(d=>{
-      const logo = document.getElementById('logoLink');
-      if(logo && d.authenticated) logo.href = '/dashboard.html';
-    }).catch(()=>{});
-  })();
+// Check if already logged in
+fetch('/api/stats').then(r=>{if(r.ok){document.getElementById('lockScreen').style.display='none';document.getElementById('adminApp').classList.add('visible');loadAll()}}).catch(()=>{});
 </script>
-
-  <footer id="pageFooter">
-    <a href="/profile.html">My Profile</a>
-    &nbsp;·&nbsp;
-    <a href="/directory.html">Directory</a>
-    &nbsp;·&nbsp;
-    <a href="/forum.html">Forum</a>
-    &nbsp;·&nbsp;
-    <a href="/dashboard.html">Dashboard</a>
-  </footer>
 </body>
 </html>
