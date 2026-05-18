@@ -808,6 +808,15 @@ app.delete('/api/support/:id', requireAuth, (req, res) => {
 
 
 
+
+// Extend member subscription
+app.post('/api/admin/members/:id/extend', requireAuth, (req, res) => {
+  const { service, new_end } = req.body;
+  const field = service === 'stream' ? 'stremio_end' : 'iptv_end';
+  db.prepare(`UPDATE members SET ${field}=? WHERE id=?`).run(new_end, req.params.id);
+  res.json({ ok: true });
+});
+
 // ── Admin: DungeonStream subscriptions ──────────────────────────────────────────────
 
 app.get('/api/admin/stremio', requireAuth, (req, res) => {
@@ -979,7 +988,7 @@ app.get('/api/admin/redemptions', requireAuth, (req, res) => {
 });
 
 // Fulfill a redemption (admin)
-app.post('/api/admin/redemptions/:id/fulfill', requireAuth, (req, res) => {
+app.post('/api/admin/redemptions/:id/fulfill', requireAuth, async (req, res) => {
   const { account_user, account_pass, notes } = req.body;
   const redemption = db.prepare('SELECT * FROM redemptions WHERE id=?').get(req.params.id);
   if (!redemption) return res.status(404).json({ error: 'Redemption not found' });
@@ -1012,16 +1021,48 @@ app.post('/api/admin/redemptions/:id/fulfill', requireAuth, (req, res) => {
     }
   }
 
-  // Send credentials message to member
+  // Send credentials message + email to member
   const warden = db.prepare("SELECT * FROM profiles WHERE tier='warden' LIMIT 1").get();
+  const svcName = redemption.service === 'stremio' ? 'DungeonStream' : 'DungeonCast';
+  const subject = `Your ${svcName} Account is Ready`;
+
   if (warden && profile) {
-    const service = redemption.service === 'stremio' ? 'DungeonStream' : 'DungeonCast';
-    const subject = `Your ${service} Account is Ready`;
     const content = redemption.service === 'stremio'
-      ? `Your DungeonStream account has been set up and is ready to use.\n\nEmail: ${account_user}\nPassword: ${account_pass}\n\nLog in at dungeonstream.enterdungeon.cc or download the Stremio app and use these credentials.${notes ? '\n\nNotes: ' + notes : ''}`
-      : `Your DungeonCast account has been set up and is ready to use.\n\nUsername: ${account_user}\nPassword: ${account_pass}\n\nLog in at http://dungeoncast.cc${notes ? '\n\nNotes: ' + notes : ''}`;
+      ? `Your DungeonStream account has been set up.\n\nEmail: ${account_user}\nPassword: ${account_pass}\n\nLog in at dungeonstream.enterdungeon.cc${notes ? '\n\nNotes: ' + notes : ''}`
+      : `Your DungeonCast account has been set up.\n\nUsername: ${account_user}\nPassword: ${account_pass}\n\nLog in at http://dungeoncast.cc${notes ? '\n\nNotes: ' + notes : ''}`;
     db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
       .run(genId(), warden.id, profile.id, subject, content);
+  }
+
+  // Send email
+  if (member) {
+    const html = emailShell(redemption.service === 'stremio' ? `
+      <h2>Your DungeonStream Account is Ready</h2>
+      <div class="rule"></div>
+      <p>Your DungeonStream account has been set up and is ready to use.</p>
+      <div class="box">
+        <div class="row"><span class="lbl">Email</span><span class="val">${account_user}</span></div>
+        <div class="row"><span class="lbl">Password</span><span class="val">${account_pass}</span></div>
+      </div>
+      <p>Log in at <a href="https://web.stremio.com" style="color:#34d399">web.stremio.com</a> or the Stremio app on any device using these credentials.${notes ? '<br><br>Notes: ' + notes : ''}</p>
+      <a href="https://web.stremio.com" class="btn">Open DungeonStream</a>
+      <div class="rule"></div>
+      <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. — The Dungeon Master</p>
+    ` : `
+      <h2>Your DungeonCast Account is Ready</h2>
+      <div class="rule"></div>
+      <p>Your DungeonCast account has been set up and is ready to use.</p>
+      <div class="box">
+        <div class="row"><span class="lbl">Username</span><span class="val">${account_user}</span></div>
+        <div class="row"><span class="lbl">Password</span><span class="val">${account_pass}</span></div>
+        <div class="row"><span class="lbl">URL</span><span class="val">http://dungeoncast.cc</span></div>
+      </div>
+      <p>Open <a href="http://dungeoncast.cc" style="color:#34d399">dungeoncast.cc</a> in your browser and sign in with the credentials above.${notes ? '<br><br>Notes: ' + notes : ''}</p>
+      <a href="http://dungeoncast.cc" class="btn">Open DungeonCast</a>
+      <div class="rule"></div>
+      <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. — The Dungeon Master</p>
+    `);
+    try { await sendMail(member.email, subject, html); } catch(e) { console.error('Fulfill email error:', e); }
   }
 
   res.json({ ok: true });

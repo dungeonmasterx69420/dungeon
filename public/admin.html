@@ -227,6 +227,7 @@
     <button class="tab-btn active" onclick="switchTab('redemptions',this)">Redemptions <span id="redemBadge" style="display:none;color:var(--red);font-size:11px"></span></button>
     <button class="tab-btn" onclick="switchTab('applicants',this)">Applications</button>
     <button class="tab-btn" onclick="switchTab('members',this)">Members</button>
+    <button class="tab-btn" onclick="switchTab('subscribers',this)">Subscribers</button>
     <button class="tab-btn" onclick="switchTab('demos',this)">Demos <span id="demoBadge" style="display:none;color:var(--amber);font-size:10px"></span></button>
     <button class="tab-btn" onclick="switchTab('support',this)">Support <span id="suppBadge" style="display:none;color:var(--red)"></span></button>
   </div>
@@ -330,6 +331,21 @@
           </div>
         </div>
       </div>
+    </div>
+
+
+    <div class="tab-panel" id="panel-subscribers">
+      <div class="list-header">
+        <div class="list-label">Active Subscribers</div>
+        <div class="filters">
+          <button class="filter-btn active" id="subf-all" onclick="setSubFilter('all',this)">All</button>
+          <button class="filter-btn" id="subf-stream" onclick="setSubFilter('stream',this)">DungeonStream</button>
+          <button class="filter-btn" id="subf-cast" onclick="setSubFilter('cast',this)">DungeonCast</button>
+          <button class="filter-btn" id="subf-expired" onclick="setSubFilter('expired',this)">Expired</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div id="subscriberList"></div>
     </div>
 
     <div class="tab-panel" id="panel-support">
@@ -685,6 +701,104 @@
 
 
 
+
+  // ── Subscribers tab ───────────────────────────────────────────────────────────
+  let subFilter = 'all';
+
+  function setSubFilter(f, el) {
+    subFilter = f;
+    document.querySelectorAll('#panel-subscribers .filter-btn').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active');
+    loadSubscribers();
+  }
+
+  async function loadSubscribers() {
+    const members = await fetch('/api/members').then(r=>r.json()).catch(()=>[]);
+    const el = document.getElementById('subscriberList');
+
+    const now = new Date();
+    const getDays = dt => { if(!dt)return -999; if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z'; return Math.ceil((new Date(dt)-now)/86400000); };
+    const fmtD = dt => { if(!dt)return '—'; if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z'; return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+
+    // Build subscription rows
+    let rows = [];
+
+    members.forEach(m => {
+      const streamDays = getDays(m.stremio_end);
+      const castDays = getDays(m.iptv_end);
+
+      if (m.stremio_end) {
+        rows.push({
+          id: m.id, name: m.screen_name||`${m.first_name} ${m.last_name}`, email: m.email,
+          service: 'stream', start: m.stremio_start, end: m.stremio_end,
+          days: streamDays, active: streamDays > 0,
+          credential: m.stremio_email
+        });
+      }
+      if (m.iptv_end) {
+        rows.push({
+          id: m.id, name: m.screen_name||`${m.first_name} ${m.last_name}`, email: m.email,
+          service: 'cast', start: m.iptv_start, end: m.iptv_end,
+          days: castDays, active: castDays > 0,
+          credential: null
+        });
+      }
+    });
+
+    // Filter
+    if (subFilter === 'stream') rows = rows.filter(r => r.service === 'stream');
+    else if (subFilter === 'cast') rows = rows.filter(r => r.service === 'cast');
+    else if (subFilter === 'expired') rows = rows.filter(r => !r.active);
+    else rows = rows.filter(r => r.active); // 'all' shows only active
+
+    // Sort by expiry
+    rows.sort((a,b) => new Date(a.end) - new Date(b.end));
+
+    if (!rows.length) {
+      el.innerHTML = '<div class="empty"><div class="empty-title">No ' + (subFilter==='expired'?'expired':'active') + ' subscribers</div></div>';
+      return;
+    }
+
+    const svcIcon = s => s === 'stream' ? '📺' : '📡';
+    const svcName = s => s === 'stream' ? 'DungeonStream' : 'DungeonCast';
+    const chipColor = days => days > 7 ? 'var(--green)' : days > 0 ? 'var(--amber)' : 'var(--red)';
+    const chipBg = days => days > 7 ? 'rgba(52,211,153,0.1)' : days > 0 ? 'var(--amber-bg)' : 'var(--red-bg)';
+    const chipText = days => days > 0 ? `${days}d left` : 'Expired';
+
+    el.innerHTML = rows.map(r => `
+      <div class="app-row">
+        <div style="flex:1">
+          <div class="row-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            ${r.name}
+            <span style="font-size:12px;padding:2px 10px;border-radius:20px;font-weight:600;background:${r.service==='stream'?'rgba(96,165,250,0.1)':'rgba(52,211,153,0.1)'};color:${r.service==='stream'?'#60a5fa':'var(--green)'}">${svcIcon(r.service)} ${svcName(r.service)}</span>
+            <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${chipBg(r.days)};color:${chipColor(r.days)}">${chipText(r.days)}</span>
+          </div>
+          <div class="row-email">${r.email}</div>
+          <div class="row-meta" style="margin-top:8px">
+            <div><div class="meta-lbl">Started</div><div class="meta-val">${fmtD(r.start)}</div></div>
+            <div><div class="meta-lbl">Expires</div><div class="meta-val">${fmtD(r.end)}</div></div>
+            ${r.credential?`<div><div class="meta-lbl">Account</div><div class="meta-val">${r.credential}</div></div>`:''}
+          </div>
+        </div>
+        <div class="row-actions">
+          <button class="act green" onclick="extendSub('${r.id}','${r.service}','${r.end}')">+30 Days</button>
+        </div>
+      </div>`).join('');
+  }
+
+  async function extendSub(memberId, service, currentEnd) {
+    if (!confirm('Extend subscription by 30 days?')) return;
+    const end = new Date(currentEnd.endsWith('Z')||currentEnd.includes('+')?currentEnd:currentEnd.replace(' ','T')+'Z');
+    const newEnd = new Date(Math.max(end, new Date())); // if expired, start from today
+    newEnd.setMonth(newEnd.getMonth() + 1);
+    const field = service === 'stream' ? 'stremio_end' : 'iptv_end';
+    await fetch('/api/admin/members/' + memberId + '/extend', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ service, new_end: newEnd.toISOString() })
+    });
+    loadSubscribers();
+  }
+
   // ── Demos tab ─────────────────────────────────────────────────────────────────
   let demoFilter = 'pending';
 
@@ -863,6 +977,7 @@
     el.classList.add('active');
     document.getElementById('panel-'+name).classList.add('active');
     if(name==='members'){loadMembers();}
+    if(name==='subscribers')loadSubscribers();
     if(name==='support')loadSupport();
     if(name==='demos'){demoFilter='pending';document.querySelectorAll('#panel-demos .filter-btn').forEach(b=>b.classList.remove('active'));document.querySelector('#panel-demos .filter-btn')?.classList.add('active');loadDemosTab();}
     // profiles now inside members tab
