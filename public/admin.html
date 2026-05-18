@@ -930,7 +930,6 @@ async function submitDCDemo(){
 }
 
 // ── Subscribers ───────────────────────────────────────────────────────────────
-let subFilter='all';
 function setSubFilter(f,el){subFilter=f;document.querySelectorAll('#panel-subscribers .filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadSubscribers()}
 async function loadSubscribers(){
   const members=await fetch('/api/members').then(r=>r.json()).catch(()=>[]);
