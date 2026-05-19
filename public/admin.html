@@ -799,7 +799,7 @@ async function loadStremioTab(){
     <div class="card">
       <div class="card-name">
         ${r.screen_name?`<span style="color:var(--green)">@${r.screen_name}</span> — `:''} ${r.first_name} ${r.last_name}
-        ${r.stremio_end?`<span class="badge ${chipClass}">${chipText}</span>`:'<span class="badge" style="background:rgba(107,143,122,0.1);color:var(--muted)">No sub</span>'}
+        ${r.stremio_end?`<span class="badge ${chipClass}">${chipText}</span>`:r.stremio_email?'<span class="badge" style="background:rgba(107,143,122,0.1);color:var(--muted)">Active (no expiry set)</span>':'<span class="badge" style="background:rgba(107,143,122,0.1);color:var(--muted)">No sub</span>'}
       </div>
       <div class="card-email">${r.email}</div>
       <div class="card-meta">

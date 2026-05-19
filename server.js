@@ -845,8 +845,13 @@ app.post('/api/admin/stremio/:memberId', requireAuth, (req, res) => {
   const { stremio_email, stremio_pass, stremio_start, stremio_end, stremio_auth_key } = req.body;
   const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.memberId);
   if (!m) return res.status(404).json({ error: 'Member not found' });
+  // If no dates provided but stremio_email set, auto-set 1 month sub
+  const now = new Date();
+  const autoEnd = new Date(now); autoEnd.setMonth(autoEnd.getMonth()+1);
+  const finalStart = stremio_start||m.stremio_start||now.toISOString();
+  const finalEnd = stremio_end||m.stremio_end||autoEnd.toISOString();
   db.prepare(`UPDATE members SET stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, stremio_auth_key=? WHERE id=?`)
-    .run(stremio_email||m.stremio_email, stremio_pass||m.stremio_pass, stremio_start||null, stremio_end||null, stremio_auth_key!==undefined?stremio_auth_key:m.stremio_auth_key, req.params.memberId);
+    .run(stremio_email||m.stremio_email, stremio_pass||m.stremio_pass, finalStart, finalEnd, stremio_auth_key!==undefined?stremio_auth_key:m.stremio_auth_key, req.params.memberId);
   res.json({ ok: true });
 });
 
