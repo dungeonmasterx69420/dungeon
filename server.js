@@ -295,10 +295,7 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
     try { db.prepare(sql).run(); } catch(e) { /* column already exists */ }
   }
 
-  // Reset all existing subscriptions to null (fresh launch)
-  try {
-    db.prepare("UPDATE members SET subscription_start=NULL, subscription_end=NULL, stremio_start=NULL, stremio_end=NULL, iptv_start=NULL, iptv_end=NULL").run();
-  } catch(e) {}
+  // Subscription reset removed — do not wipe subscription dates on startup
 
 // ── Seed forum categories ─────────────────────────────────────────────────────
 (function seedCategories() {
