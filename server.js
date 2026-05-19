@@ -774,7 +774,7 @@ app.post('/api/members/:id/renew', requireAuth, (req, res) => {
 
 // ── Admin: members ────────────────────────────────────────────────────────────
 app.get('/api/members', requireAuth, (req, res) => {
-  const members = db.prepare('SELECT m.id, m.first_name, m.last_name, m.email, m.stremio_email, m.stremio_pass, m.stremio_start, m.stremio_end, m.iptv_start, m.iptv_end, m.notes, m.created_at, m.plain_pass, m.stremio_auth_key, p.id as profile_id_val, p.screen_name, p.tier, p.avatar_url, p.avatar_color, COALESCE(c.amount,0) as credit_balance FROM members m LEFT JOIN profiles p ON p.member_id=m.id LEFT JOIN credits c ON c.profile_id=p.id ORDER BY m.created_at DESC').all();
+  const members = db.prepare(`SELECT m.id, m.first_name, m.last_name, m.email, m.stremio_email, m.stremio_pass, m.stremio_start, m.stremio_end, m.iptv_start, m.iptv_end, m.notes, m.created_at, m.plain_pass, m.stremio_auth_key, p.id as profile_id_val, p.screen_name, p.tier, p.avatar_url, p.avatar_color, COALESCE(c.amount,0) as credit_balance FROM members m LEFT JOIN profiles p ON (p.member_id=m.id OR (p.member_id IS NULL AND LOWER(p.email)=LOWER(m.email))) LEFT JOIN credits c ON c.profile_id=p.id ORDER BY m.created_at DESC`).all();
   res.json(members);
 });
 
@@ -1004,7 +1004,17 @@ app.post('/api/admin/redemptions/:id/fulfill', requireAuth, async (req, res) => 
 
   // Update member's subscription dates
   const profile = db.prepare('SELECT * FROM profiles WHERE id=?').get(redemption.profile_id);
-  const member = profile ? db.prepare('SELECT * FROM members WHERE id=?').get(profile.member_id) : null;
+  let member = null;
+  if (profile) {
+    // Try member_id first, then fall back to email match
+    member = profile.member_id
+      ? db.prepare('SELECT * FROM members WHERE id=?').get(profile.member_id)
+      : db.prepare('SELECT * FROM members WHERE LOWER(email)=LOWER(?)').get(profile.email);
+    // Also update profile.member_id if missing
+    if (member && !profile.member_id) {
+      db.prepare('UPDATE profiles SET member_id=? WHERE id=?').run(member.id, profile.id);
+    }
+  }
   if (member) {
     const now = new Date();
     const end = new Date(now); end.setMonth(end.getMonth() + 1);
