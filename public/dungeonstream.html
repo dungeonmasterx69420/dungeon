@@ -203,18 +203,21 @@
     const badge = document.getElementById('stremioStatusBadge');
     if(member && member.stremio_email){
       document.getElementById('stremioAccountActive').style.display='block';
+      const ph=document.getElementById('credPlaceholder');if(ph)ph.style.display='none';
       document.getElementById('stremioEmail').textContent = member.stremio_email || '—';
-      document.getElementById('stremioPass').dataset.raw = member.stremio_pass || '';
       document.getElementById('stremioPassDisplay').dataset.raw = member.stremio_pass || '';
-      const exp = member.subscription_end;
+      const exp = member.stremio_end;
       if(exp){
-        const d = new Date(exp);
-        document.getElementById('stremioExpiry').textContent = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-        const days = Math.ceil((d-new Date())/86400000);
+        let expDt = exp; if(!expDt.endsWith('Z')&&!expDt.includes('+'))expDt=expDt.replace(' ','T')+'Z';
+        const expDate = new Date(expDt);
+        const days = Math.ceil((expDate-new Date())/86400000);
+        document.getElementById('stremioExpiry').textContent = 'Expires '+expDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
         const dEl=document.getElementById('stremioDays');dEl.textContent=days>0?days+'d left':'Expired';dEl.style.color=days>7?'var(--green)':days>0?'var(--amber)':'var(--red)';
         badge.textContent = days > 0 ? 'Active' : 'Expired';
         badge.style.background = days > 0 ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.1)';
         badge.style.color = days > 0 ? 'var(--green)' : 'var(--red)';
+      } else {
+        badge.textContent = 'Active'; badge.style.background='rgba(52,211,153,0.12)'; badge.style.color='var(--green)';
       }
     } else {
       document.getElementById('stremioAccountNone').style.display='block';
