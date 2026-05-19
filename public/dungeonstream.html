@@ -183,6 +183,7 @@
     const logo=document.getElementById('logoLink');if(logo)logo.href='/dashboard.html';
     loadFooter(d.member?.profile?.tier);
     loadMsgBadge();
+    console.log('member data:', JSON.stringify(d.member));
     loadStremioAccount(d.member);
   });
 
