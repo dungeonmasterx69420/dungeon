@@ -1663,6 +1663,22 @@ app.post('/api/admin/resend/welcome/:memberId', requireAuth, async (req, res) =>
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ── Admin: Fix unlinked profiles ─────────────────────────────────────────────
+app.post('/api/admin/fix-profile-links', requireAuth, (req, res) => {
+  const result = db.prepare(`
+    UPDATE profiles 
+    SET member_id=(SELECT m.id FROM members m WHERE LOWER(m.email)=LOWER(profiles.email) LIMIT 1)
+    WHERE member_id IS NULL AND email IS NOT NULL
+  `).run();
+  
+  // Also try matching by applicant email if available
+  const unlinked = db.prepare("SELECT * FROM profiles WHERE member_id IS NULL").all();
+  let fixed = result.changes;
+  
+  res.json({ ok: true, fixed, remaining_unlinked: unlinked.length });
+});
+
 // ── Stats ─────────────────────────────────────────────────────────────────────
 app.get('/api/stats', requireAuth, (req, res) => {
   res.json({
