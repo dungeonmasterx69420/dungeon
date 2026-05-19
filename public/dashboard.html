@@ -276,7 +276,7 @@
     </div>`;
   }
 
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+  fetch('/api/member/me?t='+Date.now()).then(r=>r.json()).then(d=>{
     if(!d.authenticated){window.location.href='/login.html';return}
     if(!d.member.setup_done&&!new URLSearchParams(location.search).get('skip_setup')){
       window.location.href='/setup.html';return
