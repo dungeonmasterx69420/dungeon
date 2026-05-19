@@ -87,27 +87,33 @@
       📺 Your DungeonStream Account
       <span class="status-badge" id="stremioStatusBadge"></span>
     </div>
-    <div style="font-size:12px;color:var(--muted2);margin-bottom:16px">Your DungeonStream credentials are shown here once the Dungeon Master activates your account.</div>
+    <div id="credPlaceholder" style="font-size:12px;color:var(--muted2);margin-bottom:16px">Your DungeonStream credentials are shown here once the Dungeon Master activates your account.</div>
     <div id="stremioAccountActive" style="display:none">
-      <div class="cred-grid">
-        <div>
-          <div class="cred-label">DungeonStream Email</div>
-          <div class="cred-value" id="stremioEmail">—</div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px">
+          <div class="cred-label" style="margin-bottom:6px">Email</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span id="stremioEmail" style="flex:1;font-size:14px;color:var(--text);word-break:break-all">—</span>
+            <button onclick="copyVal('stremioEmail',this)" style="font-size:11px;padding:4px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;flex-shrink:0">Copy</button>
+          </div>
         </div>
-        <div>
-          <div class="cred-label">Password</div>
-          <div class="cred-value" id="stremioPass">—</div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px">
+          <div class="cred-label" style="margin-bottom:6px">Password</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span id="stremioPassDisplay" style="flex:1;font-size:14px;color:var(--text);font-family:monospace;letter-spacing:0.08em">••••••••</span>
+            <button id="stremioPassToggle" onclick="toggleStremioPass()" style="font-size:11px;padding:4px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;flex-shrink:0">Show</button>
+            <button id="stremioPassCopy" onclick="copyVal('stremioPass',this)" style="font-size:11px;padding:4px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;flex-shrink:0">Copy</button>
+          </div>
         </div>
-        <div>
-          <div class="cred-label">Expires</div>
-          <div class="cred-value" id="stremioExpiry">—</div>
-        </div>
-        <div>
-          <div class="cred-label">Days Remaining</div>
-          <div class="cred-value" id="stremioDays">—</div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px">
+          <div class="cred-label" style="margin-bottom:4px">Subscription</div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span id="stremioExpiry" style="font-size:13px;color:var(--muted2)">—</span>
+            <span id="stremioDays" style="font-size:22px;font-weight:700;color:var(--green)">—</span>
+          </div>
         </div>
       </div>
-      <div class="cred-note">Use these credentials to log into <a href="https://web.stremio.com" target="_blank" style="color:var(--green)">web.stremio.com</a> or the Stremio app on any device.</div>
+      <div class="cred-note">Log into <a href="https://web.stremio.com" target="_blank" style="color:var(--green)">web.stremio.com</a> or the Stremio app using these credentials. Check the <a href="/guides.html" style="color:var(--green)">Guides</a> for setup help.</div>
     </div>
     <div id="stremioAccountNone" style="display:none">
       <div style="font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:16px">You don't have an active DungeonStream subscription yet. Redeem 1 credit to get started — the Dungeon Master will set up your account within 24 hours.</div>
@@ -182,16 +188,29 @@
 
   function loadStremioAccount(member){
     const badge = document.getElementById('stremioStatusBadge');
+    function toggleStremioPass(){
+      const el=document.getElementById('stremioPassDisplay');
+      const btn=document.getElementById('stremioPassToggle');
+      const raw=el.dataset.raw||'';
+      if(el.textContent==='••••••••'){el.textContent=raw;btn.textContent='Hide';}
+      else{el.textContent='••••••••';btn.textContent='Show';}
+    }
+    function copyVal(id,btn){
+      const el=document.getElementById(id);
+      const text=el.dataset.raw||el.textContent;
+      navigator.clipboard.writeText(text).then(()=>{const t=btn.textContent;btn.textContent='✓ Copied';setTimeout(()=>btn.textContent=t,2000)});
+    }
     if(member && member.stremio_email){
       document.getElementById('stremioAccountActive').style.display='block';
       document.getElementById('stremioEmail').textContent = member.stremio_email || '—';
-      document.getElementById('stremioPass').textContent = member.stremio_pass || '—';
+      document.getElementById('stremioPass').dataset.raw = member.stremio_pass || '';
+      document.getElementById('stremioPassDisplay').dataset.raw = member.stremio_pass || '';
       const exp = member.subscription_end;
       if(exp){
         const d = new Date(exp);
         document.getElementById('stremioExpiry').textContent = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
         const days = Math.ceil((d-new Date())/86400000);
-        document.getElementById('stremioDays').textContent = days > 0 ? days + ' days' : 'Expired';
+        const dEl=document.getElementById('stremioDays');dEl.textContent=days>0?days+'d left':'Expired';dEl.style.color=days>7?'var(--green)':days>0?'var(--amber)':'var(--red)';
         badge.textContent = days > 0 ? 'Active' : 'Expired';
         badge.style.background = days > 0 ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.1)';
         badge.style.color = days > 0 ? 'var(--green)' : 'var(--red)';
