@@ -947,13 +947,12 @@ async function submitDCDemo(){
 // ── Subscribers ───────────────────────────────────────────────────────────────
 function setSubFilter(f,el){subFilter=f;document.querySelectorAll('#panel-subscribers .filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadSubscribers()}
 async function loadSubscribers(){
-  const members=await fetch('/api/members').then(r=>r.json()).catch(()=>[]);
+  const members=await fetch('/api/admin/subscribers').then(r=>r.json()).catch(()=>[]);
   const el=document.getElementById('subscriberList');
-  const now=new Date();
   let rows=[];
   members.forEach(m=>{
-    if(m.stremio_end)rows.push({id:m.id,name:m.screen_name||`${m.first_name} ${m.last_name}`,email:m.email,service:'stream',start:m.stremio_start,end:m.stremio_end,days:getDays(m.stremio_end),credential:m.stremio_email});
-    if(m.iptv_end)rows.push({id:m.id,name:m.screen_name||`${m.first_name} ${m.last_name}`,email:m.email,service:'cast',start:m.iptv_start,end:m.iptv_end,days:getDays(m.iptv_end),credential:null});
+    if(m.stremio_end)rows.push({id:m.id,name:m.screen_name,email:m.email,service:'stream',start:m.stremio_start,end:m.stremio_end,days:getDays(m.stremio_end),credential:m.stremio_email});
+    if(m.iptv_end)rows.push({id:m.id,name:m.screen_name,email:m.email,service:'cast',start:m.iptv_start,end:m.iptv_end,days:getDays(m.iptv_end),credential:null});
   });
   if(subFilter==='stream')rows=rows.filter(r=>r.service==='stream'&&r.days>0);
   else if(subFilter==='cast')rows=rows.filter(r=>r.service==='cast'&&r.days>0);

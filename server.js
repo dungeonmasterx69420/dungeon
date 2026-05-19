@@ -1679,6 +1679,22 @@ app.post('/api/admin/fix-profile-links', requireAuth, (req, res) => {
   res.json({ ok: true, fixed, remaining_unlinked: unlinked.length });
 });
 
+
+// ── Admin: Subscribers ────────────────────────────────────────────────────────
+app.get('/api/admin/subscribers', requireAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT m.id, m.first_name, m.last_name, m.email,
+           m.stremio_email, m.stremio_start, m.stremio_end,
+           m.iptv_start, m.iptv_end,
+           COALESCE(p.screen_name, m.first_name || ' ' || m.last_name) as screen_name
+    FROM members m
+    LEFT JOIN profiles p ON (p.member_id=m.id OR (p.member_id IS NULL AND LOWER(p.email)=LOWER(m.email)))
+    WHERE m.stremio_end IS NOT NULL OR m.iptv_end IS NOT NULL
+    ORDER BY m.first_name
+  `).all();
+  res.json(rows);
+});
+
 // ── Stats ─────────────────────────────────────────────────────────────────────
 app.get('/api/stats', requireAuth, (req, res) => {
   res.json({
