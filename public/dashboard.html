@@ -53,7 +53,7 @@
     .sub-left{}
     .sub-service{font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:6px}
     .sub-status-text{font-size:16px;font-weight:700;margin-bottom:3px}
-    .sub-dates{font-size:11px;color:var(--muted2);line-height:1.6}
+    .sub-dates{font-size:11px;color:var(--muted);line-height:1.6}
     .sub-right{text-align:right;flex-shrink:0}
     .sub-days-num{font-size:36px;font-weight:700;line-height:1;margin-bottom:2px}
     .sub-days-label{font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)}
@@ -267,7 +267,7 @@
       <div class="sub-left">
         <div class="sub-service">${icon} ${label}</div>
         <div class="sub-status-text" style="color:${color}">${active?'Active':'Expired'}</div>
-        <div class="sub-dates">${startDt?'Started: '+fmtDate(startDt)+' · ':''}Expires: ${fmtDate(endDt)}</div>
+        <div class="sub-dates">Expires ${fmtDate(endDt)}</div>
       </div>
       <div class="sub-right">
         <div class="sub-days-num" style="color:${color}">${Math.max(0,days)}</div>
