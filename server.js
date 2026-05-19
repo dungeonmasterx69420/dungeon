@@ -279,6 +279,10 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE members ADD COLUMN plain_pass TEXT').run(); } catch(e) {}
   // Add stremio_auth_key column
   try { db.prepare('ALTER TABLE members ADD COLUMN stremio_auth_key TEXT').run(); } catch(e) {}
+  // Fix unlinked profiles - match by email
+  try {
+    db.prepare(`UPDATE profiles SET member_id=(SELECT m.id FROM members m WHERE LOWER(m.email)=LOWER(profiles.email) LIMIT 1) WHERE member_id IS NULL AND email IS NOT NULL`).run();
+  } catch(e) { console.log('Profile link fix:', e.message); }
 
   // ── Migrate: add Stremio + IPTV subscription columns ────────────────────────
   const migrateSteps = [
@@ -827,10 +831,11 @@ app.post('/api/admin/members/:id/extend', requireAuth, (req, res) => {
 app.get('/api/admin/stremio', requireAuth, (req, res) => {
   const rows = db.prepare(`
     SELECT m.id, m.first_name, m.last_name, m.email, m.stremio_email, m.stremio_pass,
-           m.stremio_start, m.stremio_end,
+           m.stremio_start, m.stremio_end, m.stremio_auth_key,
            p.screen_name, p.avatar_url, p.avatar_color, p.tier, p.id as profile_id
     FROM members m
-    LEFT JOIN profiles p ON p.member_id = m.id
+    LEFT JOIN profiles p ON (p.member_id=m.id OR (p.member_id IS NULL AND LOWER(p.email)=LOWER(m.email)))
+    WHERE m.stremio_email IS NOT NULL OR m.stremio_end IS NOT NULL
     ORDER BY m.created_at DESC
   `).all();
   res.json(rows);

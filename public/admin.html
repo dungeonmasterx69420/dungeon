@@ -789,22 +789,36 @@ async function loadCreditsTab(){
 async function loadStremioTab(){
   const rows=await fetch('/api/admin/stremio').then(r=>r.json()).catch(()=>[]);
   const el=document.getElementById('stremioTabList');
-  if(!rows.length){el.innerHTML='<div class="empty">No DungeonStream accounts</div>';return}
-  el.innerHTML=rows.map(r=>`
+  if(!rows.length){el.innerHTML='<div class="empty">No DungeonStream accounts yet</div>';return}
+  el.innerHTML=rows.map(r=>{
+    const days=getDays(r.stremio_end);
+    const chipClass=days>7?'badge-active':days>0?'badge-expiring':'badge-expired';
+    const chipText=days>0?days+'d left':'Expired';
+    return `
     <div class="card">
-      <div class="card-name">${r.screen_name?`@${r.screen_name} —`:''} ${r.first_name} ${r.last_name}
-        ${r.stremio_end?`<span class="badge ${getDays(r.stremio_end)>0?'badge-active':'badge-expired'}">${getDays(r.stremio_end)>0?getDays(r.stremio_end)+'d':'Expired'}</span>`:''}
+      <div class="card-name">
+        ${r.screen_name?`<span style="color:var(--green)">@${r.screen_name}</span> — `:''} ${r.first_name} ${r.last_name}
+        ${r.stremio_end?`<span class="badge ${chipClass}">${chipText}</span>`:'<span class="badge" style="background:rgba(107,143,122,0.1);color:var(--muted)">No sub</span>'}
       </div>
       <div class="card-email">${r.email}</div>
       <div class="card-meta">
-        ${r.stremio_email?`<div class="meta-item"><div class="meta-label">Email</div><div class="meta-value">${r.stremio_email}</div></div>`:''}
+        ${r.stremio_email?`<div class="meta-item"><div class="meta-label">Stremio Email</div><div class="meta-value">${r.stremio_email}</div></div>`:''}
+        ${r.stremio_pass?`<div class="meta-item"><div class="meta-label">Password</div><div class="meta-value" style="font-family:monospace">${r.stremio_pass}</div></div>`:''}
+        ${r.stremio_start?`<div class="meta-item"><div class="meta-label">Started</div><div class="meta-value">${fmt(r.stremio_start)}</div></div>`:''}
         ${r.stremio_end?`<div class="meta-item"><div class="meta-label">Expires</div><div class="meta-value">${fmt(r.stremio_end)}</div></div>`:''}
-        ${r.stremio_auth_key?`<div class="meta-item" style="flex-basis:100%"><div class="meta-label">API Key</div><div class="meta-value" style="display:flex;align-items:center;gap:6px"><span style="font-family:monospace;font-size:11px;color:var(--green)">${r.stremio_auth_key.substring(0,24)}…</span><button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${esc(r.stremio_auth_key)}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button></div></div>`:''}
+        ${r.stremio_auth_key?`<div class="meta-item" style="flex-basis:100%">
+          <div class="meta-label">API Key (AIOManager)</div>
+          <div class="meta-value" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="font-family:monospace;font-size:11px;color:var(--green);word-break:break-all">${r.stremio_auth_key}</span>
+            <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${esc(r.stremio_auth_key)}').then(()=>{this.textContent='✓ Copied';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>
+          </div>
+        </div>`:'<div class="meta-item"><div class="meta-label">API Key</div><div class="meta-value" style="color:var(--muted)">Not set — use Edit to add</div></div>'}
       </div>
       <div class="card-actions">
         <button class="btn btn-green" onclick="editStremio('${r.id}','${esc(r.stremio_email||'')}','${esc(r.stremio_pass||'')}','${r.stremio_start||''}','${r.stremio_end||''}','${esc(r.stremio_auth_key||'')}')">Edit</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function editStremio(memberId,email,pass,start,end,authKey=''){
