@@ -186,20 +186,21 @@
     loadStremioAccount(d.member);
   });
 
+  function toggleStremioPass(){
+    const el=document.getElementById('stremioPassDisplay');
+    const btn=document.getElementById('stremioPassToggle');
+    const raw=el.dataset.raw||'';
+    if(el.textContent==='••••••••'){el.textContent=raw;btn.textContent='Hide';}
+    else{el.textContent='••••••••';btn.textContent='Show';}
+  }
+  function copyVal(id,btn){
+    const el=document.getElementById(id);
+    const text=el.dataset.raw||el.textContent;
+    navigator.clipboard.writeText(text).then(()=>{const t=btn.textContent;btn.textContent='✓ Copied';setTimeout(()=>btn.textContent=t,2000)});
+  }
+
   function loadStremioAccount(member){
     const badge = document.getElementById('stremioStatusBadge');
-    function toggleStremioPass(){
-      const el=document.getElementById('stremioPassDisplay');
-      const btn=document.getElementById('stremioPassToggle');
-      const raw=el.dataset.raw||'';
-      if(el.textContent==='••••••••'){el.textContent=raw;btn.textContent='Hide';}
-      else{el.textContent='••••••••';btn.textContent='Show';}
-    }
-    function copyVal(id,btn){
-      const el=document.getElementById(id);
-      const text=el.dataset.raw||el.textContent;
-      navigator.clipboard.writeText(text).then(()=>{const t=btn.textContent;btn.textContent='✓ Copied';setTimeout(()=>btn.textContent=t,2000)});
-    }
     if(member && member.stremio_email){
       document.getElementById('stremioAccountActive').style.display='block';
       document.getElementById('stremioEmail').textContent = member.stremio_email || '—';
