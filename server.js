@@ -1317,7 +1317,7 @@ app.get('/api/admin/iptv', requireAuth, (req, res) => {
     SELECT i.*, p.screen_name, p.email, p.avatar_url, p.avatar_color, p.tier
     FROM iptv_accounts i
     JOIN profiles p ON i.profile_id = p.id
-    ORDER BY i.created_at DESC
+    ORDER BY p.screen_name ASC
   `).all();
   res.json(rows);
 });
