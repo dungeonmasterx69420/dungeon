@@ -103,7 +103,7 @@
 
 <div class="page">
   <div class="page-title">Redeem Credits</div>
-  <div class="page-sub">Use your credits for Stremio or DungeonCast — or earn more by referring friends.</div>
+  <div class="page-sub">Use your credits for DungeonStream or DungeonCast — or earn more by referring friends.</div>
 
   <!-- Balance bar -->
   <div class="balance-bar">
@@ -120,12 +120,12 @@
     <!-- Stremio -->
     <div class="service-card">
       <div class="service-icon">📺</div>
-      <div class="service-name">Stremio</div>
-      <div class="service-desc">Movies, shows, and more. Stream on any device with your personal Stremio account.</div>
+      <div class="service-name">DungeonStream</div>
+      <div class="service-desc">Movies, shows, and more. Stream on any device with your personal DungeonStream account.</div>
       <div class="service-status none" id="stremioStatus">Checking…</div>
       <button class="redeem-btn" id="stremioRedeemBtn" onclick="requestRedeem('stremio')" disabled>Redeem 1 Credit</button>
       <div style="margin-top:8px">
-        <a href="/stremio.html" style="font-size:12px;color:var(--muted);text-decoration:none">View details →</a>
+        <a href="/dungeonstream.html" style="font-size:12px;color:var(--muted);text-decoration:none">View details →</a>
       </div>
     </div>
 
@@ -203,7 +203,7 @@
 <div class="veil" id="confirmVeil">
   <div class="modal">
     <div class="modal-icon" id="confirmIcon">📺</div>
-    <div class="modal-title" id="confirmTitle">Redeem for Stremio?</div>
+    <div class="modal-title" id="confirmTitle">Redeem for DungeonStream?</div>
     <div class="modal-sub" id="confirmSub">This will deduct 1 credit from your balance and notify the Dungeon Master to set up your account. You'll receive your credentials via Dungeon message within 24 hours.</div>
     <div style="display:flex;gap:10px;justify-content:center">
       <button class="modal-btn" style="background:var(--surface2);color:var(--muted2);border:1px solid var(--border2)" onclick="closeConfirm()">Cancel</button>
@@ -235,7 +235,7 @@
     loadMsgBadge();
     loadBalance();
     loadStremioStatus(d.member);
-    loadIptvStatus();
+    loadIptvStatus(d.member);
   }).catch(()=>{});
 
   async function loadBalance(){
@@ -248,9 +248,10 @@
   function loadStremioStatus(member){
     const statusEl = document.getElementById('stremioStatus');
     const btn = document.getElementById('stremioRedeemBtn');
-    if(member && member.stremio_email){
-      const exp = member.subscription_end;
-      const days = exp ? Math.ceil((new Date(exp)-new Date())/86400000) : 0;
+    if(member && member.stremio_end){
+      let dt = member.stremio_end;
+      if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';
+      const days = Math.ceil((new Date(dt)-new Date())/86400000);
       if(days > 5){
         statusEl.textContent = 'Active — ' + days + 'd left';
         statusEl.className = 'service-status active';
@@ -270,17 +271,25 @@
     updateRedeemBtns();
   }
 
-  async function loadIptvStatus(){
-    const account = await fetch('/api/iptv/me').then(r=>r.json()).catch(()=>null);
+  function loadIptvStatus(member){
     const statusEl = document.getElementById('iptvStatus');
     const btn = document.getElementById('iptvRedeemBtn');
-    if(account && account.status === 'active'){
-      statusEl.textContent = 'Active';
-      statusEl.className = 'service-status active';
-      btn.textContent = 'Renew (Redeem 1 Credit)';
-    } else if(account && account.status === 'pending'){
-      statusEl.textContent = 'Pending Setup';
-      statusEl.className = 'service-status expiring';
+    if(member && member.iptv_end){
+      let dt = member.iptv_end;
+      if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';
+      const days = Math.ceil((new Date(dt)-new Date())/86400000);
+      if(days > 5){
+        statusEl.textContent = 'Active — ' + days + 'd left';
+        statusEl.className = 'service-status active';
+        btn.textContent = 'Renew (Redeem 1 Credit)';
+      } else if(days > 0){
+        statusEl.textContent = 'Expiring — ' + days + 'd left';
+        statusEl.className = 'service-status expiring';
+        btn.textContent = 'Renew Now';
+      } else {
+        statusEl.textContent = 'Expired';
+        statusEl.className = 'service-status expired';
+      }
     } else {
       statusEl.textContent = 'No Account';
       statusEl.className = 'service-status none';
@@ -297,7 +306,7 @@
   function requestRedeem(service){
     pendingService = service;
     document.getElementById('confirmIcon').textContent = service === 'stremio' ? '📺' : '📡';
-    document.getElementById('confirmTitle').textContent = service === 'stremio' ? 'Redeem for Stremio?' : 'Redeem for DungeonCast?';
+    document.getElementById('confirmTitle').textContent = service === 'stremio' ? 'Redeem for DungeonStream?' : 'Redeem for DungeonCast?';
     document.getElementById('confirmVeil').classList.add('open');
   }
 
@@ -311,7 +320,7 @@
     const btn = document.getElementById('confirmBtn');
     btn.disabled = true; btn.textContent = 'Processing…';
 
-    // Send a message to Warden requesting the redemption
+    // Send a message to Dungeon Master requesting the redemption
     // Also deduct credit via the redeem endpoint
     const profile = myMember?.profile;
     const service = pendingService;
