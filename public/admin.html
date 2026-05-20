@@ -1,1205 +1,981 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon · Admin</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    :root{
-      --bg:#0b0f0e;--surface:#111915;--surface2:#172118;
-      --border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
-      --green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);
-      --text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;
-      --red:#f87171;--red-bg:rgba(248,113,113,0.1);
-      --amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1);
-      --blue:#60a5fa;
-    }
-    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden}
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Dungeon · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#080c0b;--s1:#0f1512;--s2:#151d18;--s3:#1c2720;
+  --g:#34d399;--g2:rgba(52,211,153,.12);--g3:rgba(52,211,153,.06);
+  --b:rgba(52,211,153,.15);--b2:rgba(52,211,153,.3);
+  --t:#dde8e2;--t2:#8fa89c;--t3:#566b62;
+  --r:#f87171;--r2:rgba(248,113,113,.1);
+  --a:#fbbf24;--a2:rgba(251,191,36,.1);
+  --blu:#60a5fa;--blu2:rgba(96,165,250,.1);
+  --rad:10px;--rad2:14px;
+}
+html,body{height:100%;background:var(--bg);color:var(--t);font-family:'Inter',sans-serif;overflow-x:hidden}
 
-    /* ── Lock screen ── */
-    #lockScreen{position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
-    .lock-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 28px;width:100%;max-width:340px;text-align:center}
-    .lock-logo{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);letter-spacing:0.04em;margin-bottom:4px}
-    .lock-sub{font-size:13px;color:var(--muted2);margin-bottom:24px}
-    .lock-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:16px;padding:12px 14px;outline:none;text-align:center;margin-bottom:14px;-webkit-appearance:none}
-    .lock-input:focus{border-color:var(--green)}
-    .lock-btn{width:100%;padding:13px;background:var(--green);border:none;border-radius:10px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
-    .lock-error{display:none;margin-top:12px;font-size:13px;color:var(--red)}
+/* ── Lock ── */
+#lock{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+.lcard{background:var(--s1);border:1px solid var(--b);border-radius:var(--rad2);padding:40px 28px;width:100%;max-width:320px;text-align:center}
+.llogo{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--g);letter-spacing:.05em;margin-bottom:6px}
+.lsub{font-size:12px;color:var(--t2);margin-bottom:24px}
+.linput{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:8px;color:var(--t);font-family:'Inter',sans-serif;font-size:15px;padding:11px 14px;outline:none;text-align:center;-webkit-appearance:none}
+.linput:focus{border-color:var(--g)}
+.lbtn{width:100%;margin-top:12px;padding:12px;background:var(--g);border:none;border-radius:8px;color:#080c0b;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.lerr{display:none;margin-top:10px;font-size:12px;color:var(--r)}
 
-    /* ── App shell ── */
-    #adminApp{display:none;min-height:100vh;flex-direction:column}
-    #adminApp.visible{display:flex}
+/* ── App ── */
+#app{display:none;flex-direction:column;min-height:100vh}
+#app.on{display:flex}
 
-    /* ── Top bar ── */
-    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-shrink:0}
-    .topbar-logo{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);text-decoration:none;letter-spacing:0.04em}
-    .topbar-nav{display:flex;gap:12px;align-items:center}
-    .topbar-btn{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;text-decoration:none;padding:0}
+/* ── Topbar ── */
+.top{background:var(--s1);border-bottom:1px solid var(--b);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-shrink:0}
+.tlogo{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--g);text-decoration:none;letter-spacing:.04em}
+.tnav{display:flex;gap:10px;align-items:center}
+.tbtn{font-size:12px;color:var(--t2);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;text-decoration:none;padding:4px 8px;border-radius:6px}
+.tbtn:hover{background:var(--s2);color:var(--t)}
 
-    /* ── Stats strip ── */
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border)}
-    .stat{padding:12px 16px;border-right:1px solid var(--border)}
-    .stat:last-child{border-right:none}
-    .stat-label{font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-    .stat-num{font-size:24px;font-weight:700}
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--b)}
+.stat{padding:12px 16px;border-right:1px solid var(--b)}
+.stat:last-child{border-right:none}
+.slbl{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
+.sval{font-size:22px;font-weight:700}
 
-    /* ── Tab bar ── */
-    .tabbar{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0}
-    .tabbar::-webkit-scrollbar{display:none}
-    .tabbar-btn{font-size:11px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;padding:11px 14px;white-space:nowrap;flex-shrink:0;transition:color .2s,border-color .2s}
-    .tabbar-btn.active{color:var(--green);border-bottom-color:var(--green)}
+/* ── Tabs ── */
+.tabs{display:flex;background:var(--s1);border-bottom:1px solid var(--b);overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{font-size:11px;font-weight:500;color:var(--t2);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;padding:11px 14px;white-space:nowrap;flex-shrink:0;transition:color .15s,border-color .15s}
+.tab.on{color:var(--g);border-bottom-color:var(--g)}
 
-    /* ── Main content ── */
-    .main{flex:1;padding:14px;overflow-y:auto}
+/* ── Main ── */
+.main{flex:1;padding:14px;max-width:1100px;margin:0 auto;width:100%}
 
-    /* ── Panel ── */
-    .panel{display:none}
-    .panel.active{display:block}
-    .panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap}
-    .panel-title{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)}
-    .filter-row{display:flex;gap:4px;flex-wrap:wrap}
-    .filter-btn{font-size:11px;font-weight:500;padding:5px 10px;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
-    .filter-btn.active{color:var(--green);border-color:var(--border2);background:var(--green-bg)}
+/* ── Panels ── */
+.panel{display:none}.panel.on{display:block}
+.phead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+.plbl{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+.filters{display:flex;gap:4px;flex-wrap:wrap}
+.fb{font-size:11px;font-weight:500;padding:5px 10px;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--t2);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all .15s}
+.fb.on{color:var(--g);border-color:var(--b2);background:var(--g3)}
 
-    /* ── Card (each row) ── */
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:8px}
-    .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
-    .card-info{flex:1;min-width:0}
-    .card-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-    .card-email{font-size:12px;color:var(--muted2)}
-    .card-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
-    .meta-item{display:flex;flex-direction:column}
-    .meta-label{font-size:9px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
-    .meta-value{font-size:12px;color:var(--text)}
-    .card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+/* ── Sub-tabs ── */
+.stabs{display:flex;border-bottom:1px solid var(--b);margin-bottom:14px;overflow-x:auto;scrollbar-width:none}
+.stabs::-webkit-scrollbar{display:none}
+.stab{font-size:11px;font-weight:500;color:var(--t2);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;padding:8px 14px;white-space:nowrap;flex-shrink:0}
+.stab.on{color:var(--g);border-bottom-color:var(--g)}
 
-    /* ── Buttons ── */
-    .btn{font-size:12px;font-weight:500;padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .2s;white-space:nowrap}
-    .btn-green{background:var(--green-bg2);color:var(--green)}
-    .btn-red{background:var(--red-bg);color:var(--red)}
-    .btn-amber{background:var(--amber-bg);color:var(--amber)}
-    .btn-ghost{background:var(--surface2);color:var(--muted2)}
-    .btn-sm{font-size:11px;padding:4px 8px}
-    .btn:active{opacity:0.7}
+/* ── Card ── */
+.card{background:var(--s1);border:1px solid var(--b);border-radius:var(--rad);padding:14px;margin-bottom:8px}
+.ctop{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.cavatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#080c0b;flex-shrink:0;overflow:hidden}
+.cavatar img{width:100%;height:100%;object-fit:cover}
+.cinfo{flex:1;min-width:0}
+.cname{font-size:13px;font-weight:600;color:var(--t);margin-bottom:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.cemail{font-size:11px;color:var(--t2)}
+.cmeta{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.mi label{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);display:block;margin-bottom:2px}
+.mi span{font-size:12px;color:var(--t)}
+.cacts{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--b)}
 
-    /* ── Badges ── */
-    .badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
-    .badge-pending{background:var(--amber-bg);color:var(--amber)}
-    .badge-approved{background:var(--green-bg2);color:var(--green)}
-    .badge-denied{background:rgba(107,143,122,0.1);color:var(--muted)}
-    .badge-stream{background:rgba(96,165,250,0.1);color:var(--blue)}
-    .badge-cast{background:var(--green-bg);color:var(--green)}
-    .badge-active{background:var(--green-bg2);color:var(--green)}
-    .badge-expired{background:var(--red-bg);color:var(--red)}
-    .badge-expiring{background:var(--amber-bg);color:var(--amber)}
+/* ── Buttons ── */
+.btn{font-size:12px;font-weight:500;padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:opacity .15s}
+.btn:active{opacity:.7}
+.bg{background:var(--g2);color:var(--g)}
+.br{background:var(--r2);color:var(--r)}
+.ba{background:var(--a2);color:var(--a)}
+.bb{background:var(--s2);color:var(--t2)}
+.bsm{font-size:11px;padding:4px 8px}
 
-    /* ── Avatar ── */
-    .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#0b0f0e;flex-shrink:0;overflow:hidden}
-    .avatar img{width:100%;height:100%;object-fit:cover}
+/* ── Badge ── */
+.bdg{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px}
+.bdg-g{background:var(--g2);color:var(--g)}
+.bdg-r{background:var(--r2);color:var(--r)}
+.bdg-a{background:var(--a2);color:var(--a)}
+.bdg-b{background:rgba(107,143,122,.1);color:var(--t2)}
+.bdg-blu{background:var(--blu2);color:var(--blu)}
 
-    /* ── Tier select ── */
-    .tier-select{background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;padding:5px 8px;outline:none;cursor:pointer;-webkit-appearance:none}
+/* ── Tier select ── */
+.tsel{background:var(--s2);border:1px solid var(--b2);border-radius:6px;color:var(--t);font-family:'Inter',sans-serif;font-size:12px;padding:5px 8px;outline:none;cursor:pointer;-webkit-appearance:none}
 
-    /* ── Empty ── */
-    .empty{text-align:center;padding:40px 0;color:var(--muted2);font-size:13px}
+/* ── Empty ── */
+.empty{text-align:center;padding:40px 0;color:var(--t2);font-size:13px}
 
-    /* ── Sub-tabs ── */
-    .sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:14px;overflow-x:auto;scrollbar-width:none}
-    .sub-tabs::-webkit-scrollbar{display:none}
-    .sub-tab{font-size:12px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;padding:8px 14px;white-space:nowrap;flex-shrink:0}
-    .sub-tab.active{color:var(--green);border-bottom-color:var(--green)}
+/* ── Sheet (bottom modal) ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;align-items:flex-end;justify-content:center}
+.overlay.on{display:flex}
+.sheet{background:var(--s1);border-top:1px solid var(--b2);border-radius:16px 16px 0 0;padding:18px 16px 32px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto}
+.shandle{width:36px;height:4px;background:var(--b2);border-radius:2px;margin:0 auto 16px}
+.stitle{font-size:15px;font-weight:600;color:var(--t);margin-bottom:4px}
+.ssub{font-size:12px;color:var(--t2);margin-bottom:16px;line-height:1.5}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t2);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:8px;color:var(--t);font-family:'Inter',sans-serif;font-size:14px;padding:10px 12px;outline:none;-webkit-appearance:none}
+.field input:focus,.field select:focus{border-color:var(--g)}
+.field textarea{resize:vertical;min-height:70px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sacts{display:flex;gap:8px;margin-top:16px}
+.sacts .btn{flex:1;padding:12px;font-size:13px;font-weight:600;text-align:center}
+.passrow{display:flex;gap:8px;align-items:center}
+.passrow input{flex:1}
+.notice{background:var(--g3);border:1px solid var(--b);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:12px}
+.notice-a{background:var(--a2);border-color:rgba(251,191,36,.2);color:var(--a)}
+.notice-r{background:var(--r2);border-color:rgba(248,113,113,.2);color:var(--r)}
+.divider{height:1px;background:var(--b);margin:12px 0}
+.section-lbl{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);margin-bottom:8px}
 
-    /* ── Overlay modal ── */
-    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;align-items:flex-end;justify-content:center;padding:0}
-    .overlay.open{display:flex}
-    .sheet{background:var(--surface);border-top:1px solid var(--border2);border-radius:16px 16px 0 0;padding:20px 16px;width:100%;max-height:92vh;overflow-y:auto}
-    .sheet-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
-    .sheet-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
-    .sheet-sub{font-size:13px;color:var(--muted2);margin-bottom:18px;line-height:1.5}
-    .field{margin-bottom:14px}
-    .field label{display:block;font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:6px}
-    .field input,.field select,.field textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 12px;outline:none;-webkit-appearance:none}
-    .field input:focus,.field select:focus{border-color:var(--green)}
-    .field textarea{resize:vertical;min-height:80px}
-    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .sheet-actions{display:flex;gap:8px;margin-top:16px}
-    .sheet-actions .btn{flex:1;padding:12px;font-size:13px;font-weight:600;text-align:center}
-
-    /* ── Password field ── */
-    .pass-row{display:flex;align-items:center;gap:8px}
-    .pass-display{font-family:monospace;font-size:16px;font-weight:700;color:var(--green);letter-spacing:0.1em;flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;min-width:0}
-
-    /* ── Info notice ── */
-    .notice{background:var(--green-bg);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--muted2);line-height:1.6;margin-bottom:14px}
-    .notice-amber{background:var(--amber-bg);border-color:rgba(251,191,36,0.2);color:var(--amber)}
-  </style>
+/* ── Mobile ── */
+@media(max-width:600px){
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .stat{padding:10px 8px}
+  .sval{font-size:18px}
+  .slbl{font-size:8px}
+  .tab{font-size:10px;padding:10px 8px}
+  .main{padding:10px}
+  .card{padding:12px}
+  .ctop{flex-direction:column;gap:6px}
+  .cacts{gap:4px}
+  .btn{font-size:11px;padding:5px 10px}
+  .frow{grid-template-columns:1fr}
+  .sheet{padding:16px 14px 28px}
+}
+</style>
 </head>
 <body>
 
 <!-- Lock -->
-<div id="lockScreen">
-  <div class="lock-card">
-    <div class="lock-logo">Dungeon</div>
-    <div class="lock-sub">Dungeon Master Panel</div>
-    <input class="lock-input" type="password" id="adminPass" placeholder="Password"/>
-    <button class="lock-btn" id="loginBtn" onclick="adminLogin()">Sign In</button>
-    <div class="lock-error" id="lockErr">Incorrect password</div>
+<div id="lock">
+  <div class="lcard">
+    <div class="llogo">Dungeon</div>
+    <div class="lsub">Dungeon Master Panel</div>
+    <input class="linput" type="password" id="lpass" placeholder="Password"/>
+    <button class="lbtn" id="lbtn" onclick="doLogin()">Sign In</button>
+    <div class="lerr" id="lerr"></div>
   </div>
 </div>
 
 <!-- App -->
-<div id="adminApp">
-
-  <!-- Topbar -->
-  <div class="topbar">
-    <a href="/" class="topbar-logo">Dungeon</a>
-    <div class="topbar-nav">
-      <a href="/dashboard.html" class="topbar-btn">View Site</a>
-      <button class="topbar-btn" onclick="adminLogout()">Sign Out</button>
+<div id="app">
+  <div class="top">
+    <a href="/dashboard.html" class="tlogo">Dungeon</a>
+    <div class="tnav">
+      <a href="/dashboard.html" class="tbtn">View Site</a>
+      <button class="tbtn" onclick="doLogout()">Sign Out</button>
     </div>
   </div>
 
-  <!-- Stats -->
   <div class="stats">
-    <div class="stat">
-      <div class="stat-label">Applications</div>
-      <div class="stat-num" id="statApplicants" style="color:var(--amber)">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Members</div>
-      <div class="stat-num" id="statMembers" style="color:var(--green)">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Support</div>
-      <div class="stat-num" id="statSupport" style="color:var(--red)">—</div>
-    </div>
+    <div class="stat"><div class="slbl">Applications</div><div class="sval" id="sApps" style="color:var(--a)">—</div></div>
+    <div class="stat"><div class="slbl">Members</div><div class="sval" id="sMembers" style="color:var(--g)">—</div></div>
+    <div class="stat"><div class="slbl">Support</div><div class="sval" id="sSupport" style="color:var(--r)">—</div></div>
   </div>
 
-  <!-- Tab bar -->
-  <div class="tabbar">
-    <button class="tabbar-btn active" onclick="switchTab('redemptions',this)">Redemptions <span id="redemBadge" style="display:none;color:var(--amber)"></span></button>
-    <button class="tabbar-btn" onclick="switchTab('applications',this)">Applications</button>
-    <button class="tabbar-btn" onclick="switchTab('members',this)">Members</button>
-    <button class="tabbar-btn" onclick="switchTab('subscribers',this)">Subscribers</button>
-    <button class="tabbar-btn" onclick="switchTab('demos',this)">Demos <span id="demoBadge" style="display:none;color:var(--amber)"></span></button>
-    <button class="tabbar-btn" onclick="switchTab('support',this)">Support</button>
+  <div class="tabs">
+    <button class="tab on" onclick="showTab('redemptions',this)">Redemptions <span id="rbadge" style="color:var(--a);display:none"></span></button>
+    <button class="tab" onclick="showTab('applications',this)">Applications</button>
+    <button class="tab" onclick="showTab('members',this)">Members</button>
+    <button class="tab" onclick="showTab('subscribers',this)">Subscribers</button>
+    <button class="tab" onclick="showTab('demos',this)">Demos <span id="dbadge" style="color:var(--a);display:none"></span></button>
+    <button class="tab" onclick="showTab('support',this)">Support</button>
   </div>
 
-  <!-- Main -->
   <div class="main">
 
-    <!-- Redemptions -->
-    <div class="panel active" id="panel-redemptions">
-      <div class="panel-header">
-        <div class="panel-title">Credit Redemptions</div>
-        <div class="filter-row">
-          <button class="filter-btn active" onclick="setRedemFilter('pending',this)">Pending</button>
-          <button class="filter-btn" onclick="setRedemFilter('fulfilled',this)">Fulfilled</button>
-          <button class="filter-btn" onclick="setRedemFilter('all',this)">All</button>
+    <!-- REDEMPTIONS -->
+    <div class="panel on" id="p-redemptions">
+      <div class="phead">
+        <div class="plbl">Credit Redemptions</div>
+        <div class="filters">
+          <button class="fb on" onclick="setFilter('redem','pending',this)">Pending</button>
+          <button class="fb" onclick="setFilter('redem','fulfilled',this)">Fulfilled</button>
+          <button class="fb" onclick="setFilter('redem','all',this)">All</button>
         </div>
       </div>
-      <div id="redemptionList"></div>
+      <div id="redemList"></div>
     </div>
 
-    <!-- Applications -->
-    <div class="panel" id="panel-applications">
-      <div class="panel-header">
-        <div class="panel-title" id="appListLabel">Pending Applications</div>
-        <div class="filter-row">
-          <button class="filter-btn active" id="appf-pending" onclick="setAppFilter('pending',this)">Pending</button>
-          <button class="filter-btn" id="appf-all" onclick="setAppFilter('all',this)">All</button>
-          <button class="filter-btn" id="appf-archived" onclick="setAppFilter('archived',this)">Archived</button>
+    <!-- APPLICATIONS -->
+    <div class="panel" id="p-applications">
+      <div class="phead">
+        <div class="plbl" id="appLbl">Pending Applications</div>
+        <div class="filters">
+          <button class="fb on" id="af-pending" onclick="setFilter('app','pending',this)">Pending</button>
+          <button class="fb" id="af-all" onclick="setFilter('app','all',this)">All</button>
+          <button class="fb" id="af-archived" onclick="setFilter('app','archived',this)">Archived</button>
         </div>
       </div>
       <div id="appList"></div>
     </div>
 
-    <!-- Members -->
-    <div class="panel" id="panel-members">
-      <div style="text-align:right;margin-bottom:8px"><button class="btn btn-ghost btn-sm" onclick="fixProfileLinks()" style="font-size:11px;color:var(--muted)">🔧 Fix Profile Links</button></div>
-      <div class="sub-tabs">
-        <button class="sub-tab active" id="msub-roster" onclick="switchMemberSub('roster',this)">Roster</button>
-        <button class="sub-tab" id="msub-credits" onclick="switchMemberSub('credits',this)">Credits</button>
-        <button class="sub-tab" id="msub-stremio" onclick="switchMemberSub('stremio',this)">DungeonStream</button>
-        <button class="sub-tab" id="msub-dc" onclick="switchMemberSub('dc',this)">DungeonCast</button>
+    <!-- MEMBERS -->
+    <div class="panel" id="p-members">
+      <div style="text-align:right;margin-bottom:10px">
+        <button class="btn bb bsm" onclick="fixLinks()">🔧 Fix Profile Links</button>
       </div>
-      <div id="member-sub-roster"><div id="memberList"></div></div>
-      <div id="member-sub-credits" style="display:none"><div id="creditList"></div></div>
-      <div id="member-sub-stremio" style="display:none"><div id="stremioTabList"></div></div>
-      <div id="member-sub-dc" style="display:none"><div id="iptvList"></div></div>
+      <div class="stabs">
+        <button class="stab on" onclick="showSub('roster',this)">Roster</button>
+        <button class="stab" onclick="showSub('credits',this)">Credits</button>
+        <button class="stab" onclick="showSub('stream',this)">DungeonStream</button>
+        <button class="stab" onclick="showSub('cast',this)">DungeonCast</button>
+      </div>
+      <div id="sub-roster"></div>
+      <div id="sub-credits" style="display:none"></div>
+      <div id="sub-stream" style="display:none"></div>
+      <div id="sub-cast" style="display:none"></div>
     </div>
 
-    <!-- Subscribers -->
-    <div class="panel" id="panel-subscribers">
-      <div class="panel-header">
-        <div class="panel-title">Active Subscribers</div>
-        <div class="filter-row">
-          <button class="filter-btn active" onclick="setSubFilter('all',this)">All Active</button>
-          <button class="filter-btn" onclick="setSubFilter('stream',this)">DungeonStream</button>
-          <button class="filter-btn" onclick="setSubFilter('cast',this)">DungeonCast</button>
-          <button class="filter-btn" onclick="setSubFilter('expired',this)">Expired</button>
+    <!-- SUBSCRIBERS -->
+    <div class="panel" id="p-subscribers">
+      <div class="phead">
+        <div class="plbl">Subscribers</div>
+        <div class="filters">
+          <button class="fb on" onclick="setFilter('sub','all',this)">All Active</button>
+          <button class="fb" onclick="setFilter('sub','stream',this)">DungeonStream</button>
+          <button class="fb" onclick="setFilter('sub','cast',this)">DungeonCast</button>
+          <button class="fb" onclick="setFilter('sub','expired',this)">Expired</button>
         </div>
       </div>
-      <div id="subscriberList"></div>
+      <div id="subList"></div>
     </div>
 
-    <!-- Demos -->
-    <div class="panel" id="panel-demos">
-      <div class="panel-header">
-        <div class="panel-title">Demo Requests</div>
-        <div class="filter-row">
-          <button class="filter-btn active" onclick="setDemoFilter('pending',this)">Pending</button>
-          <button class="filter-btn" onclick="setDemoFilter('fulfilled',this)">Fulfilled</button>
-          <button class="filter-btn" onclick="setDemoFilter('all',this)">All</button>
+    <!-- DEMOS -->
+    <div class="panel" id="p-demos">
+      <div class="phead">
+        <div class="plbl">Demo Requests</div>
+        <div class="filters">
+          <button class="fb on" onclick="setFilter('demo','pending',this)">Pending</button>
+          <button class="fb" onclick="setFilter('demo','fulfilled',this)">Fulfilled</button>
+          <button class="fb" onclick="setFilter('demo','all',this)">All</button>
         </div>
       </div>
-      <div id="demoRequestList"></div>
+      <div id="demoList"></div>
     </div>
 
-    <!-- Support -->
-    <div class="panel" id="panel-support">
-      <div class="panel-header">
-        <div class="panel-title">Support Messages</div>
-        <div class="filter-row">
-          <button class="filter-btn active" onclick="setSuppFilter('open',this)">Open</button>
-          <button class="filter-btn" onclick="setSuppFilter('resolved',this)">Resolved</button>
-          <button class="filter-btn" onclick="setSuppFilter('all',this)">All</button>
+    <!-- SUPPORT -->
+    <div class="panel" id="p-support">
+      <div class="phead">
+        <div class="plbl">Support Messages</div>
+        <div class="filters">
+          <button class="fb on" onclick="setFilter('supp','open',this)">Open</button>
+          <button class="fb" onclick="setFilter('supp','resolved',this)">Resolved</button>
+          <button class="fb" onclick="setFilter('supp','all',this)">All</button>
         </div>
       </div>
       <div id="suppList"></div>
     </div>
 
-  </div><!-- /main -->
-</div><!-- /adminApp -->
+  </div>
+</div>
 
-<!-- ══ SHEETS (bottom-sheet modals) ══════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════
+     SHEETS
+═══════════════════════════════════════════ -->
 
 <!-- Grant Access -->
-<div class="overlay" id="approveSheet">
+<div class="overlay" id="sh-grant">
   <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Grant Access</div>
-    <div class="sheet-sub" id="approveDesc"></div>
+    <div class="shandle"></div>
+    <div class="stitle">Grant Access</div>
+    <div class="ssub" id="sh-grant-sub"></div>
     <div class="notice">A welcome email with login details will be sent automatically.</div>
     <div class="field">
       <label>Password</label>
-      <div class="pass-row">
-        <input type="text" class="pass-display" id="genPassDisplay" placeholder="Password"/>
-        <button class="btn btn-ghost btn-sm" onclick="regeneratePass()">↺</button>
-        <button class="btn btn-ghost btn-sm" id="copyGenPass" onclick="copyGenPass()">Copy</button>
+      <div class="passrow">
+        <input type="text" id="g-pass" placeholder="Password"/>
+        <button class="btn bb bsm" onclick="genPass()">↺ Generate</button>
+        <button class="btn bb bsm" onclick="cpPass()">Copy</button>
       </div>
     </div>
     <div class="field">
-      <label>DungeonStream API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional)</span></label>
-      <div class="pass-row">
-        <input type="text" id="approveApiKey" placeholder="Paste from get-stremio-key.js…" style="flex:1;font-family:monospace;font-size:12px"/>
-        <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('approveApiKey').value=t}).catch(()=>{})">Paste</button>
+      <label>DungeonStream API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)">(optional)</span></label>
+      <div class="passrow">
+        <input type="text" id="g-apikey" placeholder="Paste from get-stremio-key.js…" style="font-family:monospace;font-size:12px"/>
+        <button class="btn bb bsm" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('g-apikey').value=t}).catch(()=>{})">Paste</button>
       </div>
     </div>
-    <div id="approveErr" style="display:none;color:var(--red);font-size:12px;margin-bottom:10px"></div>
-    <div class="sheet-actions">
-      <button class="btn btn-ghost" onclick="closeSheet('approveSheet')">Cancel</button>
-      <button class="btn btn-green" onclick="confirmApprove()">Grant Access & Send Email</button>
+    <div style="color:var(--r);font-size:12px;display:none;margin-bottom:8px" id="g-err"></div>
+    <div class="sacts">
+      <button class="btn bb" onclick="closeSheet('sh-grant')">Cancel</button>
+      <button class="btn bg" onclick="submitGrant()">Grant Access & Send Email</button>
     </div>
   </div>
 </div>
 
 <!-- Edit Member -->
-<div class="overlay" id="editSheet">
+<div class="overlay" id="sh-edit">
   <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Edit Member</div>
-    <input type="hidden" id="editMemberId"/>
-    <div class="field-row">
-      <div class="field"><label>First Name</label><input type="text" id="editFirstName"/></div>
-      <div class="field"><label>Last Name</label><input type="text" id="editLastName"/></div>
+    <div class="shandle"></div>
+    <div class="stitle">Edit Member</div>
+    <input type="hidden" id="e-id"/>
+    <div class="frow">
+      <div class="field"><label>First Name</label><input type="text" id="e-fn"/></div>
+      <div class="field"><label>Last Name</label><input type="text" id="e-ln"/></div>
     </div>
-    <div class="field"><label>Notes</label><textarea id="editNotes"></textarea></div>
-    <div class="sheet-actions">
-      <button class="btn btn-ghost" onclick="closeSheet('editSheet')">Cancel</button>
-      <button class="btn btn-green" onclick="confirmEdit()">Save</button>
+    <div class="field"><label>Notes</label><textarea id="e-notes"></textarea></div>
+    <div class="sacts">
+      <button class="btn bb" onclick="closeSheet('sh-edit')">Cancel</button>
+      <button class="btn bg" onclick="submitEdit()">Save</button>
     </div>
   </div>
 </div>
 
-<!-- Credit Edit -->
-<div class="overlay" id="creditSheet">
+<!-- Credits -->
+<div class="overlay" id="sh-credits">
   <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Edit Credits</div>
-    <div class="sheet-sub" id="creditSheetName"></div>
-    <input type="hidden" id="creditEditProfileId"/>
-    <div style="font-size:32px;font-weight:700;color:var(--green);margin-bottom:16px" id="creditEditBalance">0</div>
-    <div class="field-row">
-      <div class="field">
-        <label>Amount</label>
-        <input type="number" id="creditEditAmount" value="1" min="1"/>
-      </div>
-      <div class="field">
-        <label>Action</label>
-        <select id="creditEditAction">
-          <option value="add">Add</option>
-          <option value="remove">Remove</option>
-        </select>
+    <div class="shandle"></div>
+    <div class="stitle">Edit Credits</div>
+    <div class="ssub" id="sh-credits-sub"></div>
+    <input type="hidden" id="c-pid"/>
+    <div style="font-size:28px;font-weight:700;color:var(--g);margin-bottom:14px" id="c-bal">0</div>
+    <div class="frow">
+      <div class="field"><label>Amount</label><input type="number" id="c-amt" value="1" min="1"/></div>
+      <div class="field"><label>Action</label>
+        <select id="c-action"><option value="add">Add</option><option value="remove">Remove</option></select>
       </div>
     </div>
-    <div class="field"><label>Note (optional)</label><input type="text" id="creditEditNote" placeholder="Reason…"/></div>
-    <div class="sheet-actions">
-      <button class="btn btn-ghost" onclick="closeSheet('creditSheet')">Cancel</button>
-      <button class="btn btn-green" id="creditSaveBtn" onclick="saveCreditEdit()">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- Fulfill Redemption -->
-<div class="overlay" id="fulfillSheet">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title" id="fulfillTitle">Fulfill</div>
-    <div class="sheet-sub" id="fulfillSubtitle"></div>
-    <input type="hidden" id="fulfillId"/>
-    <div id="nodeCastAutoSection" style="display:none;background:var(--green-bg);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px">
-      <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:6px">⚡ Auto-Create on DungeonCast</div>
-      <div style="font-size:12px;color:var(--muted2);margin-bottom:10px">Creates the Nodecast account automatically — member can log in immediately.</div>
-      <button class="btn btn-green" style="width:100%;font-size:12px" id="nodeCastCreateBtn" onclick="autoCreateNodecast()">Create Account on DungeonCast</button>
-      <div id="nodeCastResult" style="display:none;margin-top:8px;font-size:12px;color:var(--green)"></div>
-    </div>
-    <div class="notice">Sending credentials will email the member and update their subscription.</div>
-    <div class="field"><label id="fulfillUserLabel">Username / Email</label><input type="text" id="fulfillUser"/></div>
-    <div class="field"><label>Password</label><input type="text" id="fulfillPass"/></div>
-    <div id="fulfillXtreamFields" style="display:none">
-      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin:4px 0 10px;padding-top:10px;border-top:1px solid var(--border)">Xtream Codes <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional — for new lines)</span></div>
-      <div class="field"><label>Xtream URL</label><input type="text" id="fulfillXtreamUrl" placeholder="http://line.dungeoncast.cc"/></div>
-      <div class="field-row">
-        <div class="field"><label>Xtream Username</label><input type="text" id="fulfillXtreamUser"/></div>
-        <div class="field"><label>Xtream Password</label><input type="text" id="fulfillXtreamPass"/></div>
-      </div>
-    </div>
-    <div class="field"><label>Notes (optional)</label><input type="text" id="fulfillNotes" placeholder="Any extra info…"/></div>
-    <div class="sheet-actions">
-      <button class="btn btn-ghost" onclick="closeSheet('fulfillSheet')">Cancel</button>
-      <button class="btn btn-green" id="fulfillBtn" onclick="submitFulfill()">Send Credentials</button>
-    </div>
-  </div>
-</div>
-
-<!-- Fulfill Demo -->
-<div class="overlay" id="fulfillDemoSheet">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title" id="fulfillDemoTitle">Fulfill Demo</div>
-    <div class="sheet-sub" id="fulfillDemoSubtitle"></div>
-    <input type="hidden" id="fulfillDemoId"/>
-    <div class="notice notice-amber">⚡ Sends 24-hour demo credentials via email immediately.</div>
-    <div class="field"><label id="fulfillDemoUserLabel">Username</label><input type="text" id="fulfillDemoUser"/></div>
-    <div class="field"><label>Password</label><input type="text" id="fulfillDemoPass"/></div>
-    <div class="sheet-actions">
-      <button class="btn btn-ghost" onclick="closeSheet('fulfillDemoSheet')">Cancel</button>
-      <button class="btn btn-amber" id="fulfillDemoBtn" onclick="submitFulfillDemo()" style="background:var(--amber-bg);color:var(--amber)">Send Demo</button>
+    <div class="field"><label>Note (optional)</label><input type="text" id="c-note" placeholder="Reason…"/></div>
+    <div class="sacts">
+      <button class="btn bb" onclick="closeSheet('sh-credits')">Cancel</button>
+      <button class="btn bg" id="c-save" onclick="submitCredits()">Save</button>
     </div>
   </div>
 </div>
 
 <!-- Resend Welcome -->
-<div class="overlay" id="resendSheet">
+<div class="overlay" id="sh-resend">
   <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Resend Welcome Email</div>
-    <div class="sheet-sub" id="resendWelcomeName"></div>
-    <input type="hidden" id="resendWelcomeMemberId"/>
+    <div class="shandle"></div>
+    <div class="stitle">Resend Welcome Email</div>
+    <div class="ssub" id="sh-resend-sub"></div>
+    <input type="hidden" id="rw-id"/>
     <div class="field">
-      <label>New Password <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional)</span></label>
-      <div class="pass-row">
-        <input type="text" id="resendPassDisplay" placeholder="Leave blank to keep existing"/>
-        <button class="btn btn-ghost btn-sm" onclick="genResendPass()">↺</button>
+      <label>New Password <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)">(optional)</span></label>
+      <div class="passrow">
+        <input type="text" id="rw-pass" placeholder="Leave blank to keep existing"/>
+        <button class="btn bb bsm" onclick="document.getElementById('rw-pass').value=mkPass()">↺</button>
       </div>
-      <div style="font-size:11px;color:var(--muted2);margin-top:4px">Leave blank to resend with placeholder text.</div>
+      <div style="font-size:11px;color:var(--t2);margin-top:4px">Blank = resend with placeholder text only.</div>
     </div>
-    <div class="sheet-actions">
-      <button class="btn btn-ghost" onclick="closeSheet('resendSheet')">Cancel</button>
-      <button class="btn btn-green" onclick="submitResendWelcome()">Send Email</button>
-    </div>
-  </div>
-</div>
-
-<!-- DungeonCast Demo -->
-<div class="overlay" id="dcDemoSheet">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">📡 DungeonCast Demo</div>
-    <div class="sheet-sub" id="dcDemoSubtitle">Send 24-hour demo credentials</div>
-    <div class="notice notice-amber">⚡ Emails demo credentials with 24-hour expiry starting now.</div>
-    <div class="field"><label>Send To (Email)</label><input type="text" id="dcDemoToEmail" placeholder="email@example.com"/></div>
-    <div class="field"><label>DungeonCast Username</label><input type="text" id="dcDemoUser" placeholder="username"/></div>
-    <div class="field"><label>DungeonCast Password</label><input type="text" id="dcDemoPass" placeholder="password"/></div>
-    <div class="sheet-actions">
-      <button class="btn btn-ghost" onclick="closeSheet('dcDemoSheet')">Cancel</button>
-      <button class="btn btn-amber" onclick="submitDCDemo()" style="background:var(--amber-bg);color:var(--amber)">Send Demo Email</button>
+    <div class="sacts">
+      <button class="btn bb" onclick="closeSheet('sh-resend')">Cancel</button>
+      <button class="btn bg" onclick="submitResend()">Send Email</button>
     </div>
   </div>
 </div>
 
-
-<!-- Trex Auto-Create Sheet -->
-<div class="overlay" id="trexSheet">
+<!-- DungeonStream Edit -->
+<div class="overlay" id="sh-stream">
   <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">⚡ Auto-Create DungeonCast Account</div>
-    <div class="sheet-sub">Creates the account directly on Trex and sets up the member automatically.</div>
-    <div class="field">
-      <label>Member</label>
-      <select id="trexMemberSelect"><option value="">Select member…</option></select>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Username</label><input type="text" id="trexUsername" placeholder="e.g. johnsmith"/></div>
-      <div class="field"><label>Password</label><input type="text" id="trexPassword" placeholder="e.g. pass1234"/></div>
+    <div class="shandle"></div>
+    <div class="stitle">Edit DungeonStream Account</div>
+    <input type="hidden" id="ds-mid"/>
+    <div class="field"><label>Stremio Email</label><input type="text" id="ds-email"/></div>
+    <div class="field"><label>Password</label><input type="text" id="ds-pass"/></div>
+    <div class="frow">
+      <div class="field"><label>Start Date</label><input type="date" id="ds-start"/></div>
+      <div class="field"><label>End Date</label><input type="date" id="ds-end"/></div>
     </div>
     <div class="field">
-      <label>Months</label>
-      <select id="trexMonths">
-        <option value="1">1 month</option>
-        <option value="2">2 months</option>
-        <option value="3">3 months</option>
-        <option value="6">6 months</option>
-        <option value="12">12 months</option>
-      </select>
-    </div>
-    <div id="trexResult" style="display:none;background:var(--green-bg);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--green)"></div>
-    <div id="trexError" style="display:none;background:var(--red-bg);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--red)"></div>
-    <div class="sheet-actions">
-      <button class="btn btn-ghost" onclick="closeSheet('trexSheet')">Close</button>
-      <button class="btn btn-green" id="trexCreateBtn" onclick="submitTrexCreate()">Create Account</button>
-    </div>
-  </div>
-</div>
-
-<!-- Stremio Edit -->
-<div class="overlay" id="stremioSheet">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Edit DungeonStream Account</div>
-    <input type="hidden" id="stremioMemberId"/>
-    <div class="field"><label>Stremio Email</label><input type="text" id="stremioTabEmail"/></div>
-    <div class="field"><label>Password</label><input type="text" id="stremioTabPass"/></div>
-    <div class="field-row">
-      <div class="field"><label>Start Date</label><input type="date" id="stremioTabStart"/></div>
-      <div class="field"><label>End Date</label><input type="date" id="stremioTabEnd"/></div>
-    </div>
-    <div class="field">
-      <label>API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(for AIOManager)</span></label>
-      <div class="pass-row">
-        <input type="text" id="stremioTabAuthKey" placeholder="Paste auth key…" style="flex:1;font-family:monospace;font-size:12px"/>
-        <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('stremioTabAuthKey').value=t}).catch(()=>{})">Paste</button>
+      <label>API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)">(AIOManager)</span></label>
+      <div class="passrow">
+        <input type="text" id="ds-apikey" style="font-family:monospace;font-size:12px"/>
+        <button class="btn bb bsm" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('ds-apikey').value=t}).catch(()=>{})">Paste</button>
       </div>
     </div>
-    <div class="sheet-actions">
-      <button class="btn btn-ghost" onclick="closeSheet('stremioSheet')">Cancel</button>
-      <button class="btn btn-green" onclick="saveStremio()">Save</button>
+    <div class="sacts">
+      <button class="btn bb" onclick="closeSheet('sh-stream')">Cancel</button>
+      <button class="btn bg" onclick="submitStream()">Save</button>
     </div>
   </div>
 </div>
 
-<!-- IPTV Edit -->
-<div class="overlay" id="iptvSheet">
+<!-- Fulfill Redemption -->
+<div class="overlay" id="sh-fulfill">
   <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title" id="iptvModalTitle">Add DungeonCast Account</div>
-    <input type="hidden" id="iptvProfileId"/>
+    <div class="shandle"></div>
+    <div class="stitle" id="sh-fulfill-title">Fulfill</div>
+    <div class="ssub" id="sh-fulfill-sub"></div>
+    <input type="hidden" id="f-id"/>
+    <input type="hidden" id="f-svc"/>
+    <div class="notice">Credentials will be emailed and subscription updated automatically.</div>
+
+    <!-- DungeonCast auto-create -->
+    <div id="f-autocreate" style="display:none;background:var(--g3);border:1px solid var(--b);border-radius:8px;padding:12px;margin-bottom:12px">
+      <div class="section-lbl" style="color:var(--g);margin-bottom:8px">⚡ Auto-Create on DungeonCast</div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:8px">Creates the Nodecast account automatically — member can log in immediately.</div>
+      <button class="btn bg" style="width:100%" id="f-autocreate-btn" onclick="autoCreateDC()">Create Account on DungeonCast</button>
+      <div id="f-autocreate-result" style="display:none;margin-top:6px;font-size:12px"></div>
+    </div>
+
+    <div class="field"><label id="f-user-lbl">Username / Email</label><input type="text" id="f-user"/></div>
+    <div class="field"><label>Password</label><input type="text" id="f-pass"/></div>
+
+    <!-- Xtream section (DC only) -->
+    <div id="f-xtream" style="display:none">
+      <div class="divider"></div>
+      <div class="section-lbl">Xtream Codes <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)">(optional — for new lines)</span></div>
+      <div class="field"><label>Xtream URL</label><input type="text" id="f-xurl" value="http://line.dungeoncast.cc"/></div>
+      <div class="frow">
+        <div class="field"><label>Xtream Username</label><input type="text" id="f-xuser"/></div>
+        <div class="field"><label>Xtream Password</label><input type="text" id="f-xpass"/></div>
+      </div>
+    </div>
+
+    <div class="field"><label>Notes (optional)</label><input type="text" id="f-notes" placeholder="Any extra info…"/></div>
+    <div class="sacts">
+      <button class="btn bb" onclick="closeSheet('sh-fulfill')">Cancel</button>
+      <button class="btn bg" id="f-btn" onclick="submitFulfill()">Send Credentials</button>
+    </div>
+  </div>
+</div>
+
+<!-- DungeonCast Edit -->
+<div class="overlay" id="sh-cast">
+  <div class="sheet">
+    <div class="shandle"></div>
+    <div class="stitle" id="sh-cast-title">DungeonCast Account</div>
+    <input type="hidden" id="ca-pid"/>
     <div class="field">
       <label>Member</label>
-      <select id="iptvMemberSelect"><option value="">Select member…</option></select>
+      <select id="ca-member"><option value="">Select member…</option></select>
     </div>
-    <div class="field"><label>DungeonCast Username</label><input type="text" id="iptvNodecastUser" placeholder="Their login on dungeoncast.cc"/></div>
-    <div class="field"><label>Xtream URL</label><input type="text" id="iptvXtreamUrl" placeholder="http://line.dungeoncast.cc"/></div>
-    <div class="field-row">
-      <div class="field"><label>Xtream Username</label><input type="text" id="iptvXtreamUser"/></div>
-      <div class="field"><label>Xtream Password</label><input type="text" id="iptvXtreamPass"/></div>
+    <div class="field"><label>DungeonCast Username</label><input type="text" id="ca-user" placeholder="Their login on dungeoncast.cc"/></div>
+    <div class="field"><label>Xtream URL</label><input type="text" id="ca-xurl" placeholder="http://line.dungeoncast.cc"/></div>
+    <div class="frow">
+      <div class="field"><label>Xtream Username</label><input type="text" id="ca-xuser"/></div>
+      <div class="field"><label>Xtream Password</label><input type="text" id="ca-xpass"/></div>
     </div>
     <div class="field">
       <label>Status</label>
-      <select id="iptvStatus">
-        <option value="pending">Pending</option>
+      <select id="ca-status">
         <option value="active">Active</option>
+        <option value="pending">Pending</option>
         <option value="suspended">Suspended</option>
       </select>
     </div>
-    <div class="field"><label>Notes</label><input type="text" id="iptvNotes" placeholder="Any notes…"/></div>
-    <div class="sheet-actions">
-      <button class="btn btn-ghost" onclick="closeSheet('iptvSheet')">Cancel</button>
-      <button class="btn btn-green" onclick="saveIptv()">Save</button>
+    <div class="field"><label>Notes</label><input type="text" id="ca-notes" placeholder="Any notes…"/></div>
+    <div class="sacts">
+      <button class="btn bb" onclick="closeSheet('sh-cast')">Cancel</button>
+      <button class="btn bg" onclick="submitCast()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- DC Demo -->
+<div class="overlay" id="sh-dcdemo">
+  <div class="sheet">
+    <div class="shandle"></div>
+    <div class="stitle">📡 DungeonCast Demo</div>
+    <div class="ssub" id="sh-dcdemo-sub">Send 24-hour demo credentials</div>
+    <div class="notice notice-a">⚡ Emails demo credentials with 24-hour expiry starting now.</div>
+    <div class="field"><label>Send To (Email)</label><input type="text" id="dcd-email" placeholder="email@example.com"/></div>
+    <div class="field"><label>DungeonCast Username</label><input type="text" id="dcd-user"/></div>
+    <div class="field"><label>DungeonCast Password</label><input type="text" id="dcd-pass"/></div>
+    <div class="sacts">
+      <button class="btn bb" onclick="closeSheet('sh-dcdemo')">Cancel</button>
+      <button class="btn ba" onclick="submitDCDemo()">Send Demo Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- Fulfill Demo -->
+<div class="overlay" id="sh-fulfilldemo">
+  <div class="sheet">
+    <div class="shandle"></div>
+    <div class="stitle" id="sh-fd-title">Fulfill Demo</div>
+    <div class="ssub" id="sh-fd-sub"></div>
+    <input type="hidden" id="fd-id"/>
+    <div class="notice notice-a">⚡ Sends 24-hour demo credentials via email immediately.</div>
+    <div class="field"><label id="fd-ulbl">Username</label><input type="text" id="fd-user"/></div>
+    <div class="field"><label>Password</label><input type="text" id="fd-pass"/></div>
+    <div class="sacts">
+      <button class="btn bb" onclick="closeSheet('sh-fulfilldemo')">Cancel</button>
+      <button class="btn ba" id="fd-btn" onclick="submitFulfillDemo()">Send Demo</button>
     </div>
   </div>
 </div>
 
 <script>
-const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Dungeon Master',color:'#fbbf24'}};
-let appFilter='pending', suppFilter='open', redemFilter='pending', demoFilter='pending', subFilter='all';
-let activeApplicantId=null, activeMemberId=null, showPasswords={}, allProfiles=[];
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const TIERS={neut:{l:'Neut',c:'#dde8e2'},member:{l:'Member',c:'#60a5fa'},mod:{l:'Mod',c:'#34d399'},admin:{l:'Admin',c:'#f87171'},warden:{l:'Dungeon Master',c:'#fbbf24'}};
+let _grantId=null, _editId=null, _creditPid=null, _resendId=null, _fulfillId=null, _fulfillSvc=null, _demoId=null;
+let _appFilter='pending', _redemFilter='pending', _subFilter='all', _demoFilter='pending', _suppFilter='open';
+let _profiles=[];
+
+function $(id){return document.getElementById(id)}
+function fmt(dt){if(!dt)return'—';try{let s=dt;if(!s.endsWith('Z')&&!s.includes('+'))s=s.replace(' ','T')+'Z';return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}catch{return dt}}
+function days(dt){if(!dt)return-999;try{let s=dt;if(!s.endsWith('Z')&&!s.includes('+'))s=s.replace(' ','T')+'Z';return Math.ceil((new Date(s)-new Date())/86400e3)}catch{return-999}}
+function esc(s){return(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}
+function mkPass(){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';return Array.from({length:8},()=>c[Math.floor(Math.random()*c.length)]).join('')}
+function chipClass(d){return d>7?'bdg-g':d>0?'bdg-a':'bdg-r'}
+function chipText(d){return d>0?d+'d left':'Expired'}
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
-async function adminLogin(){
-  const pass=document.getElementById('adminPass').value.trim();
-  const err=document.getElementById('lockErr');
-  err.style.display='none';
-  if(!pass){err.textContent='Enter your password';err.style.display='block';return}
-  const btn=document.getElementById('loginBtn');
-  btn.textContent='Signing in…';btn.disabled=true;
+document.getElementById('lpass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+async function doLogin(){
+  const pass=$('lpass').value.trim();
+  const err=$('lerr'); err.style.display='none';
+  if(!pass){err.textContent='Enter password';err.style.display='block';return}
+  const btn=$('lbtn'); btn.textContent='Signing in…'; btn.disabled=true;
   try{
     const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})});
     const d=await r.json();
-    if(d.error||!r.ok){err.textContent=d.error||'Wrong password';err.style.display='block';btn.textContent='Sign In';btn.disabled=false;return}
-    showAdmin();
+    if(!r.ok||d.error){err.textContent=d.error||'Wrong password';err.style.display='block';btn.textContent='Sign In';btn.disabled=false;return}
+    showApp();
   }catch(e){err.textContent='Network error';err.style.display='block';btn.textContent='Sign In';btn.disabled=false}
 }
-
-function showAdmin(){
-  document.getElementById('lockScreen').style.display='none';
-  document.getElementById('adminApp').classList.add('visible');
-  loadAll();
-}
-
-async function adminLogout(){
-  await fetch('/api/logout',{method:'POST'}).catch(()=>{});
-  location.reload();
-}
-
-// Auto-login if session active
+function showApp(){$('lock').style.display='none';$('app').classList.add('on');loadAll()}
+async function doLogout(){await fetch('/api/logout',{method:'POST'}).catch(()=>{});location.reload()}
 window.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('adminPass').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin()});
-  fetch('/api/me').then(r=>r.json()).then(d=>{if(d.authenticated)showAdmin()}).catch(()=>{});
-});
-
-// ── Sheets ────────────────────────────────────────────────────────────────────
-function openSheet(id){document.getElementById(id).classList.add('open')}
-function closeSheet(id){document.getElementById(id).classList.remove('open')}
-document.querySelectorAll('.overlay').forEach(el=>{
-  el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')})
+  $('lpass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+  fetch('/api/me').then(r=>r.json()).then(d=>{if(d.authenticated)showApp()}).catch(()=>{});
 });
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
-function switchTab(name,el){
-  document.querySelectorAll('.tabbar-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('panel-'+name).classList.add('active');
-  if(name==='applications'){
-    appFilter='pending';
-    document.querySelectorAll('#panel-applications .filter-btn').forEach(b=>b.classList.remove('active'));
-    document.getElementById('appf-pending')?.classList.add('active');
-    document.getElementById('appListLabel').textContent='Pending Applications';
-    loadApplicants();
-  }
-  if(name==='members') loadMembers();
-  if(name==='redemptions') loadRedemptions();
-  if(name==='demos') loadDemosTab();
-  if(name==='subscribers') loadSubscribers();
-  if(name==='support') loadSupport();
+function showTab(name,el){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  $('p-'+name).classList.add('on');
+  const loaders={redemptions:loadRedem,applications:()=>loadApps(),members:loadMembers,subscribers:loadSubs,demos:loadDemos,support:loadSupport};
+  if(name==='applications'){_appFilter='pending';document.querySelectorAll('#p-applications .fb').forEach(b=>b.classList.remove('on'));$('af-pending')?.classList.add('on');$('appLbl').textContent='Pending Applications';}
+  if(loaders[name])loaders[name]();
+}
+function showSub(name,el){
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
+  ['roster','credits','stream','cast'].forEach(n=>{const el2=$('sub-'+n);if(el2)el2.style.display=n===name?'block':'none'});
+  el.classList.add('on');
+  if(name==='roster')loadRoster();
+  if(name==='credits')loadCreditsSub();
+  if(name==='stream')loadStream();
+  if(name==='cast')loadCast();
 }
 
-function switchMemberSub(name,el){
-  ['roster','credits','stremio','dc'].forEach(n=>{
-    const el2=document.getElementById('member-sub-'+n);
-    if(el2)el2.style.display=n===name?'block':'none';
-    document.getElementById('msub-'+n)?.classList.toggle('active',n===name);
-  });
-  if(name==='credits')loadCreditsTab();
-  if(name==='stremio')loadStremioTab();
-  if(name==='dc')loadDCTab();
-  if(name==='roster')loadMembers();
+// ── Filters ───────────────────────────────────────────────────────────────────
+function setFilter(type,val,el){
+  const map={redem:'_redemFilter',app:'_appFilter',sub:'_subFilter',demo:'_demoFilter',supp:'_suppFilter'};
+  window[map[type]]=val;
+  const panel={redem:'p-redemptions',app:'p-applications',sub:'p-subscribers',demo:'p-demos',supp:'p-support'}[type];
+  document.querySelectorAll('#'+panel+' .fb').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  if(type==='app'){const lbls={pending:'Pending Applications',all:'All Applications',archived:'Archived Applications'};$('appLbl').textContent=lbls[val]||'Applications';}
+  const loaders={redem:loadRedem,app:loadApps,sub:loadSubs,demo:loadDemos,supp:loadSupport};
+  if(loaders[type])loaders[type]();
 }
 
-// ── Load all ──────────────────────────────────────────────────────────────────
-async function loadAll(){
-  loadStats();loadApplicants();loadMembers();loadRedemptions();loadDemosTab();
-}
+// ── Load All ─────────────────────────────────────────────────────────────────
+async function loadAll(){loadStats();loadRedem();loadApps();loadRoster();}
 
 async function loadStats(){
   const d=await fetch('/api/stats').then(r=>r.json()).catch(()=>({}));
-  document.getElementById('statApplicants').textContent=d.pending??d.applicants??'—';
-  document.getElementById('statMembers').textContent=d.members??'—';
-  document.getElementById('statSupport').textContent=d.support??'—';
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function fmt(dt){if(!dt)return'—';try{if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}catch{return dt}}
-function esc(s){return(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}
-function getDays(dt){if(!dt)return-999;try{if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';return Math.ceil((new Date(dt)-new Date())/86400000)}catch{return-999}}
-
-// ── Applications ──────────────────────────────────────────────────────────────
-function setAppFilter(f,el){
-  appFilter=f;
-  document.querySelectorAll('#panel-applications .filter-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  const labels={pending:'Pending Applications',all:'All Applications',archived:'Archived Applications'};
-  document.getElementById('appListLabel').textContent=labels[f]||'Applications';
-  loadApplicants();
-}
-
-async function loadApplicants(){
-  const url=appFilter==='archived'?'/api/applicants?archived=1':appFilter==='all'?'/api/applicants':'/api/applicants?status=pending';
-  const rows=await fetch(url).then(r=>r.json()).catch(()=>[]);
-  const el=document.getElementById('appList');
-  if(!rows.length){el.innerHTML='<div class="empty">No applications</div>';return}
-  el.innerHTML=rows.map(r=>`
-    <div class="card">
-      <div class="card-top">
-        <div class="card-info">
-          <div class="card-name">
-            ${r.screen_name?`<span style="color:var(--green)">@${r.screen_name}</span> —`:''} ${r.first_name} ${r.last_name}
-            <span class="badge badge-${r.status||'pending'}">${r.status||'pending'}</span>
-          </div>
-          <div class="card-email">${r.email}</div>
-        </div>
-      </div>
-      <div class="card-meta">
-        ${r.phone?`<div class="meta-item"><div class="meta-label">Phone</div><div class="meta-value">${r.phone}</div></div>`:''}
-        ${r.language?`<div class="meta-item"><div class="meta-label">Language</div><div class="meta-value">${r.language}</div></div>`:''}
-        ${r.referral?`<div class="meta-item"><div class="meta-label">Referred by</div><div class="meta-value">${r.referral}</div></div>`:''}
-        <div class="meta-item"><div class="meta-label">Date</div><div class="meta-value">${fmt(r.created_at)}</div></div>
-      </div>
-      <div class="card-actions">
-        ${r.status==='pending'||!r.status?`<button class="btn btn-green" onclick="openApprove('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Access</button><button class="btn btn-ghost" onclick="deny('${r.id}')">Deny</button>`:''}
-        <button class="btn btn-ghost" onclick="archiveApp('${r.id}')">Archive</button>
-        <button class="btn btn-ghost" onclick="resendAppEmail('${r.id}','${esc(r.email)}')">↺ Email</button>
-        <button class="btn btn-red" onclick="deleteApp('${r.id}')">Delete</button>
-      </div>
-    </div>`).join('');
-}
-
-function openApprove(id,fn,ln,email){
-  activeApplicantId=id;
-  document.getElementById('approveDesc').innerHTML=`Grant Dungeon access to <strong>${fn} ${ln}</strong> (${email}).`;
-  document.getElementById('genPassDisplay').value=genPass();
-  document.getElementById('approveApiKey').value='';
-  document.getElementById('approveErr').style.display='none';
-  openSheet('approveSheet');
-}
-
-async function confirmApprove(){
-  const pass=document.getElementById('genPassDisplay').value.trim();
-  const apiKey=document.getElementById('approveApiKey').value.trim();
-  const err=document.getElementById('approveErr');
-  if(!pass){err.textContent='Password is required';err.style.display='block';return}
-  const btn=document.querySelector('#approveSheet .btn-green');
-  btn.textContent='Granting…';btn.disabled=true;
-  const res=await fetch(`/api/applicants/${activeApplicantId}/promote`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:'',stremio_pass:pass,stremio_auth_key:apiKey})}).then(r=>r.json()).catch(e=>({error:e.message}));
-  btn.textContent='Grant Access & Send Email';btn.disabled=false;
-  if(res.error){err.textContent=res.error;err.style.display='block';return}
-  closeSheet('approveSheet');loadAll();
-}
-
-async function deny(id){
-  if(!confirm('Deny this application?'))return;
-  await fetch(`/api/applicants/${id}/deny`,{method:'POST'}).catch(()=>{});
-  loadApplicants();
-}
-
-async function deleteApp(id){
-  if(!confirm('Delete this application?'))return;
-  await fetch(`/api/applicants/${id}`,{method:'DELETE'}).catch(()=>{});
-  loadApplicants();
-}
-
-async function archiveApp(id){
-  await fetch(`/api/applicants/${id}/archive`,{method:'POST'}).catch(()=>{});
-  loadApplicants();
-}
-
-async function resendAppEmail(id,email){
-  const r=await fetch('/api/admin/resend/application/'+id,{method:'POST'});
-  alert(r.ok?`Email sent to ${email}`:'Failed to send email');
-}
-
-// ── Members ───────────────────────────────────────────────────────────────────
-async function loadMembers(){
-  const rows=await fetch('/api/members').then(r=>r.json()).catch(()=>[]);
-  const el=document.getElementById('memberList');
-  if(!rows.length){el.innerHTML='<div class="empty">No members yet</div>';return}
-  el.innerHTML=rows.map(r=>`
-    <div class="card">
-      <div class="card-top">
-        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-          <div class="avatar" style="background:${r.avatar_color||'#60a5fa'}">
-            ${r.avatar_url?`<img src="${r.avatar_url}" alt=""/>`:(r.screen_name||r.first_name)[0].toUpperCase()}
-          </div>
-          <div style="flex:1;min-width:0">
-            <div class="card-name">${r.screen_name?`<a href="/profile.html?sn=${r.screen_name}" style="color:var(--green);text-decoration:none">@${r.screen_name}</a> —`:''} ${r.first_name} ${r.last_name}</div>
-            <div class="card-email">${r.email}</div>
-          </div>
-        </div>
-        <select class="tier-select" onchange="promoteTier('${r.profile_id_val}',this.value)">
-          ${Object.entries(TIERS).map(([k,v])=>`<option value="${k}" ${r.tier===k?'selected':''}>${v.label}</option>`).join('')}
-        </select>
-      </div>
-      <div class="card-meta">
-        <div class="meta-item">
-          <div class="meta-label">Credits</div>
-          <div class="meta-value" style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:16px;font-weight:700;color:var(--green)">${r.credit_balance||0}</span>
-            ${r.profile_id_val?`<button class="btn btn-ghost btn-sm" onclick="openCreditEdit('${r.profile_id_val}','${esc(r.screen_name||r.first_name)}',${r.credit_balance||0})">Edit</button>`:'<span style="font-size:11px;color:var(--muted)">No profile</span>'}
-          </div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-label">Password</div>
-          <div class="meta-value" style="display:flex;align-items:center;gap:6px">
-            <span id="mpw-${r.id}" style="font-family:monospace">••••••••</span>
-            <button class="btn btn-ghost btn-sm" onclick="toggleMemberPass('${r.id}','${esc(r.plain_pass||'')}')">Show</button>
-            ${r.plain_pass?`<button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${esc(r.plain_pass)}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>`:''}
-          </div>
-        </div>
-        ${r.stremio_end?`<div class="meta-item"><div class="meta-label">DungeonStream</div><div class="meta-value"><span class="badge ${getDays(r.stremio_end)>0?'badge-active':'badge-expired'}">${getDays(r.stremio_end)>0?getDays(r.stremio_end)+'d left':'Expired'}</span></div></div>`:''}
-        ${r.iptv_end?`<div class="meta-item"><div class="meta-label">DungeonCast</div><div class="meta-value"><span class="badge ${getDays(r.iptv_end)>0?'badge-active':'badge-expired'}">${getDays(r.iptv_end)>0?getDays(r.iptv_end)+'d left':'Expired'}</span></div></div>`:''}
-        ${r.notes?`<div class="meta-item" style="flex-basis:100%"><div class="meta-label">Notes</div><div class="meta-value">${r.notes}</div></div>`:''}
-        <div class="meta-item"><div class="meta-label">Since</div><div class="meta-value">${fmt(r.created_at)}</div></div>
-      </div>
-      <div class="card-actions">
-        <button class="btn btn-ghost" onclick="openResendWelcome('${r.id}','${esc(r.first_name+' '+r.last_name)}')">↺ Welcome Email</button>
-        <button class="btn btn-ghost" onclick="openEdit('${r.id}','${esc(r.notes||'')}','${esc(r.first_name||'')}','${esc(r.last_name||'')}')">Edit</button>
-        <button class="btn btn-red" onclick="deleteMember('${r.id}')">Remove</button>
-      </div>
-    </div>`).join('');
-}
-
-function toggleMemberPass(id,pass){
-  const el=document.getElementById('mpw-'+id);
-  const btn=el.nextElementSibling;
-  if(el.textContent==='••••••••'){el.textContent=pass||'(use resend to reset)';btn.textContent='Hide'}
-  else{el.textContent='••••••••';btn.textContent='Show'}
-}
-
-function openEdit(id,notes,fn,ln){
-  activeMemberId=id;
-  document.getElementById('editMemberId').value=id;
-  document.getElementById('editFirstName').value=fn;
-  document.getElementById('editLastName').value=ln;
-  document.getElementById('editNotes').value=notes;
-  openSheet('editSheet');
-}
-
-async function confirmEdit(){
-  const id=document.getElementById('editMemberId').value;
-  await fetch(`/api/members/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({first_name:document.getElementById('editFirstName').value,last_name:document.getElementById('editLastName').value,notes:document.getElementById('editNotes').value})});
-  closeSheet('editSheet');loadMembers();
-}
-
-async function deleteMember(id){
-  if(!confirm('Remove this member? This cannot be undone.'))return;
-  await fetch(`/api/members/${id}`,{method:'DELETE'}).catch(()=>{});
-  loadAll();
-}
-
-async function promoteTier(profileId,tier){
-  if(!profileId)return;
-  await fetch(`/api/admin/profiles/${profileId}/tier`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tier})});
-}
-
-// ── Credits ───────────────────────────────────────────────────────────────────
-function openCreditEdit(profileId,name,balance){
-  if(!profileId||profileId==='undefined'){alert('This member has no profile yet — they need to complete account setup first.');return}
-  document.getElementById('creditEditProfileId').value=profileId;
-  document.getElementById('creditSheetName').textContent='@'+name;
-  document.getElementById('creditEditBalance').textContent=balance;
-  document.getElementById('creditEditAmount').value=1;
-  document.getElementById('creditEditAction').value='add';
-  document.getElementById('creditEditNote').value='';
-  openSheet('creditSheet');
-}
-
-async function saveCreditEdit(){
-  const profileId=document.getElementById('creditEditProfileId').value;
-  if(!profileId){alert('No profile ID');return}
-  const amount=parseInt(document.getElementById('creditEditAmount').value)||1;
-  const action=document.getElementById('creditEditAction').value;
-  const note=document.getElementById('creditEditNote').value||(action==='add'?'Admin credit':'Admin deduction');
-  const finalAmount=action==='remove'?-Math.abs(amount):Math.abs(amount);
-  const btn=document.getElementById('creditSaveBtn');
-  btn.textContent='Saving…';btn.disabled=true;
-  const res=await fetch('/api/admin/credits/'+profileId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:finalAmount,note})}).then(r=>r.json()).catch(e=>({error:e.message}));
-  btn.textContent='Save';btn.disabled=false;
-  if(res&&res.error){alert('Error: '+res.error);return}
-  closeSheet('creditSheet');loadMembers();
-}
-
-async function loadCreditsTab(){
-  const rows=await fetch('/api/admin/credits').then(r=>r.json()).catch(()=>[]);
-  const el=document.getElementById('creditList');
-  if(!rows.length){el.innerHTML='<div class="empty">No credit history</div>';return}
-  el.innerHTML=rows.map(r=>`
-    <div class="card">
-      <div class="card-name">@${r.screen_name||'Unknown'} <span style="font-size:16px;font-weight:700;color:var(--green)">${r.balance||0} credits</span></div>
-      <div class="card-email">${r.email||''}</div>
-    </div>`).join('');
-}
-
-// ── Stremio tab ───────────────────────────────────────────────────────────────
-async function loadStremioTab(){
-  const rows=await fetch('/api/admin/stremio').then(r=>r.json()).catch(()=>[]);
-  const el=document.getElementById('stremioTabList');
-  if(!rows.length){el.innerHTML='<div class="empty">No DungeonStream accounts yet</div>';return}
-  el.innerHTML=rows.map(r=>{
-    const days=getDays(r.stremio_end);
-    const chipClass=days>7?'badge-active':days>0?'badge-expiring':'badge-expired';
-    const chipText=days>0?days+'d left':'Expired';
-    return `
-    <div class="card">
-      <div class="card-name">
-        ${r.screen_name?`<span style="color:var(--green)">@${r.screen_name}</span> — `:''} ${r.first_name} ${r.last_name}
-        ${r.stremio_end?`<span class="badge ${chipClass}">${chipText}</span>`:r.stremio_email?'<span class="badge" style="background:rgba(107,143,122,0.1);color:var(--muted)">Active (no expiry set)</span>':'<span class="badge" style="background:rgba(107,143,122,0.1);color:var(--muted)">No sub</span>'}
-      </div>
-      <div class="card-email">${r.email}</div>
-      <div class="card-meta">
-        ${r.stremio_email?`<div class="meta-item"><div class="meta-label">Stremio Email</div><div class="meta-value">${r.stremio_email}</div></div>`:''}
-        ${r.stremio_pass?`<div class="meta-item"><div class="meta-label">Password</div><div class="meta-value" style="font-family:monospace">${r.stremio_pass}</div></div>`:''}
-        ${r.stremio_start?`<div class="meta-item"><div class="meta-label">Started</div><div class="meta-value">${fmt(r.stremio_start)}</div></div>`:''}
-        ${r.stremio_end?`<div class="meta-item"><div class="meta-label">Expires</div><div class="meta-value">${fmt(r.stremio_end)}</div></div>`:''}
-        ${r.stremio_auth_key?`<div class="meta-item" style="flex-basis:100%">
-          <div class="meta-label">API Key (AIOManager)</div>
-          <div class="meta-value" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-            <span style="font-family:monospace;font-size:11px;color:var(--green);word-break:break-all">${r.stremio_auth_key}</span>
-            <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${esc(r.stremio_auth_key)}').then(()=>{this.textContent='✓ Copied';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>
-          </div>
-        </div>`:'<div class="meta-item"><div class="meta-label">API Key</div><div class="meta-value" style="color:var(--muted)">Not set — use Edit to add</div></div>'}
-      </div>
-      <div class="card-actions">
-        <button class="btn btn-green" onclick="editStremio('${r.id}','${esc(r.stremio_email||'')}','${esc(r.stremio_pass||'')}','${r.stremio_start||''}','${r.stremio_end||''}','${esc(r.stremio_auth_key||'')}')">Edit</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function editStremio(memberId,email,pass,start,end,authKey=''){
-  document.getElementById('stremioMemberId').value=memberId;
-  document.getElementById('stremioTabEmail').value=email;
-  document.getElementById('stremioTabPass').value=pass;
-  document.getElementById('stremioTabStart').value=start?start.split('T')[0]:'';
-  document.getElementById('stremioTabEnd').value=end?end.split('T')[0]:'';
-  document.getElementById('stremioTabAuthKey').value=authKey;
-  openSheet('stremioSheet');
-}
-
-async function saveStremio(){
-  const memberId=document.getElementById('stremioMemberId').value;
-  const body={stremio_email:document.getElementById('stremioTabEmail').value,stremio_pass:document.getElementById('stremioTabPass').value,stremio_start:document.getElementById('stremioTabStart').value||null,stremio_end:document.getElementById('stremioTabEnd').value||null,stremio_auth_key:document.getElementById('stremioTabAuthKey').value||null};
-  await fetch('/api/admin/stremio/'+memberId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  closeSheet('stremioSheet');loadStremioTab();
-}
-
-// ── DungeonCast tab ───────────────────────────────────────────────────────────
-async function loadDCTab(){
-  const profiles=await fetch('/api/admin/profiles').then(r=>r.json()).catch(()=>[]);
-  allProfiles=profiles;
-  const sel=document.getElementById('iptvMemberSelect');
-  sel.innerHTML='<option value="">Select member…</option>';
-  profiles.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent='@'+p.screen_name;sel.appendChild(o)});
-
-  const rows=await fetch('/api/admin/iptv').then(r=>r.json()).catch(()=>[]);
-  const el=document.getElementById('iptvList');
-  const statusColor={active:'var(--green)',pending:'var(--amber)',suspended:'var(--red)'};
-  const addBtn=`<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-green" onclick="openTrexCreate()">⚡ Auto-Create via Trex</button><button class="btn btn-ghost" onclick="showAddIptv()">+ Manual Add</button><button class="btn btn-ghost" onclick="openDCDemoManual()">Send Demo</button></div>`;
-  if(!rows.length){el.innerHTML=addBtn+'<div class="empty">No DungeonCast accounts yet</div>';return}
-  el.innerHTML=addBtn+rows.map(r=>`
-    <div class="card">
-      <div class="card-name">@${r.screen_name} <span class="badge" style="background:${statusColor[r.status]||'var(--muted)'}22;color:${statusColor[r.status]||'var(--muted)'}">${r.status}</span></div>
-      <div class="card-email">${r.email}</div>
-      <div class="card-meta">
-        ${r.nodecast_user?`<div class="meta-item"><div class="meta-label">DungeonCast Login</div><div class="meta-value">${r.nodecast_user}</div></div>`:''}
-        ${r.xtream_url?`<div class="meta-item"><div class="meta-label">Xtream URL</div><div class="meta-value" style="font-size:11px">${r.xtream_url}</div></div>`:''}
-        ${r.notes?`<div class="meta-item"><div class="meta-label">Notes</div><div class="meta-value">${r.notes}</div></div>`:''}
-      </div>
-      <div class="card-actions">
-        <button class="btn btn-amber" style="background:var(--amber-bg);color:var(--amber)" onclick="openDCDemo('${r.profile_id}','${esc(r.screen_name)}','${esc(r.email)}')">Demo</button>
-        <button class="btn btn-ghost" onclick="trexRenewLine('${esc(r.nodecast_user||'')}','${r.profile_id}')">↺ Renew</button>
-        <button class="btn btn-green" onclick="editIptv('${r.profile_id}')">Edit</button>
-        <button class="btn btn-red" onclick="deleteIptv('${r.profile_id}')">Remove</button>
-      </div>
-    </div>`).join('');
-}
-
-function showAddIptv(){
-  document.getElementById('iptvModalTitle').textContent='Add DungeonCast Account';
-  document.getElementById('iptvProfileId').value='';
-  document.getElementById('iptvMemberSelect').value='';
-  document.getElementById('iptvMemberSelect').disabled=false;
-  document.getElementById('iptvNodecastUser').value='';
-  document.getElementById('iptvXtreamUrl').value='';
-  document.getElementById('iptvXtreamUser').value='';
-  document.getElementById('iptvXtreamPass').value='';
-  document.getElementById('iptvStatus').value='pending';
-  document.getElementById('iptvNotes').value='';
-  openSheet('iptvSheet');
-}
-
-function editIptv(profileId){
-  fetch('/api/admin/iptv').then(r=>r.json()).then(rows=>{
-    const r=rows.find(x=>x.profile_id===profileId);
-    if(!r)return;
-    document.getElementById('iptvModalTitle').textContent='Edit DungeonCast Account';
-    document.getElementById('iptvProfileId').value=profileId;
-    document.getElementById('iptvMemberSelect').value=profileId;
-    document.getElementById('iptvMemberSelect').disabled=true;
-    document.getElementById('iptvNodecastUser').value=r.nodecast_user||'';
-    document.getElementById('iptvXtreamUrl').value=r.xtream_url||'';
-    document.getElementById('iptvXtreamUser').value=r.xtream_user||'';
-    document.getElementById('iptvXtreamPass').value=r.xtream_pass||'';
-    document.getElementById('iptvStatus').value=r.status||'pending';
-    document.getElementById('iptvNotes').value=r.notes||'';
-    openSheet('iptvSheet');
-  });
-}
-
-async function saveIptv(){
-  const profileId=document.getElementById('iptvProfileId').value||document.getElementById('iptvMemberSelect').value;
-  if(!profileId){alert('Select a member');return}
-  const body={nodecast_user:document.getElementById('iptvNodecastUser').value,xtream_url:document.getElementById('iptvXtreamUrl').value,xtream_user:document.getElementById('iptvXtreamUser').value,xtream_pass:document.getElementById('iptvXtreamPass').value,status:document.getElementById('iptvStatus').value,notes:document.getElementById('iptvNotes').value};
-  await fetch('/api/admin/iptv/'+profileId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  closeSheet('iptvSheet');loadDCTab();
-}
-
-async function deleteIptv(profileId){
-  if(!confirm('Remove this DungeonCast account?'))return;
-  await fetch('/api/admin/iptv/'+profileId,{method:'DELETE'});
-  loadDCTab();
-}
-
-// ── DungeonCast Demo ──────────────────────────────────────────────────────────
-function openDCDemo(profileId,name,email){
-  document.getElementById('dcDemoSubtitle').textContent='Sending 24-hour demo to @'+name;
-  document.getElementById('dcDemoToEmail').value=email;
-  document.getElementById('dcDemoUser').value='';
-  document.getElementById('dcDemoPass').value='';
-  openSheet('dcDemoSheet');
-}
-
-function openDCDemoManual(){
-  document.getElementById('dcDemoSubtitle').textContent='Send a 24-hour DungeonCast demo';
-  document.getElementById('dcDemoToEmail').value='';
-  document.getElementById('dcDemoUser').value='';
-  document.getElementById('dcDemoPass').value='';
-  openSheet('dcDemoSheet');
-}
-
-async function submitDCDemo(){
-  const email=document.getElementById('dcDemoToEmail').value.trim();
-  const user=document.getElementById('dcDemoUser').value.trim();
-  const pass=document.getElementById('dcDemoPass').value.trim();
-  if(!email||!user||!pass){alert('Fill in all fields');return}
-  const btn=event.target;btn.textContent='Sending…';btn.disabled=true;
-  const res=await fetch('/api/admin/dc-demo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,username:user,password:pass})}).then(r=>r.json()).catch(e=>({error:e.message}));
-  btn.textContent='Send Demo Email';btn.disabled=false;
-  if(res.error){alert('Error: '+res.error);return}
-  closeSheet('dcDemoSheet');alert('Demo email sent!');
-}
-
-// ── Subscribers ───────────────────────────────────────────────────────────────
-function setSubFilter(f,el){subFilter=f;document.querySelectorAll('#panel-subscribers .filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadSubscribers()}
-async function loadSubscribers(){
-  const members=await fetch('/api/admin/subscribers').then(r=>r.json()).catch(()=>[]);
-  const el=document.getElementById('subscriberList');
-  let rows=[];
-  members.forEach(m=>{
-    if(m.stremio_end)rows.push({id:m.id,name:m.screen_name,email:m.email,service:'stream',start:m.stremio_start,end:m.stremio_end,days:getDays(m.stremio_end),credential:m.stremio_email});
-    if(m.iptv_end)rows.push({id:m.id,name:m.screen_name,email:m.email,service:'cast',start:m.iptv_start,end:m.iptv_end,days:getDays(m.iptv_end),credential:null});
-  });
-  if(subFilter==='stream')rows=rows.filter(r=>r.service==='stream'&&r.days>0);
-  else if(subFilter==='cast')rows=rows.filter(r=>r.service==='cast'&&r.days>0);
-  else if(subFilter==='expired')rows=rows.filter(r=>r.days<=0);
-  else rows=rows.filter(r=>r.days>0);
-  rows.sort((a,b)=>new Date(a.end)-new Date(b.end));
-  if(!rows.length){el.innerHTML='<div class="empty">No subscribers</div>';return}
-  const chipClass=d=>d>7?'badge-active':d>0?'badge-expiring':'badge-expired';
-  el.innerHTML=rows.map(r=>`
-    <div class="card">
-      <div class="card-name">${r.name} <span class="badge ${r.service==='stream'?'badge-stream':'badge-cast'}">${r.service==='stream'?'📺 DungeonStream':'📡 DungeonCast'}</span> <span class="badge ${chipClass(r.days)}">${r.days>0?r.days+'d left':'Expired'}</span></div>
-      <div class="card-email">${r.email}</div>
-      <div class="card-meta">
-        <div class="meta-item"><div class="meta-label">Started</div><div class="meta-value">${fmt(r.start)}</div></div>
-        <div class="meta-item"><div class="meta-label">Expires</div><div class="meta-value">${fmt(r.end)}</div></div>
-        ${r.credential?`<div class="meta-item"><div class="meta-label">Account</div><div class="meta-value">${r.credential}</div></div>`:''}
-      </div>
-      <div class="card-actions">
-        <button class="btn btn-green" onclick="extendSub('${r.id}','${r.service}','${r.end}')">+30 Days</button>
-      </div>
-    </div>`).join('');
-}
-
-async function extendSub(memberId,service,currentEnd){
-  if(!confirm('Extend by 30 days?'))return;
-  const end=new Date(currentEnd.includes('T')||currentEnd.endsWith('Z')?currentEnd:currentEnd.replace(' ','T')+'Z');
-  const newEnd=new Date(Math.max(end,new Date()));newEnd.setMonth(newEnd.getMonth()+1);
-  await fetch('/api/admin/members/'+memberId+'/extend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service,new_end:newEnd.toISOString()})});
-  loadSubscribers();
+  $('sApps').textContent=d.pending??d.applicants??'—';
+  $('sMembers').textContent=d.members??'—';
+  $('sSupport').textContent=d.support??'—';
 }
 
 // ── Redemptions ───────────────────────────────────────────────────────────────
-function setRedemFilter(f,el){redemFilter=f;document.querySelectorAll('#panel-redemptions .filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadRedemptions()}
-async function updateRedemBadge(){
-  const p=await fetch('/api/admin/redemptions?status=pending').then(r=>r.json()).catch(()=>[]);
-  const b=document.getElementById('redemBadge');
-  b.textContent=p.length?`(${p.length})`:'';b.style.display=p.length?'inline':'none';
-}
-async function loadRedemptions(){
-  const res=await fetch('/api/admin/redemptions?status='+redemFilter).catch(()=>null);
-  if(!res||!res.ok){document.getElementById('redemptionList').innerHTML='<div class="empty">Error loading</div>';return}
-  const rows=await res.json().catch(()=>[]);
-  updateRedemBadge();
-  const el=document.getElementById('redemptionList');
-  if(!rows.length){el.innerHTML=`<div class="empty">No ${redemFilter} redemptions</div>`;return}
+async function loadRedem(){
+  const res=await fetch('/api/admin/redemptions?status='+_redemFilter).catch(()=>null);
+  const rows=res?.ok?await res.json().catch(()=>[]):[];
+  // Update badge
+  const pending=_redemFilter==='pending'?rows:await fetch('/api/admin/redemptions?status=pending').then(r=>r.json()).catch(()=>[]);
+  const b=$('rbadge');b.textContent=pending.length?`(${pending.length})`:'';b.style.display=pending.length?'inline':'none';
+  const el=$('redemList');
+  if(!rows.length){el.innerHTML=`<div class="empty">No ${_redemFilter} redemptions</div>`;return}
   el.innerHTML=rows.map(r=>`
     <div class="card">
-      <div class="card-name">@${r.screen_name||'Unknown'} <span class="badge ${r.service==='stremio'?'badge-stream':'badge-cast'}">${r.service==='stremio'?'📺 DungeonStream':'📡 DungeonCast'}</span> <span class="badge badge-${r.status}">${r.status}</span></div>
-      <div class="card-email">${r.member_email||r.email||''}</div>
-      <div class="card-meta">
-        <div class="meta-item"><div class="meta-label">Requested</div><div class="meta-value">${fmt(r.created_at)}</div></div>
-        ${r.fulfilled_at?`<div class="meta-item"><div class="meta-label">Fulfilled</div><div class="meta-value">${fmt(r.fulfilled_at)}</div></div>`:''}
-        ${r.account_user?`<div class="meta-item"><div class="meta-label">Account</div><div class="meta-value">${r.account_user}</div></div>`:''}
+      <div class="ctop">
+        <div class="cinfo">
+          <div class="cname">@${r.screen_name||'Unknown'} <span class="bdg ${r.service==='stremio'?'bdg-blu':'bdg-g'}">${r.service==='stremio'?'📺 DungeonStream':'📡 DungeonCast'}</span> <span class="bdg ${r.status==='pending'?'bdg-a':'bdg-g'}">${r.status}</span></div>
+          <div class="cemail">${r.member_email||r.email||''}</div>
+          <div class="cmeta">
+            <div class="mi"><label>Requested</label><span>${fmt(r.created_at)}</span></div>
+            ${r.fulfilled_at?`<div class="mi"><label>Fulfilled</label><span>${fmt(r.fulfilled_at)}</span></div>`:''}
+            ${r.account_user?`<div class="mi"><label>Account</label><span>${r.account_user}</span></div>`:''}
+          </div>
+        </div>
       </div>
-      <div class="card-actions">
-        ${r.status==='pending'?`<button class="btn btn-green" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name||'')}')">Fulfill</button>`:`<button class="btn btn-ghost" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name||'')}')">Edit</button>`}
+      <div class="cacts">
+        ${r.status==='pending'?`<button class="btn bg" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name||'')}','${esc(r.profile_id||'')}')">Fulfill</button>`:`<button class="btn bb" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name||'')}','${esc(r.profile_id||'')}')">Edit</button>`}
       </div>
     </div>`).join('');
 }
 
-function openFulfill(id,service,name){
-  document.getElementById('fulfillId').value=id;
-  document.getElementById('fulfillTitle').textContent=service==='stremio'?'📺 Fulfill DungeonStream':'📡 Fulfill DungeonCast';
-  document.getElementById('fulfillSubtitle').textContent=`Setting up account for @${name}`;
-  document.getElementById('fulfillUserLabel').textContent=service==='stremio'?'Stremio Email':'DungeonCast Username';
-  document.getElementById('fulfillUser').value='';
-  document.getElementById('fulfillPass').value='';
-  document.getElementById('fulfillNotes').value='';
-  openSheet('fulfillSheet');
+function openFulfill(id,svc,name,profileId){
+  _fulfillId=id;_fulfillSvc=svc;
+  $('f-id').value=id;$('f-svc').value=svc;
+  $('sh-fulfill-title').textContent=svc==='stremio'?'📺 Fulfill DungeonStream':'📡 Fulfill DungeonCast';
+  $('sh-fulfill-sub').textContent=`Setting up account for @${name}`;
+  $('f-user-lbl').textContent=svc==='stremio'?'Stremio Email':'DungeonCast Username';
+  $('f-user').value='';$('f-pass').value='';$('f-notes').value='';
+  $('f-xtream').style.display=svc==='stremio'?'none':'block';
+  $('f-autocreate').style.display=svc==='stremio'?'none':'block';
+  $('f-autocreate-result').style.display='none';
+  $('f-autocreate-btn').textContent='Create Account on DungeonCast';$('f-autocreate-btn').disabled=false;
+  $('f-xurl').value='http://line.dungeoncast.cc';$('f-xuser').value='';$('f-xpass').value='';
+  openSheet('sh-fulfill');
+}
+
+async function autoCreateDC(){
+  const user=$('f-user').value.trim(), pass=$('f-pass').value.trim();
+  if(!user||!pass){alert('Enter username and password first');return}
+  const btn=$('f-autocreate-btn'); btn.textContent='Creating…'; btn.disabled=true;
+  const res=await fetch('/api/admin/nodecast/create-user',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username:user,password:pass,xtream_url:$('f-xurl').value.trim()||'http://line.dungeoncast.cc',xtream_user:$('f-xuser').value.trim()||user,xtream_pass:$('f-xpass').value.trim()||pass,profileId:_fulfillSvc!=='stremio'?_fulfillId:null})
+  }).then(r=>r.json()).catch(e=>({error:e.message}));
+  const result=$('f-autocreate-result'); result.style.display='block';
+  if(res.error){result.textContent='✗ Error: '+res.error;result.style.color='var(--r)';btn.textContent='Retry';btn.disabled=false;}
+  else{result.textContent='✓ Account created on DungeonCast!';result.style.color='var(--g)';btn.textContent='✓ Done';btn.disabled=true;}
 }
 
 async function submitFulfill(){
-  const id=document.getElementById('fulfillId').value;
-  const account_user=document.getElementById('fulfillUser').value.trim();
-  const account_pass=document.getElementById('fulfillPass').value.trim();
-  const notes=document.getElementById('fulfillNotes').value.trim();
-  if(!account_user||!account_pass){alert('Enter both credentials');return}
-  const btn=document.getElementById('fulfillBtn');btn.textContent='Sending…';btn.disabled=true;
-  await fetch('/api/admin/redemptions/'+id+'/fulfill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account_user,account_pass,notes})});
-  closeSheet('fulfillSheet');loadRedemptions();
-  btn.textContent='Send Credentials';btn.disabled=false;
+  const user=$('f-user').value.trim(),pass=$('f-pass').value.trim();
+  if(!user||!pass){alert('Enter credentials');return}
+  const btn=$('f-btn'); btn.textContent='Sending…'; btn.disabled=true;
+  await fetch('/api/admin/redemptions/'+$('f-id').value+'/fulfill',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({account_user:user,account_pass:pass,notes:$('f-notes').value.trim(),xtream_url:$('f-xurl')?.value.trim()||'',xtream_user:$('f-xuser')?.value.trim()||'',xtream_pass:$('f-xpass')?.value.trim()||''})
+  });
+  btn.textContent='Send Credentials'; btn.disabled=false;
+  closeSheet('sh-fulfill'); loadRedem();
+}
+
+// ── Applications ──────────────────────────────────────────────────────────────
+async function loadApps(){
+  const url=_appFilter==='archived'?'/api/applicants?archived=1':_appFilter==='all'?'/api/applicants':'/api/applicants?status=pending';
+  const rows=await fetch(url).then(r=>r.json()).catch(()=>[]);
+  const el=$('appList');
+  if(!rows.length){el.innerHTML=`<div class="empty">No ${_appFilter} applications</div>`;return}
+  el.innerHTML=rows.map(r=>`
+    <div class="card">
+      <div class="cname">${r.screen_name?`<span style="color:var(--g)">@${r.screen_name}</span> — `:''} ${r.first_name} ${r.last_name} <span class="bdg bdg-${r.status==='pending'?'a':r.status==='approved'?'g':'b'}">${r.status||'pending'}</span></div>
+      <div class="cemail">${r.email}</div>
+      <div class="cmeta" style="margin-top:8px">
+        ${r.phone?`<div class="mi"><label>Phone</label><span>${r.phone}</span></div>`:''}
+        ${r.language?`<div class="mi"><label>Language</label><span>${r.language}</span></div>`:''}
+        ${r.referral?`<div class="mi"><label>Referred by</label><span>${r.referral}</span></div>`:''}
+        <div class="mi"><label>Date</label><span>${fmt(r.created_at)}</span></div>
+      </div>
+      <div class="cacts">
+        ${!r.status||r.status==='pending'?`<button class="btn bg" onclick="openGrant('${r.id}','${esc(r.first_name)}','${esc(r.last_name)}','${esc(r.email)}')">Grant Access</button><button class="btn bb" onclick="denyApp('${r.id}')">Deny</button>`:''}
+        <button class="btn bb" onclick="archiveApp('${r.id}')">Archive</button>
+        <button class="btn bb" onclick="resendAppEmail('${r.id}','${esc(r.email)}')">↺ Email</button>
+        <button class="btn br" onclick="deleteApp('${r.id}')">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function openGrant(id,fn,ln,email){
+  _grantId=id;
+  $('sh-grant-sub').innerHTML=`Grant access to <strong>${fn} ${ln}</strong> (${email})`;
+  $('g-pass').value=mkPass();$('g-apikey').value='';$('g-err').style.display='none';
+  openSheet('sh-grant');
+}
+function genPass(){$('g-pass').value=mkPass()}
+function cpPass(){navigator.clipboard.writeText($('g-pass').value).then(()=>{const btn=event.target;btn.textContent='✓';setTimeout(()=>btn.textContent='Copy',2000)})}
+
+async function submitGrant(){
+  const pass=$('g-pass').value.trim(), apikey=$('g-apikey').value.trim();
+  const err=$('g-err');
+  if(!pass){err.textContent='Password required';err.style.display='block';return}
+  const btn=event.target; btn.textContent='Granting…'; btn.disabled=true;
+  const r=await fetch(`/api/applicants/${_grantId}/promote`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:'',stremio_pass:pass,stremio_auth_key:apikey})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.textContent='Grant Access & Send Email'; btn.disabled=false;
+  if(r.error){err.textContent=r.error;err.style.display='block';return}
+  closeSheet('sh-grant'); loadAll();
+}
+async function denyApp(id){if(!confirm('Deny this application?'))return;await fetch(`/api/applicants/${id}/deny`,{method:'POST'}).catch(()=>{});loadApps()}
+async function archiveApp(id){await fetch(`/api/applicants/${id}/archive`,{method:'POST'}).catch(()=>{});loadApps()}
+async function deleteApp(id){if(!confirm('Delete this application?'))return;await fetch(`/api/applicants/${id}`,{method:'DELETE'}).catch(()=>{});loadApps()}
+async function resendAppEmail(id,email){const r=await fetch('/api/admin/resend/application/'+id,{method:'POST'});alert(r.ok?`Email sent to ${email}`:'Failed')}
+
+// ── Members ───────────────────────────────────────────────────────────────────
+let _members=[];
+async function loadMembers(){loadRoster()}
+async function loadRoster(){
+  _members=await fetch('/api/members').then(r=>r.json()).catch(()=>[]);
+  const el=$('sub-roster');
+  if(!_members.length){el.innerHTML='<div class="empty">No members yet</div>';return}
+  el.innerHTML=_members.map(m=>{
+    const tier=m.tier||'member', tc=TIERS[tier]?.c||'#60a5fa', tl=TIERS[tier]?.l||'Member';
+    return `<div class="card">
+      <div class="ctop">
+        <div class="cavatar" style="background:${m.avatar_color||'#60a5fa'}">${m.avatar_url?`<img src="${m.avatar_url}"/>`:(m.screen_name||m.first_name)[0].toUpperCase()}</div>
+        <div class="cinfo">
+          <div class="cname">${m.screen_name?`<a href="/profile.html?sn=${m.screen_name}" style="color:var(--g);text-decoration:none">@${m.screen_name}</a> — `:''} ${m.first_name} ${m.last_name}</div>
+          <div class="cemail">${m.email}</div>
+        </div>
+        <select class="tsel" onchange="changeTier('${m.profile_id_val}',this.value)">
+          ${Object.entries(TIERS).map(([k,v])=>`<option value="${k}" ${tier===k?'selected':''}>${v.l}</option>`).join('')}
+        </select>
+      </div>
+      <div class="cmeta">
+        <div class="mi"><label>Credits</label>
+          <span style="display:flex;align-items:center;gap:6px">
+            <strong style="font-size:16px;color:var(--g)">${m.credit_balance||0}</strong>
+            ${m.profile_id_val?`<button class="btn bb bsm" onclick="openCredits('${m.profile_id_val}','${esc(m.screen_name||m.first_name)}',${m.credit_balance||0})">Edit</button>`:'<span style="font-size:11px;color:var(--t3)">No profile</span>'}
+          </span>
+        </div>
+        <div class="mi"><label>Password</label>
+          <span style="display:flex;align-items:center;gap:6px">
+            <span id="mpw-${m.id}" style="font-family:monospace">••••••••</span>
+            <button class="btn bb bsm" onclick="togglePw('${m.id}','${esc(m.plain_pass||'')}')">Show</button>
+            ${m.plain_pass?`<button class="btn bb bsm" onclick="navigator.clipboard.writeText('${esc(m.plain_pass)}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>`:''}
+          </span>
+        </div>
+        ${m.stremio_end?`<div class="mi"><label>DungeonStream</label><span class="bdg ${chipClass(days(m.stremio_end))}">${chipText(days(m.stremio_end))}</span></div>`:''}
+        ${m.iptv_end?`<div class="mi"><label>DungeonCast</label><span class="bdg ${chipClass(days(m.iptv_end))}">${chipText(days(m.iptv_end))}</span></div>`:''}
+        ${m.notes?`<div class="mi" style="flex-basis:100%"><label>Notes</label><span>${m.notes}</span></div>`:''}
+        <div class="mi"><label>Since</label><span>${fmt(m.created_at)}</span></div>
+      </div>
+      <div class="cacts">
+        <button class="btn bb" onclick="openResend('${m.id}','${esc(m.first_name+' '+m.last_name)}')">↺ Welcome Email</button>
+        <button class="btn bb" onclick="openEdit('${m.id}','${esc(m.notes||'')}','${esc(m.first_name||'')}','${esc(m.last_name||'')}')">Edit</button>
+        <button class="btn br" onclick="deleteMember('${m.id}')">Remove</button>
+      </div>
+    </div>`}).join('');
+}
+
+function togglePw(id,pass){const el=$('mpw-'+id),btn=el.nextElementSibling;if(el.textContent==='••••••••'){el.textContent=pass||'(use resend to reset)';btn.textContent='Hide'}else{el.textContent='••••••••';btn.textContent='Show'}}
+function openEdit(id,notes,fn,ln){_editId=id;$('e-id').value=id;$('e-fn').value=fn;$('e-ln').value=ln;$('e-notes').value=notes;openSheet('sh-edit')}
+async function submitEdit(){
+  await fetch(`/api/members/${$('e-id').value}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({first_name:$('e-fn').value,last_name:$('e-ln').value,notes:$('e-notes').value})});
+  closeSheet('sh-edit');loadRoster();
+}
+async function deleteMember(id){if(!confirm('Remove this member?'))return;await fetch(`/api/members/${id}`,{method:'DELETE'}).catch(()=>{});loadAll()}
+async function changeTier(pid,tier){if(!pid)return;await fetch(`/api/admin/profiles/${pid}/tier`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tier})})}
+async function fixLinks(){const r=await fetch('/api/admin/fix-profile-links',{method:'POST'}).then(r=>r.json()).catch(e=>({error:e.message}));alert(r.error?'Error: '+r.error:`Fixed ${r.fixed} link(s). ${r.remaining_unlinked} still unlinked.`);loadRoster()}
+
+// Credits sub-tab
+async function loadCreditsSub(){
+  const rows=await fetch('/api/admin/credits').then(r=>r.json()).catch(()=>[]);
+  const el=$('sub-credits');
+  if(!rows.length){el.innerHTML='<div class="empty">No credit history</div>';return}
+  el.innerHTML=rows.map(r=>`<div class="card"><div class="cname">@${r.screen_name||'Unknown'} <strong style="color:var(--g);font-size:16px">${r.balance||0}</strong></div><div class="cemail">${r.email||''}</div></div>`).join('');
+}
+
+function openCredits(pid,name,bal){
+  if(!pid||pid==='undefined'){alert('This member has no profile yet — complete setup first');return}
+  _creditPid=pid;$('c-pid').value=pid;$('sh-credits-sub').textContent='@'+name;$('c-bal').textContent=bal;
+  $('c-amt').value=1;$('c-action').value='add';$('c-note').value='';openSheet('sh-credits');
+}
+async function submitCredits(){
+  const pid=$('c-pid').value;if(!pid){alert('No profile ID');return}
+  const amt=parseInt($('c-amt').value)||1,action=$('c-action').value;
+  const final=action==='remove'?-Math.abs(amt):Math.abs(amt);
+  const btn=$('c-save');btn.textContent='Saving…';btn.disabled=true;
+  const res=await fetch('/api/admin/credits/'+pid,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:final,note:$('c-note').value||'Admin'})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.textContent='Save';btn.disabled=false;
+  if(res?.error){alert('Error: '+res.error);return}
+  closeSheet('sh-credits');loadRoster();
+}
+
+// DungeonStream sub-tab
+async function loadStream(){
+  const rows=await fetch('/api/admin/stremio').then(r=>r.json()).catch(()=>[]);
+  const el=$('sub-stream');
+  if(!rows.length){el.innerHTML='<div class="empty">No DungeonStream accounts</div>';return}
+  el.innerHTML=rows.map(r=>{
+    const d=days(r.stremio_end);
+    return `<div class="card">
+      <div class="cname">${r.screen_name?`@${r.screen_name} — `:''} ${r.first_name} ${r.last_name}
+        ${r.stremio_end?`<span class="bdg ${chipClass(d)}">${chipText(d)}</span>`:`<span class="bdg bdg-b">No sub</span>`}
+      </div>
+      <div class="cemail">${r.email}</div>
+      <div class="cmeta" style="margin-top:8px">
+        ${r.stremio_email?`<div class="mi"><label>Stremio Email</label><span>${r.stremio_email}</span></div>`:''}
+        ${r.stremio_pass?`<div class="mi"><label>Password</label><span style="font-family:monospace">${r.stremio_pass}</span></div>`:''}
+        ${r.stremio_start?`<div class="mi"><label>Started</label><span>${fmt(r.stremio_start)}</span></div>`:''}
+        ${r.stremio_end?`<div class="mi"><label>Expires</label><span>${fmt(r.stremio_end)}</span></div>`:''}
+        ${r.stremio_auth_key?`<div class="mi" style="flex-basis:100%"><label>API Key</label><span style="display:flex;align-items:center;gap:6px"><span style="font-family:monospace;font-size:11px;color:var(--g)">${r.stremio_auth_key.substring(0,28)}…</span><button class="btn bb bsm" onclick="navigator.clipboard.writeText('${esc(r.stremio_auth_key)}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button></span></div>`:`<div class="mi"><label>API Key</label><span style="color:var(--t3)">Not set</span></div>`}
+      </div>
+      <div class="cacts">
+        <button class="btn bg" onclick="openStream('${r.id}','${esc(r.stremio_email||'')}','${esc(r.stremio_pass||'')}','${r.stremio_start||''}','${r.stremio_end||''}','${esc(r.stremio_auth_key||'')}')">Edit</button>
+      </div>
+    </div>`}).join('');
+}
+
+function openStream(mid,email,pass,start,end,apikey){
+  $('ds-mid').value=mid;$('ds-email').value=email;$('ds-pass').value=pass;
+  $('ds-start').value=start?start.split('T')[0]:'';$('ds-end').value=end?end.split('T')[0]:'';
+  $('ds-apikey').value=apikey;openSheet('sh-stream');
+}
+async function submitStream(){
+  const mid=$('ds-mid').value;
+  await fetch('/api/admin/stremio/'+mid,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:$('ds-email').value,stremio_pass:$('ds-pass').value,stremio_start:$('ds-start').value||null,stremio_end:$('ds-end').value||null,stremio_auth_key:$('ds-apikey').value||null})});
+  closeSheet('sh-stream');loadStream();
+}
+
+// DungeonCast sub-tab
+async function loadCast(){
+  _profiles=await fetch('/api/admin/profiles').then(r=>r.json()).catch(()=>[]);
+  const sel=$('ca-member'); sel.innerHTML='<option value="">Select member…</option>';
+  _profiles.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent='@'+p.screen_name;sel.appendChild(o)});
+  const rows=await fetch('/api/admin/iptv').then(r=>r.json()).catch(()=>[]);
+  const el=$('sub-cast');
+  const addBtn=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button class="btn bg" onclick="openCast(null)">+ Add Account</button><button class="btn ba" onclick="openSheet('sh-dcdemo');$('sh-dcdemo-sub').textContent='Send 24-hour DungeonCast demo';$('dcd-email').value='';$('dcd-user').value='';$('dcd-pass').value=''">Send Demo</button></div>`;
+  if(!rows.length){el.innerHTML=addBtn+'<div class="empty">No DungeonCast accounts yet</div>';return}
+  const sc={active:'var(--g)',pending:'var(--a)',suspended:'var(--r)'};
+  el.innerHTML=addBtn+rows.map(r=>`
+    <div class="card">
+      <div class="cname">@${r.screen_name} <span class="bdg" style="background:${sc[r.status]||'var(--t3)'}22;color:${sc[r.status]||'var(--t3)'}">${r.status}</span></div>
+      <div class="cemail">${r.email}</div>
+      <div class="cmeta" style="margin-top:8px">
+        ${r.nodecast_user?`<div class="mi"><label>DungeonCast Login</label><span>${r.nodecast_user}</span></div>`:''}
+        ${r.xtream_url?`<div class="mi"><label>Xtream URL</label><span style="font-size:11px">${r.xtream_url}</span></div>`:''}
+        ${r.notes?`<div class="mi"><label>Notes</label><span>${r.notes}</span></div>`:''}
+      </div>
+      <div class="cacts">
+        <button class="btn ba" onclick="openDCDemo('${r.profile_id}','${esc(r.screen_name)}','${esc(r.email)}')">Demo</button>
+        <button class="btn bg" onclick="openCast('${r.profile_id}')">Edit</button>
+        <button class="btn br" onclick="deleteCast('${r.profile_id}')">Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+async function openCast(pid){
+  $('sh-cast-title').textContent=pid?'Edit DungeonCast Account':'Add DungeonCast Account';
+  $('ca-pid').value=pid||'';$('ca-member').disabled=!!pid;
+  if(pid){
+    const rows=await fetch('/api/admin/iptv').then(r=>r.json()).catch(()=>[]);
+    const r=rows.find(x=>x.profile_id===pid);
+    if(r){$('ca-member').value=pid;$('ca-user').value=r.nodecast_user||'';$('ca-xurl').value=r.xtream_url||'';$('ca-xuser').value=r.xtream_user||'';$('ca-xpass').value=r.xtream_pass||'';$('ca-status').value=r.status||'active';$('ca-notes').value=r.notes||''}
+  } else {
+    $('ca-member').value='';$('ca-user').value='';$('ca-xurl').value='http://line.dungeoncast.cc';$('ca-xuser').value='';$('ca-xpass').value='';$('ca-status').value='active';$('ca-notes').value='';
+  }
+  openSheet('sh-cast');
+}
+async function submitCast(){
+  const pid=$('ca-pid').value||$('ca-member').value;if(!pid){alert('Select a member');return}
+  await fetch('/api/admin/iptv/'+pid,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nodecast_user:$('ca-user').value,xtream_url:$('ca-xurl').value,xtream_user:$('ca-xuser').value,xtream_pass:$('ca-xpass').value,status:$('ca-status').value,notes:$('ca-notes').value})});
+  closeSheet('sh-cast');loadCast();
+}
+async function deleteCast(pid){if(!confirm('Remove this account?'))return;await fetch('/api/admin/iptv/'+pid,{method:'DELETE'});loadCast()}
+
+// DC Demo
+function openDCDemo(pid,name,email){
+  $('sh-dcdemo-sub').textContent=`Sending 24-hour demo to @${name}`;
+  $('dcd-email').value=email;$('dcd-user').value='';$('dcd-pass').value='';openSheet('sh-dcdemo');
+}
+async function submitDCDemo(){
+  const email=$('dcd-email').value.trim(),user=$('dcd-user').value.trim(),pass=$('dcd-pass').value.trim();
+  if(!email||!user||!pass){alert('Fill in all fields');return}
+  const btn=event.target;btn.textContent='Sending…';btn.disabled=true;
+  const r=await fetch('/api/admin/dc-demo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,username:user,password:pass})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.textContent='Send Demo Email';btn.disabled=false;
+  if(r.error){alert('Error: '+r.error);return}
+  closeSheet('sh-dcdemo');alert('Demo email sent!');
+}
+
+// ── Subscribers ───────────────────────────────────────────────────────────────
+async function loadSubs(){
+  const members=await fetch('/api/admin/subscribers').then(r=>r.json()).catch(()=>[]);
+  const el=$('subList');let rows=[];
+  members.forEach(m=>{
+    if(m.stremio_end)rows.push({id:m.id,name:m.screen_name,email:m.email,svc:'stream',start:m.stremio_start,end:m.stremio_end,d:days(m.stremio_end),cred:m.stremio_email});
+    if(m.iptv_end)rows.push({id:m.id,name:m.screen_name,email:m.email,svc:'cast',start:m.iptv_start,end:m.iptv_end,d:days(m.iptv_end),cred:null});
+  });
+  if(_subFilter==='stream')rows=rows.filter(r=>r.svc==='stream'&&r.d>0);
+  else if(_subFilter==='cast')rows=rows.filter(r=>r.svc==='cast'&&r.d>0);
+  else if(_subFilter==='expired')rows=rows.filter(r=>r.d<=0);
+  else rows=rows.filter(r=>r.d>0);
+  rows.sort((a,b)=>new Date(a.end)-new Date(b.end));
+  if(!rows.length){el.innerHTML=`<div class="empty">No subscribers</div>`;return}
+  el.innerHTML=rows.map(r=>`
+    <div class="card">
+      <div class="cname">${r.name} <span class="bdg ${r.svc==='stream'?'bdg-blu':'bdg-g'}">${r.svc==='stream'?'📺 DungeonStream':'📡 DungeonCast'}</span> <span class="bdg ${chipClass(r.d)}">${chipText(r.d)}</span></div>
+      <div class="cemail">${r.email}</div>
+      <div class="cmeta" style="margin-top:6px">
+        <div class="mi"><label>Expires</label><span>${fmt(r.end)}</span></div>
+        ${r.cred?`<div class="mi"><label>Account</label><span>${r.cred}</span></div>`:''}
+      </div>
+      <div class="cacts">
+        <button class="btn bg" onclick="extendSub('${r.id}','${r.svc}','${r.end}')">+30 Days</button>
+      </div>
+    </div>`).join('');
+}
+
+async function extendSub(id,svc,end){
+  if(!confirm('Extend by 30 days?'))return;
+  const e=new Date(end.includes('T')||end.endsWith('Z')?end:end.replace(' ','T')+'Z');
+  const ne=new Date(Math.max(e,new Date()));ne.setMonth(ne.getMonth()+1);
+  await fetch('/api/admin/members/'+id+'/extend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:svc,new_end:ne.toISOString()})});
+  loadSubs();
 }
 
 // ── Demos ─────────────────────────────────────────────────────────────────────
-function setDemoFilter(f,el){demoFilter=f;document.querySelectorAll('#panel-demos .filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadDemosTab()}
-async function loadDemosTab(){
-  const rows=await fetch('/api/admin/demo-requests?status='+demoFilter).then(r=>r.json()).catch(()=>[]);
-  const pending=demoFilter==='pending'?rows:await fetch('/api/admin/demo-requests?status=pending').then(r=>r.json()).catch(()=>[]);
-  const b=document.getElementById('demoBadge');
-  b.textContent=pending.length?`(${pending.length})`:'';b.style.display=pending.length?'inline':'none';
-  const el=document.getElementById('demoRequestList');
-  if(!rows.length){el.innerHTML=`<div class="empty">No ${demoFilter} demo requests</div>`;return}
+async function loadDemos(){
+  const rows=await fetch('/api/admin/demo-requests?status='+_demoFilter).then(r=>r.json()).catch(()=>[]);
+  const pending=_demoFilter==='pending'?rows:await fetch('/api/admin/demo-requests?status=pending').then(r=>r.json()).catch(()=>[]);
+  const b=$('dbadge');b.textContent=pending.length?`(${pending.length})`:'';b.style.display=pending.length?'inline':'none';
+  const el=$('demoList');
+  if(!rows.length){el.innerHTML=`<div class="empty">No ${_demoFilter} demo requests</div>`;return}
   el.innerHTML=rows.map(r=>`
     <div class="card">
-      <div class="card-name">@${r.screen_name||'Unknown'} <span class="badge ${r.service==='stream'?'badge-stream':'badge-cast'}">${r.service==='stream'?'📺 DungeonStream':'📡 DungeonCast'}</span> <span class="badge badge-${r.status}">${r.status}</span></div>
-      <div class="card-email">${r.email||''}</div>
-      <div class="card-meta">
-        <div class="meta-item"><div class="meta-label">Requested</div><div class="meta-value">${fmt(r.created_at)}</div></div>
-        ${r.notes?`<div class="meta-item"><div class="meta-label">Credentials</div><div class="meta-value">${r.notes}</div></div>`:''}
-      </div>
-      <div class="card-actions">
-        ${r.status==='pending'?`<button class="btn btn-amber" style="background:var(--amber-bg);color:var(--amber)" onclick="openFulfillDemo('${r.id}','${r.service}','${esc(r.screen_name||'')}','${esc(r.email||'')}')">Fulfill</button><button class="btn btn-red" onclick="dismissDemo('${r.id}')">Dismiss</button>`:
-        `<button class="btn btn-ghost" onclick="openFulfillDemo('${r.id}','${r.service}','${esc(r.screen_name||'')}','${esc(r.email||'')}')">Resend</button>`}
+      <div class="cname">@${r.screen_name||'Unknown'} <span class="bdg ${r.service==='stream'?'bdg-blu':'bdg-g'}">${r.service==='stream'?'📺 DungeonStream':'📡 DungeonCast'}</span> <span class="bdg bdg-${r.status==='pending'?'a':r.status==='fulfilled'?'g':'b'}">${r.status}</span></div>
+      <div class="cemail">${r.email||''}</div>
+      <div class="cmeta" style="margin-top:6px"><div class="mi"><label>Requested</label><span>${fmt(r.created_at)}</span></div>${r.notes?`<div class="mi"><label>Credentials</label><span>${r.notes}</span></div>`:''}</div>
+      <div class="cacts">
+        ${r.status==='pending'?`<button class="btn ba" onclick="openFulfillDemo('${r.id}','${r.service}','${esc(r.screen_name||'')}','${esc(r.email||'')}')">Fulfill</button><button class="btn br" onclick="dismissDemo('${r.id}')">Dismiss</button>`:`<button class="btn bb" onclick="openFulfillDemo('${r.id}','${r.service}','${esc(r.screen_name||'')}','${esc(r.email||'')}')">Resend</button>`}
       </div>
     </div>`).join('');
 }
 
-function openFulfillDemo(id,service,name,email){
-  document.getElementById('fulfillDemoId').value=id;
-  document.getElementById('fulfillDemoTitle').textContent=service==='stream'?'📺 DungeonStream Demo':'📡 DungeonCast Demo';
-  document.getElementById('fulfillDemoSubtitle').textContent=`Sending demo to @${name} (${email})`;
-  document.getElementById('fulfillDemoUserLabel').textContent=service==='stream'?'DungeonStream Username':'DungeonCast Username';
-  document.getElementById('fulfillDemoUser').value='';
-  document.getElementById('fulfillDemoPass').value='';
-  openSheet('fulfillDemoSheet');
+function openFulfillDemo(id,svc,name,email){
+  _demoId=id;$('fd-id').value=id;
+  $('sh-fd-title').textContent=svc==='stream'?'📺 DungeonStream Demo':'📡 DungeonCast Demo';
+  $('sh-fd-sub').textContent=`Sending demo to @${name} (${email})`;
+  $('fd-ulbl').textContent=svc==='stream'?'DungeonStream Username':'DungeonCast Username';
+  $('fd-user').value='';$('fd-pass').value='';openSheet('sh-fulfilldemo');
 }
-
 async function submitFulfillDemo(){
-  const id=document.getElementById('fulfillDemoId').value;
-  const username=document.getElementById('fulfillDemoUser').value.trim();
-  const password=document.getElementById('fulfillDemoPass').value.trim();
-  if(!username||!password){alert('Enter both credentials');return}
-  const btn=document.getElementById('fulfillDemoBtn');btn.textContent='Sending…';btn.disabled=true;
-  const res=await fetch('/api/admin/demo-requests/'+id+'/fulfill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})}).then(r=>r.json()).catch(e=>({error:e.message}));
-  closeSheet('fulfillDemoSheet');loadDemosTab();
+  const user=$('fd-user').value.trim(),pass=$('fd-pass').value.trim();
+  if(!user||!pass){alert('Enter both credentials');return}
+  const btn=$('fd-btn');btn.textContent='Sending…';btn.disabled=true;
+  const r=await fetch('/api/admin/demo-requests/'+$('fd-id').value+'/fulfill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user,password:pass})}).then(r=>r.json()).catch(e=>({error:e.message}));
   btn.textContent='Send Demo';btn.disabled=false;
-  if(res.error)alert('Error: '+res.error);
+  closeSheet('sh-fulfilldemo');loadDemos();
+  if(r.error)alert('Error: '+r.error);
 }
-
-async function dismissDemo(id){
-  if(!confirm('Dismiss this demo request?'))return;
-  await fetch('/api/admin/demo-requests/'+id+'/dismiss',{method:'POST'});
-  loadDemosTab();
-}
+async function dismissDemo(id){if(!confirm('Dismiss this request?'))return;await fetch('/api/admin/demo-requests/'+id+'/dismiss',{method:'POST'});loadDemos()}
 
 // ── Support ───────────────────────────────────────────────────────────────────
-function setSuppFilter(f,el){suppFilter=f;document.querySelectorAll('#panel-support .filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadSupport()}
 async function loadSupport(){
-  const url=suppFilter==='all'?'/api/support':suppFilter==='resolved'?'/api/support?status=resolved':'/api/support?status=open';
+  const url=_suppFilter==='all'?'/api/support':'/api/support?status='+_suppFilter;
   const rows=await fetch(url).then(r=>r.json()).catch(()=>[]);
-  const el=document.getElementById('suppList');
+  const el=$('suppList');
   if(!rows.length){el.innerHTML='<div class="empty">All clear</div>';return}
   el.innerHTML=rows.map(r=>`
     <div class="card">
-      <div class="card-name">${r.subject||'(no subject)'} <span class="badge badge-${r.status==='resolved'?'approved':'open'}">${r.status}</span></div>
-      <div class="card-email">${r.email||''} · ${fmt(r.created_at)}</div>
-      <div style="font-size:13px;color:var(--muted2);margin-top:8px;line-height:1.6">${(r.message||'').substring(0,200)}</div>
-      <div class="card-actions">
-        ${r.status!=='resolved'?`<button class="btn btn-green" onclick="resolveSupport('${r.id}')">Resolve</button>`:`<button class="btn btn-ghost" onclick="reopenSupport('${r.id}')">Reopen</button>`}
+      <div class="cname">${r.subject||'(no subject)'} <span class="bdg bdg-${r.status==='resolved'?'g':'r'}">${r.status}</span></div>
+      <div class="cemail">${r.email||''} · ${fmt(r.created_at)}</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:8px;line-height:1.6">${(r.message||'').substring(0,200)}</div>
+      <div class="cacts">
+        ${r.status!=='resolved'?`<button class="btn bg" onclick="resolveSupport('${r.id}')">Resolve</button>`:`<button class="btn bb" onclick="reopenSupport('${r.id}')">Reopen</button>`}
       </div>
     </div>`).join('');
 }
-
 async function resolveSupport(id){await fetch('/api/support/'+id+'/resolve',{method:'POST'});loadSupport()}
 async function reopenSupport(id){await fetch('/api/support/'+id+'/reopen',{method:'POST'});loadSupport()}
 
 // ── Resend Welcome ────────────────────────────────────────────────────────────
-function openResendWelcome(memberId,name){
-  document.getElementById('resendWelcomeMemberId').value=memberId;
-  document.getElementById('resendWelcomeName').textContent=name;
-  document.getElementById('resendPassDisplay').value='';
-  openSheet('resendSheet');
-}
-
-function genResendPass(){
-  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  document.getElementById('resendPassDisplay').value=Array.from({length:8},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
-}
-
-async function submitResendWelcome(){
-  const memberId=document.getElementById('resendWelcomeMemberId').value;
-  const new_pass=document.getElementById('resendPassDisplay').value.trim();
+function openResend(id,name){_resendId=id;$('rw-id').value=id;$('sh-resend-sub').textContent=name;$('rw-pass').value='';openSheet('sh-resend')}
+async function submitResend(){
   const btn=event.target;btn.textContent='Sending…';btn.disabled=true;
-  await fetch('/api/admin/resend/welcome/'+memberId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({new_pass:new_pass||null})});
-  closeSheet('resendSheet');
-  btn.textContent='Send Email';btn.disabled=false;
+  await fetch('/api/admin/resend/welcome/'+$('rw-id').value,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({new_pass:$('rw-pass').value.trim()||null})});
+  closeSheet('sh-resend');btn.textContent='Send Email';btn.disabled=false;
 }
 
-// ── Password helpers ──────────────────────────────────────────────────────────
-function genPass(){
-  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  return Array.from({length:8},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
-}
-function regeneratePass(){document.getElementById('genPassDisplay').value=genPass()}
-function copyGenPass(){
-  const pass=document.getElementById('genPassDisplay').value;
-  if(!pass)return;
-  navigator.clipboard.writeText(pass).then(()=>{const b=document.getElementById('copyGenPass');b.textContent='✓';setTimeout(()=>b.textContent='Copy',2000)});
-}
-
-// Check if already logged in as admin
-fetch('/api/me').then(r=>r.json()).then(d=>{
-  if(d.authenticated){
-    document.getElementById('lockScreen').style.display='none';
-    document.getElementById('adminApp').classList.add('visible');
-    loadAll();
-  }
-}).catch(()=>{});
+// ── Sheets ────────────────────────────────────────────────────────────────────
+function openSheet(id){$( id).classList.add('on')}
+function closeSheet(id){$(id).classList.remove('on')}
+document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('on')})});
 </script>
 </body>
 </html>
