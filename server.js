@@ -1051,6 +1051,121 @@ app.post('/api/admin/trex/renew-line', requireAuth, async (req, res) => {
   }
 });
 
+
+// ── Nodecast API Integration ───────────────────────────────────────────────────
+const NODECAST_URL     = process.env.NODECAST_URL || 'http://150.136.222.167:3000';
+const NODECAST_ADMIN   = process.env.NODECAST_ADMIN || 'admin';
+const NODECAST_PASS    = process.env.NODECAST_PASS || '';
+const DUNGEON_API_KEY  = process.env.DUNGEON_API_KEY || 'dungeon-internal-key';
+
+async function nodeCastLogin() {
+  const http = require('http');
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({ username: NODECAST_ADMIN, password: NODECAST_PASS });
+    const opts = {
+      hostname: '150.136.222.167',
+      port: 3000,
+      path: '/api/auth/login',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+    };
+    const req = http.request(opts, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => {
+        try { resolve(JSON.parse(d)); } catch(e) { resolve({ error: d }); }
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+async function nodeCastRequest(method, path, body, token) {
+  const http = require('http');
+  return new Promise((resolve, reject) => {
+    const data = body ? JSON.stringify(body) : null;
+    const opts = {
+      hostname: '150.136.222.167',
+      port: 3000,
+      path,
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        ...(data ? { 'Content-Length': Buffer.byteLength(data) } : {})
+      }
+    };
+    const req = http.request(opts, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, body: JSON.parse(d) }); }
+        catch(e) { resolve({ status: res.statusCode, body: d }); }
+      });
+    });
+    req.on('error', reject);
+    if (data) req.write(data);
+    req.end();
+  });
+}
+
+// Admin: create a DungeonCast (Nodecast) account for a member
+app.post('/api/admin/nodecast/create-user', requireAuth, async (req, res) => {
+  const { username, password, xtream_url, xtream_user, xtream_pass, memberId, profileId } = req.body;
+  if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+
+  try {
+    // 1. Login to Nodecast
+    const loginRes = await nodeCastLogin();
+    const token = loginRes.token;
+    if (!token) return res.status(500).json({ error: 'Could not authenticate with DungeonCast: ' + (loginRes.error || JSON.stringify(loginRes)) });
+
+    // 2. Create the user
+    const userRes = await nodeCastRequest('POST', '/api/users', { username, password, role: 'viewer' }, token);
+    if (userRes.status !== 200 && userRes.status !== 201) {
+      return res.status(400).json({ error: userRes.body?.error || 'Failed to create Nodecast user', raw: userRes.body });
+    }
+    const newUser = userRes.body;
+
+    // 3. Optionally create Xtream source for this user
+    let sourceResult = null;
+    if (xtream_url && xtream_user && xtream_pass) {
+      const srcRes = await nodeCastRequest('POST', '/api/sources', {
+        type: 'xtream',
+        name: `${username}'s Source`,
+        url: xtream_url,
+        username: xtream_user,
+        password: xtream_pass
+      }, token);
+      sourceResult = srcRes.body;
+    }
+
+    // 4. Update Dungeon DB
+    if (profileId) {
+      const now = new Date();
+      const end = new Date(now); end.setMonth(end.getMonth() + 1);
+      const existing = db.prepare('SELECT * FROM iptv_accounts WHERE profile_id=?').get(profileId);
+      if (existing) {
+        db.prepare('UPDATE iptv_accounts SET nodecast_user=?, xtream_url=?, xtream_user=?, xtream_pass=?, status=? WHERE profile_id=?')
+          .run(username, xtream_url||existing.xtream_url, xtream_user||existing.xtream_user, xtream_pass||existing.xtream_pass, 'active', profileId);
+      } else {
+        db.prepare('INSERT INTO iptv_accounts (id,profile_id,nodecast_user,xtream_url,xtream_user,xtream_pass,status) VALUES (?,?,?,?,?,?,?)')
+          .run(genId(), profileId, username, xtream_url||'', xtream_user||'', xtream_pass||'', 'active');
+      }
+      if (memberId) {
+        const mNow = new Date(); const mEnd = new Date(mNow); mEnd.setMonth(mEnd.getMonth()+1);
+        db.prepare('UPDATE members SET iptv_start=?, iptv_end=? WHERE id=?').run(mNow.toISOString(), mEnd.toISOString(), memberId);
+      }
+    }
+
+    res.json({ ok: true, user: newUser, source: sourceResult });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── DungeonCast Demo ──────────────────────────────────────────────────────────
 app.post('/api/admin/dc-demo', requireAuth, async (req, res) => {
   const { email, username, password } = req.body;
