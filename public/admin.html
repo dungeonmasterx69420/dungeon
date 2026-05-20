@@ -462,6 +462,7 @@ html,body{height:100%;background:var(--bg);color:var(--t);font-family:'Inter',sa
     <div class="field"><label>Notes</label><input type="text" id="ca-notes" placeholder="Any notes…"/></div>
     <div class="sacts">
       <button class="btn bb" onclick="closeSheet('sh-cast')">Cancel</button>
+      <button class="btn br" onclick="clearCastSub()">Clear Sub Dates</button>
       <button class="btn bg" onclick="submitCast()">Save</button>
     </div>
   </div>
@@ -813,9 +814,9 @@ function openStream(mid,email,pass,start,end,apikey){
   $('ds-apikey').value=apikey;openSheet('sh-stream');
 }
 async function clearStreamSub(){
-  if(!confirm('Clear stremio_start and stremio_end for this member?'))return;
+  if(!confirm('Clear DungeonStream subscription dates for this member?'))return;
   const mid=$('ds-mid').value;
-  await fetch('/api/admin/stremio/'+mid,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:$('ds-email').value,stremio_pass:$('ds-pass').value,stremio_start:null,stremio_end:null,stremio_auth_key:$('ds-apikey').value||null,clear_dates:true})});
+  await fetch('/api/admin/members/'+mid+'/clear-sub',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:'stream'})});
   closeSheet('sh-stream');loadStream();loadSubs();
 }
 async function submitStream(){
@@ -862,6 +863,18 @@ async function openCast(pid){
     $('ca-member').value='';$('ca-user').value='';$('ca-xurl').value='http://line.dungeoncast.cc';$('ca-xuser').value='';$('ca-xpass').value='';$('ca-status').value='active';$('ca-notes').value='';
   }
   openSheet('sh-cast');
+}
+async function clearCastSub(){
+  const pid=$('ca-pid').value;
+  if(!pid){alert('No account selected');return}
+  if(!confirm('Clear iptv_start and iptv_end for this member?'))return;
+  // Find member id from profiles
+  const members=await fetch('/api/members').then(r=>r.json()).catch(()=>[]);
+  const m=members.find(m=>m.profile_id_val===pid);
+  if(m){
+    await fetch('/api/admin/members/'+m.id+'/clear-sub',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:'cast'})}).catch(()=>{});
+  }
+  closeSheet('sh-cast');loadCast();loadSubs();
 }
 async function submitCast(){
   const pid=$('ca-pid').value||$('ca-member').value;if(!pid){alert('Select a member');return}
