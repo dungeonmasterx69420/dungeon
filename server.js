@@ -1166,6 +1166,22 @@ app.post('/api/admin/nodecast/create-user', requireAuth, async (req, res) => {
   }
 });
 
+
+// Clear subscription dates for a member
+app.post('/api/admin/members/:id/clear-sub', requireAuth, (req, res) => {
+  const { service } = req.body;
+  const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.id);
+  if (!m) return res.status(404).json({ error: 'Member not found' });
+  if (service === 'cast') {
+    db.prepare('UPDATE members SET iptv_start=NULL, iptv_end=NULL WHERE id=?').run(req.params.id);
+  } else if (service === 'stream') {
+    db.prepare('UPDATE members SET stremio_start=NULL, stremio_end=NULL WHERE id=?').run(req.params.id);
+  } else {
+    db.prepare('UPDATE members SET stremio_start=NULL, stremio_end=NULL, iptv_start=NULL, iptv_end=NULL WHERE id=?').run(req.params.id);
+  }
+  res.json({ ok: true });
+});
+
 // ── DungeonCast Demo ──────────────────────────────────────────────────────────
 app.post('/api/admin/dc-demo', requireAuth, async (req, res) => {
   const { email, username, password } = req.body;
