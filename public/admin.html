@@ -543,7 +543,12 @@ function showTab(name,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   el.classList.add('on');
   $('p-'+name).classList.add('on');
-  const loaders={redemptions:loadRedem,applications:()=>loadApps(),members:loadMembers,subscribers:loadSubs,demos:loadDemos,support:loadSupport};
+  const loaders={redemptions:loadRedem,applications:()=>loadApps(),members:loadMembers,subscribers:()=>{
+    _subFilter='all';
+    document.querySelectorAll('#p-subscribers .fb').forEach(b=>b.classList.remove('on'));
+    document.querySelector('#p-subscribers .fb').classList.add('on');
+    loadSubs();
+  },demos:loadDemos,support:loadSupport};
   if(name==='applications'){_appFilter='pending';document.querySelectorAll('#p-applications .fb').forEach(b=>b.classList.remove('on'));$('af-pending')?.classList.add('on');$('appLbl').textContent='Pending Applications';}
   if(loaders[name])loaders[name]();
 }
@@ -810,7 +815,7 @@ function openStream(mid,email,pass,start,end,apikey){
 async function clearStreamSub(){
   if(!confirm('Clear stremio_start and stremio_end for this member?'))return;
   const mid=$('ds-mid').value;
-  await fetch('/api/admin/stremio/'+mid,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:$('ds-email').value,stremio_pass:$('ds-pass').value,stremio_start:null,stremio_end:null,stremio_auth_key:$('ds-apikey').value||null})});
+  await fetch('/api/admin/stremio/'+mid,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:$('ds-email').value,stremio_pass:$('ds-pass').value,stremio_start:null,stremio_end:null,stremio_auth_key:$('ds-apikey').value||null,clear_dates:true})});
   closeSheet('sh-stream');loadStream();loadSubs();
 }
 async function submitStream(){
