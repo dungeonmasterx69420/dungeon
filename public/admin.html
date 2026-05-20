@@ -389,6 +389,7 @@ html,body{height:100%;background:var(--bg);color:var(--t);font-family:'Inter',sa
     </div>
     <div class="sacts">
       <button class="btn bb" onclick="closeSheet('sh-stream')">Cancel</button>
+      <button class="btn br" onclick="clearStreamSub()">Clear Sub Dates</button>
       <button class="btn bg" onclick="submitStream()">Save</button>
     </div>
   </div>
@@ -806,6 +807,12 @@ function openStream(mid,email,pass,start,end,apikey){
   $('ds-start').value=start?start.split('T')[0]:'';$('ds-end').value=end?end.split('T')[0]:'';
   $('ds-apikey').value=apikey;openSheet('sh-stream');
 }
+async function clearStreamSub(){
+  if(!confirm('Clear stremio_start and stremio_end for this member?'))return;
+  const mid=$('ds-mid').value;
+  await fetch('/api/admin/stremio/'+mid,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:$('ds-email').value,stremio_pass:$('ds-pass').value,stremio_start:null,stremio_end:null,stremio_auth_key:$('ds-apikey').value||null})});
+  closeSheet('sh-stream');loadStream();loadSubs();
+}
 async function submitStream(){
   const mid=$('ds-mid').value;
   await fetch('/api/admin/stremio/'+mid,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:$('ds-email').value,stremio_pass:$('ds-pass').value,stremio_start:$('ds-start').value||null,stremio_end:$('ds-end').value||null,stremio_auth_key:$('ds-apikey').value||null})});
@@ -881,15 +888,15 @@ async function loadSubs(){
     if(m.stremio_end)rows.push({id:m.id,name:m.screen_name,email:m.email,svc:'stream',start:m.stremio_start,end:m.stremio_end,d:days(m.stremio_end),cred:m.stremio_email});
     if(m.iptv_end)rows.push({id:m.id,name:m.screen_name,email:m.email,svc:'cast',start:m.iptv_start,end:m.iptv_end,d:days(m.iptv_end),cred:null});
   });
-  if(_subFilter==='stream')rows=rows.filter(r=>r.svc==='stream'&&r.d>0);
-  else if(_subFilter==='cast')rows=rows.filter(r=>r.svc==='cast'&&r.d>0);
+  if(_subFilter==='stream')rows=rows.filter(r=>r.svc==='stream');
+  else if(_subFilter==='cast')rows=rows.filter(r=>r.svc==='cast');
   else if(_subFilter==='expired')rows=rows.filter(r=>r.d<=0);
   else rows=rows.filter(r=>r.d>0);
   rows.sort((a,b)=>new Date(a.end)-new Date(b.end));
   if(!rows.length){el.innerHTML=`<div class="empty">No subscribers</div>`;return}
   el.innerHTML=rows.map(r=>`
     <div class="card">
-      <div class="cname">${r.name} <span class="bdg ${r.svc==='stream'?'bdg-blu':'bdg-g'}">${r.svc==='stream'?'📺 DungeonStream':'📡 DungeonCast'}</span> <span class="bdg ${chipClass(r.d)}">${chipText(r.d)}</span></div>
+      <div class="cname">${r.name?'@'+r.name:'Unknown'} <span class="bdg ${r.svc==='stream'?'bdg-blu':'bdg-g'}">${r.svc==='stream'?'📺 DungeonStream':'📡 DungeonCast'}</span> <span class="bdg ${chipClass(r.d)}">${chipText(r.d)}</span></div>
       <div class="cemail">${r.email}</div>
       <div class="cmeta" style="margin-top:6px">
         <div class="mi"><label>Expires</label><span>${fmt(r.end)}</span></div>
