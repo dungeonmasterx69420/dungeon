@@ -364,6 +364,14 @@
     <div class="notice">Sending credentials will email the member and update their subscription.</div>
     <div class="field"><label id="fulfillUserLabel">Username / Email</label><input type="text" id="fulfillUser"/></div>
     <div class="field"><label>Password</label><input type="text" id="fulfillPass"/></div>
+    <div id="fulfillXtreamFields" style="display:none">
+      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin:4px 0 10px;padding-top:10px;border-top:1px solid var(--border)">Xtream Codes <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional — for new lines)</span></div>
+      <div class="field"><label>Xtream URL</label><input type="text" id="fulfillXtreamUrl" placeholder="http://line.dungeoncast.cc"/></div>
+      <div class="field-row">
+        <div class="field"><label>Xtream Username</label><input type="text" id="fulfillXtreamUser"/></div>
+        <div class="field"><label>Xtream Password</label><input type="text" id="fulfillXtreamPass"/></div>
+      </div>
+    </div>
     <div class="field"><label>Notes (optional)</label><input type="text" id="fulfillNotes" placeholder="Any extra info…"/></div>
     <div class="sheet-actions">
       <button class="btn btn-ghost" onclick="closeSheet('fulfillSheet')">Cancel</button>
@@ -424,6 +432,40 @@
     <div class="sheet-actions">
       <button class="btn btn-ghost" onclick="closeSheet('dcDemoSheet')">Cancel</button>
       <button class="btn btn-amber" onclick="submitDCDemo()" style="background:var(--amber-bg);color:var(--amber)">Send Demo Email</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Trex Auto-Create Sheet -->
+<div class="overlay" id="trexSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">⚡ Auto-Create DungeonCast Account</div>
+    <div class="sheet-sub">Creates the account directly on Trex and sets up the member automatically.</div>
+    <div class="field">
+      <label>Member</label>
+      <select id="trexMemberSelect"><option value="">Select member…</option></select>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Username</label><input type="text" id="trexUsername" placeholder="e.g. johnsmith"/></div>
+      <div class="field"><label>Password</label><input type="text" id="trexPassword" placeholder="e.g. pass1234"/></div>
+    </div>
+    <div class="field">
+      <label>Months</label>
+      <select id="trexMonths">
+        <option value="1">1 month</option>
+        <option value="2">2 months</option>
+        <option value="3">3 months</option>
+        <option value="6">6 months</option>
+        <option value="12">12 months</option>
+      </select>
+    </div>
+    <div id="trexResult" style="display:none;background:var(--green-bg);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--green)"></div>
+    <div id="trexError" style="display:none;background:var(--red-bg);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--red)"></div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeSheet('trexSheet')">Close</button>
+      <button class="btn btn-green" id="trexCreateBtn" onclick="submitTrexCreate()">Create Account</button>
     </div>
   </div>
 </div>
@@ -850,7 +892,7 @@ async function loadDCTab(){
   const rows=await fetch('/api/admin/iptv').then(r=>r.json()).catch(()=>[]);
   const el=document.getElementById('iptvList');
   const statusColor={active:'var(--green)',pending:'var(--amber)',suspended:'var(--red)'};
-  const addBtn=`<div style="margin-bottom:12px"><button class="btn btn-green" onclick="showAddIptv()">+ Add Account</button><button class="btn btn-ghost" style="margin-left:8px" onclick="openDCDemoManual()">Send Demo</button></div>`;
+  const addBtn=`<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-green" onclick="openTrexCreate()">⚡ Auto-Create via Trex</button><button class="btn btn-ghost" onclick="showAddIptv()">+ Manual Add</button><button class="btn btn-ghost" onclick="openDCDemoManual()">Send Demo</button></div>`;
   if(!rows.length){el.innerHTML=addBtn+'<div class="empty">No DungeonCast accounts yet</div>';return}
   el.innerHTML=addBtn+rows.map(r=>`
     <div class="card">
@@ -863,6 +905,7 @@ async function loadDCTab(){
       </div>
       <div class="card-actions">
         <button class="btn btn-amber" style="background:var(--amber-bg);color:var(--amber)" onclick="openDCDemo('${r.profile_id}','${esc(r.screen_name)}','${esc(r.email)}')">Demo</button>
+        <button class="btn btn-ghost" onclick="trexRenewLine('${esc(r.nodecast_user||'')}','${r.profile_id}')">↺ Renew</button>
         <button class="btn btn-green" onclick="editIptv('${r.profile_id}')">Edit</button>
         <button class="btn btn-red" onclick="deleteIptv('${r.profile_id}')">Remove</button>
       </div>

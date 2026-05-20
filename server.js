@@ -295,7 +295,10 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
     try { db.prepare(sql).run(); } catch(e) { /* column already exists */ }
   }
 
-  // Subscription reset removed — do not wipe subscription dates on startup
+  // Reset all existing subscriptions to null (fresh launch)
+  try {
+    db.prepare("UPDATE members SET subscription_start=NULL, subscription_end=NULL, stremio_start=NULL, stremio_end=NULL, iptv_start=NULL, iptv_end=NULL").run();
+  } catch(e) {}
 
 // ── Seed forum categories ─────────────────────────────────────────────────────
 (function seedCategories() {
@@ -948,6 +951,106 @@ app.post('/api/admin/demo-requests/:id/dismiss', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+
+// ── Trex / ActivationPanel API ────────────────────────────────────────────────
+const TREX_API_KEY = process.env.TREX_API_KEY || '';
+const TREX_BASE    = 'https://activationpanel.ru/api/resellers';
+
+async function trexRequest(endpoint, params = {}) {
+  const https = require('https');
+  const url = new URL(TREX_BASE + endpoint);
+  url.searchParams.set('api_key', TREX_API_KEY);
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+
+  return new Promise((resolve, reject) => {
+    https.get(url.toString(), res => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, body: JSON.parse(data) }); }
+        catch(e) { resolve({ status: res.statusCode, body: data }); }
+      });
+    }).on('error', reject);
+  });
+}
+
+// Create a new DungeonCast line (called during fulfill)
+async function trexCreateLine(username, password, months = 1) {
+  // Try creating the line
+  const res = await trexRequest('/lines/create', {
+    username,
+    password,
+    bouquet: '',          // leave blank for all bouquets (reseller default)
+    max_connections: 1,
+    months
+  });
+  return res;
+}
+
+// Admin: auto-create DungeonCast account via Trex
+app.post('/api/admin/trex/create-line', requireAuth, async (req, res) => {
+  const { memberId, username, password, months } = req.body;
+  if (!TREX_API_KEY) return res.status(400).json({ error: 'TREX_API_KEY not configured in environment variables.' });
+  if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+
+  try {
+    const result = await trexCreateLine(username, password, months || 1);
+    console.log('[Trex] Create line result:', JSON.stringify(result.body).substring(0, 200));
+
+    if (result.status !== 200 || result.body?.error || result.body?.status === 'error') {
+      return res.status(400).json({ error: result.body?.message || result.body?.error || 'Trex API error', raw: result.body });
+    }
+
+    // Update member iptv dates
+    if (memberId) {
+      const now = new Date();
+      const end = new Date(now); end.setMonth(end.getMonth() + (months || 1));
+      db.prepare('UPDATE members SET iptv_start=?, iptv_end=? WHERE id=?')
+        .run(now.toISOString(), end.toISOString(), memberId);
+
+      // Create/update iptv_accounts record
+      const profile = db.prepare('SELECT * FROM profiles WHERE member_id=? OR (member_id IS NULL AND LOWER(email)=LOWER((SELECT email FROM members WHERE id=?)))').get(memberId, memberId);
+      if (profile) {
+        const existing = db.prepare('SELECT * FROM iptv_accounts WHERE profile_id=?').get(profile.id);
+        if (existing) {
+          db.prepare('UPDATE iptv_accounts SET nodecast_user=?, xtream_user=?, xtream_pass=?, status=? WHERE profile_id=?')
+            .run(username, username, password, 'active', profile.id);
+        } else {
+          db.prepare('INSERT INTO iptv_accounts (id,profile_id,nodecast_user,xtream_url,xtream_user,xtream_pass,status) VALUES (?,?,?,?,?,?,?)')
+            .run(genId(), profile.id, username, 'http://line.dungeoncast.cc', username, password, 'active');
+        }
+      }
+    }
+
+    res.json({ ok: true, username, password, result: result.body });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Admin: list all lines from Trex
+app.get('/api/admin/trex/lines', requireAuth, async (req, res) => {
+  if (!TREX_API_KEY) return res.status(400).json({ error: 'TREX_API_KEY not configured' });
+  try {
+    const result = await trexRequest('/lines');
+    res.json(result.body);
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Admin: renew a line
+app.post('/api/admin/trex/renew-line', requireAuth, async (req, res) => {
+  if (!TREX_API_KEY) return res.status(400).json({ error: 'TREX_API_KEY not configured' });
+  const { username, months } = req.body;
+  try {
+    const result = await trexRequest('/lines/renew', { username, months: months || 1 });
+    res.json(result.body);
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── DungeonCast Demo ──────────────────────────────────────────────────────────
 app.post('/api/admin/dc-demo', requireAuth, async (req, res) => {
   const { email, username, password } = req.body;
@@ -1001,7 +1104,7 @@ app.get('/api/admin/redemptions', requireAuth, (req, res) => {
 
 // Fulfill a redemption (admin)
 app.post('/api/admin/redemptions/:id/fulfill', requireAuth, async (req, res) => {
-  const { account_user, account_pass, notes } = req.body;
+  const { account_user, account_pass, notes, xtream_url, xtream_user, xtream_pass } = req.body;
   const redemption = db.prepare('SELECT * FROM redemptions WHERE id=?').get(req.params.id);
   if (!redemption) return res.status(404).json({ error: 'Redemption not found' });
 
@@ -1032,11 +1135,11 @@ app.post('/api/admin/redemptions/:id/fulfill', requireAuth, async (req, res) => 
       // Update IPTV account
       const existing = db.prepare('SELECT * FROM iptv_accounts WHERE profile_id=?').get(profile.id);
       if (existing) {
-        db.prepare('UPDATE iptv_accounts SET nodecast_user=?, xtream_pass=?, status=?, updated_at=CURRENT_TIMESTAMP WHERE profile_id=?')
-          .run(account_user, account_pass, 'active', profile.id);
+        db.prepare('UPDATE iptv_accounts SET nodecast_user=?, xtream_url=?, xtream_user=?, xtream_pass=?, status=?, updated_at=CURRENT_TIMESTAMP WHERE profile_id=?')
+          .run(account_user, xtream_url||existing.xtream_url||'http://line.dungeoncast.cc', xtream_user||existing.xtream_user||account_user, xtream_pass||account_pass, 'active', profile.id);
       } else {
         db.prepare('INSERT INTO iptv_accounts (id,profile_id,nodecast_user,xtream_url,xtream_user,xtream_pass,status) VALUES (?,?,?,?,?,?,?)')
-          .run(genId(), profile.id, account_user, 'http://line.dungeoncast.cc', account_user, account_pass, 'active');
+          .run(genId(), profile.id, account_user, xtream_url||'http://line.dungeoncast.cc', xtream_user||account_user, xtream_pass||account_pass, 'active');
       }
       db.prepare('UPDATE members SET iptv_start=?, iptv_end=? WHERE id=?')
         .run(now.toISOString(), end.toISOString(), member.id);
