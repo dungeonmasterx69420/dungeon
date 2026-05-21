@@ -1124,6 +1124,7 @@ app.post('/api/admin/nodecast/create-user', requireAuth, async (req, res) => {
     if (!token) return res.status(500).json({ error: 'DungeonCast login failed: ' + JSON.stringify(loginRes) });
 
     // 2. Create the user
+    const userRes = await nodeCastRequest('POST', '/api/users', { username, password, role: 'viewer' }, token);
     console.log('[Nodecast] Create user response:', JSON.stringify(userRes).substring(0,300));
     if (userRes.status !== 200 && userRes.status !== 201) {
       const msg = typeof userRes.body === 'object' ? (userRes.body?.error || JSON.stringify(userRes.body)) : userRes.body;
