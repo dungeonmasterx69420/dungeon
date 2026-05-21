@@ -1119,13 +1119,15 @@ app.post('/api/admin/nodecast/create-user', requireAuth, async (req, res) => {
   try {
     // 1. Login to Nodecast
     const loginRes = await nodeCastLogin();
+    console.log('[Nodecast] Login response:', JSON.stringify(loginRes).substring(0,200));
     const token = loginRes.token;
-    if (!token) return res.status(500).json({ error: 'Could not authenticate with DungeonCast: ' + (loginRes.error || JSON.stringify(loginRes)) });
+    if (!token) return res.status(500).json({ error: 'DungeonCast login failed: ' + JSON.stringify(loginRes) });
 
     // 2. Create the user
-    const userRes = await nodeCastRequest('POST', '/api/users', { username, password, role: 'viewer' }, token);
+    console.log('[Nodecast] Create user response:', JSON.stringify(userRes).substring(0,300));
     if (userRes.status !== 200 && userRes.status !== 201) {
-      return res.status(400).json({ error: userRes.body?.error || 'Failed to create Nodecast user', raw: userRes.body });
+      const msg = typeof userRes.body === 'object' ? (userRes.body?.error || JSON.stringify(userRes.body)) : userRes.body;
+      return res.status(400).json({ error: 'Nodecast: ' + msg });
     }
     const newUser = userRes.body;
 
@@ -1180,6 +1182,23 @@ app.post('/api/admin/members/:id/clear-sub', requireAuth, (req, res) => {
     db.prepare('UPDATE members SET stremio_start=NULL, stremio_end=NULL, iptv_start=NULL, iptv_end=NULL WHERE id=?').run(req.params.id);
   }
   res.json({ ok: true });
+});
+
+
+// Debug: test Nodecast connection
+app.get('/api/admin/nodecast/test', requireAuth, async (req, res) => {
+  try {
+    const loginRes = await nodeCastLogin();
+    res.json({ 
+      nodecast_url: NODECAST_URL,
+      nodecast_admin: NODECAST_ADMIN,
+      nodecast_pass_length: NODECAST_PASS.length,
+      nodecast_pass_first2: NODECAST_PASS.substring(0,2),
+      login_response: loginRes
+    });
+  } catch(e) {
+    res.json({ error: e.message });
+  }
 });
 
 // ── DungeonCast Demo ──────────────────────────────────────────────────────────
