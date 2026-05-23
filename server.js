@@ -1417,10 +1417,22 @@ app.post('/api/webhook/bmac', express.raw({type:'application/json'}), (req, res)
     }
 
     const screenName = match[1].toLowerCase();
-    const profile = db.prepare("SELECT * FROM profiles WHERE LOWER(screen_name)=?").get(screenName);
+    let profile = db.prepare("SELECT * FROM profiles WHERE LOWER(screen_name)=?").get(screenName);
+
+    // Fallback: try matching by email from payload
+    if (!profile) {
+      const email = (data.supporter_email || data.email || '').toLowerCase();
+      if (email) {
+        profile = db.prepare("SELECT * FROM profiles WHERE LOWER(email)=?").get(email);
+        if (profile) console.log('[BMAC] Matched by email:', email);
+      }
+    }
+
     if (!profile) {
       console.log('[BMAC] Profile not found for:', screenName);
-      return res.json({ ok: true, note: 'Profile not found' });
+      // Log the full payload for debugging
+      console.log('[BMAC] Full payload:', JSON.stringify(payload).substring(0, 500));
+      return res.json({ ok: true, note: 'Profile not found for: ' + screenName });
     }
 
     // Add credits
