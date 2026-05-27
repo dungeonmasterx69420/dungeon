@@ -4,239 +4,221 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
   <title>Dungeon · DungeonStream</title>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
-    *{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;--amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1)}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;--amber:#fbbf24;}
     html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;display:flex;flex-direction:column}
-    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
-    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
-    .nav{display:flex;align-items:center;gap:16px}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+    .logo{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--green);text-decoration:none;letter-spacing:.04em}
+    .nav{display:flex;align-items:center;gap:12px}
     .nav a,.nav button{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color .2s}
     .nav a:hover,.nav button:hover{color:var(--text)}
-    .msg-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:var(--muted2);font-size:15px;transition:border-color .2s,color .2s}
-    .msg-icon-btn:hover{border-color:var(--green);color:var(--green)}
-    .msg-icon-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
-
-    .page{flex:1;max-width:760px;margin:0 auto;padding:48px 24px 80px;width:100%}
-    .page-title{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:14px !important;font-weight:400 !important;color:var(--text);line-height:1.8;margin-bottom:10px}
-    .page-sub{font-size:15px;color:var(--muted2);margin-bottom:32px;line-height:1.7}
-    .page-sub strong{color:var(--text)}
-
-    /* Account card */
-    .account-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:32px}
-    .account-card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
-    .status-badge{font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px}
-    .cred-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-    .cred-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
-    .cred-value{font-size:14px;color:var(--text);font-weight:500;font-family:monospace;word-break:break-all}
-    .cred-note{font-size:12px;color:var(--muted2);line-height:1.6}
-
-    /* Feature cards */
-    .features{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:32px}
-    .feature{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
-    .feature.highlight{border-color:var(--border2);background:var(--green-bg)}
-    .feature-icon{font-size:28px;margin-bottom:12px}
-    .feature-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px}
-    .feature-desc{font-size:13px;color:var(--muted2);line-height:1.65}
-
-    /* CTA */
-    .cta-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;text-align:center;margin-bottom:32px}
-    .cta-title{font-size:17px;font-weight:600;color:var(--text);margin-bottom:8px}
-    .cta-sub{font-size:13px;color:var(--muted2);margin-bottom:20px;line-height:1.7}
-    .cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-    .cta-btn{display:inline-block;padding:12px 24px;background:var(--green);border-radius:8px;color:#0b0f0e;font-size:14px;font-weight:600;text-decoration:none;transition:opacity .2s}
-    .cta-btn:hover{opacity:0.9}
-    .cta-btn.outline{background:var(--surface2);color:var(--green);border:1px solid var(--green)}
-
-    /* What's included */
-    .peek-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px}
-    .peek-label::after{content:'';flex:1;height:1px;background:var(--border)}
-    .peek-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:32px}
-    .peek-list li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--muted2);line-height:1.6}
-    .peek-list li::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:7px}
-
-    footer{text-align:center;padding:24px 0 16px;font-size:12px;color:var(--muted)}
+    .msg-btn{position:relative;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--muted2);font-size:14px;transition:border-color .2s,color .2s}
+    .msg-btn:hover{border-color:var(--green);color:var(--green)}
+    .msg-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.5}
+    .page{flex:1;max-width:700px;margin:0 auto;padding:32px 16px 60px;width:100%}
+    .page-title{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--text);margin-bottom:8px;line-height:1.8}
+    .page-sub{font-size:14px;color:var(--muted2);margin-bottom:28px;line-height:1.7}
+    .cred-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px;margin-bottom:24px}
+    .cred-card-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:16px}
+    .badge{font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px}
+    .cred-row{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px}
+    .cred-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+    .cred-val-row{display:flex;align-items:center;gap:8px}
+    .cred-val{flex:1;font-size:14px;color:var(--text);word-break:break-all}
+    .cred-val.mono{font-family:monospace;letter-spacing:.05em}
+    .copy-btn{font-size:11px;padding:4px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0}
+    .copy-btn:hover{color:var(--green);border-color:var(--green)}
+    .show-btn{font-size:11px;padding:4px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0}
+    .sub-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+    .sub-expiry{font-size:13px;color:var(--muted2)}
+    .sub-days{font-size:24px;font-weight:700}
+    .cred-note{font-size:12px;color:var(--muted2);line-height:1.6;margin-top:12px}
+    .cred-note a{color:var(--green);text-decoration:none}
+    .no-account{text-align:center;padding:8px 0 4px}
+    .no-account p{font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:14px}
+    .redeem-btn{display:inline-block;padding:10px 20px;background:var(--green);border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:700;text-decoration:none}
+    .section-head{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:28px 0 14px;display:flex;align-items:center;gap:10px}
+    .section-head::after{content:'';flex:1;height:1px;background:var(--border)}
+    .app-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px}
+    .app-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;transition:border-color .2s,background .2s}
+    .app-card:hover{border-color:var(--border2);background:var(--surface2)}
+    .app-icon{font-size:22px;flex-shrink:0;width:30px;text-align:center}
+    .app-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+    .app-platform{font-size:11px;color:var(--muted2)}
+    .app-tag{display:inline-block;font-size:9px;font-weight:600;padding:1px 6px;border-radius:10px;background:var(--green-bg);color:var(--green);margin-left:4px;vertical-align:middle}
+    .features{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
+    .feat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+    .feat-icon{font-size:22px;margin-bottom:10px}
+    .feat-title{font-size:13px;font-weight:600;margin-bottom:4px}
+    .feat-desc{font-size:12px;color:var(--muted2);line-height:1.6}
+    footer{text-align:center;padding:24px 0 8px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:center;gap:4px}
     footer a{color:var(--muted);text-decoration:none}
     footer a:hover{color:var(--text)}
-    @media(max-width:767px){.features{grid-template-columns:1fr}.page{padding:28px 14px 60px}.topbar{padding:12px 16px}.cred-grid{grid-template-columns:1fr}footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
+    .sep{color:var(--border2)}
+    @media(max-width:480px){.page{padding:20px 12px 50px}.app-grid{grid-template-columns:1fr}.features{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
 <div class="topbar">
-  <a href="/" class="logo" id="logoLink">Dungeon</a>
+  <a href="/dashboard.html" class="logo">Dungeon</a>
   <div class="nav">
     <a href="/dashboard.html">Dashboard</a>
-    <a href="/messages.html" class="msg-icon-btn" id="msgIconBtn" title="Messages">✉<span class="msg-icon-badge" id="msgIconBadge"></span></a>
+    <a href="/messages.html" class="msg-btn">✉<span class="msg-badge" id="msgBadge"></span></a>
     <button onclick="logout()">Sign out</button>
   </div>
 </div>
 
 <div class="page">
   <div class="page-title">DungeonStream</div>
-  <div class="page-sub">Stream movies, shows, and more — powered by your Dungeon membership.</div>
+  <div class="page-sub">Movies, shows, and more — powered by Jellyfin and your Dungeon membership.</div>
 
-  <!-- Account status card -->
-  <div class="account-card" id="stremioAccountCard">
-    <div class="account-card-title">
-      📺 Your DungeonStream Account
-      <span class="status-badge" id="stremioStatusBadge"></span>
-    </div>
-    <div id="credPlaceholder" style="font-size:12px;color:var(--muted2);margin-bottom:16px">Your DungeonStream credentials are shown here once the Dungeon Master activates your account.</div>
-    <div id="stremioAccountActive" style="display:none">
-      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px">
-          <div class="cred-label" style="margin-bottom:6px">Email</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span id="stremioEmail" style="flex:1;font-size:14px;color:var(--text);word-break:break-all">—</span>
-            <button id="copyEmailBtn" onclick="copyEmail()" style="font-size:11px;padding:4px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;flex-shrink:0">Copy</button>
-          </div>
-        </div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px">
-          <div class="cred-label" style="margin-bottom:6px">Password</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span id="stremioPassDisplay" style="flex:1;font-size:14px;color:var(--text);font-family:monospace;letter-spacing:0.08em">••••••••</span>
-            <button id="stremioPassToggle" onclick="toggleStremioPass()" style="font-size:11px;padding:4px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;flex-shrink:0">Show</button>
-            <button id="copyPassBtn" onclick="copyPass()" style="font-size:11px;padding:4px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap;flex-shrink:0">Copy</button>
-          </div>
-        </div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px">
-          <div class="cred-label" style="margin-bottom:4px">Subscription</div>
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <span id="stremioExpiry" style="font-size:13px;color:var(--muted2)">—</span>
-            <span id="stremioDays" style="font-size:22px;font-weight:700;color:var(--green)">—</span>
-          </div>
+  <div class="cred-card">
+    <div class="cred-card-title">📺 Your DungeonStream Account <span class="badge" id="statusBadge"></span></div>
+    <div id="credPlaceholder" style="font-size:13px;color:var(--muted2);line-height:1.6">Your DungeonStream credentials will appear here once the Dungeon Master activates your account.</div>
+    <div id="credActive" style="display:none">
+      <div class="cred-row">
+        <div class="cred-label">Server URL</div>
+        <div class="cred-val-row">
+          <span class="cred-val" id="serverUrl">https://dungeoncast.cc</span>
+          <button class="copy-btn" onclick="copyField('serverUrl',this)">Copy</button>
         </div>
       </div>
-      <div class="cred-note">Log into <a href="https://web.stremio.com" target="_blank" style="color:var(--green)">web.stremio.com</a> or the Stremio app using these credentials. Check the <a href="/guides.html" style="color:var(--green)">Guides</a> for setup help.</div>
+      <div class="cred-row">
+        <div class="cred-label">Username</div>
+        <div class="cred-val-row">
+          <span class="cred-val" id="jellyfinUser">—</span>
+          <button class="copy-btn" onclick="copyField('jellyfinUser',this)">Copy</button>
+        </div>
+      </div>
+      <div class="cred-row">
+        <div class="cred-label">Password</div>
+        <div class="cred-val-row">
+          <span class="cred-val mono" id="jellyfinPassDisplay">••••••••</span>
+          <button class="show-btn" id="passToggle" onclick="togglePass()">Show</button>
+          <button class="copy-btn" id="copyPassBtn" onclick="copyPass()">Copy</button>
+        </div>
+      </div>
+      <div class="cred-row">
+        <div class="cred-label">Subscription</div>
+        <div class="sub-row">
+          <span class="sub-expiry" id="subExpiry">—</span>
+          <span class="sub-days" id="subDays">—</span>
+        </div>
+      </div>
+      <div class="cred-note">Use your Server URL, username and password to log into any Jellyfin app below. Check the <a href="/guides.html">Guides</a> for device-specific setup help.</div>
     </div>
-    <div id="stremioAccountNone" style="display:none">
-      <div style="font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:16px">You don't have an active DungeonStream subscription yet. Redeem 1 credit to get started — the Dungeon Master will set up your account within 24 hours.</div>
-      <a href="/redeem.html" style="display:inline-block;padding:9px 18px;background:var(--green);border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:600;text-decoration:none">Redeem a Credit</a>
+    <div id="credNone" style="display:none">
+      <div class="no-account">
+        <p>You don't have an active DungeonStream subscription yet.<br>Redeem 1 credit to get started.</p>
+        <a href="/redeem.html" class="redeem-btn">Redeem a Credit</a>
+      </div>
     </div>
   </div>
 
-  <!-- Features -->
+  <div class="section-head">Get the App</div>
+  <div class="app-grid">
+    <a class="app-card" href="https://apps.apple.com/app/jellyfin-mobile/id1480192618" target="_blank" rel="noopener">
+      <div class="app-icon">📱</div>
+      <div><div class="app-name">Jellyfin <span class="app-tag">Official</span></div><div class="app-platform">iPhone & iPad</div></div>
+    </a>
+    <a class="app-card" href="https://play.google.com/store/apps/details?id=org.jellyfin.mobile" target="_blank" rel="noopener">
+      <div class="app-icon">📱</div>
+      <div><div class="app-name">Jellyfin <span class="app-tag">Official</span></div><div class="app-platform">Android Phone & Tablet</div></div>
+    </a>
+    <a class="app-card" href="https://play.google.com/store/apps/details?id=dev.lonami.moonfin" target="_blank" rel="noopener">
+      <div class="app-icon">🌙</div>
+      <div><div class="app-name">Moonfin <span class="app-tag">Recommended</span></div><div class="app-platform">Android TV & Fire TV</div></div>
+    </a>
+    <a class="app-card" href="https://play.google.com/store/apps/details?id=com.damontecres.Wholphin" target="_blank" rel="noopener">
+      <div class="app-icon">🐬</div>
+      <div><div class="app-name">Wholphin</div><div class="app-platform">Android TV & Fire TV</div></div>
+    </a>
+    <a class="app-card" href="https://apps.apple.com/app/infuse-7/id1136220934" target="_blank" rel="noopener">
+      <div class="app-icon">🔥</div>
+      <div><div class="app-name">Infuse <span class="app-tag">Recommended</span></div><div class="app-platform">Apple TV & iPhone</div></div>
+    </a>
+    <a class="app-card" href="https://github.com/jellyfin/jellyfin-media-player/releases/latest" target="_blank" rel="noopener">
+      <div class="app-icon">💻</div>
+      <div><div class="app-name">Jellyfin Media Player</div><div class="app-platform">Windows & Mac</div></div>
+    </a>
+    <a class="app-card" href="https://www.amazon.com/Jellyfin/dp/B081RFTTQ9" target="_blank" rel="noopener">
+      <div class="app-icon">🔥</div>
+      <div><div class="app-name">Jellyfin <span class="app-tag">Official</span></div><div class="app-platform">Amazon Fire TV</div></div>
+    </a>
+    <a class="app-card" href="https://dungeoncast.cc" target="_blank" rel="noopener">
+      <div class="app-icon">🌐</div>
+      <div><div class="app-name">Web Browser</div><div class="app-platform">Any device</div></div>
+    </a>
+  </div>
+
+  <div class="section-head">What's Included</div>
   <div class="features">
-    <div class="feature highlight">
-      <div class="feature-icon">🎬</div>
-      <div class="feature-title">Movies &amp; Shows</div>
-      <div class="feature-desc">Access a massive library of movies and TV series from every genre, updated constantly.</div>
-    </div>
-    <div class="feature highlight">
-      <div class="feature-icon">📱</div>
-      <div class="feature-title">Any Device</div>
-      <div class="feature-desc">Works on iPhone, Android, Windows, Mac, Smart TV, Fire Stick, and Apple TV.</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">🔗</div>
-      <div class="feature-title">Addons</div>
-      <div class="feature-desc">Powerful addons are pre-configured on your account — just log in and start watching.</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">💳</div>
-      <div class="feature-title">1 Credit / Month</div>
-      <div class="feature-desc">1 credit gets you a full month of access. Credits never expire.</div>
-    </div>
-  </div>
-
-  <div class="peek-label">What's Included</div>
-  <ul class="peek-list">
-    <li>Full access to movies and TV shows across all genres</li>
-    <li>Pre-configured addons — no setup required on your end</li>
-    <li>Works on web, mobile, desktop, and TV devices</li>
-    <li>4K and 1080p streams available depending on content</li>
-    <li>Multiple device support — watch on any screen</li>
-    <li>Your own personal DungeonStream account with dedicated credentials</li>
-  </ul>
-
-  <div class="cta-card">
-    <div class="cta-title">Ready to Watch?</div>
-    <div class="cta-sub">Redeem a credit to activate your DungeonStream account, or open the app if you're already set up.</div>
-    <div class="cta-btns">
-      <a href="https://web.stremio.com" target="_blank" rel="noopener" class="cta-btn">Open DungeonStream ↗</a>
-      <a href="/redeem.html" class="cta-btn outline">Redeem a Credit</a>
-    </div>
+    <div class="feat"><div class="feat-icon">🎬</div><div class="feat-title">Movies & Shows</div><div class="feat-desc">Massive library across every genre, updated constantly.</div></div>
+    <div class="feat"><div class="feat-icon">📺</div><div class="feat-title">Any Device</div><div class="feat-desc">iPhone, Android, Windows, Mac, Smart TV, Fire Stick, Apple TV and more.</div></div>
+    <div class="feat"><div class="feat-icon">🔑</div><div class="feat-title">Your Own Account</div><div class="feat-desc">Personal Jellyfin login with dedicated credentials just for you.</div></div>
+    <div class="feat"><div class="feat-icon">💳</div><div class="feat-title">1 Credit / Month</div><div class="feat-desc">1 credit gets you a full month. Credits never expire.</div></div>
   </div>
 
   <footer id="pageFooter">
-    <a href="/messages.html">Messages</a>
-    &nbsp;·&nbsp;
-    <a href="/profile.html">My Profile</a>
-    &nbsp;·&nbsp;
-    <a href="/directory.html">Directory</a>
-    &nbsp;·&nbsp;
-    <a href="/forum.html">Forum</a>
-    &nbsp;·&nbsp;
-    <a href="/dashboard.html">Dashboard</a>
+    <a href="/dashboard.html">Dashboard</a><span class="sep">·</span>
+    <a href="/messages.html">Messages</a><span class="sep">·</span>
+    <a href="/profile.html">My Profile</a><span class="sep">·</span>
+    <a href="/guides.html">Guides</a><span class="sep">·</span>
+    <a href="/redeem.html">Credits</a>
   </footer>
 </div>
 
 <script>
-  let stremioPassRaw = '';
+  let passRaw = '';
 
-  function toggleStremioPass() {
-    const el = document.getElementById('stremioPassDisplay');
-    const btn = document.getElementById('stremioPassToggle');
-    if (el.textContent === '••••••••') {
-      el.textContent = stremioPassRaw;
-      btn.textContent = 'Hide';
-    } else {
-      el.textContent = '••••••••';
-      btn.textContent = 'Show';
-    }
+  function togglePass() {
+    const el = document.getElementById('jellyfinPassDisplay');
+    const btn = document.getElementById('passToggle');
+    if (el.textContent === '••••••••') { el.textContent = passRaw; btn.textContent = 'Hide'; }
+    else { el.textContent = '••••••••'; btn.textContent = 'Show'; }
   }
 
-  function copyEmail() {
-    const text = document.getElementById('stremioEmail').textContent;
+  function copyField(id, btn) {
+    const text = document.getElementById(id).textContent;
     navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById('copyEmailBtn');
-      btn.textContent = '✓';
-      setTimeout(() => btn.textContent = 'Copy', 2000);
+      const t = btn.textContent; btn.textContent = '✓';
+      setTimeout(() => btn.textContent = t, 2000);
     });
   }
 
   function copyPass() {
-    navigator.clipboard.writeText(stremioPassRaw).then(() => {
+    navigator.clipboard.writeText(passRaw).then(() => {
       const btn = document.getElementById('copyPassBtn');
-      btn.textContent = '✓';
-      setTimeout(() => btn.textContent = 'Copy', 2000);
+      btn.textContent = '✓'; setTimeout(() => btn.textContent = 'Copy', 2000);
     });
   }
 
   fetch('/api/member/me').then(r => r.json()).then(d => {
     if (!d.authenticated) { window.location.href = '/login.html'; return; }
     const m = d.member;
-
-    // Footer / nav
-    const logo = document.getElementById('logoLink');
-    if (logo) logo.href = '/dashboard.html';
-    loadFooter(m?.profile?.tier);
     loadMsgBadge();
+    loadFooter(m?.profile?.tier);
 
-    const badge = document.getElementById('stremioStatusBadge');
+    const badge = document.getElementById('statusBadge');
+    const user = m.jellyfin_user || m.stremio_email;
+    const pass = m.jellyfin_pass || m.stremio_pass;
 
-    if (m && m.stremio_email) {
-      // Show credentials
+    if (user) {
       document.getElementById('credPlaceholder').style.display = 'none';
-      document.getElementById('stremioAccountActive').style.display = 'block';
+      document.getElementById('credActive').style.display = 'block';
+      document.getElementById('jellyfinUser').textContent = user;
+      passRaw = pass || '';
 
-      document.getElementById('stremioEmail').textContent = m.stremio_email;
-      stremioPassRaw = m.stremio_pass || '';
-
-      // Subscription dates
       if (m.stremio_end) {
         let dt = m.stremio_end;
-        if (!dt.endsWith('Z') && !dt.includes('+')) dt = dt.replace(' ', 'T') + 'Z';
+        if (!dt.endsWith('Z') && !dt.includes('+')) dt = dt.replace(' ','T') + 'Z';
         const expDate = new Date(dt);
         const days = Math.ceil((expDate - new Date()) / 86400000);
-        document.getElementById('stremioExpiry').textContent = 'Expires ' + expDate.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
-        const dEl = document.getElementById('stremioDays');
+        document.getElementById('subExpiry').textContent = 'Expires ' + expDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        const dEl = document.getElementById('subDays');
         dEl.textContent = days > 0 ? days + 'd left' : 'Expired';
         dEl.style.color = days > 7 ? 'var(--green)' : days > 0 ? 'var(--amber)' : 'var(--red)';
         badge.textContent = days > 0 ? 'Active' : 'Expired';
@@ -248,7 +230,7 @@
         badge.style.color = 'var(--green)';
       }
     } else {
-      document.getElementById('stremioAccountNone').style.display = 'block';
+      document.getElementById('credNone').style.display = 'block';
       badge.textContent = 'No Account';
       badge.style.background = 'rgba(148,163,160,0.1)';
       badge.style.color = 'var(--muted2)';
@@ -260,16 +242,15 @@
     if (!footer || !tier) return;
     if (['mod','admin','warden'].includes(tier)) {
       const span = document.createElement('span');
-      let extra = ' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
-      if (['admin','warden'].includes(tier)) extra += ' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
-      span.innerHTML = extra;
-      footer.appendChild(span);
+      let extra = '<span class="sep">·</span><a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
+      if (['admin','warden'].includes(tier)) extra += '<span class="sep">·</span><a href="/admin.html" style="color:var(--red)">Admin</a>';
+      span.innerHTML = extra; footer.appendChild(span);
     }
   }
 
   async function loadMsgBadge() {
     const d = await fetch('/api/messages/unread').then(r => r.json()).catch(() => ({count:0}));
-    const b = document.getElementById('msgIconBadge');
+    const b = document.getElementById('msgBadge');
     if (b && d.count > 0) { b.textContent = d.count; b.style.display = 'block'; }
   }
 
