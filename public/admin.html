@@ -291,13 +291,7 @@ html,body{height:100%;background:var(--bg);color:var(--t);font-family:'Inter',sa
         <button class="btn bb bsm" onclick="cpPass()">Copy</button>
       </div>
     </div>
-    <div class="field">
-      <label>DungeonStream API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)">(optional)</span></label>
-      <div class="passrow">
-        <input type="text" id="g-apikey" placeholder="Paste from get-stremio-key.js…" style="font-family:monospace;font-size:12px"/>
-        <button class="btn bb bsm" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('g-apikey').value=t}).catch(()=>{})">Paste</button>
-      </div>
-    </div>
+
     <div style="color:var(--r);font-size:12px;display:none;margin-bottom:8px" id="g-err"></div>
     <div class="sacts">
       <button class="btn bb" onclick="closeSheet('sh-grant')">Cancel</button>
@@ -374,19 +368,13 @@ html,body{height:100%;background:var(--bg);color:var(--t);font-family:'Inter',sa
     <div class="shandle"></div>
     <div class="stitle">Edit DungeonStream Account</div>
     <input type="hidden" id="ds-mid"/>
-    <div class="field"><label>Stremio Email</label><input type="text" id="ds-email"/></div>
+    <div class="field"><label>Jellyfin Username</label><input type="text" id="ds-email"/></div>
     <div class="field"><label>Password</label><input type="text" id="ds-pass"/></div>
     <div class="frow">
       <div class="field"><label>Start Date</label><input type="date" id="ds-start"/></div>
       <div class="field"><label>End Date</label><input type="date" id="ds-end"/></div>
     </div>
-    <div class="field">
-      <label>API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)">(AIOManager)</span></label>
-      <div class="passrow">
-        <input type="text" id="ds-apikey" style="font-family:monospace;font-size:12px"/>
-        <button class="btn bb bsm" onclick="navigator.clipboard.readText().then(t=>{document.getElementById('ds-apikey').value=t}).catch(()=>{})">Paste</button>
-      </div>
-    </div>
+
     <div class="sacts">
       <button class="btn bb" onclick="closeSheet('sh-stream')">Cancel</button>
       <button class="btn br" onclick="clearStreamSub()">Clear Sub Dates</button>
@@ -515,6 +503,13 @@ function days(dt){if(!dt)return-999;try{let s=dt;if(!s.endsWith('Z')&&!s.include
 function esc(s){return(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}
 function mkPass(){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';return Array.from({length:8},()=>c[Math.floor(Math.random()*c.length)]).join('')}
 function chipClass(d){return d>7?'bdg-g':d>0?'bdg-a':'bdg-r'}
+function formatDevices(devStr){
+  try{
+    const d=typeof devStr==='string'?JSON.parse(devStr):devStr;
+    const icons={iphone:'iPhone',android_phone:'Android',ipad:'iPad',android_tablet:'Android Tab',windows:'Windows',mac:'Mac',linux:'Linux',chromebook:'Chromebook',firestick:'Fire Stick',android_tv:'Android TV',apple_tv:'Apple TV',roku:'Roku',smart_tv:'Smart TV',chromecast:'Chromecast',nvidia_shield:'Shield',ps4:'PS4',ps5:'PS5',xbox:'Xbox'};
+    return Object.values(d).flat().filter(v=>!v.startsWith('no_')).map(v=>icons[v]||v).join(' · ')||'None';
+  }catch{return'—'}
+}
 function chipText(d){return d>0?d+'d left':'Expired'}
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -544,7 +539,7 @@ function showTab(name,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   el.classList.add('on');
   $('p-'+name).classList.add('on');
-  const loaders={redemptions:loadRedem,applications:()=>loadApps(),members:loadMembers,subscribers:loadSubs,demos:loadDemos,support:loadSupport};
+  const loaders={redemptions:loadRedem,applications:()=>loadApps(),members:loadMembers,subscribers:()=>{_subFilter='all';document.querySelectorAll('#p-subscribers .fb').forEach(b=>b.classList.remove('on'));document.querySelector('#p-subscribers .fb').classList.add('on');loadSubs();},demos:loadDemos,support:loadSupport};
   if(name==='applications'){_appFilter='pending';document.querySelectorAll('#p-applications .fb').forEach(b=>b.classList.remove('on'));$('af-pending')?.classList.add('on');$('appLbl').textContent='Pending Applications';}
   if(loaders[name])loaders[name]();
 }
@@ -614,7 +609,7 @@ function openFulfill(id,svc,name,profileId){
   $('f-id').value=id;$('f-svc').value=svc;
   $('sh-fulfill-title').textContent=svc==='stremio'?'📺 Fulfill DungeonStream':'📡 Fulfill DungeonCast';
   $('sh-fulfill-sub').textContent=`Setting up account for @${name}`;
-  $('f-user-lbl').textContent=svc==='stremio'?'Stremio Email':'DungeonCast Username';
+  $('f-user-lbl').textContent=svc==='stremio'?'Jellyfin Username':'DungeonCast Username';
   $('f-user').value='';$('f-pass').value='';$('f-notes').value='';
   $('f-xtream').style.display=svc==='stremio'?'none':'block';
   $('f-autocreate').style.display=svc==='stremio'?'none':'block';
@@ -688,7 +683,7 @@ async function submitGrant(){
   const err=$('g-err');
   if(!pass){err.textContent='Password required';err.style.display='block';return}
   const btn=event.target; btn.textContent='Granting…'; btn.disabled=true;
-  const r=await fetch(`/api/applicants/${_grantId}/promote`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:'',stremio_pass:pass,stremio_auth_key:apikey})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  const r=await fetch(`/api/applicants/${_grantId}/promote`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:'',stremio_pass:pass})}).then(r=>r.json()).catch(e=>({error:e.message}));
   btn.textContent='Grant Access & Send Email'; btn.disabled=false;
   if(r.error){err.textContent=r.error;err.style.display='block';return}
   closeSheet('sh-grant'); loadAll();
@@ -735,6 +730,7 @@ async function loadRoster(){
         ${m.stremio_end?`<div class="mi"><label>DungeonStream</label><span class="bdg ${chipClass(days(m.stremio_end))}">${chipText(days(m.stremio_end))}</span></div>`:''}
         ${m.iptv_end?`<div class="mi"><label>DungeonCast</label><span class="bdg ${chipClass(days(m.iptv_end))}">${chipText(days(m.iptv_end))}</span></div>`:''}
         ${m.notes?`<div class="mi" style="flex-basis:100%"><label>Notes</label><span>${m.notes}</span></div>`:''}
+        ${m.devices?`<div class="mi" style="flex-basis:100%"><label>Devices</label><span style="font-size:11px;color:var(--t2)">${formatDevices(m.devices)}</span></div>`:''}
         <div class="mi"><label>Since</label><span>${fmt(m.created_at)}</span></div>
       </div>
       <div class="cacts">
@@ -792,11 +788,11 @@ async function loadStream(){
       </div>
       <div class="cemail">${r.email}</div>
       <div class="cmeta" style="margin-top:8px">
-        ${r.stremio_email?`<div class="mi"><label>Stremio Email</label><span>${r.stremio_email}</span></div>`:''}
+        ${r.stremio_email?`<div class="mi"><label>Jellyfin Username</label><span>${r.stremio_email}</span></div>`:''}
         ${r.stremio_pass?`<div class="mi"><label>Password</label><span style="font-family:monospace">${r.stremio_pass}</span></div>`:''}
         ${r.stremio_start?`<div class="mi"><label>Started</label><span>${fmt(r.stremio_start)}</span></div>`:''}
         ${r.stremio_end?`<div class="mi"><label>Expires</label><span>${fmt(r.stremio_end)}</span></div>`:''}
-        ${r.stremio_auth_key?`<div class="mi" style="flex-basis:100%"><label>API Key</label><span style="display:flex;align-items:center;gap:6px"><span style="font-family:monospace;font-size:11px;color:var(--g)">${r.stremio_auth_key.substring(0,28)}…</span><button class="btn bb bsm" onclick="navigator.clipboard.writeText('${esc(r.stremio_auth_key)}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button></span></div>`:`<div class="mi"><label>API Key</label><span style="color:var(--t3)">Not set</span></div>`}
+
       </div>
       <div class="cacts">
         <button class="btn bg" onclick="openStream('${r.id}','${esc(r.stremio_email||'')}','${esc(r.stremio_pass||'')}','${r.stremio_start||''}','${r.stremio_end||''}','${esc(r.stremio_auth_key||'')}')">Edit</button>
@@ -817,7 +813,7 @@ async function clearStreamSub(){
 }
 async function submitStream(){
   const mid=$('ds-mid').value;
-  await fetch('/api/admin/stremio/'+mid,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:$('ds-email').value,stremio_pass:$('ds-pass').value,stremio_start:$('ds-start').value||null,stremio_end:$('ds-end').value||null,stremio_auth_key:$('ds-apikey').value||null})});
+  await fetch('/api/admin/stremio/'+mid,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_email:$('ds-email').value,stremio_pass:$('ds-pass').value,stremio_start:$('ds-start').value||null,stremio_end:$('ds-end').value||null})});
   closeSheet('sh-stream');loadStream();
 }
 
