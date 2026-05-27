@@ -544,12 +544,7 @@ function showTab(name,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   el.classList.add('on');
   $('p-'+name).classList.add('on');
-  const loaders={redemptions:loadRedem,applications:()=>loadApps(),members:loadMembers,subscribers:()=>{
-    _subFilter='all';
-    document.querySelectorAll('#p-subscribers .fb').forEach(b=>b.classList.remove('on'));
-    document.querySelector('#p-subscribers .fb').classList.add('on');
-    loadSubs();
-  },demos:loadDemos,support:loadSupport};
+  const loaders={redemptions:loadRedem,applications:()=>loadApps(),members:loadMembers,subscribers:loadSubs,demos:loadDemos,support:loadSupport};
   if(name==='applications'){_appFilter='pending';document.querySelectorAll('#p-applications .fb').forEach(b=>b.classList.remove('on'));$('af-pending')?.classList.add('on');$('appLbl').textContent='Pending Applications';}
   if(loaders[name])loaders[name]();
 }
@@ -567,6 +562,7 @@ function showSub(name,el){
 function setFilter(type,val,el){
   const map={redem:'_redemFilter',app:'_appFilter',sub:'_subFilter',demo:'_demoFilter',supp:'_suppFilter'};
   window[map[type]]=val;
+  if(type==='sub'){_subFilter=val;console.log('subFilter set to:',_subFilter);}
   const panel={redem:'p-redemptions',app:'p-applications',sub:'p-subscribers',demo:'p-demos',supp:'p-support'}[type];
   document.querySelectorAll('#'+panel+' .fb').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
@@ -906,6 +902,7 @@ async function loadSubs(){
     if(m.stremio_end)rows.push({id:m.id,name:m.screen_name,email:m.email,svc:'stream',start:m.stremio_start,end:m.stremio_end,d:days(m.stremio_end),cred:m.stremio_email});
     if(m.iptv_end)rows.push({id:m.id,name:m.screen_name,email:m.email,svc:'cast',start:m.iptv_start,end:m.iptv_end,d:days(m.iptv_end),cred:null});
   });
+  console.log('subFilter:',_subFilter,'rows before filter:',rows.map(r=>r.name+'/'+r.svc));
   if(_subFilter==='stream')rows=rows.filter(r=>r.svc==='stream');
   else if(_subFilter==='cast')rows=rows.filter(r=>r.svc==='cast');
   else if(_subFilter==='expired')rows=rows.filter(r=>r.d<=0);
