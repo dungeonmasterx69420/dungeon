@@ -1217,12 +1217,12 @@ app.post('/api/admin/dc-demo', requireAuth, async (req, res) => {
     <div class="rule"></div>
     <p>You've been granted a <strong>24-hour demo</strong> of DungeonCast — our live TV streaming service with hundreds of channels including sports, news, entertainment, and Formula 1.</p>
     <div class="box">
-      <div class="row"><span class="lbl">URL</span><span class="val">http://dungeoncast.cc</span></div>
+      <div class="row"><span class="lbl">URL</span><span class="val">https://dungeoncast.cc</span></div>
       <div class="row"><span class="lbl">Username</span><span class="val">${username}</span></div>
       <div class="row"><span class="lbl">Password</span><span class="val">${password}</span></div>
       <div class="row"><span class="lbl">Expires</span><span class="val">${fmtExpiry}</span></div>
     </div>
-    <p>Open <a href="http://dungeoncast.cc" style="color:#34d399">dungeoncast.cc</a> in your browser and sign in with the credentials above. On iPhone, use Safari for the best experience.</p>
+    <p>Open <a href="https://dungeoncast.cc" style="color:#34d399">dungeoncast.cc</a> in your browser and sign in with the credentials above. On iPhone, use Safari for the best experience.</p>
     <p>If you enjoy the service, you can get full access through Dungeon — 1 credit per month.</p>
     <a href="https://enterdungeon.cc" class="btn">Learn More</a>
     <div class="rule"></div>
@@ -1305,7 +1305,7 @@ app.post('/api/admin/redemptions/:id/fulfill', requireAuth, async (req, res) => 
 
   if (warden && profile) {
     const content = redemption.service === 'stremio'
-      ? `Your DungeonStream account has been set up.\n\nEmail: ${account_user}\nPassword: ${account_pass}\n\nLog in at web.stremio.com using these credentials.\n\nCheck out the Guides on your dashboard for setup help on all devices.${notes ? '\n\nNotes: ' + notes : ''}`
+      ? `Your DungeonStream account has been set up.\n\nServer: https://dungeoncast.cc\nUsername: ${account_user}\nPassword: ${account_pass}\n\nDownload the Jellyfin app and use these credentials to sign in. Check the Guides on your dashboard for device-specific setup help.${notes ? '\n\nNotes: ' + notes : ''}`
       : `Your DungeonCast account has been set up.\n\nUsername: ${account_user}\nPassword: ${account_pass}\n\nLog in at http://dungeoncast.cc${notes ? '\n\nNotes: ' + notes : ''}`;
     db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
       .run(genId(), warden.id, profile.id, subject, content);
@@ -1318,12 +1318,13 @@ app.post('/api/admin/redemptions/:id/fulfill', requireAuth, async (req, res) => 
       <div class="rule"></div>
       <p>Your DungeonStream account has been set up and is ready to use.</p>
       <div class="box">
-        <div class="row"><span class="lbl">Email</span><span class="val">${account_user}</span></div>
+        <div class="row"><span class="lbl">Server URL</span><span class="val">https://dungeoncast.cc</span></div>
+        <div class="row"><span class="lbl">Username</span><span class="val">${account_user}</span></div>
         <div class="row"><span class="lbl">Password</span><span class="val">${account_pass}</span></div>
       </div>
-      <p>Log in at <a href="https://web.stremio.com" style="color:#34d399">web.stremio.com</a> or download the Stremio app and use these credentials to sign in.${notes ? '<br><br>Notes: ' + notes : ''}</p>
+      <p>Download the Jellyfin app on your device and use the Server URL, username and password above to sign in.${notes ? '<br><br>Notes: ' + notes : ''}</p>
       <p>Check out the <a href="https://enterdungeon.cc/guides.html" style="color:#34d399">Setup Guides</a> on your dashboard for step-by-step instructions on every device.</p>
-      <a href="https://web.stremio.com" class="btn">Open DungeonStream</a>
+      <a href="https://enterdungeon.cc/dungeonstream.html" class="btn">Go to DungeonStream</a>
       <div class="rule"></div>
       <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. — The Dungeon Master</p>
     ` : `
@@ -1333,10 +1334,10 @@ app.post('/api/admin/redemptions/:id/fulfill', requireAuth, async (req, res) => 
       <div class="box">
         <div class="row"><span class="lbl">Username</span><span class="val">${account_user}</span></div>
         <div class="row"><span class="lbl">Password</span><span class="val">${account_pass}</span></div>
-        <div class="row"><span class="lbl">URL</span><span class="val">http://dungeoncast.cc</span></div>
+        <div class="row"><span class="lbl">URL</span><span class="val">https://dungeoncast.cc</span></div>
       </div>
-      <p>Open <a href="http://dungeoncast.cc" style="color:#34d399">dungeoncast.cc</a> in your browser and sign in with the credentials above.${notes ? '<br><br>Notes: ' + notes : ''}</p>
-      <a href="http://dungeoncast.cc" class="btn">Open DungeonCast</a>
+      <p>Open <a href="https://dungeoncast.cc" style="color:#34d399">dungeoncast.cc</a> in your browser and sign in with the credentials above.${notes ? '<br><br>Notes: ' + notes : ''}</p>
+      <a href="https://dungeoncast.cc" class="btn">Open DungeonCast</a>
       <div class="rule"></div>
       <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. — The Dungeon Master</p>
     `);
