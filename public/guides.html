@@ -369,5 +369,35 @@
     &nbsp;·&nbsp;
     <a href="/dashboard.html">Dashboard</a>
   </footer>
+
+<script>
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{if(!d.authenticated)window.location.href='/login.html'});
+  
+  function toggleGuide(id){document.getElementById('guide-'+id).classList.toggle('open')}
+
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if(!d.authenticated) return;
+    const tier = d.member?.profile?.tier;
+    const footer = document.getElementById('pageFooter');
+    if(!footer) return;
+    if(['mod','admin','warden'].includes(tier)){
+      const span=document.createElement('span');
+      let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
+      if(['admin','warden'].includes(tier)) extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
+      span.innerHTML=extra;
+      footer.appendChild(span);
+    }
+  }).catch(()=>{});
+
+  (function(){
+    fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
+      const badge = document.getElementById('msgIconBadge');
+      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
+    }).catch(()=>{});
+  })();
+
+  async function doSignOut(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
+</script>
+
 </body>
 </html>
