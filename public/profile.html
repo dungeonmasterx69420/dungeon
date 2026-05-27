@@ -51,12 +51,16 @@
     footer a{color:var(--muted);text-decoration:none}
     footer a:hover{color:var(--text)}
     @media(max-width:767px){footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
+
+    .msg-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:var(--muted2);font-size:15px;transition:border-color .2s,color .2s;cursor:pointer}
+    .msg-icon-btn:hover{border-color:var(--green);color:var(--green)}
+    .msg-icon-badge{position:absolute;top:-5px;right:-5px;background:var(--red,#f87171);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
   </style>
   <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
 </head>
 <body>
 <div class="topbar">
-  <a href="/" class="logo">Dungeon</a>
+  <a href="/" class="logo" id="logoLink">Dungeon</a>
   <a href="/directory.html" class="back-link">Directory</a>
 </div>
 <div class="page">
@@ -72,7 +76,7 @@
     member: { label:'Member',    color:'#60a5fa' },
     mod:    { label:'Moderator', color:'#34d399' },
     admin:  { label:'Admin',     color:'#f87171' },
-    warden: { label:'Warden',    color:'#fbbf24' },
+    warden: { label:'Dungeon Master',    color:'#fbbf24' },
   };
 
   const params = new URLSearchParams(window.location.search);
@@ -160,16 +164,34 @@
       span.style.whiteSpace='nowrap';
       let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
       if(['admin','warden'].includes(tier)){
-        extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Warden</a>';
+        extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
       }
       span.innerHTML=extra;
       footer.appendChild(span);
     } else if(['admin','warden'].includes(tier)){
       const span=document.createElement('span');
-      span.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Warden</a>';
+      span.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
       footer.appendChild(span);
     }
   }).catch(()=>{});
+
+  // Message unread badge in topbar
+  (function(){
+    fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
+      const badge = document.getElementById('msgIconBadge');
+      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
+    }).catch(()=>{});
+  })();
+
+  // Smart logo link — go to dashboard if logged in, home if not
+  (function(){
+    fetch('/api/member/me').then(r=>r.json()).then(d=>{
+      const logo = document.getElementById('logoLink');
+      if(logo && d.authenticated) logo.href = '/dashboard.html';
+    }).catch(()=>{});
+  })();
+
+  async function doSignOut(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
 </script>
 
   <footer id="pageFooter">
@@ -179,7 +201,7 @@
     &nbsp;·&nbsp;
     <a href="/forum.html">Forum</a>
     &nbsp;·&nbsp;
-    <a href="/dashboard.html">Members</a>
+    <a href="/dashboard.html">Dashboard</a>
   </footer>
 </body>
 </html>

@@ -82,7 +82,12 @@
 </head>
 <body>
 <div class="topbar">
-  <a href="/" class="logo" id="logoLink">Dungeon</a>
+  <a href="/dashboard.html" class="logo" id="logoLink">Dungeon</a>
+  <div style="display:flex;align-items:center;gap:12px">
+    <a href="/dashboard.html" style="font-size:13px;color:var(--muted,#6b8f7a);text-decoration:none;font-weight:500">Dashboard</a>
+    <a href="/messages.html" style="font-size:13px;color:var(--muted,#6b8f7a);text-decoration:none;font-weight:500">Messages</a>
+    <button onclick="doSignOut()" style="font-size:13px;color:var(--muted,#6b8f7a);background:none;border:none;cursor:pointer;font-family:Inter,sans-serif;font-weight:500">Sign out</button>
+  </div>
 </div>
 <div class="page">
   <div class="page-title">Setup Guides</div>
@@ -92,89 +97,78 @@
 
   <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);letter-spacing:0.06em;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)">📺 DungeonStream</div>
 
-  <!-- How to Watch -->
-  <div class="guide" id="guide-watch">
-    <div class="guide-header" onclick="toggleGuide('watch')">
-      <div class="guide-icon">🎬</div>
+  <!-- Getting Started -->
+  <div class="guide" id="guide-start">
+    <div class="guide-header" onclick="toggleGuide('start')">
+      <div class="guide-icon">🚀</div>
       <div class="guide-head-text">
         <div class="guide-tag">All Devices</div>
-        <div class="guide-name">How to Watch</div>
-        <div class="guide-desc">Finding shows, picking the right stream, and what to click</div>
+        <div class="guide-name">Getting Started</div>
+        <div class="guide-desc">Your server URL, username and password — and how to use them</div>
       </div>
       <div class="guide-chevron">▼</div>
     </div>
     <div class="guide-body">
-
-      <div class="guide-section-label">Step 1 — Search &amp; Open a Title</div>
+      <div class="guide-section-label">Your Credentials</div>
       <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Go to <a href="https://web.stremio.com" target="_blank">web.stremio.com</a> and sign in with your credentials.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">Use the <strong>search bar</strong> to find a movie or show. Tap or click on the result to open its detail page — you'll see a summary, cast, and ratings.</div></li>
-        <li><div class="step-num">3</div><div class="step-text">For TV shows, tap the <strong>season selector</strong> in the middle of the screen to choose the season you want to watch. Then scroll down and select an episode.<div class="step-note">The season selector looks like a pill button that says "Season 1", "Season 2" etc. Tap it to open a dropdown with all available seasons.</div></div></li>
+        <li><div class="step-num">1</div><div class="step-text">Go to your <a href="/dungeonstream.html"><strong>DungeonStream page</strong></a> to find your credentials — Server URL, Username, and Password.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">You'll need all three to log into Jellyfin on any device. The Server URL is always <strong>https://dungeoncast.cc</strong>.</div></li>
+        <li><div class="step-num">3</div><div class="step-text">Download the right app for your device from the list below, then enter your credentials when prompted.<div class="step-note">Your DungeonStream credentials are different from your Dungeon login. Use your Dungeon login (email + password) only on enterdungeon.cc.</div></div></li>
       </ul>
-
-      <div class="guide-section-label">Step 2 — Picking a Stream</div>
+      <div class="guide-section-label">How to Watch</div>
       <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Once you tap an episode or movie, Stremio shows a list of available streams. Each row shows the <strong>source</strong> on the left and <strong>file details</strong> on the right — resolution, size, audio format, and language flags.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">The entries labeled <strong>[TB⚡] StremThru Torz</strong> are your primary streams — these are the ones connected to your Dungeon account. Always choose one of these.<div class="step-note">Look for [TB⚡] on the left side of each row. These are pre-cached and ready to play instantly.</div></div></li>
-        <li><div class="step-num">3</div><div class="step-text">Tap the stream you want to play. The first stream in the list is usually the highest quality — but read on before picking 4K.</div></li>
+        <li><div class="step-num">1</div><div class="step-text">Once signed in, browse <strong>Movies</strong> or <strong>Shows</strong> from the home screen. Search using the magnifying glass icon.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Tap a title to open it, then press <strong>Play</strong>. If multiple versions are available, the app will pick the best one automatically.</div></li>
+        <li><div class="step-num">3</div><div class="step-text">For TV shows, select the season and episode from the episode list below the title.</div></li>
       </ul>
-
-      <div class="guide-section-label">Choosing the Right Quality</div>
-      <ul class="steps">
-        <li>
-          <div class="step-num">!</div>
-          <div class="step-text">
-            <strong>On mobile — start with 1080p, not 4K.</strong>
-            <div class="step-note" style="background:rgba(251,191,36,0.08);border-left-color:var(--amber,#fbbf24);margin-top:8px">
-              Most phone screens cap out at 1080p — even high-end phones rarely render 4K video correctly. More importantly, 4K (2160p) files are enormous — often 14–181 GB — and require significantly more processing power and bandwidth to decode. On mobile these streams frequently stutter, buffer, or refuse to play entirely. Start with a <strong>1080p</strong> stream and only try 4K if you're casting to a capable TV.
-            </div>
-          </div>
-        </li>
-        <li><div class="step-num">1</div><div class="step-text">Look at the resolution label on the left side of each stream row. You'll see <strong>2160p</strong> (4K) and <strong>1080p</strong> options. On mobile, scroll past the 2160p entries and pick the first <strong>1080p</strong> one.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">On the right side of each row you'll see the <strong>file size</strong> — something like <strong>1.72 GB</strong> or <strong>2.35 GB</strong>. A 1080p WEB-DL around 1–3 GB is ideal for mobile — fast to start and smooth to play.</div></li>
-        <li><div class="step-num">3</div><div class="step-text">If you see <strong>BluRay REMUX</strong> or sizes like 16 GB, 58 GB, or 181 GB — those are archival-quality files for home theater setups. Skip these on mobile and on slower internet connections.</div></li>
-        <li><div class="step-num">4</div><div class="step-text">The <strong>flag icons</strong> at the bottom of each row show available subtitle/audio languages. 🇬🇧 = English. Look for English if you need subtitles or dubbed audio.</div></li>
-      </ul>
-
-      <div class="guide-section-label">Quick Reference</div>
-      <ul class="steps">
-        <li><div class="step-num">✓</div><div class="step-text"><strong>Good on mobile:</strong> 1080p · WEB-DL · 1–4 GB · 🇬🇧 flag</div></li>
-        <li><div class="step-num">✓</div><div class="step-text"><strong>Good on TV / desktop:</strong> 2160p · BluRay · any size</div></li>
-        <li><div class="step-num">✗</div><div class="step-text"><strong>Avoid on mobile:</strong> 2160p · BluRay REMUX · 14 GB+ files</div></li>
-      </ul>
-
-      <div class="tech-block">
-        <div class="tech-label">If a stream won't play or buffers</div>
-        <div class="tech-text">Go back and try a different stream — pick one with a smaller file size or lower resolution. If nothing plays, the content may not be cached yet. Wait a few minutes and try again, or try a WEB-DL version instead of BluRay.</div>
-      </div>
-
     </div>
   </div>
 
-  <!-- iOS -->
+  <!-- iPhone & iPad -->
   <div class="guide" id="guide-ios">
     <div class="guide-header" onclick="toggleGuide('ios')">
       <div class="guide-icon">📱</div>
       <div class="guide-head-text">
         <div class="guide-tag">iPhone &amp; iPad</div>
         <div class="guide-name">iOS Setup</div>
-        <div class="guide-desc">Add to home screen + Outplayer for playback</div>
+        <div class="guide-desc">Jellyfin app or Infuse for the best experience</div>
       </div>
       <div class="guide-chevron">▼</div>
     </div>
     <div class="guide-body">
-      <div class="guide-section-label">Standard Method</div>
+      <div class="guide-section-label">Option 1 — Jellyfin App (Free)</div>
       <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Open <strong>Safari</strong> on your device and go to <a href="https://web.stremio.com" target="_blank">web.stremio.com</a>.<div class="step-note">Must use Safari — other browsers don't support Add to Home Screen.</div></div></li>
-        <li><div class="step-num">2</div><div class="step-text">Tap the <strong>Share icon</strong> at the bottom of the screen, then tap <strong>Add to Home Screen</strong>. Name it "DungeonStream" and tap Add.</div></li>
-        <li><div class="step-num">3</div><div class="step-text">Open the app from your home screen and <strong>sign in</strong> with your DungeonStream credentials. Signing in ensures your addons and settings sync properly.</div></li>
-        <li><div class="step-num">4</div><div class="step-text">Go to the <strong>App Store</strong> and download <a href="https://apps.apple.com/us/app/outplayer/id1449923287" target="_blank"><strong>Outplayer</strong></a> — it's free. This lets Stremio open stream links in a proper video player.</div></li>
-        <li><div class="step-num">5</div><div class="step-text">In DungeonStream, go to <strong>Settings → Advanced</strong> and set the external player to <strong>Outplayer</strong>.<div class="step-note">Once set, tapping any stream will open automatically in Outplayer. Alternatively, <a href="https://apps.apple.com/us/app/vlc-media-player/id650377962" target="_blank">VLC for iOS</a> also works well as a free option.</div></div></li>
+        <li><div class="step-num">1</div><div class="step-text">Download <strong>Jellyfin</strong> from the <a href="https://apps.apple.com/app/jellyfin-mobile/id1480192618" target="_blank">App Store</a>.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Open the app and tap <strong>Add Server</strong>. Enter <strong>https://dungeoncast.cc</strong> as the server URL.</div></li>
+        <li><div class="step-num">3</div><div class="step-text">Sign in with your DungeonStream username and password.</div></li>
       </ul>
-      <div class="tech-block">
-        <div class="tech-label">For Advanced Users — Sideload the Full App</div>
-        <div class="tech-text">The official Stremio IPA is available at <a href="https://www.stremio.com/downloads" target="_blank">stremio.com/downloads</a>. Use <strong>AltStore</strong> or <strong>Sideloadly</strong> to install it — no jailbreak required. Free Apple IDs require re-signing every 7 days. On iOS 14–17, <strong>TrollStore</strong> installs it permanently.</div>
+      <div class="guide-section-label">Option 2 — Infuse (Recommended)</div>
+      <ul class="steps">
+        <li><div class="step-num">1</div><div class="step-text">Download <strong>Infuse</strong> from the <a href="https://apps.apple.com/app/infuse-7/id1136220934" target="_blank">App Store</a>. The free version works great.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Go to <strong>Settings → Add Files → Jellyfin</strong>. Enter <strong>https://dungeoncast.cc</strong> and your credentials.</div></li>
+        <li><div class="step-num">3</div><div class="step-text">Infuse has a better UI and handles more formats natively without transcoding — great for 4K content.</div></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Android -->
+  <div class="guide" id="guide-android">
+    <div class="guide-header" onclick="toggleGuide('android')">
+      <div class="guide-icon">🤖</div>
+      <div class="guide-head-text">
+        <div class="guide-tag">Android Phone &amp; Tablet</div>
+        <div class="guide-name">Android Setup</div>
+        <div class="guide-desc">Official Jellyfin app from the Play Store</div>
       </div>
+      <div class="guide-chevron">▼</div>
+    </div>
+    <div class="guide-body">
+      <div class="guide-section-label">Setup</div>
+      <ul class="steps">
+        <li><div class="step-num">1</div><div class="step-text">Download <strong>Jellyfin</strong> from the <a href="https://play.google.com/store/apps/details?id=org.jellyfin.mobile" target="_blank">Google Play Store</a>.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Open the app and tap <strong>Add Server</strong>. Enter <strong>https://dungeoncast.cc</strong>.</div></li>
+        <li><div class="step-num">3</div><div class="step-text">Sign in with your DungeonStream username and password.</div></li>
+      </ul>
     </div>
   </div>
 
@@ -185,22 +179,26 @@
       <div class="guide-head-text">
         <div class="guide-tag">Fire TV · Android TV · Google TV</div>
         <div class="guide-name">TV Setup</div>
-        <div class="guide-desc">App store or sideload via Downloader</div>
+        <div class="guide-desc">Moonfin or Wholphin for the best TV experience</div>
       </div>
       <div class="guide-chevron">▼</div>
     </div>
     <div class="guide-body">
-      <div class="guide-section-label">Try the App Store First</div>
+      <div class="guide-section-label">Option 1 — Moonfin (Recommended)</div>
       <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Open the <strong>App Store / Play Store / Amazon Appstore</strong> on your TV and search for <strong>DungeonStream</strong>. If it appears, install it and you're done.<div class="step-note">Stremio is available on some Fire TV and Android TV devices. Try this first before using Downloader.</div></div></li>
+        <li><div class="step-num">1</div><div class="step-text">Download <strong>Moonfin</strong> from the <a href="https://play.google.com/store/apps/details?id=dev.lonami.moonfin" target="_blank">Play Store</a> or Amazon Appstore. Works on Fire Stick, Android TV, and Google TV.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Open the app and add a server. Enter <strong>https://dungeoncast.cc</strong> and your credentials.</div></li>
+        <li><div class="step-num">3</div><div class="step-text">Moonfin has a polished TV interface with remote navigation built in.</div></li>
       </ul>
-      <div class="guide-section-label">If Not in the Store — Use Downloader</div>
+      <div class="guide-section-label">Option 2 — Wholphin</div>
       <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Install the <strong>Downloader</strong> app by AFTVnews from your TV's app store. It's free and available on Fire TV and Android TV.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">Enable unknown app installs. On <strong>Fire TV</strong>: Settings → My Fire TV → Developer Options → Install Unknown Apps → enable Downloader. On <strong>Android TV</strong>: Settings → Apps → Downloader → enable Unknown Sources.</div></li>
-        <li><div class="step-num">3</div><div class="step-text">Open <strong>Downloader</strong>, select the URL field, and type <strong>stremio.com</strong>, then press Go. This loads Stremio's official download page.<div class="step-note">Always use the official site — it's the safest source for the APK.</div></div></li>
-        <li><div class="step-num">4</div><div class="step-text">Tap <strong>Download</strong> for Android TV / Fire TV. Once downloaded, tap <strong>Install</strong>.</div></li>
-        <li><div class="step-num">5</div><div class="step-text">Open DungeonStream and <strong>sign in</strong> with your credentials. You can scan the QR code on screen with your phone to log in quickly.</div></li>
+        <li><div class="step-num">1</div><div class="step-text">Download <strong>Wholphin</strong> from the <a href="https://play.google.com/store/apps/details?id=com.damontecres.Wholphin" target="_blank">Play Store</a>. Another great option for Android TV and Fire TV.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Add your server at <strong>https://dungeoncast.cc</strong> and sign in.</div></li>
+      </ul>
+      <div class="guide-section-label">Option 3 — Official Jellyfin (Fire TV)</div>
+      <ul class="steps">
+        <li><div class="step-num">1</div><div class="step-text">Search for <strong>Jellyfin</strong> in the Amazon Appstore on your Fire Stick and install it.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Add server <strong>https://dungeoncast.cc</strong> and sign in with your credentials.</div></li>
       </ul>
     </div>
   </div>
@@ -212,110 +210,56 @@
       <div class="guide-head-text">
         <div class="guide-tag">Windows &amp; Mac</div>
         <div class="guide-name">Desktop Setup</div>
-        <div class="guide-desc">Download the app or use Stremio in your browser</div>
+        <div class="guide-desc">Jellyfin Media Player or use your browser</div>
       </div>
       <div class="guide-chevron">▼</div>
     </div>
     <div class="guide-body">
-      <div class="guide-section-label">Option 1 — Download the Desktop App (Recommended)</div>
+      <div class="guide-section-label">Option 1 — Jellyfin Media Player (Recommended)</div>
       <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Go to <a href="https://www.stremio.com/downloads" target="_blank">stremio.com/downloads</a> and download the version for your OS — Windows or macOS.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">Run the installer and open Stremio once it's done.</div></li>
-        <li><div class="step-num">3</div><div class="step-text"><strong>Sign in</strong> with your DungeonStream credentials. Your addons and library sync automatically.</div></li>
+        <li><div class="step-num">1</div><div class="step-text">Download <strong>Jellyfin Media Player</strong> from <a href="https://github.com/jellyfin/jellyfin-media-player/releases/latest" target="_blank">GitHub</a>. Available for Windows and Mac.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Install and open it. Add server <strong>https://dungeoncast.cc</strong> and sign in.</div></li>
+        <li><div class="step-num">3</div><div class="step-text">Jellyfin Media Player uses MPV under the hood — it handles 4K and HDR content natively without transcoding.</div></li>
       </ul>
-      <div class="guide-section-label">Option 2 — Use DungeonStream (No Install)</div>
+      <div class="guide-section-label">Option 2 — Web Browser (No Install)</div>
       <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Open any browser and go to <a href="https://web.stremio.com" target="_blank">web.stremio.com</a>.</div></li>
-        <li><div class="step-num">2</div><div class="step-text"><strong>Sign in</strong> with your credentials — everything works the same as the desktop app, right in your browser. No download needed.</div></li>
+        <li><div class="step-num">1</div><div class="step-text">Open any browser and go to <a href="https://dungeoncast.cc" target="_blank"><strong>dungeoncast.cc</strong></a>.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Sign in with your DungeonStream username and password. Everything works right in the browser.</div></li>
       </ul>
       <div class="tech-block">
         <div class="tech-label">Which should I use?</div>
-        <div class="tech-text">The desktop app handles high-quality streams more reliably. The web version is great if you're on a work computer or don't want to install anything.</div>
+        <div class="tech-text">Jellyfin Media Player handles high-quality streams more reliably and supports 4K without transcoding. The web browser is great if you're on a shared computer or don't want to install anything.</div>
       </div>
     </div>
   </div>
 
-  <!-- Android -->
-  <div class="guide" id="guide-android" style="margin-top:10px">
-    <div class="guide-header" onclick="toggleGuide('android')">
-      <div class="guide-icon">🤖</div>
+  <!-- Apple TV -->
+  <div class="guide" id="guide-appletv">
+    <div class="guide-header" onclick="toggleGuide('appletv')">
+      <div class="guide-icon">🍎</div>
       <div class="guide-head-text">
-        <div class="guide-tag">Android Phone &amp; Tablet</div>
-        <div class="guide-name">Android Setup</div>
-        <div class="guide-desc">Play Store app or add web app to home screen</div>
+        <div class="guide-tag">Apple TV</div>
+        <div class="guide-name">Apple TV Setup</div>
+        <div class="guide-desc">Infuse is the best option for Apple TV</div>
       </div>
       <div class="guide-chevron">▼</div>
     </div>
     <div class="guide-body">
-      <div class="guide-section-label">Option 1 — Download from the Play Store (Recommended)</div>
+      <div class="guide-section-label">Setup with Infuse</div>
       <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Open the <strong>Google Play Store</strong> and search for <strong>DungeonStream</strong>. Look for the official app — it has a purple icon with a white streaming logo.
-          <div class="step-note" style="margin-top:10px;display:flex;align-items:center;gap:14px">
-            <img src="https://www.stremio.com/website/stremio-logo.png" alt="Stremio icon" style="width:52px;height:52px;border-radius:12px;flex-shrink:0;"/>
-            <span>This is the Stremio icon — make sure you're downloading the right app.</span>
-          </div>
-        </div></li>
-        <li><div class="step-num">2</div><div class="step-text">Tap <strong>Install</strong> and open the app once it's downloaded.</div></li>
-        <li><div class="step-num">3</div><div class="step-text"><strong>Sign in</strong> with your DungeonStream credentials. Your addons and library sync automatically.</div></li>
+        <li><div class="step-num">1</div><div class="step-text">Download <strong>Infuse</strong> from the Apple TV App Store. The free version supports Jellyfin.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Go to <strong>Settings → Add Files → Jellyfin</strong>. Enter <strong>https://dungeoncast.cc</strong> and your DungeonStream credentials.</div></li>
+        <li><div class="step-num">3</div><div class="step-text">Infuse handles 4K HDR and Dolby Vision natively — no transcoding needed.</div></li>
       </ul>
-      <div class="guide-section-label">Option 2 — Add DungeonStream to Home Screen</div>
+      <div class="guide-section-label">Alternative — Official Jellyfin</div>
       <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Open <strong>Chrome</strong> on your Android device and go to <a href="https://web.stremio.com" target="_blank">web.stremio.com</a>. Sign in with your credentials.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">Tap the <strong>three-dot menu</strong> (⋮) in the top-right corner of Chrome, then tap <strong>Add to Home screen</strong>.</div></li>
-        <li><div class="step-num">3</div><div class="step-text">Name it "DungeonStream" and tap <strong>Add</strong>. It opens full-screen like a native app.</div></li>
-        <li><div class="step-num">4</div><div class="step-text">For the best playback, go to <strong>Settings → Advanced</strong> inside DungeonStream and set an external player like <a href="https://play.google.com/store/apps/details?id=com.mxtech.videoplayer.ad" target="_blank"><strong>MX Player</strong></a> or <a href="https://play.google.com/store/apps/details?id=org.videolan.vlc" target="_blank"><strong>VLC</strong></a>.<div class="step-note">Both are free on the Play Store. MX Player handles the most formats.</div></div></li>
+        <li><div class="step-num">1</div><div class="step-text">Search for <strong>Jellyfin</strong> in the tvOS App Store and install it.</div></li>
+        <li><div class="step-num">2</div><div class="step-text">Add server <strong>https://dungeoncast.cc</strong> and sign in.</div></li>
       </ul>
     </div>
   </div>
 
-</div>
-<script>
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{if(!d.authenticated)window.location.href='/login.html'});
-  function toggleGuide(id){document.getElementById('guide-'+id).classList.toggle('open')}
-
-
-  // Dynamic footer links based on tier
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{
-    if(!d.authenticated) return;
-    const tier = d.member?.profile?.tier;
-    const footer = document.getElementById('pageFooter');
-    if(!footer) return;
-    if(['mod','admin','warden'].includes(tier)){
-      const span=document.createElement('span');
-      span.style.whiteSpace='nowrap';
-      let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
-      if(['admin','warden'].includes(tier)){
-        extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
-      }
-      span.innerHTML=extra;
-      footer.appendChild(span);
-    } else if(['admin','warden'].includes(tier)){
-      const span=document.createElement('span');
-      span.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
-      footer.appendChild(span);
-    }
-  }).catch(()=>{});
-
-  // Message unread badge in topbar
-  (function(){
-    fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
-      const badge = document.getElementById('msgIconBadge');
-      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
-    }).catch(()=>{});
-  })();
-
-  // Smart logo link — go to dashboard if logged in, home if not
-  (function(){
-    fetch('/api/member/me').then(r=>r.json()).then(d=>{
-      const logo = document.getElementById('logoLink');
-      if(logo && d.authenticated) logo.href = '/dashboard.html';
-    }).catch(()=>{});
-  })();
-</script>
-
-
-
-  <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);letter-spacing:0.06em;margin:32px 0 16px;padding-bottom:10px;border-bottom:1px solid var(--border)">📡 DungeonCast</div>
+<div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);letter-spacing:0.06em;margin:32px 0 16px;padding-bottom:10px;border-bottom:1px solid var(--border)">📡 DungeonCast</div>
 
   <!-- DungeonCast Web -->
   <div class="guide" id="guide-dc-web">
