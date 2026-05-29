@@ -756,12 +756,23 @@ app.post('/api/applicants/:id/promote', requireAuth, async (req, res) => {
     if (prof) db.prepare("UPDATE profiles SET tier='warden' WHERE id=?").run(prof.id);
   }
 
+  // Auto-create Jellyfin account
+  try {
+    const profile2 = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(memberId);
+    const screenName = profile2?.screen_name || applicant.first_name;
+    const jellyfinUser = screenName.toLowerCase().replace(/[^a-z0-9_]/g,'_').substring(0,20);
+    const jellyfinPass = stremio_pass || genId().substring(0,10);
+    const jfRes = await jellyfinCreateUser(jellyfinUser, jellyfinPass);
+    if (jfRes && (jfRes.status === 200 || jfRes.status === 201)) {
+      try { db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=? WHERE id=?').run(jellyfinUser, jellyfinPass, memberId); } catch(e) {}
+      console.log('[Jellyfin] Auto-created user:', jellyfinUser);
+    } else {
+      console.log('[Jellyfin] Failed to create user:', JSON.stringify(jfRes)?.substring(0,200));
+    }
+  } catch(e) { console.error('[Jellyfin] Auto-create error:', e.message); }
+
   await sendMail(applicant.email, 'Welcome to Dungeon', emailWelcome(applicant.first_name, applicant.screen_name||applicant.first_name, applicant.email, stremio_pass||'', ''));
   res.json({ ok: true });
-  // Store auth key if provided
-  if (stremio_auth_key) {
-    try { db.prepare('UPDATE members SET stremio_auth_key=? WHERE id=?').run(stremio_auth_key, memberId); } catch(e) {}
-  }
 
   } catch(e) { console.error('Promote error:', e); res.status(500).json({ error: e.message }); }
 });
