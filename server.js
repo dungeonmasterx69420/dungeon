@@ -336,6 +336,48 @@ runSubscriptionCron();
 setInterval(runSubscriptionCron, 60 * 60 * 1000);
 
 // ── Middleware ────────────────────────────────────────────────────────────────
+
+// ── Jellyfin Integration ────────────────────────────────────────────────────
+const JELLYFIN_URL = process.env.JELLYFIN_URL || 'https://dungeoncast.cc';
+const JELLYFIN_API_KEY = process.env.JELLYFIN_API_KEY || '';
+
+async function jellyfinCreateUser(username, password) {
+  if (!JELLYFIN_API_KEY) { console.log('[Jellyfin] No API key set'); return null; }
+  try {
+    const https = require('https');
+    const body = JSON.stringify({ Name: username, Password: password });
+    return await new Promise((resolve, reject) => {
+      const url = new URL(JELLYFIN_URL + '/Users/New');
+      const opts = {
+        hostname: url.hostname,
+        port: 443,
+        path: '/Users/New',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Emby-Authorization': 'MediaBrowser Token="' + JELLYFIN_API_KEY + '"',
+          'Content-Length': Buffer.byteLength(body)
+        }
+      };
+      const req = https.request(opts, res => {
+        let d = '';
+        res.on('data', c => d += c);
+        res.on('end', () => {
+          try { resolve({ status: res.statusCode, body: JSON.parse(d) }); }
+          catch(e) { resolve({ status: res.statusCode, body: d }); }
+        });
+      });
+      req.on('error', reject);
+      req.write(body);
+      req.end();
+    });
+  } catch(e) {
+    console.error('[Jellyfin] Create user error:', e.message);
+    return null;
+  }
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
