@@ -672,14 +672,14 @@ async function loadApps(){
 function openGrant(id,fn,ln,email){
   _grantId=id;
   $('sh-grant-sub').innerHTML=`Grant access to <strong>${fn} ${ln}</strong> (${email})`;
-  $('g-pass').value=mkPass();$('g-apikey').value='';$('g-err').style.display='none';
+  $('g-pass').value=mkPass();$('g-err').style.display='none';
   openSheet('sh-grant');
 }
 function genPass(){$('g-pass').value=mkPass()}
 function cpPass(){navigator.clipboard.writeText($('g-pass').value).then(()=>{const btn=event.target;btn.textContent='✓';setTimeout(()=>btn.textContent='Copy',2000)})}
 
 async function submitGrant(){
-  const pass=$('g-pass').value.trim(), apikey=$('g-apikey').value.trim();
+  const pass=$('g-pass').value.trim();
   const err=$('g-err');
   if(!pass){err.textContent='Password required';err.style.display='block';return}
   const btn=event.target; btn.textContent='Granting…'; btn.disabled=true;
