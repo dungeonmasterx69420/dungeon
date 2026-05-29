@@ -786,10 +786,18 @@ app.post('/api/applicants/:id/promote', requireAuth, async (req, res) => {
     db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(profile.id, memberId);
   } else {
     // Create profile if it didn't exist yet
-    const profileId = genId();
-    db.prepare(`INSERT INTO profiles (id, screen_name, email, avatar_color, tier, applicant_id, member_id) VALUES (?,?,?,?,'member',?,?)`)
-      .run(profileId, applicant.screen_name || applicant.first_name, applicant.email, avatarColors(), applicant.id, memberId);
-    db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(profileId, memberId);
+    // Check if profile exists by email
+    let existingProfile = db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(applicant.email);
+    if (existingProfile) {
+      db.prepare("UPDATE profiles SET tier='member', member_id=?, applicant_id=?, updated_at=CURRENT_TIMESTAMP WHERE id=?")
+        .run(memberId, applicant.id, existingProfile.id);
+      db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(existingProfile.id, memberId);
+    } else {
+      const profileId = genId();
+      db.prepare(`INSERT INTO profiles (id, screen_name, email, avatar_color, tier, applicant_id, member_id) VALUES (?,?,?,?,'member',?,?)`)
+        .run(profileId, applicant.screen_name || applicant.first_name, applicant.email, avatarColors(), applicant.id, memberId);
+      db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(profileId, memberId);
+    }
   }
 
   // Warden profile is special
