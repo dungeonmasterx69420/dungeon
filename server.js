@@ -1342,8 +1342,18 @@ app.post('/api/admin/redemptions/:id/fulfill', requireAuth, async (req, res) => 
     const now = new Date();
     const end = new Date(now); end.setMonth(end.getMonth() + 1);
     if (redemption.service === 'stremio') {
-      db.prepare('UPDATE members SET stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=? WHERE id=?')
-        .run(account_user, account_pass, now.toISOString(), end.toISOString(), member.id);
+      db.prepare('UPDATE members SET stremio_email=?, stremio_pass=?, jellyfin_user=?, jellyfin_pass=?, stremio_start=?, stremio_end=? WHERE id=?')
+        .run(account_user, account_pass, account_user, account_pass, now.toISOString(), end.toISOString(), member.id);
+      // Grant Jellyfin library access for DungeonStream (Movies + Series)
+      try {
+        const jfUserId = await jellyfinGetUserId(account_user);
+        if (jfUserId) {
+          await jellyfinGrantLibraryAccess(jfUserId, ['Movies', 'Shows']);
+          console.log('[Jellyfin] Granted Movies+Series to:', account_user);
+        } else {
+          console.log('[Jellyfin] User not found in Jellyfin:', account_user);
+        }
+      } catch(e) { console.error('[Jellyfin] Library grant error:', e.message); }
     } else {
       // Update IPTV account
       const existing = db.prepare('SELECT * FROM iptv_accounts WHERE profile_id=?').get(profile.id);
@@ -2023,6 +2033,82 @@ app.post('/api/member/profile/devices', requireMember, (req, res) => {
     .run(JSON.stringify(devices), profile.id);
   res.json({ ok: true });
 });
+
+
+// ── One-time DB Cleanup (remove after use) ────────────────────────────────
+app.post('/api/admin/cleanup-db', requireAuth, (req, res) => {
+  const { confirm } = req.body;
+  if (confirm !== 'CLEANUP') return res.status(400).json({ error: 'Must confirm with CLEANUP' });
+
+  const keepScreenNames = ['lqbanito1', 'one', 'burnerburns79'];
+
+  // Get profile IDs to keep
+  const keepProfiles = db.prepare(
+    `SELECT p.id, p.member_id FROM profiles p WHERE LOWER(p.screen_name) IN (${keepScreenNames.map(()=>'?').join(',')})`
+  ).all(...keepScreenNames);
+
+  const keepProfileIds = keepProfiles.map(p => p.id);
+  const keepMemberIds = keepProfiles.map(p => p.member_id).filter(Boolean);
+
+  // Delete all applicants
+  db.prepare('DELETE FROM applicants').run();
+
+  // Delete demo requests
+  try { db.prepare('DELETE FROM demo_requests').run(); } catch(e) {}
+
+  // Delete support messages
+  try { db.prepare('DELETE FROM support_messages').run(); } catch(e) {}
+
+  // Delete messages not involving kept members
+  try {
+    const keepEmails = db.prepare(`SELECT email FROM members WHERE id IN (${keepMemberIds.map(()=>'?').join(',')})`).all(...keepMemberIds).map(m=>m.email);
+    db.prepare('DELETE FROM messages WHERE sender_email NOT IN (' + keepEmails.map(()=>'?').join(',') + ') AND recipient_email NOT IN (' + keepEmails.map(()=>'?').join(',') + ')').run(...keepEmails, ...keepEmails);
+  } catch(e) {}
+
+  // Delete forum posts/threads
+  try { db.prepare('DELETE FROM forum_posts').run(); } catch(e) {}
+  try { db.prepare('DELETE FROM forum_threads').run(); } catch(e) {}
+
+  // Delete redemptions not belonging to kept profiles
+  if (keepProfileIds.length > 0) {
+    db.prepare(`DELETE FROM redemptions WHERE profile_id NOT IN (${keepProfileIds.map(()=>'?').join(',')})`).run(...keepProfileIds);
+  } else {
+    db.prepare('DELETE FROM redemptions').run();
+  }
+
+  // Delete credit transactions not belonging to kept profiles
+  try {
+    if (keepProfileIds.length > 0) {
+      db.prepare(`DELETE FROM credit_transactions WHERE profile_id NOT IN (${keepProfileIds.map(()=>'?').join(',')})`).run(...keepProfileIds);
+      db.prepare(`DELETE FROM credits WHERE profile_id NOT IN (${keepProfileIds.map(()=>'?').join(',')})`).run(...keepProfileIds);
+    } else {
+      db.prepare('DELETE FROM credit_transactions').run();
+      db.prepare('DELETE FROM credits').run();
+    }
+  } catch(e) {}
+
+  // Delete iptv_accounts not belonging to kept profiles
+  try {
+    if (keepProfileIds.length > 0) {
+      db.prepare(`DELETE FROM iptv_accounts WHERE profile_id NOT IN (${keepProfileIds.map(()=>'?').join(',')})`).run(...keepProfileIds);
+    } else {
+      db.prepare('DELETE FROM iptv_accounts').run();
+    }
+  } catch(e) {}
+
+  // Delete members not in keep list
+  if (keepMemberIds.length > 0) {
+    db.prepare(`DELETE FROM members WHERE id NOT IN (${keepMemberIds.map(()=>'?').join(',')})`).run(...keepMemberIds);
+  }
+
+  // Delete profiles not in keep list
+  if (keepProfileIds.length > 0) {
+    db.prepare(`DELETE FROM profiles WHERE id NOT IN (${keepProfileIds.map(()=>'?').join(',')})`).run(...keepProfileIds);
+  }
+
+  res.json({ ok: true, kept: keepScreenNames, keptProfiles: keepProfileIds.length, keptMembers: keepMemberIds.length });
+});
+// ────────────────────────────────────────────────────────────────────────────
 
 // ── Admin: Subscribers ────────────────────────────────────────────────────────
 app.get('/api/admin/subscribers', requireAuth, (req, res) => {
