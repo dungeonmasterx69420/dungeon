@@ -697,7 +697,7 @@ async function loadRedem(){
           <div class="rc-name">@${esc(r.screen_name||'unknown')} <span class="bdg ${bc}">${r.status}</span></div>
           <div class="rc-meta">${svc} · ${fmtDate(r.created_at)}</div>
         </div>
-        ${r.status==='pending'?`<button class="btn btn-g" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name||'')}')">Fulfill →</button>`:''}
+        ${r.status==='pending'?`<button class="btn btn-g" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name||r.email||'')}','${esc(r.screen_name||'')}')">Fulfill →</button>`:''}
       </div>
       ${r.status==='fulfilled'?`<div class="rc-rows">
         <div class="rc-row"><span class="rc-lbl">Server</span><span class="rc-val">${server}</span></div>
@@ -714,14 +714,14 @@ function setRedemFilter(val,el){
   el.classList.add('on');loadRedem();
 }
 
-function openFulfill(rid,svc,screenName){
+function openFulfill(rid,svc,displayName,screenName){
   $('f-rid').value=rid;$('f-svc').value=svc;
   $('f-title').textContent=svc==='stremio'?'🌊 Fulfill DungeonStream':'📡 Fulfill DungeonCast';
-  $('f-sub').textContent=`Setting up account for @${screenName}`;
+  $('f-sub').textContent=`Setting up account for @${displayName||screenName}`;
   $('f-info').textContent=svc==='stremio'
     ?'Jellyfin account will be created on dungeoncast.cc with Movies + Shows access.'
     :'Jellyfin account will be created on tv.dungeoncast.cc with Live TV access.';
-  $('f-user').value=screenName.toLowerCase().replace(/[^a-z0-9_]/g,'_');
+  $('f-user').value=(screenName||displayName||'').toLowerCase().replace(/[^a-z0-9_]/g,'_').replace(/@/g,'').substring(0,20);
   $('f-pass').value=mkPass();
   $('f-notes').value='';$('f-err').style.display='none';
   openSheet('sh-fulfill');
