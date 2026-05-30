@@ -274,6 +274,20 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   // Add archived column to applicants if not exists
   try { db.prepare('ALTER TABLE applicants ADD COLUMN archived INTEGER DEFAULT 0').run(); } catch(e) {}
   // Add password column to members if not exists
+
+  // Add missing columns from Jellyfin migration
+  try { db.prepare('ALTER TABLE members ADD COLUMN jellyfin_user TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN jellyfin_pass TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN jellyfin_server TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE profiles ADD COLUMN devices TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN phone TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN notes TEXT').run(); } catch(e) {}
+  // Migrate stremio credentials to jellyfin fields for existing members
+  try {
+    db.prepare(`UPDATE members SET jellyfin_user=stremio_email, jellyfin_pass=stremio_pass 
+      WHERE jellyfin_user IS NULL AND stremio_email IS NOT NULL AND stremio_email != ''`).run();
+  } catch(e) {}
+
   try { db.prepare('ALTER TABLE members ADD COLUMN password TEXT').run(); } catch(e) {}
   // Add plain_pass column for admin visibility
   try { db.prepare('ALTER TABLE members ADD COLUMN plain_pass TEXT').run(); } catch(e) {}
@@ -2115,16 +2129,27 @@ app.post('/api/admin/cleanup-db', requireAuth, (req, res) => {
 
 // Admin: get members with profile data
 app.get('/api/admin/members', requireMod, (req, res) => {
-  const rows = db.prepare(`
-    SELECT m.*, p.id as profile_id_val, p.screen_name, p.avatar_url, p.avatar_color,
-           p.tier, p.member_id, p.devices,
-           COALESCE(c.balance, 0) as credit_balance
-    FROM members m
-    LEFT JOIN profiles p ON (p.member_id=m.id OR (p.member_id IS NULL AND LOWER(p.email)=LOWER(m.email)))
-    LEFT JOIN credits c ON c.profile_id=p.id
-    ORDER BY m.first_name
-  `).all();
-  res.json(rows);
+  try {
+    const members = db.prepare('SELECT * FROM members ORDER BY first_name').all();
+    const result = members.map(m => {
+      const profile = db.prepare('SELECT * FROM profiles WHERE member_id=? OR (member_id IS NULL AND LOWER(email)=LOWER(?))').get(m.id, m.email);
+      const credits = profile ? db.prepare('SELECT balance FROM credits WHERE profile_id=?').get(profile.id) : null;
+      return {
+        ...m,
+        profile_id_val: profile?.id || null,
+        screen_name: profile?.screen_name || null,
+        avatar_url: profile?.avatar_url || null,
+        avatar_color: profile?.avatar_color || null,
+        tier: profile?.tier || 'member',
+        devices: profile?.devices || null,
+        credit_balance: credits?.balance || 0
+      };
+    });
+    res.json(result);
+  } catch(e) {
+    console.error('[admin/members] Error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Admin: update member info
@@ -2149,6 +2174,33 @@ app.post('/api/admin/credits', requireMod, (req, res) => {
   if (!profile_id || !amount) return res.status(400).json({ error: 'profile_id and amount required' });
   addCredit(profile_id, parseInt(amount), 'admin', reason || 'Admin adjustment');
   res.json({ ok: true });
+});
+
+
+// Fix approved applicants who don't have member records
+app.post('/api/admin/fix-approved', requireMod, (req, res) => {
+  const approved = db.prepare("SELECT * FROM applicants WHERE status='approved'").all();
+  let fixed = 0;
+  for (const a of approved) {
+    const existing = db.prepare('SELECT id FROM members WHERE LOWER(email)=LOWER(?)').get(a.email);
+    if (!existing) {
+      const memberId = genId();
+      try {
+        db.prepare(`INSERT INTO members (id, first_name, last_name, email, phone) VALUES (?,?,?,?,?)`)
+          .run(memberId, a.first_name, a.last_name, a.email, a.phone||null);
+        let profile = db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(a.email);
+        if (profile) {
+          db.prepare("UPDATE profiles SET member_id=?, tier='member', updated_at=CURRENT_TIMESTAMP WHERE id=?").run(memberId, profile.id);
+        } else {
+          const profileId = genId();
+          db.prepare(`INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id) VALUES (?,?,?,?,'member',?)`)
+            .run(profileId, a.screen_name||a.first_name, a.email, avatarColors(), memberId);
+        }
+        fixed++;
+      } catch(e) { console.error('Fix approved error:', e.message); }
+    }
+  }
+  res.json({ ok: true, fixed, total: approved.length });
 });
 
 // ── Admin: Subscribers ────────────────────────────────────────────────────────
