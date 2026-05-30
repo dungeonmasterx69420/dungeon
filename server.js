@@ -340,9 +340,13 @@ setInterval(runSubscriptionCron, 60 * 60 * 1000);
 // ── Jellyfin Integration ────────────────────────────────────────────────────
 const JELLYFIN_URL = process.env.JELLYFIN_URL || 'https://dungeoncast.cc';
 const JELLYFIN_API_KEY = process.env.JELLYFIN_API_KEY || '';
+const JELLYFIN_TV_URL = process.env.JELLYFIN_TV_URL || 'https://tv.dungeoncast.cc';
+const JELLYFIN_TV_API_KEY = process.env.JELLYFIN_TV_API_KEY || '';
 
-async function jellyfinCreateUser(username, password) {
-  if (!JELLYFIN_API_KEY) { console.log('[Jellyfin] No API key set'); return null; }
+async function jellyfinCreateUser(username, password, serverUrl, apiKey) {
+  serverUrl = serverUrl || JELLYFIN_URL;
+  apiKey = apiKey || JELLYFIN_API_KEY;
+  if (!apiKey) { console.log('[Jellyfin] No API key set'); return null; }
   try {
     const https = require('https');
     const body = JSON.stringify({ Name: username, Password: password });
@@ -806,20 +810,7 @@ app.post('/api/applicants/:id/promote', requireAuth, async (req, res) => {
     if (prof) db.prepare("UPDATE profiles SET tier='warden' WHERE id=?").run(prof.id);
   }
 
-  // Auto-create Jellyfin account
-  try {
-    const profile2 = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(memberId);
-    const screenName = profile2?.screen_name || applicant.first_name;
-    const jellyfinUser = screenName.toLowerCase().replace(/[^a-z0-9_]/g,'_').substring(0,20);
-    const jellyfinPass = stremio_pass || genId().substring(0,10);
-    const jfRes = await jellyfinCreateUser(jellyfinUser, jellyfinPass);
-    if (jfRes && (jfRes.status === 200 || jfRes.status === 201)) {
-      try { db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=? WHERE id=?').run(jellyfinUser, jellyfinPass, memberId); } catch(e) {}
-      console.log('[Jellyfin] Auto-created user:', jellyfinUser);
-    } else {
-      console.log('[Jellyfin] Failed to create user:', JSON.stringify(jfRes)?.substring(0,200));
-    }
-  } catch(e) { console.error('[Jellyfin] Auto-create error:', e.message); }
+  // Jellyfin account created on fulfill, not here
 
   await sendMail(applicant.email, 'Welcome to Dungeon', emailWelcome(applicant.first_name, applicant.screen_name||applicant.first_name, applicant.email, stremio_pass||'', ''));
   res.json({ ok: true });
@@ -1366,6 +1357,17 @@ app.post('/api/admin/redemptions/:id/fulfill', requireAuth, async (req, res) => 
       }
       db.prepare('UPDATE members SET iptv_start=?, iptv_end=? WHERE id=?')
         .run(now.toISOString(), end.toISOString(), member.id);
+
+      // Create Jellyfin account on TV server + grant Live TV access
+      try {
+        const createTVRes = await jellyfinCreateUser(account_user, account_pass, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
+        console.log('[Jellyfin TV] Create result:', createTVRes?.status);
+        const jfTVUserId = await jellyfinGetUserId(account_user, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
+        if (jfTVUserId) {
+          await jellyfinGrantLibraryAccess(jfTVUserId, ['Live TV'], JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
+          console.log('[Jellyfin TV] Granted Live TV to:', account_user);
+        }
+      } catch(e) { console.error('[Jellyfin TV] Error:', e.message); }
     }
   }
 
@@ -1377,7 +1379,7 @@ app.post('/api/admin/redemptions/:id/fulfill', requireAuth, async (req, res) => 
   if (warden && profile) {
     const content = redemption.service === 'stremio'
       ? `Your DungeonStream account has been set up.\n\nServer: https://dungeoncast.cc\nUsername: ${account_user}\nPassword: ${account_pass}\n\nDownload the Jellyfin app and use these credentials to sign in. Check the Guides on your dashboard for device-specific setup help.${notes ? '\n\nNotes: ' + notes : ''}`
-      : `Your DungeonCast account has been set up.\n\nUsername: ${account_user}\nPassword: ${account_pass}\n\nLog in at http://dungeoncast.cc${notes ? '\n\nNotes: ' + notes : ''}`;
+      : `Your DungeonCast account has been set up.\n\nServer: https://tv.dungeoncast.cc\nUsername: ${account_user}\nPassword: ${account_pass}\n\nDownload Moonfin and add the server to get started. Check the Guides on your dashboard for setup help.${notes ? '\n\nNotes: ' + notes : ''}`;
     db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
       .run(genId(), warden.id, profile.id, subject, content);
   }
