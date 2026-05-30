@@ -362,7 +362,7 @@ async function jellyfinCreateUser(username, password, serverUrl, apiKey) {
     const https = require('https');
     const body = JSON.stringify({ Name: username, Password: password });
     return await new Promise((resolve, reject) => {
-      const url = new URL(JELLYFIN_URL + '/Users/New');
+      const url = new URL(serverUrl + '/Users/New');
       const opts = {
         hostname: url.hostname,
         port: 443,
@@ -747,13 +747,6 @@ app.post('/api/member/suggest', requireMember, submitLimiter, (req, res) => {
 });
 
 // ── Admin: applicants ─────────────────────────────────────────────────────────
-app.get('/api/applicants', requireMod, (req, res) => {
-  const { status } = req.query;
-  const rows = (status && status !== 'all')
-    ? db.prepare('SELECT * FROM applicants WHERE status=? ORDER BY created_at DESC').all(status)
-    : db.prepare('SELECT * FROM applicants ORDER BY created_at DESC').all();
-  res.json(rows);
-});
 
 app.patch('/api/applicants/:id/status', requireAuth, (req, res) => {
   const { status } = req.body;
@@ -768,66 +761,6 @@ app.delete('/api/applicants/:id', requireAuth, (req, res) => {
 });
 
 // Promote applicant → member + profile upgrade
-app.post('/api/applicants/:id/promote', requireMod, async (req, res) => {
-  try {
-  const applicant = db.prepare('SELECT * FROM applicants WHERE id=?').get(req.params.id);
-  if (!applicant) return res.status(404).json({ error: 'Not found' });
-
-  const { stremio_email, stremio_pass, stremio_auth_key } = req.body;
-  const memberId = genId();
-
-  // Hash the generated password if provided
-  let hashedPass = null;
-  if (stremio_pass && stremio_pass.trim()) {
-    try { hashedPass = bcrypt.hashSync(stremio_pass.trim(), 10); } catch(e) { console.error('bcrypt error:', e); }
-  }
-
-  // Insert member - try with password column, fall back without if column doesn't exist yet
-  try {
-    db.prepare(`INSERT INTO members (id, first_name, last_name, email, phone, language, referral, notes, password, plain_pass, applicant_id) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
-      .run(memberId, applicant.first_name, applicant.last_name, applicant.email, applicant.phone, applicant.language, applicant.referral, applicant.notes, hashedPass, stremio_pass||'', applicant.id);
-  } catch(e) {
-    // Fall back if password column doesn't exist yet
-    db.prepare(`INSERT INTO members (id, first_name, last_name, email, phone, language, referral, notes, plain_pass, applicant_id) VALUES (?,?,?,?,?,?,?,?,?,?)`)
-      .run(memberId, applicant.first_name, applicant.last_name, applicant.email, applicant.phone, applicant.language, applicant.referral, applicant.notes, stremio_pass||'', applicant.id);
-  }
-
-  db.prepare('UPDATE applicants SET status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run('approved', applicant.id);
-
-  // Upgrade profile: neut → member, link member_id
-  const profile = db.prepare('SELECT * FROM profiles WHERE applicant_id=?').get(applicant.id);
-  if (profile) {
-    db.prepare("UPDATE profiles SET tier='member', member_id=?, updated_at=CURRENT_TIMESTAMP WHERE id=?").run(memberId, profile.id);
-    db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(profile.id, memberId);
-  } else {
-    // Create profile if it didn't exist yet
-    // Check if profile exists by email
-    let existingProfile = db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(applicant.email);
-    if (existingProfile) {
-      db.prepare("UPDATE profiles SET tier='member', member_id=?, applicant_id=?, updated_at=CURRENT_TIMESTAMP WHERE id=?")
-        .run(memberId, applicant.id, existingProfile.id);
-      db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(existingProfile.id, memberId);
-    } else {
-      const profileId = genId();
-      db.prepare(`INSERT INTO profiles (id, screen_name, email, avatar_color, tier, applicant_id, member_id) VALUES (?,?,?,?,'member',?,?)`)
-        .run(profileId, applicant.screen_name || applicant.first_name, applicant.email, avatarColors(), applicant.id, memberId);
-      db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(profileId, memberId);
-    }
-  }
-
-  // Warden profile is special
-  if (applicant.email.toLowerCase() === WARDEN_EMAIL.toLowerCase()) {
-    const prof = db.prepare('SELECT id FROM profiles WHERE member_id=?').get(memberId);
-    if (prof) db.prepare("UPDATE profiles SET tier='warden' WHERE id=?").run(prof.id);
-  }
-
-  // Jellyfin account created on fulfill, not here
-
-  await sendMail(applicant.email, 'Welcome to Dungeon', emailWelcome(applicant.first_name, applicant.screen_name||applicant.first_name, applicant.email, stremio_pass||'', ''));
-  res.json({ ok: true });
-
-  } catch(e) { console.error('Promote error:', e); res.status(500).json({ error: e.message }); }
-});
 
 // Renew member
 app.post('/api/members/:id/renew', requireAuth, (req, res) => {
@@ -1238,19 +1171,6 @@ app.post('/api/admin/nodecast/create-user', requireAuth, async (req, res) => {
 
 
 // Clear subscription dates for a member
-app.post('/api/admin/members/:id/clear-sub', requireMod, (req, res) => {
-  const { service } = req.body;
-  const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.id);
-  if (!m) return res.status(404).json({ error: 'Member not found' });
-  if (service === 'cast') {
-    db.prepare('UPDATE members SET iptv_start=NULL, iptv_end=NULL WHERE id=?').run(req.params.id);
-  } else if (service === 'stream') {
-    db.prepare('UPDATE members SET stremio_start=NULL, stremio_end=NULL WHERE id=?').run(req.params.id);
-  } else {
-    db.prepare('UPDATE members SET stremio_start=NULL, stremio_end=NULL, iptv_start=NULL, iptv_end=NULL WHERE id=?').run(req.params.id);
-  }
-  res.json({ ok: true });
-});
 
 
 // Debug: test Nodecast connection
@@ -1306,19 +1226,6 @@ app.post('/api/admin/dc-demo', requireAuth, async (req, res) => {
 // ── Redemptions ────────────────────────────────────────────────────────────────
 
 // Get all redemptions (admin)
-app.get('/api/admin/redemptions', requireMod, (req, res) => {
-  const status = req.query.status || 'pending';
-  const rows = db.prepare(`
-    SELECT r.*, p.screen_name, p.email, p.avatar_url, p.avatar_color, p.tier,
-           m.email as member_email
-    FROM redemptions r
-    LEFT JOIN profiles p ON r.profile_id = p.id
-    LEFT JOIN members m ON m.id = (SELECT member_id FROM profiles WHERE id = r.profile_id)
-    ${status === 'all' ? '' : 'WHERE r.status = ?'}
-    ORDER BY r.created_at DESC
-  `).all(...(status === 'all' ? [] : [status]));
-  res.json(rows);
-});
 
 // Fulfill a redemption (admin)
 app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
