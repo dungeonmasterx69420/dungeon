@@ -918,8 +918,10 @@ app.post('/api/admin/stremio/:memberId', requireMod, (req, res) => {
   const toISO = d => d ? (d.includes('T') ? d : d + 'T00:00:00.000Z') : null;
   const finalStart = stremio_start !== undefined ? toISO(stremio_start) : (m.stremio_start || now.toISOString());
   const finalEnd = stremio_end !== undefined ? toISO(stremio_end) : (m.stremio_end || autoEnd.toISOString());
-  db.prepare(`UPDATE members SET stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=? WHERE id=?`)
-    .run(stremio_email||m.stremio_email, stremio_pass||m.stremio_pass, finalStart, finalEnd, req.params.memberId);
+  const newUser = stremio_email||m.stremio_email;
+  const newPass = stremio_pass||m.stremio_pass;
+  db.prepare(`UPDATE members SET stremio_email=?, stremio_pass=?, jellyfin_user=?, jellyfin_pass=?, stremio_start=?, stremio_end=? WHERE id=?`)
+    .run(newUser, newPass, newUser, newPass, finalStart, finalEnd, req.params.memberId);
   res.json({ ok: true });
 });
 
@@ -2128,80 +2130,163 @@ app.post('/api/admin/cleanup-db', requireAuth, (req, res) => {
 // ────────────────────────────────────────────────────────────────────────────
 
 
-// Admin: get members with profile data
+// ══════════════════════════════════════════════════════════════════════════════
+// ADMIN ROUTES — Clean rewrite
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Helper: get full member data
+function getMemberFull(id) {
+  const m = db.prepare('SELECT * FROM members WHERE id=?').get(id);
+  if (!m) return null;
+  const profile = db.prepare('SELECT * FROM profiles WHERE member_id=? OR (member_id IS NULL AND LOWER(email)=LOWER(?))').get(id, m.email);
+  const credits = profile ? db.prepare('SELECT amount FROM credits WHERE profile_id=?').get(profile.id) : null;
+  return { ...m, profile_id_val: profile?.id||null, screen_name: profile?.screen_name||null, avatar_url: profile?.avatar_url||null, avatar_color: profile?.avatar_color||null, tier: profile?.tier||'member', devices: profile?.devices||null, credit_balance: credits?.amount||0 };
+}
+
+// GET all members
 app.get('/api/admin/members', requireMod, (req, res) => {
   try {
     const members = db.prepare('SELECT * FROM members ORDER BY first_name').all();
-    const result = members.map(m => {
-      const profile = db.prepare('SELECT * FROM profiles WHERE member_id=? OR (member_id IS NULL AND LOWER(email)=LOWER(?))').get(m.id, m.email);
-      const credits = profile ? db.prepare('SELECT amount FROM credits WHERE profile_id=?').get(profile.id) : null;
-      return {
-        ...m,
-        profile_id_val: profile?.id || null,
-        screen_name: profile?.screen_name || null,
-        avatar_url: profile?.avatar_url || null,
-        avatar_color: profile?.avatar_color || null,
-        tier: profile?.tier || 'member',
-        devices: profile?.devices || null,
-        credit_balance: credits?.amount || 0
-      };
-    });
-    res.json(result);
-  } catch(e) {
-    console.error('[admin/members] Error:', e.message);
-    res.status(500).json({ error: e.message });
-  }
+    res.json(members.map(m => getMemberFull(m.id)));
+  } catch(e) { console.error('[admin/members]', e.message); res.status(500).json({ error: e.message }); }
 });
 
-// Admin: update member info
+// POST update member info
 app.post('/api/admin/members/:id', requireMod, (req, res) => {
-  const { first_name, last_name, email, phone, notes } = req.body;
-  const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.id);
-  if (!m) return res.status(404).json({ error: 'Not found' });
-  db.prepare('UPDATE members SET first_name=?, last_name=?, email=?, phone=?, notes=? WHERE id=?')
-    .run(first_name||m.first_name, last_name||m.last_name, email||m.email, phone||m.phone, notes!==undefined?notes:m.notes, req.params.id);
-  res.json({ ok: true });
+  try {
+    const { first_name, last_name, email, phone, notes } = req.body;
+    const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.id);
+    if (!m) return res.status(404).json({ error: 'Not found' });
+    db.prepare('UPDATE members SET first_name=?, last_name=?, email=?, phone=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')
+      .run(first_name??m.first_name, last_name??m.last_name, email??m.email, phone??m.phone, notes??m.notes, req.params.id);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Admin: deny applicant
-app.post('/api/applicants/:id/deny', requireMod, (req, res) => {
-  db.prepare("UPDATE applicants SET status='denied' WHERE id=?").run(req.params.id);
-  res.json({ ok: true });
+// POST update DungeonStream subscription
+app.post('/api/admin/members/:id/stream', requireMod, (req, res) => {
+  try {
+    const { username, password, start, end } = req.body;
+    const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.id);
+    if (!m) return res.status(404).json({ error: 'Not found' });
+    const toISO = d => !d ? null : d.includes('T') ? d : d + 'T00:00:00.000Z';
+    const u = username ?? m.jellyfin_user ?? m.stremio_email;
+    const p = password ?? m.jellyfin_pass ?? m.stremio_pass;
+    db.prepare('UPDATE members SET stremio_email=?, stremio_pass=?, jellyfin_user=?, jellyfin_pass=?, stremio_start=?, stremio_end=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')
+      .run(u, p, u, p, toISO(start), toISO(end), req.params.id);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Admin: add credits
+// POST update DungeonCast subscription
+app.post('/api/admin/members/:id/cast', requireMod, (req, res) => {
+  try {
+    const { start, end } = req.body;
+    const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.id);
+    if (!m) return res.status(404).json({ error: 'Not found' });
+    const toISO = d => !d ? null : d.includes('T') ? d : d + 'T00:00:00.000Z';
+    db.prepare('UPDATE members SET iptv_start=?, iptv_end=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')
+      .run(toISO(start), toISO(end), req.params.id);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST clear subscription dates
+app.post('/api/admin/members/:id/clear-sub', requireMod, (req, res) => {
+  try {
+    const { service } = req.body;
+    if (service === 'stream') db.prepare('UPDATE members SET stremio_start=NULL, stremio_end=NULL WHERE id=?').run(req.params.id);
+    else if (service === 'cast') db.prepare('UPDATE members SET iptv_start=NULL, iptv_end=NULL WHERE id=?').run(req.params.id);
+    else db.prepare('UPDATE members SET stremio_start=NULL, stremio_end=NULL, iptv_start=NULL, iptv_end=NULL WHERE id=?').run(req.params.id);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST add credits
 app.post('/api/admin/credits', requireMod, (req, res) => {
-  const { profile_id, amount, reason } = req.body;
-  if (!profile_id || !amount) return res.status(400).json({ error: 'profile_id and amount required' });
-  addCredit(profile_id, parseInt(amount), 'admin', reason || 'Admin adjustment');
-  res.json({ ok: true });
+  try {
+    const { profile_id, amount, reason } = req.body;
+    if (!profile_id || !amount) return res.status(400).json({ error: 'profile_id and amount required' });
+    addCredit(profile_id, parseInt(amount), 'admin', reason || 'Admin adjustment');
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// GET applicants
+app.get('/api/applicants', requireMod, (req, res) => {
+  try { res.json(db.prepare('SELECT * FROM applicants ORDER BY created_at DESC').all()); }
+  catch(e) { res.status(500).json({ error: e.message }); }
+});
 
-// Fix approved applicants who don't have member records
-app.post('/api/admin/fix-approved', requireMod, (req, res) => {
-  const approved = db.prepare("SELECT * FROM applicants WHERE status='approved'").all();
-  let fixed = 0;
-  for (const a of approved) {
-    const existing = db.prepare('SELECT id FROM members WHERE LOWER(email)=LOWER(?)').get(a.email);
+// POST approve applicant
+app.post('/api/applicants/:id/promote', requireMod, async (req, res) => {
+  try {
+    const applicant = db.prepare('SELECT * FROM applicants WHERE id=?').get(req.params.id);
+    if (!applicant) return res.status(404).json({ error: 'Not found' });
+    const { stremio_pass } = req.body;
+    const plain = stremio_pass || mkRandPass();
+    let hashedPass = null;
+    try { hashedPass = require('bcryptjs').hashSync(plain, 10); } catch(e) {}
+
+    // Get or create member
+    let existing = db.prepare('SELECT * FROM members WHERE LOWER(email)=LOWER(?)').get(applicant.email);
+    let memberId = existing?.id;
     if (!existing) {
-      const memberId = genId();
-      try {
-        db.prepare(`INSERT INTO members (id, first_name, last_name, email, phone) VALUES (?,?,?,?,?)`)
-          .run(memberId, a.first_name, a.last_name, a.email, a.phone||null);
-        let profile = db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(a.email);
-        if (profile) {
-          db.prepare("UPDATE profiles SET member_id=?, tier='member', updated_at=CURRENT_TIMESTAMP WHERE id=?").run(memberId, profile.id);
-        } else {
-          const profileId = genId();
-          db.prepare(`INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id) VALUES (?,?,?,?,'member',?)`)
-            .run(profileId, a.screen_name||a.first_name, a.email, avatarColors(), memberId);
-        }
-        fixed++;
-      } catch(e) { console.error('Fix approved error:', e.message); }
+      memberId = genId();
+      db.prepare('INSERT INTO members (id, first_name, last_name, email, phone, password, plain_pass) VALUES (?,?,?,?,?,?,?)')
+        .run(memberId, applicant.first_name, applicant.last_name, applicant.email, applicant.phone||null, hashedPass, plain);
     }
-  }
-  res.json({ ok: true, fixed, total: approved.length });
+
+    // Get or create profile
+    let profile = db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(applicant.email);
+    if (profile) {
+      db.prepare("UPDATE profiles SET member_id=?, tier='member', screen_name=COALESCE(NULLIF(screen_name,''),?), updated_at=CURRENT_TIMESTAMP WHERE id=?")
+        .run(memberId, applicant.screen_name||applicant.first_name, profile.id);
+    } else {
+      const profileId = genId();
+      const colors = ['#34d399','#60a5fa','#f87171','#fbbf24','#a78bfa'];
+      db.prepare("INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, applicant_id) VALUES (?,?,?,?,'member',?,?)")
+        .run(profileId, applicant.screen_name||applicant.first_name, applicant.email, colors[Math.floor(Math.random()*colors.length)], memberId, applicant.id);
+      profile = db.prepare('SELECT * FROM profiles WHERE id=?').get(profileId);
+    }
+
+    // Warden check
+    const WARDEN_EMAIL = process.env.WARDEN_EMAIL || '';
+    if (WARDEN_EMAIL && applicant.email.toLowerCase() === WARDEN_EMAIL.toLowerCase()) {
+      db.prepare("UPDATE profiles SET tier='warden' WHERE id=?").run(profile.id);
+    }
+
+    db.prepare("UPDATE applicants SET status='approved', updated_at=CURRENT_TIMESTAMP WHERE id=?").run(applicant.id);
+
+    try { await sendMail(applicant.email, 'Welcome to Dungeon', emailWelcome(applicant.first_name, applicant.screen_name||applicant.first_name, applicant.email, plain, '')); }
+    catch(e) { console.error('Welcome email error:', e.message); }
+
+    res.json({ ok: true });
+  } catch(e) { console.error('[promote]', e.message); res.status(500).json({ error: e.message }); }
+});
+
+function mkRandPass() {
+  const c='abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  return Array.from({length:10},()=>c[Math.floor(Math.random()*c.length)]).join('');
+}
+
+// POST deny applicant
+app.post('/api/applicants/:id/deny', requireMod, (req, res) => {
+  try {
+    db.prepare("UPDATE applicants SET status='denied', updated_at=CURRENT_TIMESTAMP WHERE id=?").run(req.params.id);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET redemptions
+app.get('/api/admin/redemptions', requireMod, (req, res) => {
+  try {
+    res.json(db.prepare(`
+      SELECT r.*, p.screen_name, p.email as profile_email, p.avatar_color
+      FROM redemptions r LEFT JOIN profiles p ON r.profile_id=p.id
+      ORDER BY r.created_at DESC
+    `).all());
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── Admin: Subscribers ────────────────────────────────────────────────────────
