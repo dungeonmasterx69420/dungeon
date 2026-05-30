@@ -433,7 +433,11 @@ async function loadStats(){
   const pending=apps.filter(a=>(a.status||'pending')==='pending').length;
   const pendingR=redems.filter(r=>r.status==='pending').length;
   const now=new Date();
-  const subs=members.filter(m=>(m.stremio_end&&new Date(m.stremio_end)>now)||(m.iptv_end&&new Date(m.iptv_end)>now)).length;
+  const subs=members.filter(m=>{
+    const se=m.stremio_end?new Date(m.stremio_end.includes('T')?m.stremio_end:m.stremio_end+'T00:00:00Z'):null;
+    const ce=m.iptv_end?new Date(m.iptv_end.includes('T')?m.iptv_end:m.iptv_end+'T00:00:00Z'):null;
+    return (se&&se>now)||(ce&&ce>now);
+  }).length;
   $('st-apps').textContent=pending;
   $('st-members').textContent=members.length;
   $('st-subs').textContent=subs;
