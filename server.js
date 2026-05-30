@@ -736,7 +736,7 @@ app.post('/api/member/suggest', requireMember, submitLimiter, (req, res) => {
 });
 
 // ── Admin: applicants ─────────────────────────────────────────────────────────
-app.get('/api/applicants', requireAuth, (req, res) => {
+app.get('/api/applicants', requireMod, (req, res) => {
   const { status } = req.query;
   const rows = (status && status !== 'all')
     ? db.prepare('SELECT * FROM applicants WHERE status=? ORDER BY created_at DESC').all(status)
@@ -757,7 +757,7 @@ app.delete('/api/applicants/:id', requireAuth, (req, res) => {
 });
 
 // Promote applicant → member + profile upgrade
-app.post('/api/applicants/:id/promote', requireAuth, async (req, res) => {
+app.post('/api/applicants/:id/promote', requireMod, async (req, res) => {
   try {
   const applicant = db.prepare('SELECT * FROM applicants WHERE id=?').get(req.params.id);
   if (!applicant) return res.status(404).json({ error: 'Not found' });
@@ -1224,7 +1224,7 @@ app.post('/api/admin/nodecast/create-user', requireAuth, async (req, res) => {
 
 
 // Clear subscription dates for a member
-app.post('/api/admin/members/:id/clear-sub', requireAuth, (req, res) => {
+app.post('/api/admin/members/:id/clear-sub', requireMod, (req, res) => {
   const { service } = req.body;
   const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.id);
   if (!m) return res.status(404).json({ error: 'Member not found' });
@@ -1292,7 +1292,7 @@ app.post('/api/admin/dc-demo', requireAuth, async (req, res) => {
 // ── Redemptions ────────────────────────────────────────────────────────────────
 
 // Get all redemptions (admin)
-app.get('/api/admin/redemptions', requireAuth, (req, res) => {
+app.get('/api/admin/redemptions', requireMod, (req, res) => {
   const status = req.query.status || 'pending';
   const rows = db.prepare(`
     SELECT r.*, p.screen_name, p.email, p.avatar_url, p.avatar_color, p.tier,
@@ -1307,7 +1307,7 @@ app.get('/api/admin/redemptions', requireAuth, (req, res) => {
 });
 
 // Fulfill a redemption (admin)
-app.post('/api/admin/redemptions/:id/fulfill', requireAuth, async (req, res) => {
+app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
   const { account_user, account_pass, notes, xtream_url, xtream_user, xtream_pass } = req.body;
   const redemption = db.prepare('SELECT * FROM redemptions WHERE id=?').get(req.params.id);
   if (!redemption) return res.status(404).json({ error: 'Redemption not found' });
@@ -2111,6 +2111,45 @@ app.post('/api/admin/cleanup-db', requireAuth, (req, res) => {
   res.json({ ok: true, kept: keepScreenNames, keptProfiles: keepProfileIds.length, keptMembers: keepMemberIds.length });
 });
 // ────────────────────────────────────────────────────────────────────────────
+
+
+// Admin: get members with profile data
+app.get('/api/admin/members', requireMod, (req, res) => {
+  const rows = db.prepare(`
+    SELECT m.*, p.id as profile_id_val, p.screen_name, p.avatar_url, p.avatar_color,
+           p.tier, p.member_id, p.devices,
+           COALESCE(c.balance, 0) as credit_balance
+    FROM members m
+    LEFT JOIN profiles p ON (p.member_id=m.id OR (p.member_id IS NULL AND LOWER(p.email)=LOWER(m.email)))
+    LEFT JOIN credits c ON c.profile_id=p.id
+    ORDER BY m.first_name
+  `).all();
+  res.json(rows);
+});
+
+// Admin: update member info
+app.post('/api/admin/members/:id', requireMod, (req, res) => {
+  const { first_name, last_name, email, phone, notes } = req.body;
+  const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.id);
+  if (!m) return res.status(404).json({ error: 'Not found' });
+  db.prepare('UPDATE members SET first_name=?, last_name=?, email=?, phone=?, notes=? WHERE id=?')
+    .run(first_name||m.first_name, last_name||m.last_name, email||m.email, phone||m.phone, notes!==undefined?notes:m.notes, req.params.id);
+  res.json({ ok: true });
+});
+
+// Admin: deny applicant
+app.post('/api/applicants/:id/deny', requireMod, (req, res) => {
+  db.prepare("UPDATE applicants SET status='denied' WHERE id=?").run(req.params.id);
+  res.json({ ok: true });
+});
+
+// Admin: add credits
+app.post('/api/admin/credits', requireMod, (req, res) => {
+  const { profile_id, amount, reason } = req.body;
+  if (!profile_id || !amount) return res.status(400).json({ error: 'profile_id and amount required' });
+  addCredit(profile_id, parseInt(amount), 'admin', reason || 'Admin adjustment');
+  res.json({ ok: true });
+});
 
 // ── Admin: Subscribers ────────────────────────────────────────────────────────
 app.get('/api/admin/subscribers', requireAuth, (req, res) => {
