@@ -1352,16 +1352,20 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
     if (redemption.service === 'stremio') {
       db.prepare('UPDATE members SET stremio_email=?, stremio_pass=?, jellyfin_user=?, jellyfin_pass=?, stremio_start=?, stremio_end=? WHERE id=?')
         .run(account_user, account_pass, account_user, account_pass, now.toISOString(), end.toISOString(), member.id);
-      // Grant Jellyfin library access for DungeonStream (Movies + Series)
+      // Create Jellyfin account and grant library access on VPS
       try {
-        const jfUserId = await jellyfinGetUserId(account_user);
+        // Create account first
+        const createRes = await jellyfinCreateUser(account_user, account_pass, JELLYFIN_URL, JELLYFIN_API_KEY);
+        console.log('[Jellyfin VPS] Create result:', createRes?.status, JSON.stringify(createRes?.body)?.substring(0,100));
+        // Get user ID (works whether account was just created or already existed)
+        const jfUserId = await jellyfinGetUserId(account_user, JELLYFIN_URL, JELLYFIN_API_KEY);
         if (jfUserId) {
-          await jellyfinGrantLibraryAccess(jfUserId, ['Movies', 'Shows']);
-          console.log('[Jellyfin] Granted Movies+Series to:', account_user);
+          await jellyfinGrantLibraryAccess(jfUserId, ['Movies', 'Shows'], JELLYFIN_URL, JELLYFIN_API_KEY);
+          console.log('[Jellyfin VPS] Granted Movies+Shows to:', account_user);
         } else {
-          console.log('[Jellyfin] User not found in Jellyfin:', account_user);
+          console.log('[Jellyfin VPS] Could not find user after create:', account_user);
         }
-      } catch(e) { console.error('[Jellyfin] Library grant error:', e.message); }
+      } catch(e) { console.error('[Jellyfin VPS] Error:', e.message); }
     } else {
       // Update IPTV account
       const existing = db.prepare('SELECT * FROM iptv_accounts WHERE profile_id=?').get(profile.id);
