@@ -698,7 +698,7 @@ app.post('/api/mod/applicants/:id/deny', requireMod, (req, res) => {
 app.post('/api/apply', submitLimiter, async (req, res) => {
   const { first_name, last_name, email, phone, language, referral, notes, screen_name } = req.body;
   if (!first_name || !last_name || !email) return res.status(400).json({ error: 'Name and email are required.' });
-  if (!phone) return res.status(400).json({ error: 'Phone number is required.' });
+
   if (!screen_name) return res.status(400).json({ error: 'A username is required.' });
   if (!/^[a-zA-Z0-9_]{3,20}$/.test(screen_name)) return res.status(400).json({ error: 'Username must be 3–20 characters, letters, numbers and underscores only.' });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email address.' });
