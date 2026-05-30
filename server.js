@@ -894,7 +894,7 @@ app.get('/api/admin/stremio', requireAuth, (req, res) => {
   res.json(rows);
 });
 
-app.post('/api/admin/stremio/:memberId', requireAuth, (req, res) => {
+app.post('/api/admin/stremio/:memberId', requireMod, (req, res) => {
   const { stremio_email, stremio_pass, stremio_start, stremio_end, stremio_auth_key } = req.body;
   const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.memberId);
   if (!m) return res.status(404).json({ error: 'Member not found' });
@@ -909,7 +909,7 @@ app.post('/api/admin/stremio/:memberId', requireAuth, (req, res) => {
 });
 
 // Admin: update IPTV subscription dates
-app.post('/api/admin/iptv-dates/:memberId', requireAuth, (req, res) => {
+app.post('/api/admin/iptv-dates/:memberId', requireMod, (req, res) => {
   const { iptv_start, iptv_end } = req.body;
   db.prepare('UPDATE members SET iptv_start=?, iptv_end=? WHERE id=?')
     .run(iptv_start||null, iptv_end||null, req.params.memberId);
