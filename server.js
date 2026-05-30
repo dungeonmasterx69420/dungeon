@@ -2133,7 +2133,7 @@ app.get('/api/admin/members', requireMod, (req, res) => {
     const members = db.prepare('SELECT * FROM members ORDER BY first_name').all();
     const result = members.map(m => {
       const profile = db.prepare('SELECT * FROM profiles WHERE member_id=? OR (member_id IS NULL AND LOWER(email)=LOWER(?))').get(m.id, m.email);
-      const credits = profile ? db.prepare('SELECT balance FROM credits WHERE profile_id=?').get(profile.id) : null;
+      const credits = profile ? db.prepare('SELECT amount FROM credits WHERE profile_id=?').get(profile.id) : null;
       return {
         ...m,
         profile_id_val: profile?.id || null,
@@ -2142,7 +2142,7 @@ app.get('/api/admin/members', requireMod, (req, res) => {
         avatar_color: profile?.avatar_color || null,
         tier: profile?.tier || 'member',
         devices: profile?.devices || null,
-        credit_balance: credits?.balance || 0
+        credit_balance: credits?.amount || 0
       };
     });
     res.json(result);
