@@ -641,16 +641,10 @@ function openEditSub(id,svc){
 
 async function saveSub(){
   const id=$('sub-mid').value;const svc=$('sub-svc').value;const err=$('sub-err');
-  let route,body;
-  if(svc==='stream'){
-    route=`/api/admin/stremio/${id}`;
-    body={stremio_email:$('sub-user').value.trim(),stremio_pass:$('sub-pass').value.trim(),stremio_start:$('sub-start').value||null,stremio_end:$('sub-end').value||null};
-  } else {
-    route=`/api/admin/iptv-dates/${id}`;
-    body={iptv_start:$('sub-start').value||null,iptv_end:$('sub-end').value||null};
-    // Also save username/pass to member record
-    await fetch(`/api/admin/members/${id}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})}).catch(()=>{});
-  }
+  const route=svc==='stream'?`/api/admin/members/${id}/stream`:`/api/admin/members/${id}/cast`;
+  const body=svc==='stream'
+    ?{username:$('sub-user').value.trim(),password:$('sub-pass').value.trim(),start:$('sub-start').value||null,end:$('sub-end').value||null}
+    :{start:$('sub-start').value||null,end:$('sub-end').value||null};
   const r=await fetch(route,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({error:e.message}));
   if(r.error){err.textContent=r.error;err.style.display='block';return;}
   closeSheet('sh-sub');loadMembers();
