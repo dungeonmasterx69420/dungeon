@@ -1,221 +1,297 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon · Admin</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    :root{
-      --bg:#0b0f0e;--surface:#111915;--surface2:#172118;--surface3:#1d2b1f;
-      --border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
-      --green:#34d399;--green-bg:rgba(52,211,153,0.08);
-      --text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;
-      --red:#f87171;--red-bg:rgba(248,113,113,0.08);
-      --amber:#fbbf24;--amber-bg:rgba(251,191,36,0.08);
-      --blue:#60a5fa;
-    }
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
-    
-    /* Topbar */
-    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-    .logo{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--green);text-decoration:none}
-    .nav{display:flex;align-items:center;gap:12px}
-    .nav a,.nav button{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif}
-    .nav a:hover,.nav button:hover{color:var(--text)}
-    
-    /* Stats bar */
-    .stats-bar{display:flex;gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
-    .stat{flex:1;background:var(--surface);padding:14px 16px;text-align:center}
-    .stat-label{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-    .stat-val{font-size:22px;font-weight:700}
-    .stat-val.green{color:var(--green)}
-    .stat-val.red{color:var(--red)}
-    .stat-val.amber{color:var(--amber)}
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>Dungeon · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#080c0b;
+  --s1:#0e1412;
+  --s2:#141c1a;
+  --s3:#1a2422;
+  --bdr:rgba(52,211,153,.1);
+  --bdr2:rgba(52,211,153,.2);
+  --g:#34d399;
+  --gb:rgba(52,211,153,.08);
+  --txt:#dce8e3;
+  --t2:#8fa89e;
+  --t3:#4d6b62;
+  --red:#f87171;
+  --redb:rgba(248,113,113,.08);
+  --amb:#fbbf24;
+  --ambb:rgba(251,191,36,.08);
+  --blue:#60a5fa;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'DM Sans',sans-serif;
+  --r:10px;
+}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:14px;line-height:1.5}
 
-    /* Tabs */
-    .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .tab{padding:14px 20px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .2s}
-    .tab:hover{color:var(--text)}
-    .tab.on{color:var(--green);border-bottom-color:var(--green)}
+/* ── Layout ── */
+.layout{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;background:var(--s1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;flex-shrink:0;transition:transform .25s}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
 
-    /* Page panels */
-    .panel{display:none;padding:16px}
-    .panel.on{display:block}
+/* ── Sidebar ── */
+.sb-logo{padding:20px 18px 16px;border-bottom:1px solid var(--bdr)}
+.sb-logo-text{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--g);letter-spacing:.06em}
+.sb-logo-sub{font-size:10px;color:var(--t3);margin-top:2px;font-family:var(--mono)}
+.sb-nav{padding:10px 8px;flex:1}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--t2);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:2px;position:relative}
+.sb-item:hover{background:var(--s2);color:var(--txt)}
+.sb-item.on{background:var(--gb);color:var(--g);border:1px solid var(--bdr)}
+.sb-item .icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.sb-badge{margin-left:auto;background:var(--amb);color:#000;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center}
+.sb-badge.red{background:var(--red)}
+.sb-footer{padding:12px 8px;border-top:1px solid var(--bdr)}
+.sb-user{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px}
+.sb-avatar{width:28px;height:28px;border-radius:50%;background:var(--g);color:#000;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-user-info{flex:1;min-width:0}
+.sb-user-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-user-role{font-size:10px;color:var(--t3);font-family:var(--mono)}
+.sb-signout{font-size:11px;color:var(--t3);background:none;border:none;cursor:pointer;font-family:var(--sans);padding:0;transition:color .15s}
+.sb-signout:hover{color:var(--red)}
 
-    /* Section header */
-    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-    .section-title{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-    
-    /* Filters */
-    .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-    .fb{font-size:12px;padding:6px 12px;border-radius:20px;border:1px solid var(--border2);color:var(--muted2);background:var(--surface);cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;transition:all .15s}
-    .fb:hover{color:var(--text);border-color:var(--green)}
-    .fb.on{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+/* ── Header ── */
+.header{padding:16px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;background:var(--s1);position:sticky;top:0;z-index:10}
+.header-title{font-size:15px;font-weight:700}
+.header-sub{font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:1px}
+.mobile-menu{display:none;background:none;border:none;color:var(--t2);cursor:pointer;font-size:20px;padding:4px}
 
-    /* Cards */
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;cursor:pointer;transition:border-color .2s}
-    .card:hover{border-color:var(--border2)}
-    .card-header{padding:14px 16px;display:flex;align-items:center;gap:12px}
-    .avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#0b0f0e;flex-shrink:0}
-    .card-info{flex:1;min-width:0}
-    .card-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-    .card-sub{font-size:12px;color:var(--muted2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .card-meta{display:flex;align-items:center;gap:6px;flex-shrink:0}
-    .card-body{padding:0 16px 14px;display:none;border-top:1px solid var(--border)}
-    .card.expanded .card-body{display:block}
-    .card.expanded{border-color:var(--border2)}
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bdr);border-bottom:1px solid var(--bdr)}
+.stat{background:var(--s1);padding:14px 16px}
+.stat-label{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:6px}
+.stat-val{font-size:24px;font-weight:700;font-family:var(--mono);line-height:1}
+.stat-val.g{color:var(--g)}
+.stat-val.r{color:var(--red)}
+.stat-val.a{color:var(--amb)}
 
-    /* Badges */
-    .bdg{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
-    .bdg-g{background:var(--green-bg);color:var(--green)}
-    .bdg-r{background:var(--red-bg);color:var(--red)}
-    .bdg-a{background:var(--amber-bg);color:var(--amber)}
-    .bdg-b{background:rgba(148,163,160,.1);color:var(--muted2)}
-    .bdg-blue{background:rgba(96,165,250,.1);color:var(--blue)}
+/* ── Content ── */
+.content{padding:16px;flex:1}
 
-    /* Member detail grid */
-    .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
-    .detail-item{background:var(--surface2);border-radius:8px;padding:10px 12px}
-    .detail-item.full{grid-column:1/-1}
-    .detail-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-    .detail-val{font-size:13px;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-    .detail-val.mono{font-family:monospace;font-size:12px}
-    .detail-val.muted{color:var(--muted2)}
-    
-    /* Sub section */
-    .sub-section{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
-    .sub-section-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+/* ── Search ── */
+.search-bar{position:relative;margin-bottom:14px}
+.search-bar input{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:13px;padding:9px 12px 9px 36px;outline:none;transition:border-color .15s}
+.search-bar input:focus{border-color:var(--g)}
+.search-bar input::placeholder{color:var(--t3)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:14px}
 
-    /* Action buttons */
-    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-    .btn{font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .2s}
-    .btn:hover{opacity:.85}
-    .btn:disabled{opacity:.4;cursor:not-allowed}
-    .btn-g{background:var(--green);color:#0b0f0e}
-    .btn-r{background:var(--red);color:#fff}
-    .btn-b{background:var(--surface2);border:1px solid var(--border2);color:var(--muted2)}
-    .btn-b:hover{color:var(--text);border-color:var(--green)}
-    .btn-amber{background:var(--amber);color:#0b0f0e}
+/* ── Filters ── */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.fb{font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid var(--bdr2);color:var(--t2);background:var(--s2);cursor:pointer;font-family:var(--sans);transition:all .15s;letter-spacing:.02em}
+.fb:hover{color:var(--txt);border-color:var(--g)}
+.fb.on{background:var(--gb);border-color:var(--g);color:var(--g)}
 
-    /* Inline edit */
-    .edit-row{display:flex;gap:6px;margin-top:6px}
-    .edit-row input{flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:7px 10px;outline:none}
-    .edit-row input:focus{border-color:var(--green)}
-    .copy-btn{font-size:11px;padding:4px 8px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0}
-    .copy-btn:hover{color:var(--green);border-color:var(--green)}
+/* ── Cards ── */
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:8px;overflow:hidden;transition:border-color .2s}
+.card:hover{border-color:var(--bdr2)}
+.card.expanded{border-color:var(--bdr2)}
+.ch{padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.ca{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#000;flex-shrink:0;overflow:hidden}
+.ca img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.ci{flex:1;min-width:0}
+.cn{font-size:13px;font-weight:600;display:flex;align-items:center;gap:5px;flex-wrap:wrap;line-height:1.3}
+.cs{font-size:11px;color:var(--t2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cb{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:4px}
+.cv{color:var(--t2);font-size:16px;transition:transform .2s;flex-shrink:0}
+.card.expanded .cv{transform:rotate(180deg)}
+.card-body{padding:0 14px 14px;border-top:1px solid var(--bdr);display:none}
+.card.expanded .card-body{display:block}
 
-    /* Sheets */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;backdrop-filter:blur(2px)}
-    .overlay.on{display:block}
-    .sheet{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-radius:16px 16px 0 0;padding:20px;z-index:201;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s ease}
-    .sheet.on{transform:translateY(0)}
-    .shandle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
-    .stitle{font-size:15px;font-weight:700;margin-bottom:16px}
-    .ssub{font-size:13px;color:var(--muted2);margin-bottom:16px;line-height:1.6}
-    .field{margin-bottom:14px}
-    .field label{display:block;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:5px}
-    .field input,.field select,.field textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:10px 12px;outline:none}
-    .field input:focus,.field select:focus{border-color:var(--green)}
-    .field textarea{resize:vertical;min-height:80px}
-    .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .sacts{display:flex;gap:8px;margin-top:16px}
-    .sacts .btn{flex:1;padding:12px}
-    .serr{font-size:12px;color:var(--red);margin-bottom:10px;display:none}
-    .sinfo{font-size:12px;color:var(--muted2);background:var(--green-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px;line-height:1.6}
+/* ── Detail Grid ── */
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
+.di{background:var(--s2);border-radius:8px;padding:10px 12px}
+.di.full{grid-column:1/-1}
+.dl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:5px}
+.dv{font-size:12px;color:var(--txt)}
+.dv.mono{font-family:var(--mono);font-size:11px}
+.dv.dim{color:var(--t2)}
+.dv.sub{font-size:10px;color:var(--t3);margin-top:2px}
 
-    /* Empty state */
-    .empty{text-align:center;padding:40px 20px;color:var(--muted2);font-size:13px}
+/* ── Actions ── */
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--bdr)}
+.btn{font-size:11px;font-weight:700;padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-family:var(--sans);transition:opacity .15s;letter-spacing:.02em}
+.btn:hover{opacity:.8}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-g{background:var(--g);color:#000}
+.btn-r{background:var(--red);color:#fff}
+.btn-b{background:var(--s3);border:1px solid var(--bdr2);color:var(--t2)}
+.btn-b:hover{color:var(--txt);border-color:var(--g);opacity:1}
+.btn-a{background:var(--amb);color:#000}
 
-    /* Redemption cards */
-    .redem-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px}
-    .redem-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-    .redem-name{font-size:14px;font-weight:600}
-    .redem-meta{font-size:12px;color:var(--muted2);margin-bottom:10px}
-    .redem-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
-    .redem-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);width:80px;flex-shrink:0}
-    .redem-val{font-size:13px;color:var(--text)}
+/* ── Badges ── */
+.bdg{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.bdg-g{background:var(--gb);color:var(--g);border:1px solid var(--bdr)}
+.bdg-r{background:var(--redb);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+.bdg-a{background:var(--ambb);color:var(--amb);border:1px solid rgba(251,191,36,.2)}
+.bdg-b{background:var(--s3);color:var(--t2);border:1px solid var(--bdr)}
+.bdg-blue{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
 
-    @media(max-width:480px){
-      .detail-grid{grid-template-columns:1fr}
-      .detail-item.full{grid-column:1}
-      .frow{grid-template-columns:1fr}
-      .stats-bar{flex-wrap:wrap}
-      .stat{min-width:50%}
-    }
-  </style>
+/* ── Redemption cards ── */
+.rc{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-bottom:8px}
+.rc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.rc-name{font-size:13px;font-weight:600}
+.rc-meta{font-size:11px;color:var(--t2);margin-top:3px}
+.rc-rows{margin-top:8px;border-top:1px solid var(--bdr);padding-top:8px}
+.rc-row{display:flex;gap:10px;align-items:baseline;margin-bottom:4px}
+.rc-lbl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);width:72px;flex-shrink:0}
+.rc-val{font-size:12px;color:var(--txt);font-family:var(--mono)}
+
+/* ── Overlay + Sheet ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;backdrop-filter:blur(3px)}
+.overlay.on{display:block}
+.sheet{position:fixed;bottom:0;left:0;right:0;background:var(--s1);border-top:1px solid var(--bdr2);border-radius:16px 16px 0 0;padding:20px 18px 32px;z-index:201;max-height:92vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.sheet.on{transform:translateY(0)}
+.sh-handle{width:36px;height:3px;background:var(--bdr2);border-radius:2px;margin:0 auto 16px}
+.sh-title{font-size:15px;font-weight:700;margin-bottom:4px}
+.sh-sub{font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6}
+.sh-info{font-size:12px;color:var(--t2);background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;margin-bottom:14px;line-height:1.6}
+.sh-err{font-size:12px;color:var(--red);background:var(--redb);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:8px 12px;margin-bottom:12px;display:none}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:13px;padding:10px 12px;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--g)}
+.field input::placeholder{color:var(--t3)}
+.field textarea{resize:vertical;min-height:80px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sacts{display:flex;gap:8px;margin-top:16px}
+.sacts .btn{flex:1;padding:12px;font-size:12px}
+
+/* ── Empty ── */
+.empty{text-align:center;padding:48px 20px;color:var(--t3);font-size:12px;font-family:var(--mono)}
+
+/* ── Mobile overlay sidebar ── */
+.sb-close{display:none}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:300;transform:translateX(-100%);width:260px}
+  .sidebar.open{transform:translateX(0)}
+  .mobile-menu{display:block}
+  .sb-close{display:flex;position:fixed;top:0;right:0;bottom:0;left:260px;z-index:299;background:rgba(0,0,0,.5);display:none}
+  .sidebar.open ~ .sb-close{display:block}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .dg{grid-template-columns:1fr}
+  .di.full{grid-column:1}
+  .frow{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
 
-<div class="topbar">
-  <a href="/dashboard.html" class="logo">Dungeon</a>
-  <div class="nav">
-    <a href="/">View Site</a>
-    <button onclick="logout()">Sign Out</button>
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-text">⬡ DUNGEON</div>
+      <div class="sb-logo-sub">Admin Console</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-item on" onclick="showPanel('applications',this)" id="nav-applications">
+        <span class="icon">📋</span> Applications
+        <span class="sb-badge red" id="nb-apps" style="display:none"></span>
+      </div>
+      <div class="sb-item" onclick="showPanel('members',this)" id="nav-members">
+        <span class="icon">👤</span> Members
+        <span class="sb-badge" id="nb-members" style="display:none"></span>
+      </div>
+      <div class="sb-item" onclick="showPanel('redemptions',this)" id="nav-redemptions">
+        <span class="icon">🎫</span> Redemptions
+        <span class="sb-badge red" id="nb-redem" style="display:none"></span>
+      </div>
+    </nav>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar" id="sb-av">W</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name" id="sb-name">Warden</div>
+          <div class="sb-user-role">dungeon master</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:4px 10px 0">
+        <a href="/" style="font-size:11px;color:var(--t3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--txt)'" onmouseout="this.style.color='var(--t3)'">View Site</a>
+        <button class="sb-signout" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+  </aside>
+  <div class="sb-close" id="sb-close" onclick="closeSidebar()"></div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="header">
+      <button class="mobile-menu" onclick="toggleSidebar()">☰</button>
+      <div>
+        <div class="header-title" id="header-title">Applications</div>
+        <div class="header-sub" id="header-sub">Manage member applications</div>
+      </div>
+      <div style="display:flex;gap:6px" id="header-actions"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Pending Apps</div><div class="stat-val a" id="st-apps">—</div></div>
+      <div class="stat"><div class="stat-label">Members</div><div class="stat-val g" id="st-members">—</div></div>
+      <div class="stat"><div class="stat-label">Subscribers</div><div class="stat-val g" id="st-subs">—</div></div>
+      <div class="stat"><div class="stat-label">Pending Orders</div><div class="stat-val r" id="st-redem">—</div></div>
+    </div>
+
+    <!-- Panels -->
+    <div class="content">
+
+      <!-- Applications -->
+      <div id="panel-applications">
+        <div class="filters">
+          <button class="fb on" onclick="setAppFilter('pending',this)">Pending</button>
+          <button class="fb" onclick="setAppFilter('approved',this)">Approved</button>
+          <button class="fb" onclick="setAppFilter('denied',this)">Denied</button>
+          <button class="fb" onclick="setAppFilter('all',this)">All</button>
+        </div>
+        <div id="app-list"><div class="empty">// loading...</div></div>
+      </div>
+
+      <!-- Members -->
+      <div id="panel-members" style="display:none">
+        <div class="search-bar">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="member-search" placeholder="Search by name, email or @screen_name" oninput="filterMembers()"/>
+        </div>
+        <div id="member-list"><div class="empty">// loading...</div></div>
+      </div>
+
+      <!-- Redemptions -->
+      <div id="panel-redemptions" style="display:none">
+        <div class="filters">
+          <button class="fb on" onclick="setRedemFilter('pending',this)">Pending</button>
+          <button class="fb" onclick="setRedemFilter('fulfilled',this)">Fulfilled</button>
+          <button class="fb" onclick="setRedemFilter('all',this)">All</button>
+        </div>
+        <div id="redem-list"><div class="empty">// loading...</div></div>
+      </div>
+
+    </div>
   </div>
-</div>
-
-<!-- Stats -->
-<div class="stats-bar">
-  <div class="stat"><div class="stat-label">Applications</div><div class="stat-val amber" id="statApps">—</div></div>
-  <div class="stat"><div class="stat-label">Members</div><div class="stat-val green" id="statMembers">—</div></div>
-  <div class="stat"><div class="stat-label">Subscribers</div><div class="stat-val green" id="statSubs">—</div></div>
-  <div class="stat"><div class="stat-label">Pending</div><div class="stat-val amber" id="statPending">—</div></div>
-</div>
-
-<!-- Tabs -->
-<div class="tabs">
-  <div class="tab on" onclick="switchTab('applications',this)">Applications</div>
-  <div class="tab" onclick="switchTab('members',this)">Members</div>
-  <div class="tab" onclick="switchTab('redemptions',this)">Redemptions</div>
-</div>
-
-<!-- APPLICATIONS -->
-<div class="panel on" id="panel-applications">
-  <div class="filters">
-    <button class="fb on" onclick="setFilter('app','pending',this)">Pending</button>
-    <button class="fb" onclick="setFilter('app','approved',this)">Approved</button>
-    <button class="fb" onclick="setFilter('app','denied',this)">Denied</button>
-    <button class="fb" onclick="setFilter('app','all',this)">All</button>
-  </div>
-  <div id="appList"><div class="empty">Loading…</div></div>
-</div>
-
-<!-- MEMBERS -->
-<div class="panel" id="panel-members">
-  <div style="display:flex;gap:8px;margin-bottom:14px">
-    <input type="text" id="memberSearch" placeholder="Search members…" oninput="filterMembers()" style="flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:9px 12px;outline:none"/>
-  </div>
-  <div id="memberList"><div class="empty">Loading…</div></div>
-</div>
-
-<!-- REDEMPTIONS -->
-<div class="panel" id="panel-redemptions">
-  <div class="filters">
-    <button class="fb on" onclick="setFilter('redem','pending',this)">Pending</button>
-    <button class="fb" onclick="setFilter('redem','fulfilled',this)">Fulfilled</button>
-    <button class="fb" onclick="setFilter('redem','all',this)">All</button>
-  </div>
-  <div id="redemList"><div class="empty">Loading…</div></div>
 </div>
 
 <!-- Overlay -->
 <div class="overlay" id="overlay" onclick="closeAllSheets()"></div>
 
-<!-- Grant Access Sheet -->
+<!-- Grant Sheet -->
 <div class="sheet" id="sh-grant">
-  <div class="shandle"></div>
-  <div class="stitle">Grant Access</div>
-  <div class="ssub" id="sh-grant-sub"></div>
-  <div class="sinfo">A Jellyfin account will be created automatically on both servers. Credentials will be emailed to the member.</div>
-  <div class="serr" id="g-err"></div>
+  <div class="sh-handle"></div>
+  <div class="sh-title">Grant Access</div>
+  <div class="sh-sub" id="sh-grant-sub">Approve applicant and create their account.</div>
+  <div class="sh-info">Member will receive a welcome email with their dashboard login. Jellyfin account will be created when they redeem a credit.</div>
+  <div class="sh-err" id="g-err"></div>
   <input type="hidden" id="g-id"/>
-  <div class="field"><label>Temporary Password</label>
+  <div class="field">
+    <label>Temporary Dashboard Password</label>
     <div style="display:flex;gap:6px">
-      <input type="text" id="g-pass" style="flex:1"/>
-      <button class="btn btn-b" onclick="genPass()">Generate</button>
+      <input type="text" id="g-pass" style="flex:1;font-family:var(--mono)"/>
+      <button class="btn btn-b" onclick="document.getElementById('g-pass').value=mkPass()" style="flex-shrink:0">⟳ Gen</button>
     </div>
   </div>
   <div class="sacts">
@@ -226,27 +302,32 @@
 
 <!-- Fulfill Sheet -->
 <div class="sheet" id="sh-fulfill">
-  <div class="shandle"></div>
-  <div class="stitle" id="f-title">Fulfill Redemption</div>
-  <div class="ssub" id="f-sub"></div>
-  <div class="sinfo">Credentials will be emailed and library access granted automatically.</div>
-  <div class="serr" id="f-err"></div>
+  <div class="sh-handle"></div>
+  <div class="sh-title" id="f-title">Fulfill Redemption</div>
+  <div class="sh-sub" id="f-sub"></div>
+  <div class="sh-info" id="f-info">Jellyfin account will be created and library access granted automatically. Credentials will be emailed.</div>
+  <div class="sh-err" id="f-err"></div>
   <input type="hidden" id="f-rid"/>
   <input type="hidden" id="f-svc"/>
-  <div class="field"><label id="f-user-lbl">Jellyfin Username</label><input type="text" id="f-user"/></div>
-  <div class="field"><label>Password</label><input type="text" id="f-pass"/></div>
-  <div class="field"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any extra info…"></textarea></div>
+  <div class="field"><label id="f-user-lbl">Jellyfin Username</label><input type="text" id="f-user" style="font-family:var(--mono)"/></div>
+  <div class="field"><label>Password</label>
+    <div style="display:flex;gap:6px">
+      <input type="text" id="f-pass" style="flex:1;font-family:var(--mono)"/>
+      <button class="btn btn-b" onclick="document.getElementById('f-pass').value=mkPass()" style="flex-shrink:0">⟳</button>
+    </div>
+  </div>
+  <div class="field"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any extra info for the member…"></textarea></div>
   <div class="sacts">
     <button class="btn btn-b" onclick="closeSheet('sh-fulfill')">Cancel</button>
-    <button class="btn btn-g" id="f-submit" onclick="submitFulfill()">Send Credentials</button>
+    <button class="btn btn-g" id="f-btn" onclick="submitFulfill()">Send Credentials</button>
   </div>
 </div>
 
 <!-- Edit Member Sheet -->
 <div class="sheet" id="sh-member">
-  <div class="shandle"></div>
-  <div class="stitle">Edit Member</div>
-  <div class="serr" id="m-err"></div>
+  <div class="sh-handle"></div>
+  <div class="sh-title">Edit Member</div>
+  <div class="sh-err" id="m-err"></div>
   <input type="hidden" id="m-id"/>
   <div class="frow">
     <div class="field"><label>First Name</label><input type="text" id="m-fn"/></div>
@@ -257,19 +338,19 @@
   <div class="field"><label>Notes</label><textarea id="m-notes"></textarea></div>
   <div class="sacts">
     <button class="btn btn-b" onclick="closeSheet('sh-member')">Cancel</button>
-    <button class="btn btn-g" onclick="saveMember()">Save</button>
+    <button class="btn btn-g" onclick="saveMember()">Save Changes</button>
   </div>
 </div>
 
 <!-- Edit Subscription Sheet -->
 <div class="sheet" id="sh-sub">
-  <div class="shandle"></div>
-  <div class="stitle" id="sh-sub-title">Edit Subscription</div>
-  <div class="serr" id="sub-err"></div>
+  <div class="sh-handle"></div>
+  <div class="sh-title" id="sh-sub-title">Edit Subscription</div>
+  <div class="sh-err" id="sub-err"></div>
   <input type="hidden" id="sub-mid"/>
   <input type="hidden" id="sub-svc"/>
-  <div class="field"><label>Jellyfin Username</label><input type="text" id="sub-user"/></div>
-  <div class="field"><label>Password</label><input type="text" id="sub-pass"/></div>
+  <div class="field"><label>Jellyfin Username</label><input type="text" id="sub-user" style="font-family:var(--mono)"/></div>
+  <div class="field"><label>Password</label><input type="text" id="sub-pass" style="font-family:var(--mono)"/></div>
   <div class="frow">
     <div class="field"><label>Start Date</label><input type="date" id="sub-start"/></div>
     <div class="field"><label>End Date</label><input type="date" id="sub-end"/></div>
@@ -281,14 +362,18 @@
   </div>
 </div>
 
-<!-- Add Credits Sheet -->
+<!-- Credits Sheet -->
 <div class="sheet" id="sh-credits">
-  <div class="shandle"></div>
-  <div class="stitle">Manage Credits</div>
+  <div class="sh-handle"></div>
+  <div class="sh-title">Manage Credits</div>
   <input type="hidden" id="cr-pid"/>
   <input type="hidden" id="cr-mid"/>
-  <div class="field"><label>Current Balance</label><div id="cr-balance" style="font-size:20px;font-weight:700;color:var(--green);padding:8px 0"></div></div>
-  <div class="field"><label>Add Credits</label>
+  <div class="field">
+    <label>Current Balance</label>
+    <div id="cr-balance" style="font-size:28px;font-weight:700;color:var(--g);font-family:var(--mono);padding:8px 0">—</div>
+  </div>
+  <div class="field">
+    <label>Add Credits</label>
     <div style="display:flex;gap:6px">
       <input type="number" id="cr-amount" value="1" min="1" max="99" style="flex:1"/>
       <button class="btn btn-g" onclick="addCredits()">Add</button>
@@ -301,368 +386,372 @@
 
 <script>
 const $ = id => document.getElementById(id);
-const SITE = '';
-let _appFilter = 'pending';
-let _redemFilter = 'pending';
-let _allMembers = [];
-let _grantId = null;
+let _appFilter='pending', _redemFilter='pending';
+let _allMembers=[], _grantId=null;
 
-// ── Auth ─────────────────────────────────────────────────────────────────────
+// ── Auth ──────────────────────────────────────────────────────────────────────
 fetch('/api/member/me').then(r=>r.json()).then(d=>{
-  if(!d.authenticated) { window.location.href='/login.html'; return; }
-  if(!['admin','warden'].includes(d.member?.profile?.tier)) { window.location.href='/dashboard.html'; return; }
+  if(!d.authenticated){window.location.href='/login.html';return;}
+  const tier=d.member?.profile?.tier;
+  if(!['admin','warden'].includes(tier)){window.location.href='/dashboard.html';return;}
+  const name=d.member?.profile?.screen_name||d.member?.first_name||'Warden';
+  $('sb-name').textContent='@'+name;
+  $('sb-av').textContent=name[0].toUpperCase();
+  if(d.member?.profile?.avatar_color) $('sb-av').style.background=d.member.profile.avatar_color;
   loadAll();
 });
 
-async function logout() { await fetch('/api/member/logout',{method:'POST'}); window.location.href='/login.html'; }
+async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
 
-// ── Tabs ─────────────────────────────────────────────────────────────────────
-function switchTab(name, el) {
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+// ── Panels ────────────────────────────────────────────────────────────────────
+const panelTitles={applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
+
+function showPanel(name,el){
+  ['applications','members','redemptions'].forEach(p=>{$(('panel-'+p)).style.display=p===name?'block':'none';});
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('on'));
   el.classList.add('on');
-  $('panel-'+name).classList.add('on');
+  const [title,sub]=panelTitles[name];
+  $('header-title').textContent=title;
+  $('header-sub').textContent=sub;
+  closeSidebar();
   if(name==='applications') loadApps();
   if(name==='members') loadMembers();
   if(name==='redemptions') loadRedem();
 }
 
-function setFilter(type, val, el) {
-  if(type==='app') { _appFilter=val; loadApps(); }
-  if(type==='redem') { _redemFilter=val; loadRedem(); }
-  el.closest('.filters').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-}
+// ── Sidebar (mobile) ─────────────────────────────────────────────────────────
+function toggleSidebar(){$('sidebar').classList.toggle('open');$('sb-close').style.display=$('sidebar').classList.contains('open')?'block':'none';}
+function closeSidebar(){$('sidebar').classList.remove('open');$('sb-close').style.display='none';}
 
-// ── Load All ─────────────────────────────────────────────────────────────────
-function loadAll() { loadStats(); loadApps(); loadMembers(); loadRedem(); }
-
-async function loadStats() {
-  const [apps, members, redems] = await Promise.all([
+// ── Stats ─────────────────────────────────────────────────────────────────────
+async function loadStats(){
+  const [apps,members,redems]=await Promise.all([
     fetch('/api/applicants').then(r=>r.json()).catch(()=>[]),
     fetch('/api/admin/members').then(r=>r.json()).catch(()=>[]),
     fetch('/api/admin/redemptions').then(r=>r.json()).catch(()=>[])
   ]);
-  $('statApps').textContent = apps.filter(a=>a.status==='pending').length;
-  $('statMembers').textContent = members.length;
-  const now = new Date();
-  const subs = members.filter(m => m.stremio_end && new Date(m.stremio_end) > now || m.iptv_end && new Date(m.iptv_end) > now);
-  $('statSubs').textContent = subs.length;
-  $('statPending').textContent = redems.filter(r=>r.status==='pending').length;
+  const pending=apps.filter(a=>(a.status||'pending')==='pending').length;
+  const pendingR=redems.filter(r=>r.status==='pending').length;
+  const now=new Date();
+  const subs=members.filter(m=>(m.stremio_end&&new Date(m.stremio_end)>now)||(m.iptv_end&&new Date(m.iptv_end)>now)).length;
+  $('st-apps').textContent=pending;
+  $('st-members').textContent=members.length;
+  $('st-subs').textContent=subs;
+  $('st-redem').textContent=pendingR;
+  // Nav badges
+  if(pending>0){$('nb-apps').textContent=pending;$('nb-apps').style.display='flex';}
+  if(pendingR>0){$('nb-redem').textContent=pendingR;$('nb-redem').style.display='flex';}
 }
 
-// ── Applications ─────────────────────────────────────────────────────────────
-async function loadApps() {
-  const apps = await fetch('/api/applicants').then(r=>r.json()).catch(()=>[]);
-  const filtered = _appFilter==='all' ? apps : apps.filter(a=>(a.status||'pending')===_appFilter);
-  const el = $('appList');
-  if(!filtered.length) { el.innerHTML='<div class="empty">No applications</div>'; return; }
-  el.innerHTML = filtered.map(a => {
-    const status = a.status || 'pending';
-    const bdg = status==='pending'?'bdg-a':status==='approved'?'bdg-g':'bdg-r';
+function loadAll(){loadStats();loadApps();loadMembers();loadRedem();}
+
+// ── Applications ──────────────────────────────────────────────────────────────
+async function loadApps(){
+  const apps=await fetch('/api/applicants').then(r=>r.json()).catch(()=>[]);
+  const f=_appFilter==='all'?apps:apps.filter(a=>(a.status||'pending')===_appFilter);
+  const el=$('app-list');
+  if(!f.length){el.innerHTML='<div class="empty">// no applications</div>';return;}
+  el.innerHTML=f.map(a=>{
+    const st=a.status||'pending';
+    const bc=st==='pending'?'bdg-a':st==='approved'?'bdg-g':'bdg-r';
     return `<div class="card">
-      <div class="card-header">
-        <div style="flex:1">
-          <div class="card-name">${esc(a.first_name)} ${esc(a.last_name)} <span class="bdg ${bdg}">${status}</span></div>
-          <div class="card-sub">${esc(a.email)}${a.screen_name?` · @${esc(a.screen_name)}`:''}</div>
-          ${a.phone?`<div class="card-sub">📞 ${esc(a.phone)}</div>`:''}
-          ${a.notes?`<div class="card-sub" style="margin-top:4px;color:var(--muted2)">${esc(a.notes)}</div>`:''}
-          <div class="card-sub" style="margin-top:4px;color:var(--muted);font-size:11px">${new Date(a.created_at||Date.now()).toLocaleDateString()}</div>
+      <div class="ch" onclick="toggleCard(this)">
+        <div class="ca" style="background:${strToColor(a.first_name)}">${(a.first_name||'?')[0].toUpperCase()}</div>
+        <div class="ci">
+          <div class="cn">${esc(a.first_name)} ${esc(a.last_name)} <span class="bdg ${bc}">${st}</span></div>
+          <div class="cs">${esc(a.email)}${a.screen_name?` · @${esc(a.screen_name)}`:''}</div>
+          <div class="cs" style="color:var(--t3);font-size:10px">${fmtDate(a.created_at)}</div>
         </div>
-        <div class="card-meta">
-          ${status==='pending'?`<button class="btn btn-g" onclick="event.stopPropagation();openGrant('${a.id}','${esc(a.first_name)}','${esc(a.last_name)}','${esc(a.email)}')">Grant</button>
-          <button class="btn btn-r" onclick="event.stopPropagation();denyApp('${a.id}')">Deny</button>`:''}
+        <span class="cv">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="dg">
+          ${a.phone?`<div class="di"><div class="dl">Phone</div><div class="dv">${esc(a.phone)}</div></div>`:''}
+          ${a.language?`<div class="di"><div class="dl">Language</div><div class="dv">${esc(a.language)}</div></div>`:''}
+          ${a.referral?`<div class="di full"><div class="dl">Referred by</div><div class="dv">${esc(a.referral)}</div></div>`:''}
+          ${a.notes?`<div class="di full"><div class="dl">Notes</div><div class="dv">${esc(a.notes)}</div></div>`:''}
         </div>
+        ${st==='pending'?`<div class="actions">
+          <button class="btn btn-g" onclick="openGrant('${a.id}','${esc(a.first_name)}','${esc(a.last_name)}','${esc(a.email)}')">✓ Grant Access</button>
+          <button class="btn btn-r" onclick="denyApp('${a.id}')">✗ Deny</button>
+        </div>`:''}
       </div>
     </div>`;
   }).join('');
 }
 
-function openGrant(id, fn, ln, email) {
-  _grantId = id;
-  $('g-id').value = id;
-  $('sh-grant-sub').innerHTML = `Grant access to <strong>${fn} ${ln}</strong> (${email})`;
-  $('g-pass').value = mkPass();
-  $('g-err').style.display = 'none';
+function setAppFilter(val,el){
+  _appFilter=val;
+  el.closest('.filters').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  loadApps();
+}
+
+function openGrant(id,fn,ln,email){
+  _grantId=id;
+  $('g-id').value=id;
+  $('sh-grant-sub').textContent=`Grant access to ${fn} ${ln} (${email})`;
+  $('g-pass').value=mkPass();
+  $('g-err').style.display='none';
   openSheet('sh-grant');
 }
 
-function genPass() { $('g-pass').value = mkPass(); }
-
-async function submitGrant() {
-  const pass = $('g-pass').value.trim();
-  const err = $('g-err');
-  if(!pass) { err.textContent='Password required'; err.style.display='block'; return; }
-  const btn = event.target; btn.textContent='Granting…'; btn.disabled=true;
-  const r = await fetch(`/api/applicants/${_grantId}/promote`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_pass:pass})}).then(r=>r.json()).catch(e=>({error:e.message}));
-  btn.textContent='Grant Access & Send Email'; btn.disabled=false;
-  if(r.error) { err.textContent=r.error; err.style.display='block'; return; }
-  closeSheet('sh-grant'); loadAll();
+async function submitGrant(){
+  const pass=$('g-pass').value.trim();
+  const err=$('g-err');
+  if(!pass){err.textContent='Password required';err.style.display='block';return;}
+  const btn=event.target;btn.textContent='Granting…';btn.disabled=true;
+  const r=await fetch(`/api/applicants/${_grantId}/promote`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stremio_pass:pass})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.textContent='Grant Access & Send Email';btn.disabled=false;
+  if(r.error){err.textContent=r.error;err.style.display='block';return;}
+  closeSheet('sh-grant');loadAll();
 }
 
-async function denyApp(id) {
-  if(!confirm('Deny this application?')) return;
+async function denyApp(id){
+  if(!confirm('Deny this application?'))return;
   await fetch(`/api/applicants/${id}/deny`,{method:'POST'});
-  loadApps(); loadStats();
+  loadApps();loadStats();
 }
 
-// ── Members ──────────────────────────────────────────────────────────────────
-async function loadMembers() {
-  _allMembers = await fetch('/api/admin/members').then(r=>r.json()).catch(()=>[]);
+// ── Members ───────────────────────────────────────────────────────────────────
+async function loadMembers(){
+  _allMembers=await fetch('/api/admin/members').then(r=>r.json()).catch(()=>[]);
   renderMembers(_allMembers);
 }
 
-function filterMembers() {
-  const q = $('memberSearch').value.toLowerCase();
-  const filtered = q ? _allMembers.filter(m =>
-    (m.first_name+' '+m.last_name).toLowerCase().includes(q) ||
-    (m.email||'').toLowerCase().includes(q) ||
+function filterMembers(){
+  const q=$('member-search').value.toLowerCase();
+  renderMembers(q?_allMembers.filter(m=>
+    (m.first_name+' '+m.last_name).toLowerCase().includes(q)||
+    (m.email||'').toLowerCase().includes(q)||
     (m.screen_name||'').toLowerCase().includes(q)
-  ) : _allMembers;
-  renderMembers(filtered);
+  ):_allMembers);
 }
 
-function renderMembers(members) {
-  const el = $('memberList');
-  if(!members.length) { el.innerHTML='<div class="empty">No members</div>'; return; }
-  const now = new Date();
-  el.innerHTML = members.map(m => {
-    const streamEnd = m.stremio_end ? new Date(m.stremio_end) : null;
-    const castEnd = m.iptv_end ? new Date(m.iptv_end) : null;
-    const streamActive = streamEnd && streamEnd > now;
-    const castActive = castEnd && castEnd > now;
-    const initials = ((m.first_name||'?')[0]+(m.last_name||'?')[0]).toUpperCase();
-    const color = m.avatar_color || '#34d399';
-    const streamDays = streamEnd ? Math.ceil((streamEnd-now)/86400000) : null;
-    const castDays = castEnd ? Math.ceil((castEnd-now)/86400000) : null;
-    const devices = formatDevices(m.devices);
+function renderMembers(members){
+  const el=$('member-list');
+  if(!members.length){el.innerHTML='<div class="empty">// no members</div>';return;}
+  const now=new Date();
+  el.innerHTML=members.map(m=>{
+    const sEnd=m.stremio_end?new Date(m.stremio_end):null;
+    const cEnd=m.iptv_end?new Date(m.iptv_end):null;
+    const sAct=sEnd&&sEnd>now;
+    const cAct=cEnd&&cEnd>now;
+    const sDays=sEnd?Math.ceil((sEnd-now)/86400000):null;
+    const cDays=cEnd?Math.ceil((cEnd-now)/86400000):null;
+    const init=((m.first_name||'?')[0]+(m.last_name||'?')[0]).toUpperCase();
+    const tier=m.tier||'member';
+    const tierBdg=tier==='warden'?'bdg-a':tier==='admin'?'bdg-blue':tier==='mod'?'bdg-g':'bdg-b';
+    const devices=fmtDevices(m.devices);
 
     return `<div class="card" id="mc-${m.id}">
-      <div class="card-header" onclick="toggleMember('${m.id}')">
-        <div class="avatar" style="background:${color}">${m.avatar_url?`<img src="${m.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:initials}</div>
-        <div class="card-info">
-          <div class="card-name">
-            ${m.screen_name?`<span style="color:var(--green)">@${esc(m.screen_name)}</span> —`:''} ${esc(m.first_name)} ${esc(m.last_name)}
-            <span class="bdg ${m.tier==='warden'?'bdg-r':m.tier==='admin'?'bdg-blue':m.tier==='mod'?'bdg-a':'bdg-b'}">${m.tier||'member'}</span>
+      <div class="ch" onclick="toggleMember('${m.id}')">
+        <div class="ca" style="background:${m.avatar_color||strToColor(m.first_name||'')}">
+          ${m.avatar_url?`<img src="${m.avatar_url}" alt="">`:init}
+        </div>
+        <div class="ci">
+          <div class="cn">
+            ${m.screen_name?`<span style="color:var(--g)">@${esc(m.screen_name)}</span>`:esc(m.first_name)+' '+esc(m.last_name)}
+            <span class="bdg ${tierBdg}">${tier}</span>
           </div>
-          <div class="card-sub">${esc(m.email)}</div>
-          <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
-            ${streamActive?`<span class="bdg bdg-g">Stream ${streamDays}d</span>`:(m.jellyfin_user?`<span class="bdg bdg-b">No Stream</span>`:'')}
-            ${castActive?`<span class="bdg bdg-g">Cast ${castDays}d</span>`:(m.iptv_end?`<span class="bdg bdg-b">No Cast</span>`:'')}
+          <div class="cs">${esc(m.email)}</div>
+          <div class="cb">
+            ${sAct?`<span class="bdg bdg-g">Stream ${sDays}d</span>`:(m.stremio_email||m.jellyfin_user?`<span class="bdg bdg-b">No Stream</span>`:'')}
+            ${cAct?`<span class="bdg bdg-g">Cast ${cDays}d</span>`:(m.iptv_end?`<span class="bdg bdg-b">No Cast</span>`:'')}
             <span class="bdg bdg-b">💳 ${m.credit_balance||0}</span>
           </div>
         </div>
-        <div style="color:var(--muted);font-size:16px">▼</div>
+        <span class="cv">▾</span>
       </div>
       <div class="card-body" id="mb-${m.id}">
-        <div class="detail-grid">
-          <div class="detail-item">
-            <div class="detail-label">Email</div>
-            <div class="detail-val">${esc(m.email)}</div>
+        <div class="dg">
+          <div class="di"><div class="dl">Full Name</div><div class="dv">${esc(m.first_name)} ${esc(m.last_name)}</div></div>
+          <div class="di"><div class="dl">Phone</div><div class="dv ${m.phone?'':'dim'}">${m.phone||'Not set'}</div></div>
+          <div class="di"><div class="dl">Credits</div><div class="dv mono">${m.credit_balance||0}</div></div>
+          <div class="di"><div class="dl">Member Since</div><div class="dv">${fmtDate(m.created_at)}</div></div>
+          <div class="di full">
+            <div class="dl">🌊 DungeonStream — <span style="font-family:var(--mono);text-transform:none;letter-spacing:0;font-size:10px;color:${sAct?'var(--g)':'var(--red)'}">${sAct?(sDays+'d left'):(sEnd?'Expired':'No sub')}</span></div>
+            <div class="dv mono">${esc(m.jellyfin_user||m.stremio_email||'—')}</div>
+            ${sEnd?`<div class="dv sub">${sEnd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>`:''}
           </div>
-          <div class="detail-item">
-            <div class="detail-label">Phone</div>
-            <div class="detail-val ${m.phone?'':'muted'}">${m.phone||'Not set'}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Credits</div>
-            <div class="detail-val">${m.credit_balance||0}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Member Since</div>
-            <div class="detail-val">${m.created_at?new Date(m.created_at).toLocaleDateString():'-'}</div>
-          </div>
-          ${m.jellyfin_user?`
-          <div class="detail-item full">
-            <div class="detail-label">🌊 DungeonStream</div>
-            <div class="detail-val mono">${esc(m.jellyfin_user||m.stremio_email||'—')}</div>
-            ${streamEnd?`<div style="font-size:11px;color:${streamActive?'var(--green)':'var(--red)'};margin-top:4px">${streamActive?streamDays+'d left':'Expired'} · ${streamEnd.toLocaleDateString()}</div>`:''}
-          </div>`:`
-          <div class="detail-item full">
-            <div class="detail-label">🌊 DungeonStream</div>
-            <div class="detail-val muted">No account</div>
-          </div>`}
-          ${m.iptv_end||castActive?`
-          <div class="detail-item full">
-            <div class="detail-label">📡 DungeonCast</div>
-            <div class="detail-val mono">${esc(m.jellyfin_user||'—')}</div>
-            ${castEnd?`<div style="font-size:11px;color:${castActive?'var(--green)':'var(--red)'};margin-top:4px">${castActive?castDays+'d left':'Expired'} · ${castEnd.toLocaleDateString()}</div>`:''}
+          ${(cEnd||cAct)?`<div class="di full">
+            <div class="dl">📡 DungeonCast — <span style="font-family:var(--mono);text-transform:none;letter-spacing:0;font-size:10px;color:${cAct?'var(--g)':'var(--red)'}">${cAct?(cDays+'d left'):(cEnd?'Expired':'No sub')}</span></div>
+            <div class="dv mono">${esc(m.jellyfin_user||'—')}</div>
+            ${cEnd?`<div class="dv sub">${cEnd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>`:''}
           </div>`:''}
-          ${devices?`<div class="detail-item full"><div class="detail-label">Devices</div><div class="detail-val" style="font-size:12px;color:var(--muted2)">${devices}</div></div>`:''}
-          ${m.notes?`<div class="detail-item full"><div class="detail-label">Notes</div><div class="detail-val" style="color:var(--muted2)">${esc(m.notes)}</div></div>`:''}
+          ${devices?`<div class="di full"><div class="dl">Devices</div><div class="dv" style="color:var(--t2);font-size:11px">${devices}</div></div>`:''}
+          ${m.notes?`<div class="di full"><div class="dl">Notes</div><div class="dv" style="color:var(--t2)">${esc(m.notes)}</div></div>`:''}
         </div>
         <div class="actions">
           <button class="btn btn-b" onclick="openEditMember('${m.id}')">Edit Info</button>
-          <button class="btn btn-b" onclick="openCredits('${m.id}','${m.profile_id_val||''}','${m.credit_balance||0}')">Credits</button>
-          <button class="btn btn-b" onclick="openEditSub('${m.id}','stream')">Edit Stream Sub</button>
-          ${m.iptv_end||castActive?`<button class="btn btn-b" onclick="openEditSub('${m.id}','cast')">Edit Cast Sub</button>`:''}
+          <button class="btn btn-b" onclick="openCredits('${m.id}','${m.profile_id_val||''}',${m.credit_balance||0})">Credits</button>
+          <button class="btn btn-b" onclick="openEditSub('${m.id}','stream')">Stream Sub</button>
+          <button class="btn btn-b" onclick="openEditSub('${m.id}','cast')">Cast Sub</button>
         </div>
       </div>
     </div>`;
   }).join('');
 }
 
-function toggleMember(id) {
-  const card = document.getElementById('mc-'+id);
-  card.classList.toggle('expanded');
+function toggleMember(id){
+  const card=$('mc-'+id);
+  const wasOpen=card.classList.contains('expanded');
+  document.querySelectorAll('.card.expanded').forEach(c=>c.classList.remove('expanded'));
+  if(!wasOpen)card.classList.add('expanded');
 }
 
-function formatDevices(devStr) {
-  try {
-    const d = typeof devStr==='string' ? JSON.parse(devStr) : devStr;
-    if(!d) return '';
-    const icons = {iphone:'iPhone',android_phone:'Android',ipad:'iPad',android_tablet:'Android Tab',windows:'Windows',mac:'Mac',linux:'Linux',chromebook:'Chromebook',firestick:'Fire Stick',android_tv:'Android TV',apple_tv:'Apple TV',roku:'Roku',smart_tv:'Smart TV',chromecast:'Chromecast',nvidia_shield:'Shield',ps4:'PS4',ps5:'PS5',xbox:'Xbox'};
-    return Object.values(d).flat().filter(v=>!v.startsWith('no_')).map(v=>icons[v]||v).join(' · ')||'';
-  } catch { return ''; }
-}
+function toggleCard(el){el.closest('.card').classList.toggle('expanded');}
 
-function openEditMember(id) {
-  const m = _allMembers.find(x=>x.id===id);
-  if(!m) return;
-  $('m-id').value = id;
-  $('m-fn').value = m.first_name||'';
-  $('m-ln').value = m.last_name||'';
-  $('m-email').value = m.email||'';
-  $('m-phone').value = m.phone||'';
-  $('m-notes').value = m.notes||'';
-  $('m-err').style.display='none';
+function openEditMember(id){
+  const m=_allMembers.find(x=>x.id===id);if(!m)return;
+  $('m-id').value=id;
+  $('m-fn').value=m.first_name||'';$('m-ln').value=m.last_name||'';
+  $('m-email').value=m.email||'';$('m-phone').value=m.phone||'';
+  $('m-notes').value=m.notes||'';$('m-err').style.display='none';
   openSheet('sh-member');
 }
 
-async function saveMember() {
-  const id = $('m-id').value;
-  const err = $('m-err');
-  const r = await fetch(`/api/admin/members/${id}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+async function saveMember(){
+  const id=$('m-id').value;const err=$('m-err');
+  const r=await fetch(`/api/admin/members/${id}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
     first_name:$('m-fn').value.trim(),last_name:$('m-ln').value.trim(),
     email:$('m-email').value.trim(),phone:$('m-phone').value.trim(),notes:$('m-notes').value.trim()
   })}).then(r=>r.json()).catch(e=>({error:e.message}));
   if(r.error){err.textContent=r.error;err.style.display='block';return;}
-  closeSheet('sh-member'); loadMembers();
+  closeSheet('sh-member');loadMembers();
 }
 
-function openEditSub(id, svc) {
-  const m = _allMembers.find(x=>x.id===id);
-  if(!m) return;
-  $('sub-mid').value = id;
-  $('sub-svc').value = svc;
-  $('sh-sub-title').textContent = svc==='stream' ? 'Edit DungeonStream Subscription' : 'Edit DungeonCast Subscription';
-  $('sub-user').value = m.jellyfin_user||m.stremio_email||'';
-  $('sub-pass').value = m.jellyfin_pass||m.stremio_pass||'';
-  const startField = svc==='stream' ? m.stremio_start : m.iptv_start;
-  const endField = svc==='stream' ? m.stremio_end : m.iptv_end;
-  $('sub-start').value = startField ? startField.split('T')[0] : '';
-  $('sub-end').value = endField ? endField.split('T')[0] : '';
+function openEditSub(id,svc){
+  const m=_allMembers.find(x=>x.id===id);if(!m)return;
+  $('sub-mid').value=id;$('sub-svc').value=svc;
+  $('sh-sub-title').textContent=svc==='stream'?'🌊 DungeonStream Subscription':'📡 DungeonCast Subscription';
+  $('sub-user').value=m.jellyfin_user||m.stremio_email||'';
+  $('sub-pass').value=m.jellyfin_pass||m.stremio_pass||'';
+  const s=svc==='stream'?m.stremio_start:m.iptv_start;
+  const e=svc==='stream'?m.stremio_end:m.iptv_end;
+  $('sub-start').value=s?s.split('T')[0]:'';
+  $('sub-end').value=e?e.split('T')[0]:'';
   $('sub-err').style.display='none';
   openSheet('sh-sub');
 }
 
-async function saveSub() {
-  const id = $('sub-mid').value;
-  const svc = $('sub-svc').value;
-  const err = $('sub-err');
-  const body = {
-    stremio_email: $('sub-user').value.trim(),
-    stremio_pass: $('sub-pass').value.trim(),
-    stremio_start: $('sub-start').value||null,
-    stremio_end: $('sub-end').value||null
-  };
-  const route = svc==='stream' ? `/api/admin/stremio/${id}` : `/api/admin/cast/${id}`;
-  const r = await fetch(route,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({error:e.message}));
+async function saveSub(){
+  const id=$('sub-mid').value;const svc=$('sub-svc').value;const err=$('sub-err');
+  let route,body;
+  if(svc==='stream'){
+    route=`/api/admin/stremio/${id}`;
+    body={stremio_email:$('sub-user').value.trim(),stremio_pass:$('sub-pass').value.trim(),stremio_start:$('sub-start').value||null,stremio_end:$('sub-end').value||null};
+  } else {
+    route=`/api/admin/iptv-dates/${id}`;
+    body={iptv_start:$('sub-start').value||null,iptv_end:$('sub-end').value||null};
+    // Also save username/pass to member record
+    await fetch(`/api/admin/members/${id}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})}).catch(()=>{});
+  }
+  const r=await fetch(route,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({error:e.message}));
   if(r.error){err.textContent=r.error;err.style.display='block';return;}
-  closeSheet('sh-sub'); loadMembers();
+  closeSheet('sh-sub');loadMembers();
 }
 
-async function clearSubDates() {
-  if(!confirm('Clear subscription dates?')) return;
-  const id = $('sub-mid').value;
-  const svc = $('sub-svc').value;
+async function clearSubDates(){
+  if(!confirm('Clear subscription dates?'))return;
+  const id=$('sub-mid').value;const svc=$('sub-svc').value;
   await fetch(`/api/admin/members/${id}/clear-sub`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:svc==='stream'?'stream':'cast'})});
-  closeSheet('sh-sub'); loadMembers();
+  closeSheet('sh-sub');loadMembers();
 }
 
-function openCredits(mid, pid, balance) {
-  $('cr-mid').value = mid;
-  $('cr-pid').value = pid;
-  $('cr-balance').textContent = balance + ' credits';
-  $('cr-amount').value = 1;
+function openCredits(mid,pid,bal){
+  $('cr-mid').value=mid;$('cr-pid').value=pid;
+  $('cr-balance').textContent=bal+' credits';$('cr-amount').value=1;
   openSheet('sh-credits');
 }
 
-async function addCredits() {
-  const pid = $('cr-pid').value;
-  const mid = $('cr-mid').value;
-  const amt = parseInt($('cr-amount').value)||1;
-  if(!pid) { alert('No profile found for this member'); return; }
+async function addCredits(){
+  const pid=$('cr-pid').value;const mid=$('cr-mid').value;
+  const amt=parseInt($('cr-amount').value)||1;
+  if(!pid){alert('No profile found');return;}
   await fetch('/api/admin/credits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile_id:pid,amount:amt,reason:'Admin adjustment'})});
-  const m = _allMembers.find(x=>x.id===mid);
-  const newBal = (parseInt(m?.credit_balance)||0)+amt;
-  $('cr-balance').textContent = newBal + ' credits';
-  if(m) m.credit_balance = newBal;
+  const m=_allMembers.find(x=>x.id===mid);
+  const nb=(parseInt(m?.credit_balance)||0)+amt;
+  $('cr-balance').textContent=nb+' credits';
+  if(m)m.credit_balance=nb;
   loadStats();
 }
 
 // ── Redemptions ───────────────────────────────────────────────────────────────
-async function loadRedem() {
-  const redems = await fetch('/api/admin/redemptions').then(r=>r.json()).catch(()=>[]);
-  const filtered = _redemFilter==='all' ? redems : redems.filter(r=>r.status===_redemFilter);
-  const el = $('redemList');
-  if(!filtered.length){el.innerHTML='<div class="empty">No redemptions</div>';return;}
-  el.innerHTML = filtered.map(r => {
-    const bdg = r.status==='pending'?'bdg-a':r.status==='fulfilled'?'bdg-g':'bdg-b';
-    const svcLabel = r.service==='stremio'?'🌊 DungeonStream':'📡 DungeonCast';
-    return `<div class="redem-card">
-      <div class="redem-header">
+async function loadRedem(){
+  const redems=await fetch('/api/admin/redemptions').then(r=>r.json()).catch(()=>[]);
+  const f=_redemFilter==='all'?redems:redems.filter(r=>r.status===_redemFilter);
+  const el=$('redem-list');
+  if(!f.length){el.innerHTML='<div class="empty">// no redemptions</div>';return;}
+  el.innerHTML=f.map(r=>{
+    const bc=r.status==='pending'?'bdg-a':r.status==='fulfilled'?'bdg-g':'bdg-b';
+    const svc=r.service==='stremio'?'🌊 DungeonStream':'📡 DungeonCast';
+    const server=r.service==='stremio'?'dungeoncast.cc':'tv.dungeoncast.cc';
+    return `<div class="rc">
+      <div class="rc-top">
         <div>
-          <div class="redem-name">@${esc(r.screen_name||'unknown')} <span class="bdg ${bdg}">${r.status}</span></div>
-          <div style="font-size:12px;color:var(--muted2);margin-top:2px">${svcLabel} · ${new Date(r.created_at||Date.now()).toLocaleDateString()}</div>
+          <div class="rc-name">@${esc(r.screen_name||'unknown')} <span class="bdg ${bc}">${r.status}</span></div>
+          <div class="rc-meta">${svc} · ${fmtDate(r.created_at)}</div>
         </div>
-        ${r.status==='pending'?`<button class="btn btn-g" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name||'')}')">Fulfill</button>`:''}
+        ${r.status==='pending'?`<button class="btn btn-g" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name||'')}')">Fulfill →</button>`:''}
       </div>
-      ${r.status==='fulfilled'?`
-      <div class="redem-row"><span class="redem-label">Username</span><span class="redem-val">${esc(r.account_user||'—')}</span></div>
-      <div class="redem-row"><span class="redem-label">Server</span><span class="redem-val">${r.service==='stremio'?'dungeoncast.cc':'tv.dungeoncast.cc'}</span></div>
-      <div class="redem-row"><span class="redem-label">Fulfilled</span><span class="redem-val">${r.fulfilled_at?new Date(r.fulfilled_at).toLocaleDateString():'-'}</span></div>
-      `:''}
+      ${r.status==='fulfilled'?`<div class="rc-rows">
+        <div class="rc-row"><span class="rc-lbl">Server</span><span class="rc-val">${server}</span></div>
+        <div class="rc-row"><span class="rc-lbl">Username</span><span class="rc-val">${esc(r.account_user||'—')}</span></div>
+        <div class="rc-row"><span class="rc-lbl">Fulfilled</span><span class="rc-val">${fmtDate(r.fulfilled_at)}</span></div>
+      </div>`:''}
     </div>`;
   }).join('');
 }
 
-function openFulfill(rid, svc, screenName) {
-  $('f-rid').value = rid;
-  $('f-svc').value = svc;
-  $('f-title').textContent = svc==='stremio' ? '🌊 Fulfill DungeonStream' : '📡 Fulfill DungeonCast';
-  $('f-sub').textContent = `Setting up account for @${screenName}`;
-  $('f-user-lbl').textContent = 'Jellyfin Username';
-  $('f-user').value = screenName.toLowerCase().replace(/[^a-z0-9_]/g,'_');
-  $('f-pass').value = mkPass();
-  $('f-notes').value = '';
-  $('f-err').style.display='none';
+function setRedemFilter(val,el){
+  _redemFilter=val;
+  el.closest('.filters').querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');loadRedem();
+}
+
+function openFulfill(rid,svc,screenName){
+  $('f-rid').value=rid;$('f-svc').value=svc;
+  $('f-title').textContent=svc==='stremio'?'🌊 Fulfill DungeonStream':'📡 Fulfill DungeonCast';
+  $('f-sub').textContent=`Setting up account for @${screenName}`;
+  $('f-info').textContent=svc==='stremio'
+    ?'Jellyfin account will be created on dungeoncast.cc with Movies + Shows access.'
+    :'Jellyfin account will be created on tv.dungeoncast.cc with Live TV access.';
+  $('f-user').value=screenName.toLowerCase().replace(/[^a-z0-9_]/g,'_');
+  $('f-pass').value=mkPass();
+  $('f-notes').value='';$('f-err').style.display='none';
   openSheet('sh-fulfill');
 }
 
-async function submitFulfill() {
-  const rid = $('f-rid').value;
-  const svc = $('f-svc').value;
-  const user = $('f-user').value.trim();
-  const pass = $('f-pass').value.trim();
-  const notes = $('f-notes').value.trim();
-  const err = $('f-err');
+async function submitFulfill(){
+  const rid=$('f-rid').value;const svc=$('f-svc').value;
+  const user=$('f-user').value.trim();const pass=$('f-pass').value.trim();
+  const err=$('f-err');
   if(!user||!pass){err.textContent='Username and password required';err.style.display='block';return;}
-  const btn = $('f-submit'); btn.disabled=true; btn.textContent='Sending…';
-  const r = await fetch(`/api/admin/redemptions/${rid}/fulfill`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account_user:user,account_pass:pass,notes,service:svc})}).then(r=>r.json()).catch(e=>({error:e.message}));
-  btn.disabled=false; btn.textContent='Send Credentials';
+  const btn=$('f-btn');btn.disabled=true;btn.textContent='Sending…';
+  const r=await fetch(`/api/admin/redemptions/${rid}/fulfill`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account_user:user,account_pass:pass,notes:$('f-notes').value.trim(),service:svc})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.disabled=false;btn.textContent='Send Credentials';
   if(r.error){err.textContent=r.error;err.style.display='block';return;}
-  closeSheet('sh-fulfill'); loadAll();
+  closeSheet('sh-fulfill');loadAll();
 }
 
 // ── Sheets ────────────────────────────────────────────────────────────────────
-function openSheet(id) { $('overlay').classList.add('on'); $(id).classList.add('on'); }
-function closeSheet(id) { $(id).classList.remove('on'); $('overlay').classList.remove('on'); }
-function closeAllSheets() { document.querySelectorAll('.sheet.on').forEach(s=>s.classList.remove('on')); $('overlay').classList.remove('on'); }
+function openSheet(id){$('overlay').classList.add('on');$(id).classList.add('on');}
+function closeSheet(id){$(id).classList.remove('on');$('overlay').classList.remove('on');}
+function closeAllSheets(){document.querySelectorAll('.sheet.on').forEach(s=>s.classList.remove('on'));$('overlay').classList.remove('on');}
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function mkPass(){const c='abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';return Array.from({length:10},()=>c[Math.floor(Math.random()*c.length)]).join('');}
+function mkPass(){const c='abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#';return Array.from({length:12},()=>c[Math.floor(Math.random()*c.length)]).join('');}
+function fmtDate(d){if(!d)return'—';const dt=new Date(d);return isNaN(dt)?'—':dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function strToColor(s){const colors=['#34d399','#60a5fa','#f87171','#fbbf24','#a78bfa','#fb7185','#38bdf8','#4ade80'];let h=0;for(let i=0;i<(s||'').length;i++)h=(h*31+s.charCodeAt(i))%colors.length;return colors[h];}
+function fmtDevices(devStr){
+  try{
+    const d=typeof devStr==='string'?JSON.parse(devStr):devStr;if(!d)return'';
+    const icons={iphone:'iPhone',android_phone:'Android',ipad:'iPad',android_tablet:'Android Tab',windows:'Windows',mac:'Mac',linux:'Linux',chromebook:'Chromebook',firestick:'Fire Stick',android_tv:'Android TV',apple_tv:'Apple TV',roku:'Roku',smart_tv:'Smart TV',chromecast:'Chromecast',nvidia_shield:'Shield',ps4:'PS4',ps5:'PS5',xbox:'Xbox'};
+    return Object.values(d).flat().filter(v=>!v.startsWith('no_')).map(v=>icons[v]||v).join(' · ')||'';
+  }catch{return'';}
+}
 </script>
 </body>
 </html>
