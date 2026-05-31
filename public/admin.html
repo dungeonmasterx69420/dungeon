@@ -336,6 +336,15 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
   <div class="field"><label>Email</label><input type="email" id="m-email"/></div>
   <div class="field"><label>Phone</label><input type="tel" id="m-phone"/></div>
   <div class="field"><label>Notes</label><textarea id="m-notes"></textarea></div>
+  <div class="field">
+    <label>Tier</label>
+    <select id="m-tier">
+      <option value="member">Member</option>
+      <option value="mod">Mod</option>
+      <option value="admin">Admin</option>
+      <option value="warden">Warden</option>
+    </select>
+  </div>
   <div class="sacts">
     <button class="btn btn-b" onclick="closeSheet('sh-member')">Cancel</button>
     <button class="btn btn-g" onclick="saveMember()">Save Changes</button>
@@ -611,7 +620,7 @@ function openEditMember(id){
   $('m-id').value=id;
   $('m-fn').value=m.first_name||'';$('m-ln').value=m.last_name||'';
   $('m-email').value=m.email||'';$('m-phone').value=m.phone||'';
-  $('m-notes').value=m.notes||'';$('m-err').style.display='none';
+  $('m-notes').value=m.notes||'';$('m-tier').value=m.tier||'member';$('m-err').style.display='none';
   openSheet('sh-member');
 }
 
@@ -619,7 +628,7 @@ async function saveMember(){
   const id=$('m-id').value;const err=$('m-err');
   const r=await fetch(`/api/admin/members/${id}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
     first_name:$('m-fn').value.trim(),last_name:$('m-ln').value.trim(),
-    email:$('m-email').value.trim(),phone:$('m-phone').value.trim(),notes:$('m-notes').value.trim()
+    email:$('m-email').value.trim(),phone:$('m-phone').value.trim(),notes:$('m-notes').value.trim(),tier:$('m-tier').value
   })}).then(r=>r.json()).catch(e=>({error:e.message}));
   if(r.error){err.textContent=r.error;err.style.display='block';return;}
   closeSheet('sh-member');loadMembers();
