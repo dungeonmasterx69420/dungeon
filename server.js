@@ -2062,11 +2062,16 @@ app.get('/api/admin/members', requireMod, (req, res) => {
 // POST update member info
 app.post('/api/admin/members/:id', requireMod, (req, res) => {
   try {
-    const { first_name, last_name, email, phone, notes } = req.body;
+    const { first_name, last_name, email, phone, notes, tier } = req.body;
     const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.id);
     if (!m) return res.status(404).json({ error: 'Not found' });
     db.prepare('UPDATE members SET first_name=?, last_name=?, email=?, phone=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')
       .run(first_name??m.first_name, last_name??m.last_name, email??m.email, phone??m.phone, notes??m.notes, req.params.id);
+    // Update tier in profile
+    if (tier) {
+      const profile = db.prepare('SELECT id FROM profiles WHERE member_id=? OR (member_id IS NULL AND LOWER(email)=LOWER(?))').get(req.params.id, m.email);
+      if (profile) db.prepare('UPDATE profiles SET tier=? WHERE id=?').run(tier, profile.id);
+    }
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
