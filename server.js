@@ -405,11 +405,11 @@ async function runSubscriptionCron() {
     db.prepare('UPDATE members SET expired_notified=1 WHERE id=?').run(m.id);
   }
 
-  // Revoke DungeonCast access when iptv_end has passed
+  // Revoke DungeonCast access when iptv_end has passed (only members not already notified)
   const castExpired = db.prepare(`
     SELECT * FROM members
     WHERE iptv_end IS NOT NULL AND datetime(iptv_end) <= datetime(?)
-    AND (iptv_revoked IS NULL OR iptv_revoked = 0)
+    AND expired_notified = 0
   `).all(nowISO);
   for (const m of castExpired) {
     const profile = db.prepare('SELECT tier FROM profiles WHERE member_id=?').get(m.id);
