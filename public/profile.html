@@ -196,15 +196,12 @@
   async function changePassword() {
     const current = document.getElementById('pw-current').value;
     const newPw = document.getElementById('pw-new').value;
-    const confirm = document.getElementById('pw-confirm').value;
     const err = document.getElementById('pw-err');
     const ok = document.getElementById('pw-ok');
     err.style.display='none'; ok.style.display='none';
 
     if (!current) { err.textContent='Current password required'; err.style.display='block'; return; }
     if (!newPw || newPw.length < 6) { err.textContent='New password must be at least 6 characters'; err.style.display='block'; return; }
-    if (newPw !== confirm) { err.textContent='Passwords do not match'; err.style.display='block'; return; }
-
     const r = await fetch('/api/member/change-password', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ current_password: current, new_password: newPw })
@@ -214,7 +211,6 @@
     ok.style.display='block';
     document.getElementById('pw-current').value='';
     document.getElementById('pw-new').value='';
-    document.getElementById('pw-confirm').value='';
   }
 </script>
 
@@ -233,10 +229,7 @@
       <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">New Password</div>
       <input type="password" id="pw-new" placeholder="Min 6 characters" style="width:100%;background:var(--surface2);border:1px solid rgba(52,211,153,.25);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:14px;padding:10px 13px;outline:none"/>
     </div>
-    <div style="margin-bottom:14px">
-      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Confirm New Password</div>
-      <input type="password" id="pw-confirm" placeholder="Repeat new password" style="width:100%;background:var(--surface2);border:1px solid rgba(52,211,153,.25);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:14px;padding:10px 13px;outline:none"/>
-    </div>
+
     <button onclick="changePassword()" style="padding:10px 20px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Update Password</button>
   </div>
 
