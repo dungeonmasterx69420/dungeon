@@ -451,6 +451,11 @@ app.use((req, res, next) => {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve join page (token is handled client-side)
+app.get('/join', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'join.html'));
+});
+
 // Serve avatars
 app.use('/avatars', express.static(AVATAR_DIR));
 
