@@ -819,6 +819,7 @@ app.post('/api/mod/applicants/:id/deny', requireMod, (req, res) => {
 
 // ── Public: submit application ────────────────────────────────────────────────
 app.post('/api/apply', submitLimiter, async (req, res) => {
+  try {
   const { first_name, last_name, email, phone, language, referral, notes, screen_name, devices } = req.body;
   if (!first_name || !last_name || !email) return res.status(400).json({ error: 'Name and email are required.' });
 
@@ -839,8 +840,9 @@ app.post('/api/apply', submitLimiter, async (req, res) => {
   db.prepare(`INSERT OR IGNORE INTO profiles (id, screen_name, email, avatar_color, tier, applicant_id) VALUES (?,?,?,?,'neut',?)`)
     .run(profileId, screen_name.trim(), email.trim(), avatarColors(), id);
 
-  await sendMail(email.trim(), 'Application Received — Dungeon', emailApplicationReceived(first_name.trim(), screen_name.trim()));
+  try { await sendMail(email.trim(), 'Application Received — Dungeon', emailApplicationReceived(first_name.trim(), screen_name.trim())); } catch(e) { console.error('Apply email error:', e.message); }
   res.json({ ok: true });
+  } catch(e) { console.error('[apply]', e.message); res.status(500).json({ error: e.message }); }
 });
 
 // ── Member: renewal ───────────────────────────────────────────────────────────
