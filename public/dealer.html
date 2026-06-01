@@ -240,40 +240,31 @@ function renderStats(){
 function renderInvites(){
   const el = $('invite-list');
   if(!_data.invites.length){el.innerHTML='<div class="empty">// no invites yet — send your first one</div>';return;}
-  el.innerHTML = _data.invites.map(i => {
-    const bc = i.status==='used'?'bdg-g':i.status==='paid'?'bdg-a':i.status==='pending'?'bdg-b':'bdg-r';
-    const amt = '$'+(i.amount/100).toFixed(2);
-    const cut = '$'+(i.amount/100*0.5).toFixed(2);
-    return `<div class="card">
-      <div class="card-top">
-        <div>
-          <div class="card-name">${esc(i.email||'No email')} <span class="bdg ${bc}">${i.status}</span></div>
-          <div class="card-meta">${amt} · Your cut: ${cut} · ${fmtDate(i.created_at)}</div>
-        </div>
-      </div>
-      ${i.note?`<div style="font-size:11px;color:var(--t2);margin-top:6px;font-style:italic">"${esc(i.note)}"</div>`:''}
-      ${i.status!=='used'?`<div class="card-actions">
-        <button class="btn btn-b" onclick="copyLink('${i.token}')">Copy Link</button>
-        <button class="btn btn-b" onclick="openEdit('${i.id}','${esc(i.email||'')}',${i.amount/100},'${esc(i.note||'')}')">Edit</button>
-        ${i.status==='pending'?`<button class="btn btn-r" style="font-size:10px;padding:5px 10px" onclick="deleteInvite('${i.id}')">Delete</button>`:''}
-      </div>`:'<div style="font-size:11px;color:var(--g);margin-top:8px">✓ Signup completed${i.used_at?' on '+fmtDate(i.used_at):''}</div>'}
-    </div>`;
-  }).join('');
+  el.innerHTML = _data.invites.map(inv => buildInviteCard(inv)).join('');
 }
 
-function renderEarnings(){
-  const el = $('earnings-list');
-  if(!_data.earnings.length){el.innerHTML='<div style="font-size:12px;color:var(--t3);font-family:var(--mono);padding:8px 0">No earnings yet</div>';return;}
-  el.innerHTML = _data.earnings.map(e => {
-    const isPaid = e.status==='paid';
-    return `<div class="earn-row">
-      <div>
-        <div style="font-size:12px;font-weight:600">${isPaid?'✓ Paid out':'⏳ Pending payment'}</div>
-        <div style="font-size:11px;color:var(--t2);margin-top:2px">${fmtDate(e.created_at)} · Sale: $${(e.amount/100).toFixed(2)}</div>
-      </div>
-      <div class="earn-amt ${isPaid?'paid':'pending'}">$${(e.dealer_cut/100).toFixed(2)}</div>
-    </div>`;
-  }).join('');
+function buildInviteCard(inv){
+  const bc = inv.status==='used'?'bdg-g':inv.status==='paid'?'bdg-a':inv.status==='pending'?'bdg-b':'bdg-r';
+  const amt = '$'+(inv.amount/100).toFixed(2);
+  const cut = '$'+(inv.amount/200).toFixed(2);
+  let actions = '';
+  if(inv.status !== 'used'){
+    actions = '<div class="card-actions">';
+    actions += '<button class="btn btn-b" onclick="copyLink(this)" data-token="'+esc(inv.token)+'">Copy Link</button>';
+    actions += '<button class="btn btn-b" onclick="openEditById(this)" data-id="'+esc(inv.id)+'" data-email="'+esc(inv.email||'')+'" data-amount="'+Number(inv.amount/100)+'" data-note="'+esc(inv.note||'')+'">Edit</button>';
+    if(inv.status==='pending') actions += '<button class="btn btn-r" style="font-size:10px;padding:5px 10px" onclick="deleteInviteById(this)" data-id="'+esc(inv.id)+'">Delete</button>';
+    actions += '</div>';
+  } else {
+    actions = '<div style="font-size:11px;color:var(--g);margin-top:8px">✓ Signup completed'+(inv.used_at?' on '+fmtDate(inv.used_at):'')+'</div>';
+  }
+  return '<div class="card">'
+    +'<div class="card-top"><div>'
+    +'<div class="card-name">'+esc(inv.email||'No email')+' <span class="bdg '+bc+'">'+inv.status+'</span></div>'
+    +'<div class="card-meta">'+amt+' · Your cut: '+cut+' · '+fmtDate(inv.created_at)+'</div>'
+    +'</div></div>'
+    +(inv.note?'<div style="font-size:11px;color:var(--t2);margin-top:6px;font-style:italic">"'+esc(inv.note)+'"</div>':'')
+    +actions
+    +'</div>';
 }
 
 // ── Invite ────────────────────────────────────────────────────────────────────
@@ -303,9 +294,16 @@ async function sendInvite(){
   await loadDashboard();
 }
 
-function copyLink(token){
+function copyLink(btn){
+  const token = btn.dataset.token;
   const url = location.origin + '/join?token=' + token;
-  navigator.clipboard.writeText(url).then(()=>alert('Link copied!')).catch(()=>prompt('Copy this link:',url));
+  navigator.clipboard.writeText(url).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy Link',2000);}).catch(()=>prompt('Copy this link:',url));
+}
+function openEditById(btn){
+  openEdit(btn.dataset.id, btn.dataset.email, parseFloat(btn.dataset.amount), btn.dataset.note);
+}
+function deleteInviteById(btn){
+  deleteInvite(btn.dataset.id);
 }
 
 // ── Edit ──────────────────────────────────────────────────────────────────────
