@@ -2702,7 +2702,7 @@ app.get('/api/admin/payouts', requireMod, (req, res) => {
       const paidOut = earnings.filter(e => e.status === 'paid_out').reduce((s,e) => s + e.dealer_cut, 0);
       const totalSales = earnings.filter(e => e.status === 'earned' || e.status === 'paid_out').length;
       return { ...dealer, earnings, owed, paidOut, totalSales };
-    }).filter(d => d.earnings.length > 0); // only show dealers who have activity
+    }).filter(d => d.tier === 'dealer'); // only show actual dealers, not mods/admins
     res.json(result);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -2724,6 +2724,30 @@ app.post('/api/admin/payouts/dealer/:profileId/pay-all', requireMod, (req, res) 
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+
+
+// Admin: fix earning status (one-time migration helper)
+app.post('/api/admin/fix-earning-status', requireMod, (req, res) => {
+  try {
+    const { id, status } = req.body;
+    if (!id || !status) return res.status(400).json({ error: 'id and status required' });
+    db.prepare('UPDATE dealer_earnings SET status=? WHERE id=?').run(status, id);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Admin: migrate old dealer earnings statuses
+app.post('/api/admin/migrate-earnings', requireMod, (req, res) => {
+  try {
+    // 'paid' was old status meaning client paid - rename to 'earned'
+    const r1 = db.prepare("UPDATE dealer_earnings SET status='earned' WHERE status='paid' AND paid_at IS NULL").run();
+    // 'paid' with paid_at = we manually paid out - rename to 'paid_out'  
+    const r2 = db.prepare("UPDATE dealer_earnings SET status='paid_out' WHERE status='paid' AND paid_at IS NOT NULL").run();
+    // Delete orphaned earnings (invite_id points to non-existent invite)
+    const r3 = db.prepare("DELETE FROM dealer_earnings WHERE invite_id NOT IN (SELECT id FROM invites)").run();
+    res.json({ ok: true, earned: r1.changes, paid_out: r2.changes, deleted: r3.changes });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
 
 // ── Admin: Subscribers ────────────────────────────────────────────────────────
 app.get('/api/admin/subscribers', requireAuth, (req, res) => {
