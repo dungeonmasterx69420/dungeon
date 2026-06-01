@@ -2422,22 +2422,25 @@ app.post('/api/invite/:token/complete', async (req, res) => {
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   try {
     let event;
-    const payload = req.body.toString();
+    // Must use raw body for signature verification
+    const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body));
+    const payload = rawBody.toString('utf8');
 
     if (STRIPE_WEBHOOK_SECRET) {
-      // Verify Stripe signature
       const sig = req.headers['stripe-signature'];
+      if (!sig) return res.status(400).json({ error: 'No signature header' });
       const crypto = require('crypto');
-      const parts = sig.split(',').reduce((acc, part) => {
-        const [k, v] = part.split('=');
-        acc[k] = v;
-        return acc;
-      }, {});
-      const timestamp = parts.t;
+      const parts = {};
+      sig.split(',').forEach(part => {
+        const eqIdx = part.indexOf('=');
+        if (eqIdx > 0) parts[part.substring(0, eqIdx)] = part.substring(eqIdx + 1);
+      });
+      if (!parts.t || !parts.v1) return res.status(400).json({ error: 'Invalid signature format' });
       const expectedSig = crypto.createHmac('sha256', STRIPE_WEBHOOK_SECRET)
-        .update(timestamp + '.' + payload)
+        .update(parts.t + '.' + payload)
         .digest('hex');
-      if (expectedSig !== parts.v1) {
+      if (!crypto.timingSafeEqual(Buffer.from(expectedSig, 'hex'), Buffer.from(parts.v1, 'hex'))) {
+        console.error('[webhook] Sig mismatch. Expected:', expectedSig.substring(0,20), 'Got:', parts.v1.substring(0,20));
         return res.status(400).json({ error: 'Invalid signature' });
       }
     }
