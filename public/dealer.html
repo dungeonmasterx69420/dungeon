@@ -15,54 +15,73 @@
   --red:#f87171;--redb:rgba(248,113,113,.08);
   --amb:#fbbf24;--ambb:rgba(251,191,36,.08);
   --gold:#f59e0b;--goldb:rgba(245,158,11,.1);
-  --mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;--r:10px;
+  --blue:#60a5fa;
+  --mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;
 }
 html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans)}
 
 /* Topbar */
 .topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-.logo{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--g);text-decoration:none;letter-spacing:.04em}
-.dealer-badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:10px;background:var(--goldb);color:var(--gold);border:1px solid rgba(245,158,11,.2);font-family:var(--mono);letter-spacing:.06em;margin-left:8px}
+.logo{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--g);text-decoration:none}
+.badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:10px;background:var(--goldb);color:var(--gold);border:1px solid rgba(245,158,11,.2);font-family:var(--mono);margin-left:8px}
 .nav{display:flex;align-items:center;gap:12px}
 .nav a,.nav button{font-size:13px;color:var(--t2);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:var(--sans)}
 .nav a:hover,.nav button:hover{color:var(--txt)}
 
-/* Stats */
+/* Stats grid */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bdr);border-bottom:1px solid var(--bdr)}
 .stat{background:var(--s1);padding:16px}
-.stat-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:6px}
-.stat-val{font-size:26px;font-weight:700;font-family:var(--mono);line-height:1}
-.stat-val.g{color:var(--g)}
-.stat-val.gold{color:var(--gold)}
-.stat-val.a{color:var(--amb)}
+.stat-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:6px}
+.stat-val{font-size:24px;font-weight:700;font-family:var(--mono);line-height:1}
+.stat-sub{font-size:10px;color:var(--t3);margin-top:4px;font-family:var(--mono)}
 
 /* Page */
 .page{max-width:800px;margin:0 auto;padding:20px 16px 60px}
-.section{margin-bottom:32px}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+
+/* Section */
+.section{margin-bottom:28px}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .section-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono)}
 
-/* Cards */
-.card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r);padding:16px;margin-bottom:8px;transition:border-color .2s}
-.card:hover{border-color:var(--bdr2)}
-.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.card-name{font-size:13px;font-weight:600}
-.card-meta{font-size:11px;color:var(--t2);margin-top:3px}
-.card-body{margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr)}
-.detail-row{display:flex;gap:10px;align-items:baseline;margin-bottom:4px}
-.dl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);width:80px;flex-shrink:0}
-.dv{font-size:12px;color:var(--txt);font-family:var(--mono)}
-.card-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+/* Info banner */
+.info{background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:13px 16px;margin-bottom:20px;font-size:12px;color:var(--t2);line-height:1.7}
+.info strong{color:var(--g)}
+
+/* Invite cards */
+.invite-card{background:var(--s1);border:1px solid var(--bdr);border-radius:10px;padding:14px 16px;margin-bottom:8px;transition:border-color .2s}
+.invite-card:hover{border-color:var(--bdr2)}
+.inv-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.inv-email{font-size:13px;font-weight:600}
+.inv-meta{font-size:11px;color:var(--t2);margin-top:3px}
+.inv-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.inv-amount{font-size:15px;font-weight:700;font-family:var(--mono)}
+.inv-cut{font-size:10px;color:var(--g);font-family:var(--mono)}
+.inv-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.inv-note{font-size:11px;color:var(--t3);margin-top:6px;font-style:italic}
+.inv-used{font-size:11px;color:var(--g);margin-top:8px;font-family:var(--mono)}
 
 /* Badges */
-.bdg{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;letter-spacing:.04em;text-transform:uppercase}
+.bdg{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;letter-spacing:.04em;white-space:nowrap}
 .bdg-g{background:var(--gb);color:var(--g);border:1px solid var(--bdr)}
 .bdg-r{background:var(--redb);color:var(--red);border:1px solid rgba(248,113,113,.2)}
 .bdg-a{background:var(--ambb);color:var(--amb);border:1px solid rgba(251,191,36,.2)}
 .bdg-b{background:var(--s3);color:var(--t2);border:1px solid var(--bdr)}
+.bdg-gold{background:var(--goldb);color:var(--gold);border:1px solid rgba(245,158,11,.2)}
+
+/* Earnings table */
+.earn-table{background:var(--s1);border:1px solid var(--bdr);border-radius:10px;overflow:hidden}
+.earn-header{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;padding:10px 16px;background:var(--s2);border-bottom:1px solid var(--bdr);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);font-family:var(--mono)}
+.earn-row{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;padding:12px 16px;border-bottom:1px solid var(--bdr);align-items:center;font-size:12px}
+.earn-row:last-child{border-bottom:none}
+.earn-email{color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.earn-sale{font-family:var(--mono);color:var(--t2)}
+.earn-cut{font-family:var(--mono);font-weight:700}
+.earn-cut.awaiting{color:var(--amb)}
+.earn-cut.paid{color:var(--g)}
+.earn-empty{padding:32px;text-align:center;color:var(--t3);font-size:12px;font-family:var(--mono)}
 
 /* Buttons */
-.btn{font-size:11px;font-weight:700;padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-family:var(--sans);transition:opacity .15s;letter-spacing:.02em}
+.btn{font-size:11px;font-weight:700;padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-family:var(--sans);transition:opacity .15s}
 .btn:hover{opacity:.8}
 .btn:disabled{opacity:.35;cursor:not-allowed}
 .btn-g{background:var(--g);color:#000}
@@ -88,22 +107,18 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 .field input,.field textarea{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:13px;padding:10px 12px;outline:none;transition:border-color .15s}
 .field input:focus{border-color:var(--g)}
 .field input::placeholder{color:var(--t3)}
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cut-preview{font-size:11px;color:var(--g);margin-top:5px;font-family:var(--mono);min-height:16px}
 .sacts{display:flex;gap:8px;margin-top:16px}
 .sacts .btn{flex:1;padding:12px;font-size:12px}
+.check-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.check-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--g);cursor:pointer}
+.check-row label{font-size:12px;color:var(--t2);cursor:pointer}
 
-/* Earnings row */
-.earn-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bdr);font-size:12px}
-.earn-row:last-child{border-bottom:none}
-.earn-amt{font-family:var(--mono);font-weight:600}
-.earn-amt.paid{color:var(--g)}
-.earn-amt.pending{color:var(--amb)}
-
-/* Info box */
-.info-box{background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:14px;margin-bottom:20px;font-size:12px;color:var(--t2);line-height:1.7}
-.info-box strong{color:var(--g)}
-
-@media(max-width:480px){.stats{grid-template-columns:1fr 1fr}.frow{grid-template-columns:1fr}}
+@media(max-width:600px){
+  .stats{grid-template-columns:1fr 1fr}
+  .earn-header,.earn-row{grid-template-columns:1fr auto auto}
+  .earn-header span:nth-child(3),.earn-row span:nth-child(3){display:none}
+}
 </style>
 </head>
 <body>
@@ -111,7 +126,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 <div class="topbar">
   <div style="display:flex;align-items:center">
     <a href="/dashboard.html" class="logo">Dungeon</a>
-    <span class="dealer-badge">DungeonDealer</span>
+    <span class="badge">DungeonDealer</span>
   </div>
   <div class="nav">
     <a href="/dashboard.html">Dashboard</a>
@@ -119,26 +134,40 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
   </div>
 </div>
 
-<!-- Stats -->
 <div class="stats">
-  <div class="stat"><div class="stat-label">Total Sales</div><div class="stat-val g" id="st-sales">—</div></div>
-  <div class="stat"><div class="stat-label">Total Earned</div><div class="stat-val gold" id="st-earned">—</div></div>
-  <div class="stat"><div class="stat-label">Pending</div><div class="stat-val a" id="st-pending">—</div></div>
-  <div class="stat"><div class="stat-label">Invites Sent</div><div class="stat-val" id="st-invites">—</div></div>
+  <div class="stat">
+    <div class="stat-label">Total Sales</div>
+    <div class="stat-val" id="st-sales" style="color:var(--g)">—</div>
+    <div class="stat-sub" id="st-revenue">$0.00 revenue</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Your Earnings</div>
+    <div class="stat-val" id="st-earned" style="color:var(--gold)">—</div>
+    <div class="stat-sub">50% commission</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Awaiting Payout</div>
+    <div class="stat-val" id="st-awaiting" style="color:var(--amb)">—</div>
+    <div class="stat-sub">not yet paid out</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Invites Sent</div>
+    <div class="stat-val" id="st-invites">—</div>
+    <div class="stat-sub" id="st-pending-invites">— pending</div>
+  </div>
 </div>
 
 <div class="page">
 
-  <!-- Info -->
-  <div class="info-box">
-    You earn <strong>50%</strong> of every signup you close. Send an invite → client pays → you earn your cut. The Dungeon Master will pay out your earnings manually. Track everything below.
+  <div class="info">
+    You earn <strong>50%</strong> of every signup you close. Send an invite → your client pays → your cut shows up here. The Dungeon Master pays you out manually — track what's owed below.
   </div>
 
-  <!-- Send Invite -->
+  <!-- Invites -->
   <div class="section">
     <div class="section-head">
-      <div class="section-title">Invites</div>
-      <button class="btn btn-gold" onclick="openInviteSheet()">+ Send Invite</button>
+      <div class="section-title">My Invites</div>
+      <button class="btn btn-gold" onclick="openInviteSheet()">+ New Invite</button>
     </div>
     <div id="invite-list"><div class="empty">// no invites yet</div></div>
   </div>
@@ -146,10 +175,16 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
   <!-- Earnings -->
   <div class="section">
     <div class="section-head">
-      <div class="section-title">Earnings</div>
+      <div class="section-title">Commission Ledger</div>
     </div>
-    <div class="card">
-      <div id="earnings-list"><div style="font-size:12px;color:var(--t3);font-family:var(--mono)">Loading…</div></div>
+    <div class="earn-table">
+      <div class="earn-header">
+        <span>Client</span>
+        <span>Sale</span>
+        <span>Your Cut</span>
+        <span>Status</span>
+      </div>
+      <div id="earn-body"><div class="earn-empty">// loading…</div></div>
     </div>
   </div>
 
@@ -161,19 +196,25 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 <!-- New Invite Sheet -->
 <div class="sheet" id="sh-invite">
   <div class="sh-handle"></div>
-  <div class="sh-title">Send Invite</div>
-  <div class="sh-sub">Create a Stripe payment link and send it to your client. You'll earn 50% when they pay.</div>
+  <div class="sh-title">New Invite</div>
+  <div class="sh-sub">Set the signup fee — you keep 50%. An email with the payment link will be sent to your client.</div>
   <div class="sh-err" id="inv-err"></div>
-  <div class="field"><label>Client Email</label><input type="email" id="inv-email" placeholder="client@email.com"/></div>
   <div class="field">
-    <label>Signup Fee (USD)</label>
-    <div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:16px;color:var(--t2)">$</span>
-      <input type="number" id="inv-amount" placeholder="15.00" min="1" step="0.01" style="flex:1" oninput="updateCutPreview()"/>
-    </div>
-    <div id="cut-preview" style="font-size:11px;color:var(--g);margin-top:6px;font-family:var(--mono)"></div>
+    <label>Client Email</label>
+    <input type="email" id="inv-email" placeholder="client@email.com"/>
   </div>
-  <div class="field"><label>Personal Note (optional)</label><input type="text" id="inv-note" placeholder="Appears in the email to your client"/></div>
+  <div class="field">
+    <label>Signup Fee</label>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="color:var(--t2);font-size:16px">$</span>
+      <input type="number" id="inv-amount" placeholder="20.00" min="1" step="0.01" style="flex:1" oninput="updateCut()"/>
+    </div>
+    <div class="cut-preview" id="cut-preview"></div>
+  </div>
+  <div class="field">
+    <label>Personal Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label>
+    <input type="text" id="inv-note" placeholder="Appears in their invite email"/>
+  </div>
   <div class="sacts">
     <button class="btn btn-b" onclick="closeSheet('sh-invite')">Cancel</button>
     <button class="btn btn-gold" id="inv-btn" onclick="sendInvite()">Send Invite</button>
@@ -189,17 +230,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
   <input type="hidden" id="edit-id"/>
   <div class="field"><label>Email</label><input type="email" id="edit-email"/></div>
   <div class="field">
-    <label>Amount (USD)</label>
+    <label>Signup Fee</label>
     <div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:16px;color:var(--t2)">$</span>
+      <span style="color:var(--t2);font-size:16px">$</span>
       <input type="number" id="edit-amount" min="1" step="0.01" style="flex:1" oninput="updateEditCut()"/>
     </div>
-    <div id="edit-cut" style="font-size:11px;color:var(--g);margin-top:6px;font-family:var(--mono)"></div>
+    <div class="cut-preview" id="edit-cut-preview"></div>
   </div>
-  <div class="field"><label>Note (optional)</label><input type="text" id="edit-note"/></div>
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-    <input type="checkbox" id="edit-resend" style="width:auto"/>
-    <label style="font-size:12px;color:var(--t2);text-transform:none;letter-spacing:0">Resend email after saving</label>
+  <div class="field"><label>Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="text" id="edit-note"/></div>
+  <div class="check-row">
+    <input type="checkbox" id="edit-resend"/>
+    <label for="edit-resend">Resend email to updated address after saving</label>
   </div>
   <div class="sacts">
     <button class="btn btn-b" onclick="closeSheet('sh-edit')">Cancel</button>
@@ -211,66 +252,98 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 const $ = id => document.getElementById(id);
 let _data = null;
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
 fetch('/api/member/me').then(r=>r.json()).then(d=>{
   if(!d.authenticated){window.location.href='/login.html';return;}
-  const tier=d.member?.profile?.tier;
-  if(!['dealer','mod','admin','warden'].includes(tier)){window.location.href='/dashboard.html';return;}
+  if(!['dealer','mod','admin','warden'].includes(d.member?.profile?.tier)){window.location.href='/dashboard.html';return;}
   loadDashboard();
 });
 
 async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
 
-// ── Data ──────────────────────────────────────────────────────────────────────
 async function loadDashboard(){
   _data = await fetch('/api/dealer/dashboard').then(r=>r.json()).catch(()=>null);
-  if(!_data){document.querySelector('.page').innerHTML='<div class="empty">// error loading data</div>';return;}
+  if(!_data){$('invite-list').innerHTML='<div class="empty">// error loading data</div>';return;}
   renderStats();
   renderInvites();
   renderEarnings();
 }
 
 function renderStats(){
-  $('st-sales').textContent = _data.totalSales;
-  $('st-earned').textContent = '$' + (_data.totalEarned/100).toFixed(2);
-  $('st-pending').textContent = '$' + (_data.pendingEarnings/100).toFixed(2);
-  $('st-invites').textContent = _data.invites.length;
+  const d = _data;
+  $('st-sales').textContent = d.totalSales;
+  $('st-revenue').textContent = '$'+(d.totalRevenue/100).toFixed(2)+' revenue';
+  $('st-earned').textContent = '$'+((d.awaitingPayout+d.paidOut)/100).toFixed(2);
+  $('st-awaiting').textContent = '$'+(d.awaitingPayout/100).toFixed(2);
+  $('st-invites').textContent = d.invites.length;
+  const pending = d.invites.filter(i=>i.status==='pending').length;
+  $('st-pending-invites').textContent = pending + ' pending';
 }
 
 function renderInvites(){
   const el = $('invite-list');
-  if(!_data.invites.length){el.innerHTML='<div class="empty">// no invites yet — send your first one</div>';return;}
-  el.innerHTML = _data.invites.map(inv => buildInviteCard(inv)).join('');
+  if(!_data.invites.length){el.innerHTML='<div class="empty">// send your first invite to get started</div>';return;}
+  el.innerHTML = _data.invites.map(inv => buildCard(inv)).join('');
 }
 
-function buildInviteCard(inv){
-  const bc = inv.status==='used'?'bdg-g':inv.status==='paid'?'bdg-a':inv.status==='pending'?'bdg-b':'bdg-r';
+function buildCard(inv){
+  const bc = inv.status==='used'?'bdg-g':inv.status==='paid'?'bdg-gold':inv.status==='pending'?'bdg-b':'bdg-r';
+  const label = inv.status==='used'?'Signed Up':inv.status==='paid'?'Paid — Awaiting Setup':inv.status==='pending'?'Awaiting Payment':'Expired';
   const amt = '$'+(inv.amount/100).toFixed(2);
   const cut = '$'+(inv.amount/200).toFixed(2);
+
   let actions = '';
-  if(inv.status !== 'used'){
-    actions = '<div class="card-actions">';
-    actions += '<button class="btn btn-b" onclick="copyLink(this)" data-token="'+esc(inv.token)+'">Copy Link</button>';
-    actions += '<button class="btn btn-b" onclick="openEditById(this)" data-id="'+esc(inv.id)+'" data-email="'+esc(inv.email||'')+'" data-amount="'+Number(inv.amount/100)+'" data-note="'+esc(inv.note||'')+'">Edit</button>';
-    if(inv.status==='pending') actions += '<button class="btn btn-r" style="font-size:10px;padding:5px 10px" onclick="deleteInviteById(this)" data-id="'+esc(inv.id)+'">Delete</button>';
-    actions += '</div>';
-  } else {
-    actions = '<div style="font-size:11px;color:var(--g);margin-top:8px">✓ Signup completed'+(inv.used_at?' on '+fmtDate(inv.used_at):'')+'</div>';
+  if(inv.status === 'pending'){
+    actions = '<div class="inv-actions">'
+      +'<button class="btn btn-b" onclick="copyLink(this)" data-token="'+esc(inv.token)+'">Copy Link</button>'
+      +'<button class="btn btn-b" onclick="openEditById(this)" data-id="'+esc(inv.id)+'" data-email="'+esc(inv.email||'')+'" data-amount="'+(inv.amount/100)+'" data-note="'+esc(inv.note||'')+'">Edit</button>'
+      +'<button class="btn btn-r" style="font-size:10px;padding:5px 10px" onclick="deleteInviteById(this)" data-id="'+esc(inv.id)+'">Delete</button>'
+      +'</div>';
+  } else if(inv.status === 'paid') {
+    actions = '<div class="inv-actions">'
+      +'<button class="btn btn-b" onclick="copyLink(this)" data-token="'+esc(inv.token)+'">Copy Link</button>'
+      +'<button class="btn btn-b" onclick="openEditById(this)" data-id="'+esc(inv.id)+'" data-email="'+esc(inv.email||'')+'" data-amount="'+(inv.amount/100)+'" data-note="'+esc(inv.note||'')+'">Edit Email</button>'
+      +'</div>';
+  } else if(inv.status === 'used') {
+    actions = '<div class="inv-used">✓ Account created'+(inv.used_at?' · '+fmtDate(inv.used_at):'')+'</div>';
   }
-  return '<div class="card">'
-    +'<div class="card-top"><div>'
-    +'<div class="card-name">'+esc(inv.email||'No email')+' <span class="bdg '+bc+'">'+inv.status+'</span></div>'
-    +'<div class="card-meta">'+amt+' · Your cut: '+cut+' · '+fmtDate(inv.created_at)+'</div>'
-    +'</div></div>'
-    +(inv.note?'<div style="font-size:11px;color:var(--t2);margin-top:6px;font-style:italic">"'+esc(inv.note)+'"</div>':'')
+
+  return '<div class="invite-card">'
+    +'<div class="inv-top">'
+    +'<div>'
+    +'<div class="inv-email">'+esc(inv.email||'No email')+'</div>'
+    +'<div class="inv-meta"><span class="bdg '+bc+'">'+label+'</span> · Sent '+fmtDate(inv.created_at)+'</div>'
+    +(inv.note?'<div class="inv-note">"'+esc(inv.note)+'"</div>':'')
+    +'</div>'
+    +'<div class="inv-right">'
+    +'<div class="inv-amount">'+amt+'</div>'
+    +'<div class="inv-cut">Your cut: '+cut+'</div>'
+    +'</div>'
+    +'</div>'
     +actions
     +'</div>';
 }
 
+function renderEarnings(){
+  const el = $('earn-body');
+  const earned = _data.earnings.filter(e => e.invite_status === 'paid' || e.invite_status === 'used');
+  if(!earned.length){el.innerHTML='<div class="earn-empty">// commissions will appear here once clients pay</div>';return;}
+  el.innerHTML = earned.map(e => {
+    const isPaidOut = e.status === 'paid';
+    const cut = '$'+(e.dealer_cut/100).toFixed(2);
+    const sale = '$'+(e.amount/100).toFixed(2);
+    return '<div class="earn-row">'
+      +'<span class="earn-email">'+esc(e.invite_email||'—')+'</span>'
+      +'<span class="earn-sale">'+sale+'</span>'
+      +'<span class="earn-cut '+(isPaidOut?'paid':'awaiting')+'">'+cut+'</span>'
+      +'<span><span class="bdg '+(isPaidOut?'bdg-g':'bdg-a')+'">'+(isPaidOut?'Paid Out':'Owed')+'</span></span>'
+      +'</div>';
+  }).join('');
+}
+
 // ── Invite ────────────────────────────────────────────────────────────────────
-function updateCutPreview(){
+function updateCut(){
   const amt = parseFloat($('inv-amount').value)||0;
-  $('cut-preview').textContent = amt ? `Your cut: $${(amt*0.5).toFixed(2)}` : '';
+  $('cut-preview').textContent = amt ? 'Your cut: $'+(amt*0.5).toFixed(2) : '';
 }
 
 function openInviteSheet(){
@@ -292,36 +365,34 @@ async function sendInvite(){
   if(r.error){err.textContent=r.error;err.style.display='block';return;}
   closeSheet('sh-invite');
   await loadDashboard();
+  if(r.url){
+    if(confirm('Invite sent! Tap OK to copy the payment link to share manually.')){
+      navigator.clipboard.writeText(r.url).catch(()=>prompt('Payment link:',r.url));
+    }
+  }
 }
 
 function copyLink(btn){
-  const token = btn.dataset.token;
-  const url = location.origin + '/join?token=' + token;
+  const url = location.origin+'/join?token='+btn.dataset.token;
   navigator.clipboard.writeText(url).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy Link',2000);}).catch(()=>prompt('Copy this link:',url));
-}
-function openEditById(btn){
-  openEdit(btn.dataset.id, btn.dataset.email, parseFloat(btn.dataset.amount), btn.dataset.note);
-}
-function deleteInviteById(btn){
-  deleteInvite(btn.dataset.id);
 }
 
 // ── Edit ──────────────────────────────────────────────────────────────────────
-function openEdit(id, email, amount, note){
-  $('edit-id').value=id;
-  $('edit-email').value=email;
-  $('edit-amount').value=amount;
-  $('edit-note').value=note;
-  $('edit-sub').textContent='Edit invite for '+email;
+function updateEditCut(){
+  const amt=parseFloat($('edit-amount').value)||0;
+  $('edit-cut-preview').textContent=amt?'Your cut: $'+(amt*0.5).toFixed(2):'';
+}
+
+function openEditById(btn){
+  $('edit-id').value=btn.dataset.id;
+  $('edit-email').value=btn.dataset.email;
+  $('edit-amount').value=btn.dataset.amount;
+  $('edit-note').value=btn.dataset.note;
+  $('edit-sub').textContent='Editing invite for '+btn.dataset.email;
   $('edit-resend').checked=false;
   $('edit-err').style.display='none';
   updateEditCut();
   openSheet('sh-edit');
-}
-
-function updateEditCut(){
-  const amt=parseFloat($('edit-amount').value)||0;
-  $('edit-cut').textContent=amt?`Your cut: $${(amt*0.5).toFixed(2)}`:'';
 }
 
 async function saveEdit(){
@@ -338,12 +409,24 @@ async function saveEdit(){
   btn.disabled=false;btn.textContent='Save Changes';
   if(r.error){err.textContent=r.error;err.style.display='block';return;}
   closeSheet('sh-edit');
-  await loadDashboard();
+  loadDashboard();
 }
 
-async function deleteInvite(id){
+function openEdit(id,email,amount,note){
+  $('edit-id').value=id;
+  $('edit-email').value=email;
+  $('edit-amount').value=amount;
+  $('edit-note').value=note;
+  $('edit-sub').textContent='Editing invite for '+email;
+  $('edit-resend').checked=false;
+  $('edit-err').style.display='none';
+  updateEditCut();
+  openSheet('sh-edit');
+}
+
+async function deleteInviteById(btn){
   if(!confirm('Delete this invite?'))return;
-  await fetch('/api/dealer/invites/'+id,{method:'DELETE'});
+  await fetch('/api/dealer/invites/'+btn.dataset.id,{method:'DELETE'});
   loadDashboard();
 }
 

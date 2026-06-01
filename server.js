@@ -2511,16 +2511,32 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 app.get('/api/dealer/dashboard', requireDealer, (req, res) => {
   try {
     const pid = req.profile.id;
-    const invites = db.prepare(`
-      SELECT * FROM invites WHERE created_by=? ORDER BY created_at DESC
-    `).all(pid);
+    const invites = db.prepare('SELECT * FROM invites WHERE created_by=? ORDER BY created_at DESC').all(pid);
+
+    // Join earnings with invite status so we know which ones are actually paid by client
     const earnings = db.prepare(`
-      SELECT * FROM dealer_earnings WHERE dealer_profile_id=? ORDER BY created_at DESC
+      SELECT de.*, i.status as invite_status, i.email as invite_email, i.paid_at as invite_paid_at
+      FROM dealer_earnings de
+      LEFT JOIN invites i ON de.invite_id = i.id
+      WHERE de.dealer_profile_id=?
+      ORDER BY de.created_at DESC
     `).all(pid);
-    const totalEarned = earnings.filter(e => e.status === 'paid').reduce((sum, e) => sum + e.dealer_cut, 0);
-    const pendingEarnings = earnings.filter(e => e.status === 'pending').reduce((sum, e) => sum + e.dealer_cut, 0);
+
+    // Awaiting payout = invite was paid by client, but dealer hasn't been paid out yet
+    const awaitingPayout = earnings.filter(e => (e.invite_status === 'paid' || e.invite_status === 'used') && e.status !== 'paid');
+    const paidOut = earnings.filter(e => e.status === 'paid');
     const totalSales = invites.filter(i => i.status === 'paid' || i.status === 'used').length;
-    res.json({ invites, earnings, totalEarned, pendingEarnings, totalSales, profile: req.profile });
+    const totalRevenue = invites.filter(i => i.status === 'paid' || i.status === 'used').reduce((sum, i) => sum + i.amount, 0);
+
+    res.json({
+      invites,
+      earnings,
+      awaitingPayout: awaitingPayout.reduce((sum, e) => sum + e.dealer_cut, 0),
+      paidOut: paidOut.reduce((sum, e) => sum + e.dealer_cut, 0),
+      totalSales,
+      totalRevenue,
+      profile: req.profile
+    });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
