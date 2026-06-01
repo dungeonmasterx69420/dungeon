@@ -712,7 +712,7 @@ async function loadRedem(){
   el.innerHTML=f.map(r=>{
     const bc=r.status==='pending'?'bdg-a':r.status==='fulfilled'?'bdg-g':'bdg-b';
     const svc=r.service==='stremio'?'🌊 DungeonStream':'📡 DungeonCast';
-    const server=r.service==='stremio'?'dungeoncast.cc':'tv.dungeoncast.cc';
+    const server=r.service==='stremio'?'dungeoncast.cc':'dungeoncast.cc';
     return `<div class="rc">
       <div class="rc-top">
         <div>
@@ -742,7 +742,7 @@ function openFulfill(rid,svc,displayName,screenName){
   $('f-sub').textContent=`Setting up account for @${displayName||screenName}`;
   $('f-info').textContent=svc==='stremio'
     ?'Jellyfin account will be created on dungeoncast.cc with Movies + Shows access.'
-    :'Jellyfin account will be created on tv.dungeoncast.cc with Live TV access.';
+    :'Jellyfin account will be created on dungeoncast.cc with Live TV access.';
   $('f-user').value=(screenName||displayName||'').toLowerCase().replace(/[^a-z0-9_]/g,'_').replace(/@/g,'').substring(0,20);
   $('f-pass').value=mkPass();
   $('f-notes').value='';$('f-err').style.display='none';

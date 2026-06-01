@@ -364,18 +364,65 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
 })();
 
 // ── Cron ──────────────────────────────────────────────────────────────────────
-function runSubscriptionCron() {
+async function runSubscriptionCron() {
   const now = new Date();
+  const nowISO = now.toISOString();
   const in3days = new Date(now); in3days.setDate(in3days.getDate() + 3);
-  const expiring = db.prepare(`SELECT * FROM members WHERE subscription_end IS NOT NULL AND expiry_warned=0 AND datetime(subscription_end)<=datetime(?) AND datetime(subscription_end)>datetime(?)`).all(in3days.toISOString(), now.toISOString());
+
+  // Warn expiring soon (uses stremio_end as primary sub date)
+  const expiring = db.prepare(`
+    SELECT * FROM members
+    WHERE stremio_end IS NOT NULL AND expiry_warned=0
+    AND datetime(stremio_end) <= datetime(?) AND datetime(stremio_end) > datetime(?)
+  `).all(in3days.toISOString(), nowISO);
   for (const m of expiring) {
-    sendMail(m.email, 'Your Dungeon subscription is expiring soon', emailExpiringSoon(m.first_name, m.subscription_end));
+    sendMail(m.email, 'Your Dungeon subscription is expiring soon', emailExpiringSoon(m.first_name, m.stremio_end)).catch(()=>{});
     db.prepare('UPDATE members SET expiry_warned=1 WHERE id=?').run(m.id);
   }
-  const expired = db.prepare(`SELECT * FROM members WHERE subscription_end IS NOT NULL AND expired_notified=0 AND datetime(subscription_end)<=datetime(?)`).all(now.toISOString());
-  for (const m of expired) {
-    sendMail(m.email, 'Your Dungeon subscription has ended', emailExpired(m.first_name));
+
+  // Revoke DungeonStream access when stremio_end has passed
+  const streamExpired = db.prepare(`
+    SELECT * FROM members
+    WHERE stremio_end IS NOT NULL AND expired_notified=0
+    AND datetime(stremio_end) <= datetime(?)
+  `).all(nowISO);
+  for (const m of streamExpired) {
+    // Skip staff — they have permanent access
+    const profile = db.prepare('SELECT tier FROM profiles WHERE member_id=?').get(m.id);
+    const isStaff = ['dealer','mod','admin','warden'].includes(profile?.tier);
+    if (isStaff) continue;
+
+    // Disable on VPS Jellyfin
+    try {
+      const jfId = await jellyfinGetUserId(m.jellyfin_user||m.stremio_email, JELLYFIN_URL, JELLYFIN_API_KEY);
+      if (jfId) {
+        await jellyfinRequest('POST', '/Users/'+jfId+'/Policy', { IsDisabled: true, EnableAllFolders: false, EnabledFolders: [] }, JELLYFIN_URL, JELLYFIN_API_KEY);
+        console.log('[cron] DungeonStream expired — disabled Jellyfin for:', m.stremio_email||m.jellyfin_user);
+      }
+    } catch(e) { console.error('[cron] Jellyfin disable error:', e.message); }
+
+    sendMail(m.email, 'Your Dungeon subscription has ended', emailExpired(m.first_name)).catch(()=>{});
     db.prepare('UPDATE members SET expired_notified=1 WHERE id=?').run(m.id);
+  }
+
+  // Revoke DungeonCast access when iptv_end has passed
+  const castExpired = db.prepare(`
+    SELECT * FROM members
+    WHERE iptv_end IS NOT NULL AND datetime(iptv_end) <= datetime(?)
+    AND (iptv_revoked IS NULL OR iptv_revoked = 0)
+  `).all(nowISO);
+  for (const m of castExpired) {
+    const profile = db.prepare('SELECT tier FROM profiles WHERE member_id=?').get(m.id);
+    const isStaff = ['dealer','mod','admin','warden'].includes(profile?.tier);
+    if (isStaff) continue;
+
+    try {
+      const jfTVId = await jellyfinGetUserId(m.jellyfin_user||m.stremio_email, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
+      if (jfTVId) {
+        await jellyfinRequest('POST', '/Users/'+jfTVId+'/Policy', { IsDisabled: true }, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
+        console.log('[cron] DungeonCast expired — disabled for:', m.jellyfin_user||m.stremio_email);
+      }
+    } catch(e) { console.error('[cron] Jellyfin TV disable error:', e.message); }
   }
 }
 runSubscriptionCron();
@@ -390,8 +437,8 @@ const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 
 const JELLYFIN_URL = process.env.JELLYFIN_URL || 'https://dungeoncast.cc';
 const JELLYFIN_API_KEY = process.env.JELLYFIN_API_KEY || '';
-const JELLYFIN_TV_URL = process.env.JELLYFIN_TV_URL || 'https://tv.dungeoncast.cc';
-const JELLYFIN_TV_API_KEY = process.env.JELLYFIN_TV_API_KEY || '';
+const JELLYFIN_TV_URL = process.env.JELLYFIN_TV_URL || JELLYFIN_URL; // same server now
+const JELLYFIN_TV_API_KEY = process.env.JELLYFIN_TV_API_KEY || JELLYFIN_API_KEY; // same server now
 
 async function jellyfinCreateUser(username, password, serverUrl, apiKey) {
   serverUrl = serverUrl || JELLYFIN_URL;
@@ -1331,10 +1378,14 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
   }
   if (member) {
     const now = new Date();
-    const end = new Date(now); end.setMonth(end.getMonth() + 1);
     if (redemption.service === 'stremio') {
-      db.prepare('UPDATE members SET stremio_email=?, stremio_pass=?, jellyfin_user=?, jellyfin_pass=?, stremio_start=?, stremio_end=? WHERE id=?')
-        .run(account_user, account_pass, account_user, account_pass, now.toISOString(), end.toISOString(), member.id);
+      // Stack subscription — add 30 days to existing end date if still active
+      const existingEnd = member.stremio_end ? new Date(member.stremio_end) : null;
+      const startBase = (existingEnd && existingEnd > now) ? existingEnd : now;
+      const end = new Date(startBase); end.setMonth(end.getMonth() + 1);
+      const start = member.stremio_start ? new Date(member.stremio_start) : now;
+      db.prepare('UPDATE members SET stremio_email=?, stremio_pass=?, jellyfin_user=?, jellyfin_pass=?, stremio_start=?, stremio_end=?, expired_notified=0, expiry_warned=0 WHERE id=?')
+        .run(account_user, account_pass, account_user, account_pass, start.toISOString(), end.toISOString(), member.id);
       // Create Jellyfin account and grant library access on VPS
       try {
         // Create account first
@@ -1383,7 +1434,7 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
   if (warden && profile) {
     const content = redemption.service === 'stremio'
       ? `Your DungeonStream account has been set up.\n\nServer: https://dungeoncast.cc\nUsername: ${account_user}\nPassword: ${account_pass}\n\nDownload the Jellyfin app and use these credentials to sign in. Check the Guides on your dashboard for device-specific setup help.${notes ? '\n\nNotes: ' + notes : ''}`
-      : `Your DungeonCast account has been set up.\n\nServer: https://tv.dungeoncast.cc\nUsername: ${account_user}\nPassword: ${account_pass}\n\nDownload Moonfin and add the server to get started. Check the Guides on your dashboard for setup help.${notes ? '\n\nNotes: ' + notes : ''}`;
+      : `Your DungeonCast account has been set up.\n\nServer: https://dungeoncast.cc\nUsername: ${account_user}\nPassword: ${account_pass}\n\nDownload Moonfin and add the server to get started. Check the Guides on your dashboard for setup help.${notes ? '\n\nNotes: ' + notes : ''}`;
     db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
       .run(genId(), warden.id, profile.id, subject, content);
   }
@@ -2139,17 +2190,71 @@ app.get('/api/admin/members', requireMod, (req, res) => {
 });
 
 // POST update member info
-app.post('/api/admin/members/:id', requireMod, (req, res) => {
+app.post('/api/admin/members/:id', requireMod, async (req, res) => {
   try {
     const { first_name, last_name, email, phone, notes, tier } = req.body;
     const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.id);
     if (!m) return res.status(404).json({ error: 'Not found' });
     db.prepare('UPDATE members SET first_name=?, last_name=?, email=?, phone=?, notes=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')
       .run(first_name??m.first_name, last_name??m.last_name, email??m.email, phone??m.phone, notes??m.notes, req.params.id);
-    // Update tier in profile
+
     if (tier) {
-      const profile = db.prepare('SELECT id FROM profiles WHERE member_id=? OR (member_id IS NULL AND LOWER(email)=LOWER(?))').get(req.params.id, m.email);
-      if (profile) db.prepare('UPDATE profiles SET tier=? WHERE id=?').run(tier, profile.id);
+      const profile = db.prepare('SELECT * FROM profiles WHERE member_id=? OR (member_id IS NULL AND LOWER(email)=LOWER(?))').get(req.params.id, m.email);
+      if (profile) {
+        const oldTier = profile.tier;
+        db.prepare('UPDATE profiles SET tier=? WHERE id=?').run(tier, profile.id);
+
+        const staffTiers = ['dealer','mod','admin','warden'];
+        const isNowStaff = staffTiers.includes(tier);
+        const wasStaff = staffTiers.includes(oldTier);
+
+        if (isNowStaff && !wasStaff) {
+          // Promoted to staff — grant permanent Jellyfin access
+          try {
+            const username = m.jellyfin_user || m.stremio_email || profile.screen_name?.toLowerCase().replace(/[^a-z0-9_]/g,'_');
+            const password = m.jellyfin_pass || m.stremio_pass || mkRandPass();
+            // Create account on VPS
+            const jfRes = await jellyfinCreateUser(username, password, JELLYFIN_URL, JELLYFIN_API_KEY);
+            if (jfRes?.status === 200 || jfRes?.status === 201 || jfRes?.status === 400) {
+              // 400 may mean user already exists — either way get their ID
+              const jfId = await jellyfinGetUserId(username, JELLYFIN_URL, JELLYFIN_API_KEY);
+              if (jfId) await jellyfinGrantLibraryAccess(jfId, ['Movies', 'Shows'], JELLYFIN_URL, JELLYFIN_API_KEY);
+            }
+            // Create on TV server too
+            const jfTVRes = await jellyfinCreateUser(username, password, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
+            if (jfTVRes?.status === 200 || jfTVRes?.status === 201 || jfTVRes?.status === 400) {
+              const jfTVId = await jellyfinGetUserId(username, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
+              if (jfTVId) await jellyfinGrantLibraryAccess(jfTVId, ['Live TV'], JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
+            }
+            // Set permanent subscription (10 years)
+            const forever = new Date(Date.now() + 10*365*24*60*60*1000).toISOString();
+            db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=? WHERE id=?')
+              .run(username, password, username, password, new Date().toISOString(), forever, new Date().toISOString(), forever, req.params.id);
+            console.log('[tier] Staff promotion — granted permanent access to:', username);
+          } catch(e) { console.error('[tier] Jellyfin grant error:', e.message); }
+
+        } else if (!isNowStaff && wasStaff) {
+          // Demoted from staff — revoke Jellyfin access
+          try {
+            const username = m.jellyfin_user || m.stremio_email;
+            if (username) {
+              // Disable on VPS
+              const jfId = await jellyfinGetUserId(username, JELLYFIN_URL, JELLYFIN_API_KEY);
+              if (jfId) {
+                await jellyfinRequest('POST', '/Users/' + jfId + '/Policy', { IsDisabled: true }, JELLYFIN_URL, JELLYFIN_API_KEY);
+              }
+              // Disable on TV server
+              const jfTVId = await jellyfinGetUserId(username, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
+              if (jfTVId) {
+                await jellyfinRequest('POST', '/Users/' + jfTVId + '/Policy', { IsDisabled: true }, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
+              }
+            }
+            // Clear subscription dates
+            db.prepare('UPDATE members SET stremio_end=NULL, iptv_end=NULL WHERE id=?').run(req.params.id);
+            console.log('[tier] Staff demotion — revoked access for:', username);
+          } catch(e) { console.error('[tier] Jellyfin revoke error:', e.message); }
+        }
+      }
     }
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
@@ -2746,6 +2851,28 @@ app.post('/api/admin/migrate-earnings', requireMod, (req, res) => {
     // Delete orphaned earnings (invite_id points to non-existent invite)
     const r3 = db.prepare("DELETE FROM dealer_earnings WHERE invite_id NOT IN (SELECT id FROM invites)").run();
     res.json({ ok: true, earned: r1.changes, paid_out: r2.changes, deleted: r3.changes });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// POST change password
+app.post('/api/member/change-password', requireMember, async (req, res) => {
+  try {
+    const { current_password, new_password } = req.body;
+    if (!current_password || !new_password) return res.status(400).json({ error: 'Both passwords required' });
+    if (new_password.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+
+    const member = db.prepare('SELECT * FROM members WHERE id=?').get(req.session.member.id);
+    if (!member) return res.status(404).json({ error: 'Member not found' });
+
+    // Verify current password
+    const bcrypt = require('bcryptjs');
+    const valid = member.password ? bcrypt.compareSync(current_password, member.password) : current_password === member.plain_pass;
+    if (!valid) return res.status(400).json({ error: 'Current password is incorrect' });
+
+    const hashed = bcrypt.hashSync(new_password, 10);
+    db.prepare('UPDATE members SET password=?, plain_pass=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run(hashed, new_password, member.id);
+    res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
