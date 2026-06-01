@@ -328,6 +328,9 @@
     // Footer links for staff
     if(['mod','admin','warden'].includes(tier)){
       const footer = document.getElementById('footer');
+      if(['dealer','mod','admin','warden'].includes(tier)){
+        footer.innerHTML += '<span class="sep"> · </span><a href="/dealer.html" style="color:#f59e0b">DungeonDealer</a>';
+      }
       if(['mod','admin','warden'].includes(tier)){
         footer.innerHTML += '<span class="sep"> · </span><a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
       }

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>Dungeon · DungeonDealer</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--s3:#1a2422;
+  --bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);
+  --g:#34d399;--gb:rgba(52,211,153,.08);
+  --txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;
+  --red:#f87171;--redb:rgba(248,113,113,.08);
+  --amb:#fbbf24;--ambb:rgba(251,191,36,.08);
+  --gold:#f59e0b;--goldb:rgba(245,158,11,.1);
+  --mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;--r:10px;
+}
+html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans)}
+
+/* Topbar */
+.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--g);text-decoration:none;letter-spacing:.04em}
+.dealer-badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:10px;background:var(--goldb);color:var(--gold);border:1px solid rgba(245,158,11,.2);font-family:var(--mono);letter-spacing:.06em;margin-left:8px}
+.nav{display:flex;align-items:center;gap:12px}
+.nav a,.nav button{font-size:13px;color:var(--t2);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:var(--sans)}
+.nav a:hover,.nav button:hover{color:var(--txt)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bdr);border-bottom:1px solid var(--bdr)}
+.stat{background:var(--s1);padding:16px}
+.stat-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:6px}
+.stat-val{font-size:26px;font-weight:700;font-family:var(--mono);line-height:1}
+.stat-val.g{color:var(--g)}
+.stat-val.gold{color:var(--gold)}
+.stat-val.a{color:var(--amb)}
+
+/* Page */
+.page{max-width:800px;margin:0 auto;padding:20px 16px 60px}
+.section{margin-bottom:32px}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono)}
+
+/* Cards */
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r);padding:16px;margin-bottom:8px;transition:border-color .2s}
+.card:hover{border-color:var(--bdr2)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.card-name{font-size:13px;font-weight:600}
+.card-meta{font-size:11px;color:var(--t2);margin-top:3px}
+.card-body{margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr)}
+.detail-row{display:flex;gap:10px;align-items:baseline;margin-bottom:4px}
+.dl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);width:80px;flex-shrink:0}
+.dv{font-size:12px;color:var(--txt);font-family:var(--mono)}
+.card-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+
+/* Badges */
+.bdg{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;letter-spacing:.04em;text-transform:uppercase}
+.bdg-g{background:var(--gb);color:var(--g);border:1px solid var(--bdr)}
+.bdg-r{background:var(--redb);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+.bdg-a{background:var(--ambb);color:var(--amb);border:1px solid rgba(251,191,36,.2)}
+.bdg-b{background:var(--s3);color:var(--t2);border:1px solid var(--bdr)}
+
+/* Buttons */
+.btn{font-size:11px;font-weight:700;padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-family:var(--sans);transition:opacity .15s;letter-spacing:.02em}
+.btn:hover{opacity:.8}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-g{background:var(--g);color:#000}
+.btn-r{background:var(--red);color:#fff}
+.btn-b{background:var(--s3);border:1px solid var(--bdr2);color:var(--t2)}
+.btn-b:hover{color:var(--txt);border-color:var(--g);opacity:1}
+.btn-gold{background:var(--gold);color:#000}
+
+/* Empty */
+.empty{text-align:center;padding:40px 20px;color:var(--t3);font-size:12px;font-family:var(--mono)}
+
+/* Overlay + Sheet */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;backdrop-filter:blur(3px)}
+.overlay.on{display:block}
+.sheet{position:fixed;bottom:0;left:0;right:0;background:var(--s1);border-top:1px solid var(--bdr2);border-radius:16px 16px 0 0;padding:20px 18px 32px;z-index:201;max-height:92vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.sheet.on{transform:translateY(0)}
+.sh-handle{width:36px;height:3px;background:var(--bdr2);border-radius:2px;margin:0 auto 16px}
+.sh-title{font-size:15px;font-weight:700;margin-bottom:4px}
+.sh-sub{font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6}
+.sh-err{font-size:12px;color:var(--red);background:var(--redb);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:8px 12px;margin-bottom:12px;display:none}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:5px}
+.field input,.field textarea{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:13px;padding:10px 12px;outline:none;transition:border-color .15s}
+.field input:focus{border-color:var(--g)}
+.field input::placeholder{color:var(--t3)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sacts{display:flex;gap:8px;margin-top:16px}
+.sacts .btn{flex:1;padding:12px;font-size:12px}
+
+/* Earnings row */
+.earn-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bdr);font-size:12px}
+.earn-row:last-child{border-bottom:none}
+.earn-amt{font-family:var(--mono);font-weight:600}
+.earn-amt.paid{color:var(--g)}
+.earn-amt.pending{color:var(--amb)}
+
+/* Info box */
+.info-box{background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:14px;margin-bottom:20px;font-size:12px;color:var(--t2);line-height:1.7}
+.info-box strong{color:var(--g)}
+
+@media(max-width:480px){.stats{grid-template-columns:1fr 1fr}.frow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <a href="/dashboard.html" class="logo">Dungeon</a>
+    <span class="dealer-badge">DungeonDealer</span>
+  </div>
+  <div class="nav">
+    <a href="/dashboard.html">Dashboard</a>
+    <button onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat"><div class="stat-label">Total Sales</div><div class="stat-val g" id="st-sales">—</div></div>
+  <div class="stat"><div class="stat-label">Total Earned</div><div class="stat-val gold" id="st-earned">—</div></div>
+  <div class="stat"><div class="stat-label">Pending</div><div class="stat-val a" id="st-pending">—</div></div>
+  <div class="stat"><div class="stat-label">Invites Sent</div><div class="stat-val" id="st-invites">—</div></div>
+</div>
+
+<div class="page">
+
+  <!-- Info -->
+  <div class="info-box">
+    You earn <strong>50%</strong> of every signup you close. Send an invite → client pays → you earn your cut. The Dungeon Master will pay out your earnings manually. Track everything below.
+  </div>
+
+  <!-- Send Invite -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">Invites</div>
+      <button class="btn btn-gold" onclick="openInviteSheet()">+ Send Invite</button>
+    </div>
+    <div id="invite-list"><div class="empty">// no invites yet</div></div>
+  </div>
+
+  <!-- Earnings -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">Earnings</div>
+    </div>
+    <div class="card">
+      <div id="earnings-list"><div style="font-size:12px;color:var(--t3);font-family:var(--mono)">Loading…</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="closeAllSheets()"></div>
+
+<!-- New Invite Sheet -->
+<div class="sheet" id="sh-invite">
+  <div class="sh-handle"></div>
+  <div class="sh-title">Send Invite</div>
+  <div class="sh-sub">Create a Stripe payment link and send it to your client. You'll earn 50% when they pay.</div>
+  <div class="sh-err" id="inv-err"></div>
+  <div class="field"><label>Client Email</label><input type="email" id="inv-email" placeholder="client@email.com"/></div>
+  <div class="field">
+    <label>Signup Fee (USD)</label>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:16px;color:var(--t2)">$</span>
+      <input type="number" id="inv-amount" placeholder="15.00" min="1" step="0.01" style="flex:1" oninput="updateCutPreview()"/>
+    </div>
+    <div id="cut-preview" style="font-size:11px;color:var(--g);margin-top:6px;font-family:var(--mono)"></div>
+  </div>
+  <div class="field"><label>Personal Note (optional)</label><input type="text" id="inv-note" placeholder="Appears in the email to your client"/></div>
+  <div class="sacts">
+    <button class="btn btn-b" onclick="closeSheet('sh-invite')">Cancel</button>
+    <button class="btn btn-gold" id="inv-btn" onclick="sendInvite()">Send Invite</button>
+  </div>
+</div>
+
+<!-- Edit Invite Sheet -->
+<div class="sheet" id="sh-edit">
+  <div class="sh-handle"></div>
+  <div class="sh-title">Edit Invite</div>
+  <div class="sh-sub" id="edit-sub"></div>
+  <div class="sh-err" id="edit-err"></div>
+  <input type="hidden" id="edit-id"/>
+  <div class="field"><label>Email</label><input type="email" id="edit-email"/></div>
+  <div class="field">
+    <label>Amount (USD)</label>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:16px;color:var(--t2)">$</span>
+      <input type="number" id="edit-amount" min="1" step="0.01" style="flex:1" oninput="updateEditCut()"/>
+    </div>
+    <div id="edit-cut" style="font-size:11px;color:var(--g);margin-top:6px;font-family:var(--mono)"></div>
+  </div>
+  <div class="field"><label>Note (optional)</label><input type="text" id="edit-note"/></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+    <input type="checkbox" id="edit-resend" style="width:auto"/>
+    <label style="font-size:12px;color:var(--t2);text-transform:none;letter-spacing:0">Resend email after saving</label>
+  </div>
+  <div class="sacts">
+    <button class="btn btn-b" onclick="closeSheet('sh-edit')">Cancel</button>
+    <button class="btn btn-gold" id="edit-btn" onclick="saveEdit()">Save Changes</button>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let _data = null;
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+fetch('/api/member/me').then(r=>r.json()).then(d=>{
+  if(!d.authenticated){window.location.href='/login.html';return;}
+  const tier=d.member?.profile?.tier;
+  if(!['dealer','mod','admin','warden'].includes(tier)){window.location.href='/dashboard.html';return;}
+  loadDashboard();
+});
+
+async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+async function loadDashboard(){
+  _data = await fetch('/api/dealer/dashboard').then(r=>r.json()).catch(()=>null);
+  if(!_data){document.querySelector('.page').innerHTML='<div class="empty">// error loading data</div>';return;}
+  renderStats();
+  renderInvites();
+  renderEarnings();
+}
+
+function renderStats(){
+  $('st-sales').textContent = _data.totalSales;
+  $('st-earned').textContent = '$' + (_data.totalEarned/100).toFixed(2);
+  $('st-pending').textContent = '$' + (_data.pendingEarnings/100).toFixed(2);
+  $('st-invites').textContent = _data.invites.length;
+}
+
+function renderInvites(){
+  const el = $('invite-list');
+  if(!_data.invites.length){el.innerHTML='<div class="empty">// no invites yet — send your first one</div>';return;}
+  el.innerHTML = _data.invites.map(i => {
+    const bc = i.status==='used'?'bdg-g':i.status==='paid'?'bdg-a':i.status==='pending'?'bdg-b':'bdg-r';
+    const amt = '$'+(i.amount/100).toFixed(2);
+    const cut = '$'+(i.amount/100*0.5).toFixed(2);
+    return `<div class="card">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${esc(i.email||'No email')} <span class="bdg ${bc}">${i.status}</span></div>
+          <div class="card-meta">${amt} · Your cut: ${cut} · ${fmtDate(i.created_at)}</div>
+        </div>
+      </div>
+      ${i.note?`<div style="font-size:11px;color:var(--t2);margin-top:6px;font-style:italic">"${esc(i.note)}"</div>`:''}
+      ${i.status!=='used'?`<div class="card-actions">
+        <button class="btn btn-b" onclick="copyLink('${i.token}')">Copy Link</button>
+        <button class="btn btn-b" onclick="openEdit('${i.id}','${esc(i.email||'')}',${i.amount/100},'${esc(i.note||'')}')">Edit</button>
+        ${i.status==='pending'?`<button class="btn btn-r" style="font-size:10px;padding:5px 10px" onclick="deleteInvite('${i.id}')">Delete</button>`:''}
+      </div>`:'<div style="font-size:11px;color:var(--g);margin-top:8px">✓ Signup completed${i.used_at?' on '+fmtDate(i.used_at):''}</div>'}
+    </div>`;
+  }).join('');
+}
+
+function renderEarnings(){
+  const el = $('earnings-list');
+  if(!_data.earnings.length){el.innerHTML='<div style="font-size:12px;color:var(--t3);font-family:var(--mono);padding:8px 0">No earnings yet</div>';return;}
+  el.innerHTML = _data.earnings.map(e => {
+    const isPaid = e.status==='paid';
+    return `<div class="earn-row">
+      <div>
+        <div style="font-size:12px;font-weight:600">${isPaid?'✓ Paid out':'⏳ Pending payment'}</div>
+        <div style="font-size:11px;color:var(--t2);margin-top:2px">${fmtDate(e.created_at)} · Sale: $${(e.amount/100).toFixed(2)}</div>
+      </div>
+      <div class="earn-amt ${isPaid?'paid':'pending'}">$${(e.dealer_cut/100).toFixed(2)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Invite ────────────────────────────────────────────────────────────────────
+function updateCutPreview(){
+  const amt = parseFloat($('inv-amount').value)||0;
+  $('cut-preview').textContent = amt ? `Your cut: $${(amt*0.5).toFixed(2)}` : '';
+}
+
+function openInviteSheet(){
+  $('inv-email').value=''; $('inv-amount').value=''; $('inv-note').value='';
+  $('inv-err').style.display='none'; $('cut-preview').textContent='';
+  openSheet('sh-invite');
+}
+
+async function sendInvite(){
+  const email=$('inv-email').value.trim();
+  const amount=parseFloat($('inv-amount').value);
+  const note=$('inv-note').value.trim();
+  const err=$('inv-err');
+  if(!email){err.textContent='Email required';err.style.display='block';return;}
+  if(!amount||amount<1){err.textContent='Amount must be at least $1';err.style.display='block';return;}
+  const btn=$('inv-btn');btn.disabled=true;btn.textContent='Sending…';
+  const r=await fetch('/api/dealer/invites/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,amount,note})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.disabled=false;btn.textContent='Send Invite';
+  if(r.error){err.textContent=r.error;err.style.display='block';return;}
+  closeSheet('sh-invite');
+  await loadDashboard();
+}
+
+function copyLink(token){
+  const url = location.origin + '/join?token=' + token;
+  navigator.clipboard.writeText(url).then(()=>alert('Link copied!')).catch(()=>prompt('Copy this link:',url));
+}
+
+// ── Edit ──────────────────────────────────────────────────────────────────────
+function openEdit(id, email, amount, note){
+  $('edit-id').value=id;
+  $('edit-email').value=email;
+  $('edit-amount').value=amount;
+  $('edit-note').value=note;
+  $('edit-sub').textContent='Edit invite for '+email;
+  $('edit-resend').checked=false;
+  $('edit-err').style.display='none';
+  updateEditCut();
+  openSheet('sh-edit');
+}
+
+function updateEditCut(){
+  const amt=parseFloat($('edit-amount').value)||0;
+  $('edit-cut').textContent=amt?`Your cut: $${(amt*0.5).toFixed(2)}`:'';
+}
+
+async function saveEdit(){
+  const id=$('edit-id').value;
+  const email=$('edit-email').value.trim();
+  const amount=parseFloat($('edit-amount').value);
+  const note=$('edit-note').value.trim();
+  const resend=$('edit-resend').checked;
+  const err=$('edit-err');
+  if(!email){err.textContent='Email required';err.style.display='block';return;}
+  if(!amount||amount<1){err.textContent='Amount must be at least $1';err.style.display='block';return;}
+  const btn=$('edit-btn');btn.disabled=true;btn.textContent='Saving…';
+  const r=await fetch('/api/dealer/invites/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,amount,note,resend})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.disabled=false;btn.textContent='Save Changes';
+  if(r.error){err.textContent=r.error;err.style.display='block';return;}
+  closeSheet('sh-edit');
+  await loadDashboard();
+}
+
+async function deleteInvite(id){
+  if(!confirm('Delete this invite?'))return;
+  await fetch('/api/dealer/invites/'+id,{method:'DELETE'});
+  loadDashboard();
+}
+
+// ── Sheets ────────────────────────────────────────────────────────────────────
+function openSheet(id){$('overlay').classList.add('on');$(id).classList.add('on');}
+function closeSheet(id){$(id).classList.remove('on');$('overlay').classList.remove('on');}
+function closeAllSheets(){document.querySelectorAll('.sheet.on').forEach(s=>s.classList.remove('on'));$('overlay').classList.remove('on');}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtDate(d){if(!d)return'—';const dt=new Date(d);return isNaN(dt)?'—':dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+</script>
+</body>
+</html>

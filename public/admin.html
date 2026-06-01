@@ -130,6 +130,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
 .bdg-a{background:var(--ambb);color:var(--amb);border:1px solid rgba(251,191,36,.2)}
 .bdg-b{background:var(--s3);color:var(--t2);border:1px solid var(--bdr)}
 .bdg-blue{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
+.bdg-gold{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
 
 /* ── Redemption cards ── */
 .rc{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-bottom:8px}
@@ -203,6 +204,9 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
         <span class="icon">🎫</span> Redemptions
         <span class="sb-badge red" id="nb-redem" style="display:none"></span>
       </div>
+      <div class="sb-item" onclick="showPanel('invites',this)" id="nav-invites">
+        <span class="icon">✉️</span> Invites
+      </div>
     </nav>
     <div class="sb-footer">
       <div class="sb-user">
@@ -260,6 +264,15 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
           <input type="text" id="member-search" placeholder="Search by name, email or @screen_name" oninput="filterMembers()"/>
         </div>
         <div id="member-list"><div class="empty">// loading...</div></div>
+      </div>
+
+      <!-- Invites -->
+      <div id="panel-invites" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono)">Invite Links</div>
+          <button class="btn btn-g" onclick="openInviteSheet()">+ Send Invite</button>
+        </div>
+        <div id="invite-list"><div class="empty">// no invites yet</div></div>
       </div>
 
       <!-- Redemptions -->
@@ -340,6 +353,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
     <label>Tier</label>
     <select id="m-tier">
       <option value="member">Member</option>
+      <option value="dealer">DungeonDealer</option>
       <option value="mod">Mod</option>
       <option value="admin">Admin</option>
       <option value="warden">Warden</option>
@@ -413,10 +427,10 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
 async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
 
 // ── Panels ────────────────────────────────────────────────────────────────────
-const panelTitles={applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
+const panelTitles={invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
 
 function showPanel(name,el){
-  ['applications','members','redemptions'].forEach(p=>{$(('panel-'+p)).style.display=p===name?'block':'none';});
+  ['applications','members','redemptions','invites'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('on'));
   el.classList.add('on');
   const [title,sub]=panelTitles[name];
@@ -426,6 +440,7 @@ function showPanel(name,el){
   if(name==='applications') loadApps();
   if(name==='members') loadMembers();
   if(name==='redemptions') loadRedem();
+  if(name==='invites') loadInvites();
 }
 
 // ── Sidebar (mobile) ─────────────────────────────────────────────────────────
@@ -456,7 +471,7 @@ async function loadStats(){
   if(pendingR>0){$('nb-redem').textContent=pendingR;$('nb-redem').style.display='flex';}
 }
 
-function loadAll(){loadStats();loadApps();loadMembers();loadRedem();}
+function loadAll(){loadStats();loadApps();loadMembers();loadRedem();loadInvites();}
 
 // ── Applications ──────────────────────────────────────────────────────────────
 async function loadApps(){
@@ -554,7 +569,7 @@ function renderMembers(members){
     const cDays=cEnd?Math.ceil((cEnd-now)/86400000):null;
     const init=((m.first_name||'?')[0]+(m.last_name||'?')[0]).toUpperCase();
     const tier=m.tier||'member';
-    const tierBdg=tier==='warden'?'bdg-a':tier==='admin'?'bdg-blue':tier==='mod'?'bdg-g':'bdg-b';
+    const tierBdg=tier==='warden'?'bdg-a':tier==='admin'?'bdg-blue':tier==='mod'?'bdg-g':tier==='dealer'?'bdg-gold':'bdg-b';
     const devices=fmtDevices(m.devices);
 
     return `<div class="card" id="mc-${m.id}">
@@ -758,6 +773,82 @@ function fmtDevices(devStr){
     const icons={iphone:'iPhone',android_phone:'Android',ipad:'iPad',android_tablet:'Android Tab',windows:'Windows',mac:'Mac',linux:'Linux',chromebook:'Chromebook',firestick:'Fire Stick',android_tv:'Android TV',apple_tv:'Apple TV',roku:'Roku',smart_tv:'Smart TV',chromecast:'Chromecast',nvidia_shield:'Shield',ps4:'PS4',ps5:'PS5',xbox:'Xbox'};
     return Object.values(d).flat().filter(v=>!v.startsWith('no_')).map(v=>icons[v]||v).join(' · ')||'';
   }catch{return'';}
+}
+</script>
+
+<!-- Invite Sheet -->
+<div class="sheet" id="sh-invite">
+  <div class="sh-handle"></div>
+  <div class="sh-title">Send Invite</div>
+  <div class="sh-sub">Generate a Stripe payment link and send it to someone's email.</div>
+  <div class="sh-err" id="inv-err"></div>
+  <div class="field"><label>Email Address</label><input type="email" id="inv-email" placeholder="member@email.com"/></div>
+  <div class="field">
+    <label>Signup Fee (USD)</label>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:16px;color:var(--t2)">$</span>
+      <input type="number" id="inv-amount" placeholder="15.00" min="1" step="0.01" style="flex:1"/>
+    </div>
+  </div>
+  <div class="field"><label>Note (optional)</label><input type="text" id="inv-note" placeholder="Personal message to include in email"/></div>
+  <div class="sacts">
+    <button class="btn btn-b" onclick="closeSheet('sh-invite')">Cancel</button>
+    <button class="btn btn-g" id="inv-btn" onclick="sendInvite()">Send Invite</button>
+  </div>
+</div>
+
+<script>
+// ── Invites ───────────────────────────────────────────────────────────────────
+async function loadInvites() {
+  const invites = await fetch('/api/admin/invites').then(r=>r.json()).catch(()=>[]);
+  const el = $('invite-list');
+  if (!invites.length) { el.innerHTML='<div class="empty">// no invites yet</div>'; return; }
+  el.innerHTML = invites.map(i => {
+    const bdg = i.status==='paid'?'bdg-a':i.status==='used'?'bdg-g':i.status==='pending'?'bdg-b':'bdg-r';
+    const amt = '$' + (i.amount/100).toFixed(2);
+    return `<div class="rc">
+      <div class="rc-top">
+        <div>
+          <div class="rc-name">${esc(i.email||'No email')} <span class="bdg ${bdg}">${i.status}</span></div>
+          <div class="rc-meta">${amt} · ${fmtDate(i.created_at)}</div>
+        </div>
+        ${i.status==='pending'||i.status==='paid'?`<button class="btn btn-r" style="font-size:10px;padding:5px 10px" onclick="deleteInvite('${i.id}')">Delete</button>`:''}
+      </div>
+      ${i.note?`<div style="font-size:12px;color:var(--t2);margin-top:4px">${esc(i.note)}</div>`:''}
+      ${i.status==='used'?`<div class="rc-rows"><div class="rc-row"><span class="rc-lbl">Used</span><span class="rc-val">${fmtDate(i.used_at)}</span></div></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function openInviteSheet() {
+  $('inv-email').value=''; $('inv-amount').value=''; $('inv-note').value='';
+  $('inv-err').style.display='none';
+  openSheet('sh-invite');
+}
+
+async function sendInvite() {
+  const email = $('inv-email').value.trim();
+  const amount = parseFloat($('inv-amount').value);
+  const note = $('inv-note').value.trim();
+  const err = $('inv-err');
+  if (!email) { err.textContent='Email required'; err.style.display='block'; return; }
+  if (!amount || amount < 1) { err.textContent='Amount must be at least $1'; err.style.display='block'; return; }
+  const btn = $('inv-btn'); btn.disabled=true; btn.textContent='Sending…';
+  const r = await fetch('/api/admin/invites/create', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({email, amount, note})
+  }).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.disabled=false; btn.textContent='Send Invite';
+  if (r.error) { err.textContent=r.error; err.style.display='block'; return; }
+  closeSheet('sh-invite');
+  loadInvites();
+  alert('Invite sent to ' + email + '!');
+}
+
+async function deleteInvite(id) {
+  if (!confirm('Delete this invite?')) return;
+  await fetch('/api/admin/invites/' + id, {method:'DELETE'});
+  loadInvites();
 }
 </script>
 </body>
