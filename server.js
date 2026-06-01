@@ -431,8 +431,14 @@ async function jellyfinCreateUser(username, password, serverUrl, apiKey) {
 }
 // ────────────────────────────────────────────────────────────────────────────
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use((req, res, next) => {
+  if (req.path === '/api/stripe/webhook') return next();
+  express.json({ limit: '10mb' })(req, res, next);
+});
+app.use((req, res, next) => {
+  if (req.path === '/api/stripe/webhook') return next();
+  express.urlencoded({ extended: true, limit: '10mb' })(req, res, next);
+});
 
 // ── Security headers ──────────────────────────────────────────────────────────
 app.use((req, res, next) => {
