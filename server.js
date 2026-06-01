@@ -2383,8 +2383,11 @@ app.post('/api/applicants/:id/deny', requireMod, (req, res) => {
 app.get('/api/admin/redemptions', requireMod, (req, res) => {
   try {
     res.json(db.prepare(`
-      SELECT r.*, p.screen_name, p.email as profile_email, p.avatar_color
-      FROM redemptions r LEFT JOIN profiles p ON r.profile_id=p.id
+      SELECT r.*, p.screen_name, p.email as profile_email, p.avatar_color,
+             m.jellyfin_user, m.jellyfin_pass, m.stremio_end, m.iptv_end
+      FROM redemptions r
+      LEFT JOIN profiles p ON r.profile_id = p.id
+      LEFT JOIN members m ON m.id = p.member_id
       ORDER BY r.created_at DESC
     `).all());
   } catch(e) { res.status(500).json({ error: e.message }); }
