@@ -36,6 +36,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 .sn-hint{font-size:10px;color:var(--t3);margin-top:4px}
 .sn-hint.ok{color:var(--g)}
 .sn-hint.err{color:var(--red)}
+.select-wrap{position:relative}
+.select-wrap select{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:14px;padding:11px 13px;outline:none;transition:border-color .15s;appearance:none;cursor:pointer}
+.select-wrap select:focus{border-color:var(--g)}
+.select-wrap::after{content:'▾';position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none}
 @media(max-width:400px){.frow{grid-template-columns:1fr}.devices{grid-template-columns:1fr}}
 </style>
 </head>
@@ -89,6 +93,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
         <div class="dv" data-val="smart_tv" onclick="toggleDev(this)">📺 Smart TV</div>
       </div>
     </div>
+    <div class="field">
+      <label>Referred by <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label>
+      <div class="select-wrap">
+        <select id="referred-by">
+          <option value="">Select a member…</option>
+        </select>
+      </div>
+    </div>
     <button class="btn" id="submit-btn" onclick="submit()">Create My Account →</button>
   </div>
 
@@ -131,13 +143,47 @@ function showError(msg) {
 
 function toggleDev(el) { el.classList.toggle('on'); }
 
+let _snTimer = null;
+let _snValid = false;
+
 function validateSn(input) {
   const val = input.value.replace(/[^a-zA-Z0-9_]/g, '');
   input.value = val;
   const hint = document.getElementById('sn-hint');
-  if (!val) { hint.textContent = 'Letters, numbers and underscores only. 2-20 characters.'; hint.className = 'sn-hint'; }
-  else if (val.length < 2) { hint.textContent = 'Too short — minimum 2 characters'; hint.className = 'sn-hint err'; }
-  else { hint.textContent = '@' + val + ' looks good'; hint.className = 'sn-hint ok'; }
+  _snValid = false;
+
+  if (!val) {
+    hint.textContent = 'Letters, numbers and underscores only. 2-20 characters.';
+    hint.className = 'sn-hint';
+    return;
+  }
+  if (val.length < 2) {
+    hint.textContent = 'Too short — minimum 2 characters';
+    hint.className = 'sn-hint err';
+    return;
+  }
+  if (val.length > 20) {
+    hint.textContent = 'Too long — maximum 20 characters';
+    hint.className = 'sn-hint err';
+    return;
+  }
+
+  hint.textContent = 'Checking availability…';
+  hint.className = 'sn-hint';
+
+  clearTimeout(_snTimer);
+  _snTimer = setTimeout(async () => {
+    const r = await fetch('/api/check/screen-name/' + encodeURIComponent(val)).then(r => r.json()).catch(() => ({ available: false }));
+    if (r.available) {
+      hint.textContent = '@' + val + ' is available ✓';
+      hint.className = 'sn-hint ok';
+      _snValid = true;
+    } else {
+      hint.textContent = '@' + val + ' is already taken — try another';
+      hint.className = 'sn-hint err';
+      _snValid = false;
+    }
+  }, 500);
 }
 
 async function checkInvite() {
@@ -162,6 +208,16 @@ async function checkInvite() {
   // Payment confirmed
   document.getElementById('amount-badge').textContent = '$' + (data.amount/100).toFixed(2) + ' paid';
   show('card-form');
+  // Load referral dropdown
+  fetch('/api/members/list').then(r=>r.json()).then(members => {
+    const sel = document.getElementById('referred-by');
+    members.forEach(sn => {
+      const opt = document.createElement('option');
+      opt.value = sn;
+      opt.textContent = '@' + sn;
+      sel.appendChild(opt);
+    });
+  }).catch(()=>{});
 }
 
 async function init() {
@@ -185,6 +241,7 @@ async function submit() {
   if (!fn) { err.textContent = 'First name is required'; err.style.display = 'block'; return; }
   if (!sn || sn.length < 2) { err.textContent = 'Screen name must be at least 2 characters'; err.style.display = 'block'; return; }
   if (!/^[a-zA-Z0-9_]+$/.test(sn)) { err.textContent = 'Screen name can only contain letters, numbers and underscores'; err.style.display = 'block'; return; }
+  if (!_snValid) { err.textContent = 'Please choose an available screen name'; err.style.display = 'block'; return; }
 
   err.style.display = 'none';
   const selectedDevices = Array.from(document.querySelectorAll('.dv.on')).map(el => el.dataset.val);
@@ -195,7 +252,7 @@ async function submit() {
   const r = await fetch('/api/invite/' + _token + '/complete', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ first_name: fn, last_name: ln, screen_name: sn, phone, devices: selectedDevices })
+    body: JSON.stringify({ first_name: fn, last_name: ln, screen_name: sn, phone, devices: selectedDevices, referred_by: document.getElementById('referred-by').value || null })
   }).then(async r => ({ ok: r.ok, data: await r.json() }));
 
   btn.disabled = false; btn.textContent = 'Create My Account →';

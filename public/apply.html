@@ -1,252 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon · Apply</title>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
-    *{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --bg:#0b0f0e;--surface:#111915;--surface2:#172118;
-      --border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
-      --green:#34d399;--green-bg:rgba(52,211,153,0.08);
-      --text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;
-    }
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
-    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center}
-    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
-    .page{max-width:560px;margin:0 auto;padding:40px 24px 80px}
-    .page-title{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;font-weight:400;color:var(--text);margin-bottom:16px;line-height:1.6}
-    .page-sub{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:9px !important;font-weight:400 !important;color:var(--muted2);margin-bottom:36px;line-height:1.9}
-    .divider{height:1px;background:var(--border);margin-bottom:28px}
-    .section-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
-    .section{margin-bottom:28px}
-    .field{margin-bottom:16px}
-    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:480px){.field-row{grid-template-columns:1fr}}
-    label{display:block;font-size:12px;font-weight:600;color:var(--muted2);margin-bottom:7px;letter-spacing:0.04em;text-transform:uppercase}
-    label .req{color:var(--green);margin-left:2px}
-    input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s;appearance:none}
-    input:focus,select:focus,textarea:focus{border-color:var(--green)}
-    input::placeholder,textarea::placeholder{color:var(--muted)}
-    select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b8f7a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
-    select option{background:#111915}
-    textarea{resize:none;height:80px;line-height:1.6}
-    .field-hint{font-size:11px;color:var(--muted);margin-top:5px}
-    .field-error input,.field-error select,.field-error textarea{border-color:var(--red)}
-    .err-msg{display:none;font-size:12px;color:var(--red);margin-top:5px}
-    .field-error .err-msg{display:block}
-    .error-banner{display:none;font-size:13px;color:var(--red);margin-bottom:16px;padding:12px 14px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:8px}
-    .submit-btn{width:100%;padding:13px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:8px}
-    .submit-btn:hover{opacity:0.9}
-    .submit-btn:disabled{opacity:0.4;cursor:not-allowed}
-    #successPage{display:none;text-align:center;padding:60px 0}
-    .success-icon{font-size:48px;margin-bottom:20px}
-    .success-title{font-size:22px;font-weight:600;color:var(--text);margin-bottom:10px}
-    .success-sub{font-size:14px;color:var(--muted2);line-height:1.7}
-    @media(max-width:767px){.page{padding:28px 20px 60px}}
-
-    footer{text-align:center;padding:24px 0 16px;font-size:12px;color:var(--muted)}
-    footer a{color:var(--muted);text-decoration:none}
-    footer a:hover{color:var(--text)}
-    @media(max-width:767px){footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
-  </style>
-  <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>Dungeon · Apply</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);--g:#34d399;--gb:rgba(52,211,153,.08);--txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;--red:#f87171;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif}
+html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;flex-direction:column}
+.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--g);text-decoration:none;letter-spacing:.04em}
+.page{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px 60px}
+.box{width:100%;max-width:480px}
+.card{background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;padding:24px}
+.title{font-size:18px;font-weight:700;margin-bottom:6px}
+.sub{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.7}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:14px;padding:11px 13px;outline:none;transition:border-color .15s;appearance:none}
+.field input:focus,.field select:focus{border-color:var(--g)}
+.field input::placeholder,.field textarea::placeholder{color:var(--t3)}
+.field input.err,.field select.err{border-color:var(--red)}
+.field-hint{font-size:10px;color:var(--t3);margin-top:4px;font-family:var(--mono)}
+.field-hint.ok{color:var(--g)}
+.field-hint.bad{color:var(--red)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.select-wrap{position:relative}
+.select-wrap::after{content:'▾';position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none;font-size:12px}
+.select-wrap select{padding-right:36px;cursor:pointer}
+.select-wrap select option{background:var(--s2)}
+.devices{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.dv{background:var(--s2);border:1px solid var(--bdr);border-radius:7px;padding:9px 10px;cursor:pointer;font-size:12px;color:var(--t2);transition:all .15s;display:flex;align-items:center;gap:6px;user-select:none}
+.dv:hover{border-color:var(--bdr2);color:var(--txt)}
+.dv.on{background:var(--gb);border-color:var(--g);color:var(--g)}
+.divider{height:1px;background:var(--bdr);margin:20px 0}
+.terms-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:16px}
+.terms-row input[type=checkbox]{width:16px;height:16px;margin-top:2px;accent-color:var(--g);cursor:pointer;flex-shrink:0}
+.terms-row label{font-size:12px;color:var(--t2);line-height:1.6;cursor:pointer}
+.terms-row a{color:var(--g);text-decoration:none}
+.btn{width:100%;padding:13px;background:var(--g);border:none;border-radius:8px;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);transition:opacity .2s}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.err-banner{font-size:12px;color:var(--red);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;display:none;line-height:1.5}
+.success{text-align:center;padding:20px 0;display:none}
+.success-icon{font-size:48px;margin-bottom:16px}
+.success-title{font-size:20px;font-weight:700;margin-bottom:8px}
+.success-sub{font-size:13px;color:var(--t2);line-height:1.7}
+footer{text-align:center;padding:20px;font-size:12px;color:var(--t3)}
+footer a{color:var(--t3);text-decoration:none}
+footer a:hover{color:var(--t2)}
+@media(max-width:480px){.frow{grid-template-columns:1fr}.devices{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
+
 <div class="topbar">
   <a href="/" class="logo" id="logoLink">Dungeon</a>
 </div>
+
 <div class="page">
-  <div class="page-title">Request Access</div>
-  <div class="page-sub">Submit your details below. The Dungeon Master will review your request and be in touch.</div>
-  <div class="divider"></div>
+  <div class="box">
+    <div class="card">
 
-  <div id="formPage">
-    <div class="error-banner" id="errorBanner"></div>
+      <!-- Form -->
+      <div id="formView">
+        <div class="title">Request Access</div>
+        <div class="sub">Submit your details and the Dungeon Master will review your request.</div>
+        <div class="err-banner" id="errBanner"></div>
 
-    <div class="section">
-      <div class="section-label">Your Details</div>
-
-      <div class="field-row">
-        <div class="field" id="grp-first_name">
-          <label>First Name <span class="req">*</span></label>
-          <input type="text" id="first_name" placeholder="First name" autocomplete="given-name"/>
-          <div class="err-msg">Required</div>
+        <div class="frow">
+          <div class="field">
+            <label>First Name <span style="color:var(--g)">*</span></label>
+            <input type="text" id="fn" placeholder="Seymour" autocomplete="given-name"/>
+          </div>
+          <div class="field">
+            <label>Last Name <span style="color:var(--g)">*</span></label>
+            <input type="text" id="ln" placeholder="Buttocks" autocomplete="family-name"/>
+          </div>
         </div>
-        <div class="field" id="grp-last_name">
-          <label>Last Name <span class="req">*</span></label>
-          <input type="text" id="last_name" placeholder="Last name" autocomplete="family-name"/>
-          <div class="err-msg">Required</div>
+
+        <div class="field">
+          <label>Screen Name <span style="color:var(--g)">*</span> <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">— your @username</span></label>
+          <input type="text" id="sn" placeholder="yourcoolname" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
+          <div class="field-hint" id="sn-hint">Letters, numbers and underscores only. 3-20 characters.</div>
         </div>
+
+        <div class="field">
+          <label>Email Address <span style="color:var(--g)">*</span></label>
+          <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
+        </div>
+
+        <div class="field">
+          <label>Phone <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label>
+          <input type="tel" id="phone" placeholder="+1 (555) 000-0000" autocomplete="tel"/>
+        </div>
+
+        <div class="field">
+          <label>Referred by <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label>
+          <div class="select-wrap">
+            <select id="referral">
+              <option value="">Select a member…</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Your Devices <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">select all that apply</span></label>
+          <div class="devices">
+            <div class="dv" data-val="iphone" onclick="toggleDev(this)">📱 iPhone</div>
+            <div class="dv" data-val="ipad" onclick="toggleDev(this)">📱 iPad</div>
+            <div class="dv" data-val="android_phone" onclick="toggleDev(this)">📱 Android</div>
+            <div class="dv" data-val="firestick" onclick="toggleDev(this)">📺 Fire Stick</div>
+            <div class="dv" data-val="android_tv" onclick="toggleDev(this)">📺 Android TV</div>
+            <div class="dv" data-val="apple_tv" onclick="toggleDev(this)">📺 Apple TV</div>
+            <div class="dv" data-val="roku" onclick="toggleDev(this)">📺 Roku</div>
+            <div class="dv" data-val="windows" onclick="toggleDev(this)">💻 Windows</div>
+            <div class="dv" data-val="mac" onclick="toggleDev(this)">💻 Mac</div>
+            <div class="dv" data-val="smart_tv" onclick="toggleDev(this)">📺 Smart TV</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="terms-row">
+          <input type="checkbox" id="terms"/>
+          <label for="terms">I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a></label>
+        </div>
+
+        <button class="btn" id="submitBtn" onclick="submitForm()">Submit Request</button>
       </div>
 
-      <div class="field" id="grp-screen_name">
-        <label>Username <span class="req">*</span></label>
-        <input type="text" id="screen_name" placeholder="e.g. dungeon_lord" autocomplete="off" maxlength="20"/>
-        <div class="field-hint">3–20 characters. Letters, numbers and underscores only. No spaces.</div>
-        <div class="err-msg">3–20 characters, letters, numbers and underscores only.</div>
+      <!-- Success -->
+      <div class="success" id="successView">
+        <div class="success-icon">✅</div>
+        <div class="success-title">Request Submitted</div>
+        <div class="success-sub">Your request has been received.<br/>The Dungeon Master will be in touch at your email address.</div>
       </div>
 
-      <div class="field" id="grp-email">
-        <label>Email Address <span class="req">*</span></label>
-        <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
-        <div class="err-msg">A valid email is required</div>
-      </div>
-
-      <div class="field" id="grp-phone">
-        <label>Phone Number</label>
-        <input type="tel" id="phone" placeholder="Optional" autocomplete="tel"/>
-        <div class="err-msg">A valid phone number is required</div>
-      </div>
     </div>
-
-    <div class="section">
-      <div class="section-label">Preferences</div>
-      <div class="field">
-        <label>Subtitle Language</label>
-        <select id="language">
-          <option value="">Select a language</option>
-          <option>English</option><option>Spanish</option><option>French</option>
-          <option>Portuguese</option><option>German</option><option>Italian</option>
-          <option>Arabic</option><option>Chinese (Simplified)</option>
-          <option>Japanese</option><option>Korean</option><option>Hindi</option>
-          <option>Other</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Who referred you?</label>
-        <input type="text" id="referral" placeholder="Optional"/>
-      </div>
-      <div class="field">
-        <label>Notes</label>
-        <textarea id="notes" placeholder="Anything else you'd like us to know…"></textarea>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-    <div style="margin-bottom:16px;display:flex;align-items:flex-start;gap:10px">
-      <input type="checkbox" id="agreeTerms" style="width:16px;height:16px;margin-top:2px;accent-color:#34d399;cursor:pointer;flex-shrink:0"/>
-      <label for="agreeTerms" style="font-size:13px;color:#94a3a0;line-height:1.6;cursor:pointer">
-        I agree to the <a href="/terms.html" target="_blank" style="color:#34d399;text-decoration:none">Terms of Service</a> and <a href="/privacy.html" target="_blank" style="color:#34d399;text-decoration:none">Privacy Policy</a>
-      </label>
-    </div>
-    <div id="termsErr" style="display:none;font-size:12px;color:#f87171;margin-bottom:10px">You must agree to the terms to apply.</div>
-    <button class="submit-btn" id="submitBtn" onclick="submitForm()">Submit Request</button>
-  </div>
-
-  <div id="successPage">
-    <div class="success-icon">✅</div>
-    <div class="success-title">Request Submitted</div>
-    <div class="success-sub">Your request has been received.<br>The Dungeon Master will be in touch at your email address.</div>
   </div>
 </div>
 
+<footer>
+  <a href="/terms.html">Terms</a> &nbsp;·&nbsp;
+  <a href="/privacy.html">Privacy</a>
+</footer>
+
 <script>
-  function validate() {
-    let ok = true;
-    const checks = {
-      first_name:  v => v.trim().length > 0,
-      last_name:   v => v.trim().length > 0,
-      screen_name: v => /^[a-zA-Z0-9_]{3,20}$/.test(v.trim()),
-      email:       v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),
+let _snTimer = null;
+let _snValid = false;
 
-    };
-    for (const [id, check] of Object.entries(checks)) {
-      const grp = document.getElementById('grp-' + id);
-      const el  = document.getElementById(id);
-      if (!grp || !el) continue;
-      if (!check(el.value)) {
-        grp.classList.add('field-error'); ok = false;
-      } else {
-        grp.classList.remove('field-error');
-      }
-    }
-    return ok;
-  }
+function toggleDev(el){ el.classList.toggle('on'); }
 
-  async function submitForm() {
-    if (!validate()) return;
-    const btn    = document.getElementById('submitBtn');
-    const banner = document.getElementById('errorBanner');
-    btn.disabled = true;
-    btn.textContent = 'Submitting…';
-    banner.style.display = 'none';
+function validateSn(input){
+  const val = input.value.replace(/[^a-zA-Z0-9_]/g,'');
+  input.value = val;
+  const hint = document.getElementById('sn-hint');
+  _snValid = false;
+  if(!val){ hint.textContent='Letters, numbers and underscores only. 3-20 characters.'; hint.className='field-hint'; return; }
+  if(val.length < 3){ hint.textContent='Too short — minimum 3 characters'; hint.className='field-hint bad'; return; }
+  hint.textContent='Checking availability…'; hint.className='field-hint';
+  clearTimeout(_snTimer);
+  _snTimer = setTimeout(async ()=>{
+    const r = await fetch('/api/check/screen-name/'+encodeURIComponent(val)).then(r=>r.json()).catch(()=>({available:false}));
+    if(r.available){ hint.textContent='@'+val+' is available ✓'; hint.className='field-hint ok'; _snValid=true; }
+    else{ hint.textContent='@'+val+' is already taken — try another'; hint.className='field-hint bad'; _snValid=false; }
+  }, 500);
+}
 
-    const body = {
-      screen_name: document.getElementById('screen_name').value.trim(),
-      first_name:  document.getElementById('first_name').value.trim(),
-      last_name:   document.getElementById('last_name').value.trim(),
-      email:       document.getElementById('email').value.trim(),
-      phone:       document.getElementById('phone').value.trim(),
-      language:    document.getElementById('language').value,
-      referral:    document.getElementById('referral').value.trim(),
-      notes:       document.getElementById('notes').value.trim(),
-    };
+async function submitForm(){
+  const fn=$('fn').value.trim(), ln=$('ln').value.trim();
+  const sn=$('sn').value.trim(), email=$('email').value.trim();
+  const banner=$('errBanner');
+  banner.style.display='none';
 
-    try {
-      const res  = await fetch('/api/apply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        document.getElementById('formPage').style.display = 'none';
-        document.getElementById('successPage').style.display = 'block';
-      } else {
-        banner.textContent = data.error || 'Something went wrong.';
-        banner.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = 'Submit Request';
-      }
-    } catch {
-      banner.textContent = 'Connection error. Please try again.';
-      banner.style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = 'Submit Request';
-    }
-  }
+  if(!fn){ banner.textContent='First name is required'; banner.style.display='block'; return; }
+  if(!sn || sn.length<3){ banner.textContent='Screen name must be at least 3 characters'; banner.style.display='block'; return; }
+  if(!_snValid){ banner.textContent='Please choose an available screen name'; banner.style.display='block'; return; }
+  if(!email || !email.includes('@')){ banner.textContent='Valid email is required'; banner.style.display='block'; return; }
+  if(!$('terms').checked){ banner.textContent='You must agree to the Terms of Service'; banner.style.display='block'; return; }
 
-  // Pre-fill referral from URL param
-  const refParam = new URLSearchParams(window.location.search).get('ref');
-  if (refParam) {
-    const refEl = document.getElementById('referral');
-    if (refEl) { refEl.value = refParam; refEl.readOnly = true; refEl.style.opacity='0.7'; }
-  }
+  const devices = Array.from(document.querySelectorAll('.dv.on')).map(el=>el.dataset.val);
+  const btn=$('submitBtn'); btn.disabled=true; btn.textContent='Submitting…';
 
-  ['first_name', 'last_name', 'screen_name', 'email'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('blur', validate);
+  const r = await fetch('/api/apply',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      first_name:fn, last_name:ln, screen_name:sn, email,
+      phone:$('phone').value.trim(),
+      referral:$('referral').value||'',
+      devices, notes:''
+    })
+  }).then(async r=>({ok:r.ok,data:await r.json()})).catch(e=>({ok:false,data:{error:e.message}}));
+
+  btn.disabled=false; btn.textContent='Submit Request';
+
+  if(!r.ok){ banner.textContent=r.data.error||'Something went wrong'; banner.style.display='block'; return; }
+
+  $('formView').style.display='none';
+  $('successView').style.display='block';
+}
+
+function $(id){ return document.getElementById(id); }
+
+// Load referral dropdown
+fetch('/api/members/list').then(r=>r.json()).then(members=>{
+  const sel=$('referral');
+  members.forEach(sn=>{
+    const opt=document.createElement('option');
+    opt.value=sn; opt.textContent='@'+sn;
+    sel.appendChild(opt);
   });
+  // Pre-fill from URL param
+  const ref=new URLSearchParams(window.location.search).get('ref');
+  if(ref) sel.value=ref;
+}).catch(()=>{});
 
-  // Smart logo link — go to dashboard if logged in, home if not
-  (function(){
-    fetch('/api/member/me').then(r=>r.json()).then(d=>{
-      const logo = document.getElementById('logoLink');
-      if(logo && d.authenticated) logo.href = '/dashboard.html';
-    }).catch(()=>{});
-  })();
+// Smart logo link
+fetch('/api/member/me').then(r=>r.json()).then(d=>{
+  if(d.authenticated) $('logoLink').href='/dashboard.html';
+}).catch(()=>{});
 </script>
-
-  <footer id="pageFooter">
-    <a href="/messages.html">Messages</a>
-    &nbsp;·&nbsp;
-    <a href="/profile.html">My Profile</a>
-    &nbsp;·&nbsp;
-    <a href="/directory.html">Directory</a>
-    &nbsp;·&nbsp;
-    <a href="/forum.html">Forum</a>
-    &nbsp;·&nbsp;
-    <a href="/dashboard.html">Dashboard</a>
-  </footer>
 </body>
 </html>

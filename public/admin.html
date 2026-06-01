@@ -608,6 +608,7 @@ function renderMembers(members){
             ${cEnd?`<div class="dv sub">${cEnd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>`:''}
           </div>`:''}
           ${devices?`<div class="di full"><div class="dl">Devices</div><div class="dv" style="color:var(--t2);font-size:11px">${devices}</div></div>`:''}
+          ${m.referred_by?`<div class="di"><div class="dl">Referred By</div><div class="dv" style="color:var(--g)">@${esc(m.referred_by)}</div></div>`:''}
           ${m.notes?`<div class="di full"><div class="dl">Notes</div><div class="dv" style="color:var(--t2)">${esc(m.notes)}</div></div>`:''}
         </div>
         <div class="actions">

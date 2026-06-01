@@ -1,87 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon · Setup Profile</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    :root{
-      --bg:#0b0f0e;--surface:#111915;--surface2:#172118;
-      --border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
-      --green:#34d399;--green-bg:rgba(52,211,153,0.08);
-      --text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;
-    }
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
-    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-    .logo{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--green);text-decoration:none}
-    .page{max-width:500px;margin:0 auto;padding:32px 16px 60px}
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>Dungeon · Setup Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--s3:#1a2422;--bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);--g:#34d399;--gb:rgba(52,211,153,.08);--txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;--red:#f87171;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif}
+html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans)}
+.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center}
+.logo{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--g);text-decoration:none;letter-spacing:.04em}
+.page{max-width:500px;margin:0 auto;padding:32px 16px 60px}
 
-    /* Progress */
-    .progress{display:flex;gap:6px;margin-bottom:28px}
-    .prog-step{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background .3s}
-    .prog-step.done{background:var(--green)}
-    .prog-step.active{background:var(--green);opacity:0.5}
+/* Progress */
+.progress{display:flex;gap:6px;margin-bottom:32px}
+.ps{flex:1;height:3px;border-radius:2px;background:var(--bdr);transition:background .3s}
+.ps.done{background:var(--g)}
+.ps.active{background:var(--g);opacity:.5}
 
-    /* Step */
-    .step{display:none}.step.on{display:block}
-    .step-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px}
-    .step-sub{font-size:13px;color:var(--muted2);margin-bottom:24px;line-height:1.6}
+/* Steps */
+.step{display:none}.step.on{display:block}
+.step-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.step-sub{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.7}
 
-    /* Fields */
-    .field{margin-bottom:16px}
-    .field label{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:6px}
-    .field input{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:11px 14px;outline:none}
-    .field input:focus{border-color:var(--green)}
-    .field input::placeholder{color:var(--muted)}
-    .field-hint{font-size:11px;color:var(--muted);margin-top:4px}
-    .err{color:var(--red);font-size:12px;margin-top:4px;display:none}
+/* Fields */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:5px}
+.field input{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:14px;padding:11px 13px;outline:none;transition:border-color .15s}
+.field input:focus{border-color:var(--g)}
+.field input::placeholder{color:var(--t3)}
+.hint{font-size:10px;color:var(--t3);margin-top:4px;font-family:var(--mono)}
+.hint.ok{color:var(--g)}
+.hint.bad{color:var(--red)}
 
-    /* Avatar */
-    .avatar-wrap{text-align:center;margin-bottom:20px}
-    .avatar-circle{width:80px;height:80px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#0b0f0e;cursor:pointer;border:2px solid var(--border2);position:relative;overflow:hidden}
-    .avatar-circle img{width:100%;height:100%;object-fit:cover}
-    .avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;opacity:0;font-size:10px;font-weight:600;color:#fff;text-align:center;transition:opacity .2s}
-    .avatar-circle:hover .avatar-overlay{opacity:1}
-    .avatar-hint{font-size:12px;color:var(--muted);margin-bottom:10px}
-    .color-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-    .cdot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .15s}
-    .cdot:hover{transform:scale(1.15)}
-    .cdot.on{border-color:#fff}
-    #avatarInput{display:none}
+/* Avatar */
+.avatar-wrap{text-align:center;margin-bottom:20px}
+.avatar-circle{width:80px;height:80px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#000;cursor:pointer;border:2px solid var(--bdr2);position:relative;overflow:hidden;transition:border-color .2s}
+.avatar-circle:hover{border-color:var(--g)}
+.avatar-circle img{width:100%;height:100%;object-fit:cover}
+.avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;opacity:0;font-size:10px;font-weight:600;color:#fff;text-align:center;transition:opacity .2s}
+.avatar-circle:hover .avatar-overlay{opacity:1}
+.avatar-hint{font-size:11px;color:var(--t3);margin-bottom:12px;font-family:var(--mono)}
+.color-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.cdot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .15s}
+.cdot:hover{transform:scale(1.15)}
+.cdot.on{border-color:#fff}
 
-    /* Device survey */
-    .device-group{margin-bottom:20px}
-    .device-group-label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:10px;display:flex;align-items:center;gap:8px}
-    .device-group-label span{font-size:16px}
-    .device-chips{display:flex;flex-wrap:wrap;gap:8px}
-    .chip{font-size:12px;font-weight:500;padding:7px 14px;border-radius:20px;border:1px solid var(--border2);color:var(--muted2);cursor:pointer;background:var(--surface);transition:all .15s;user-select:none}
-    .chip:hover{border-color:var(--green);color:var(--green)}
-    .chip.on{background:var(--green-bg);border-color:var(--green);color:var(--green)}
-    .device-none{font-size:12px;color:var(--muted);margin-top:8px}
+/* Device chips */
+.device-group{margin-bottom:20px}
+.device-group-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin-bottom:10px;display:flex;align-items:center;gap:8px;font-family:var(--mono)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:12px;font-weight:500;padding:7px 14px;border-radius:20px;border:1px solid var(--bdr2);color:var(--t2);cursor:pointer;background:var(--s2);transition:all .15s;user-select:none}
+.chip:hover{border-color:var(--g);color:var(--g)}
+.chip.on{background:var(--gb);border-color:var(--g);color:var(--g)}
 
-    /* Buttons */
-    .btn-row{display:flex;gap:10px;margin-top:24px}
-    .btn{flex:1;padding:13px;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s}
-    .btn:disabled{opacity:.4;cursor:not-allowed}
-    .btn-primary{background:var(--green);color:#0b0f0e}
-    .btn-primary:hover:not(:disabled){opacity:.85}
-    .btn-ghost{background:var(--surface);border:1px solid var(--border2);color:var(--muted2)}
-    .btn-ghost:hover:not(:disabled){border-color:var(--green);color:var(--green)}
-    .btn-skip{background:none;border:none;color:var(--muted);font-size:13px;text-align:center;width:100%;padding:10px;cursor:pointer;font-family:'Inter',sans-serif}
-    .btn-skip:hover{color:var(--text)}
+/* Buttons */
+.btn-row{display:flex;gap:10px;margin-top:24px}
+.btn{flex:1;padding:13px;border:none;border-radius:8px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-g{background:var(--g);color:#000}
+.btn-g:hover:not(:disabled){opacity:.85}
+.btn-b{background:var(--s2);border:1px solid var(--bdr2);color:var(--t2)}
+.btn-b:hover:not(:disabled){border-color:var(--g);color:var(--g)}
+.btn-skip{background:none;border:none;color:var(--t3);font-size:12px;text-align:center;width:100%;padding:10px;cursor:pointer;font-family:var(--sans);margin-top:8px;font-family:var(--mono)}
+.btn-skip:hover{color:var(--t2)}
 
-    .banner{display:none;font-size:13px;padding:11px 14px;border-radius:8px;margin-bottom:14px}
-    .banner-err{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red)}
-    .banner-ok{background:var(--green-bg);border:1px solid var(--border2);color:var(--green)}
+.banner{display:none;font-size:12px;padding:10px 13px;border-radius:8px;margin-bottom:14px;line-height:1.5}
+.banner-err{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red)}
 
-    @media(max-width:480px){
-      .page{padding:20px 14px 50px}
-      .step-title{font-size:16px}
-    }
-  </style>
+@media(max-width:480px){.page{padding:20px 14px 50px}}
+</style>
 </head>
 <body>
 <div class="topbar">
@@ -90,319 +79,310 @@
 
 <div class="page">
   <div class="progress" id="progress">
-    <div class="prog-step active" id="ps1"></div>
-    <div class="prog-step" id="ps2"></div>
-    <div class="prog-step" id="ps3"></div>
+    <div class="ps active" id="ps1"></div>
+    <div class="ps" id="ps2"></div>
+    <div class="ps" id="ps3"></div>
   </div>
 
-  <!-- Step 1: Username + Color -->
+  <!-- Step 1: Screen Name -->
   <div class="step on" id="step1">
     <div class="step-title">Set Up Your Profile</div>
-    <div class="step-sub">Choose a username that members will see. You can update this later.</div>
-
+    <div class="step-sub">Choose a screen name that members will see. Letters, numbers and underscores only.</div>
     <div class="banner banner-err" id="s1err"></div>
-
     <div class="field">
-      <label>Username</label>
-      <input type="text" id="screen_name" placeholder="dungeon_lord" maxlength="20"/>
-      <div class="field-hint">3–20 characters. Letters, numbers and underscores only.</div>
+      <label>Screen Name</label>
+      <input type="text" id="screen_name" placeholder="yourcoolname" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
+      <div class="hint" id="sn-hint">3–20 characters. Letters, numbers and underscores only.</div>
     </div>
-
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="goStep2()">Continue →</button>
+      <button class="btn btn-g" onclick="goStep2()">Continue →</button>
     </div>
   </div>
 
-  <!-- Step 2: Devices (required) -->
+  <!-- Step 2: Devices -->
   <div class="step" id="step2">
     <div class="step-title">Your Devices</div>
-    <div class="step-sub">Select all the devices you use. This helps us set up your account correctly. You can update this anytime.</div>
-
+    <div class="step-sub">Select everything you watch on. This helps us set you up correctly.</div>
     <div class="banner banner-err" id="s2err"></div>
 
     <div class="device-group">
-      <div class="device-group-label"><span>📱</span> Phone</div>
-      <div class="device-chips" id="dg-phone">
+      <div class="device-group-label">📱 Phone</div>
+      <div class="chips" id="dg-phone">
         <div class="chip" data-group="phone" data-val="iphone" onclick="toggleChip(this)">iPhone</div>
         <div class="chip" data-group="phone" data-val="android_phone" onclick="toggleChip(this)">Android</div>
-        <div class="chip" data-group="phone" data-val="no_phone" onclick="toggleChipExclusive(this,'phone')">None</div>
+        <div class="chip" data-group="phone" data-val="no_phone" onclick="toggleExclusive(this,'phone')">None</div>
       </div>
     </div>
-
     <div class="device-group">
-      <div class="device-group-label"><span>📱</span> Tablet</div>
-      <div class="device-chips" id="dg-tablet">
+      <div class="device-group-label">📱 Tablet</div>
+      <div class="chips" id="dg-tablet">
         <div class="chip" data-group="tablet" data-val="ipad" onclick="toggleChip(this)">iPad</div>
         <div class="chip" data-group="tablet" data-val="android_tablet" onclick="toggleChip(this)">Android Tablet</div>
-        <div class="chip" data-group="tablet" data-val="no_tablet" onclick="toggleChipExclusive(this,'tablet')">None</div>
+        <div class="chip" data-group="tablet" data-val="no_tablet" onclick="toggleExclusive(this,'tablet')">None</div>
       </div>
     </div>
-
     <div class="device-group">
-      <div class="device-group-label"><span>💻</span> Computer</div>
-      <div class="device-chips" id="dg-computer">
+      <div class="device-group-label">💻 Computer</div>
+      <div class="chips" id="dg-computer">
         <div class="chip" data-group="computer" data-val="windows" onclick="toggleChip(this)">Windows</div>
         <div class="chip" data-group="computer" data-val="mac" onclick="toggleChip(this)">Mac</div>
         <div class="chip" data-group="computer" data-val="linux" onclick="toggleChip(this)">Linux</div>
         <div class="chip" data-group="computer" data-val="chromebook" onclick="toggleChip(this)">Chromebook</div>
-        <div class="chip" data-group="computer" data-val="no_computer" onclick="toggleChipExclusive(this,'computer')">None</div>
+        <div class="chip" data-group="computer" data-val="no_computer" onclick="toggleExclusive(this,'computer')">None</div>
       </div>
     </div>
-
     <div class="device-group">
-      <div class="device-group-label"><span>📺</span> TV / Streaming Device</div>
-      <div class="device-chips" id="dg-tv">
+      <div class="device-group-label">📺 TV / Streaming</div>
+      <div class="chips" id="dg-tv">
         <div class="chip" data-group="tv" data-val="firestick" onclick="toggleChip(this)">Fire Stick</div>
         <div class="chip" data-group="tv" data-val="android_tv" onclick="toggleChip(this)">Android TV</div>
         <div class="chip" data-group="tv" data-val="apple_tv" onclick="toggleChip(this)">Apple TV</div>
         <div class="chip" data-group="tv" data-val="roku" onclick="toggleChip(this)">Roku</div>
         <div class="chip" data-group="tv" data-val="smart_tv" onclick="toggleChip(this)">Smart TV</div>
         <div class="chip" data-group="tv" data-val="chromecast" onclick="toggleChip(this)">Chromecast</div>
-        <div class="chip" data-group="tv" data-val="nvidia_shield" onclick="toggleChip(this)">Nvidia Shield</div>
-        <div class="chip" data-group="tv" data-val="no_tv" onclick="toggleChipExclusive(this,'tv')">None</div>
+        <div class="chip" data-group="tv" data-val="nvidia_shield" onclick="toggleChip(this)">Shield</div>
+        <div class="chip" data-group="tv" data-val="no_tv" onclick="toggleExclusive(this,'tv')">None</div>
       </div>
     </div>
-
     <div class="device-group">
-      <div class="device-group-label"><span>🎮</span> Gaming Console</div>
-      <div class="device-chips" id="dg-console">
+      <div class="device-group-label">🎮 Gaming Console</div>
+      <div class="chips" id="dg-console">
         <div class="chip" data-group="console" data-val="ps4" onclick="toggleChip(this)">PS4</div>
         <div class="chip" data-group="console" data-val="ps5" onclick="toggleChip(this)">PS5</div>
         <div class="chip" data-group="console" data-val="xbox" onclick="toggleChip(this)">Xbox</div>
-        <div class="chip" data-group="console" data-val="no_console" onclick="toggleChipExclusive(this,'console')">None</div>
+        <div class="chip" data-group="console" data-val="no_console" onclick="toggleExclusive(this,'console')">None</div>
       </div>
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
-      <button class="btn btn-primary" onclick="goStep3()">Continue →</button>
+      <button class="btn btn-b" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-g" onclick="goStep3()">Continue →</button>
     </div>
   </div>
 
-  <!-- Step 3: Photo (optional) -->
+  <!-- Step 3: Photo -->
   <div class="step" id="step3">
     <div class="step-title">Profile Photo</div>
-    <div class="step-sub">Add a photo or pick a color for your avatar. This is optional — you can skip and add one later.</div>
-
+    <div class="step-sub">Add a photo or pick a color. Optional — you can skip and add one later.</div>
     <div class="banner banner-err" id="s3err"></div>
 
     <div class="avatar-wrap">
       <div class="avatar-circle" id="avatarCircle" onclick="document.getElementById('avatarInput').click()">
         <span id="avatarInitials">?</span>
-        <div class="avatar-overlay">Change<br>Photo</div>
+        <div class="avatar-overlay">Change<br/>Photo</div>
       </div>
-      <input type="file" id="avatarInput" accept="image/*" onchange="previewAvatar(this)"/>
-      <div class="avatar-hint">Tap to upload · JPG or PNG, max 5MB</div>
+      <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="previewAvatar(this)"/>
+      <div class="avatar-hint">Tap to upload · JPG or PNG · max 5MB</div>
       <div class="color-row" id="colorRow"></div>
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-ghost" onclick="goStep(2)">← Back</button>
-      <button class="btn btn-primary" id="saveBtn" onclick="saveAll()">Save Profile</button>
+      <button class="btn btn-b" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-g" id="saveBtn" onclick="saveAll()">Save Profile</button>
     </div>
     <button class="btn-skip" onclick="saveAll(true)">Skip photo, save profile →</button>
   </div>
-
 </div>
 
 <script>
-  const COLORS = ['#60a5fa','#34d399','#f87171','#fbbf24','#a78bfa','#fb7185','#38bdf8','#4ade80','#e2e8e4'];
-  let selectedColor = COLORS[0];
-  let avatarBase64 = null;
-  let currentStep = 1;
-  const totalSteps = 3;
+const COLORS = ['#60a5fa','#34d399','#f87171','#fbbf24','#a78bfa','#fb7185','#38bdf8','#4ade80'];
+let selectedColor = COLORS[0];
+let avatarBase64 = null;
+let currentStep = 1;
+let _snTimer = null;
+let _snValid = false;
 
-  // Build color dots
-  COLORS.forEach(c => {
-    const dot = document.createElement('div');
-    dot.className = 'cdot' + (c === selectedColor ? ' on' : '');
-    dot.style.background = c;
-    dot.onclick = () => {
-      selectedColor = c;
-      document.querySelectorAll('.cdot').forEach(d => d.classList.remove('on'));
-      dot.classList.add('on');
-      updateAvatarColor();
-    };
-    document.getElementById('colorRow').appendChild(dot);
-  });
+// Build color dots
+COLORS.forEach(c => {
+  const dot = document.createElement('div');
+  dot.className = 'cdot' + (c === selectedColor ? ' on' : '');
+  dot.style.background = c;
+  dot.onclick = () => {
+    selectedColor = c;
+    document.querySelectorAll('.cdot').forEach(d => d.classList.remove('on'));
+    dot.classList.add('on');
+    if (!avatarBase64) document.getElementById('avatarCircle').style.background = c;
+  };
+  document.getElementById('colorRow').appendChild(dot);
+});
+document.getElementById('avatarCircle').style.background = selectedColor;
 
-  function updateAvatarColor() {
-    const c = document.getElementById('avatarCircle');
-    if (!avatarBase64) c.style.background = selectedColor;
+function updateProgress(step) {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById('ps'+i);
+    el.className = 'ps' + (i < step ? ' done' : i === step ? ' active' : '');
   }
-  updateAvatarColor();
+}
 
-  function updateProgress(step) {
-    for (let i = 1; i <= totalSteps; i++) {
-      const el = document.getElementById('ps'+i);
-      if (i < step) { el.className = 'prog-step done'; }
-      else if (i === step) { el.className = 'prog-step active'; }
-      else { el.className = 'prog-step'; }
+function goStep(n) {
+  document.getElementById('step'+currentStep).classList.remove('on');
+  currentStep = n;
+  document.getElementById('step'+n).classList.add('on');
+  updateProgress(n);
+  window.scrollTo(0, 0);
+}
+
+function validateSn(input) {
+  const val = input.value.replace(/[^a-zA-Z0-9_]/g, '');
+  input.value = val;
+  const hint = document.getElementById('sn-hint');
+  _snValid = false;
+  if (!val) { hint.textContent = '3–20 characters. Letters, numbers and underscores only.'; hint.className = 'hint'; return; }
+  if (val.length < 3) { hint.textContent = 'Too short — minimum 3 characters'; hint.className = 'hint bad'; return; }
+  hint.textContent = 'Checking availability…'; hint.className = 'hint';
+  clearTimeout(_snTimer);
+  _snTimer = setTimeout(async () => {
+    // If editing and name hasn't changed, it's valid
+    if (_originalSn && val.toLowerCase() === _originalSn.toLowerCase()) {
+      hint.textContent = '@'+val+' — your current name'; hint.className = 'hint ok'; _snValid = true; return;
     }
-  }
+    const r = await fetch('/api/check/screen-name/'+encodeURIComponent(val)).then(r=>r.json()).catch(()=>({available:false}));
+    if (r.available) { hint.textContent = '@'+val+' is available ✓'; hint.className = 'hint ok'; _snValid = true; }
+    else { hint.textContent = '@'+val+' is already taken — try another'; hint.className = 'hint bad'; _snValid = false; }
+  }, 500);
+}
 
-  function goStep(n) {
-    document.getElementById('step'+currentStep).classList.remove('on');
-    currentStep = n;
-    document.getElementById('step'+n).classList.add('on');
-    updateProgress(n);
-    window.scrollTo(0, 0);
-  }
+function goStep2() {
+  const sn = document.getElementById('screen_name').value.trim();
+  const err = document.getElementById('s1err');
+  if (sn.length < 3) { err.textContent = 'Screen name must be at least 3 characters'; err.style.display = 'block'; return; }
+  if (!_snValid) { err.textContent = 'Please choose an available screen name'; err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  document.getElementById('avatarInitials').textContent = sn[0].toUpperCase();
+  goStep(2);
+}
 
-  function goStep2() {
-    const sn = document.getElementById('screen_name').value.trim();
-    const err = document.getElementById('s1err');
-    if (!/^[a-zA-Z0-9_]{3,20}$/.test(sn)) {
-      err.textContent = 'Username must be 3–20 characters. Letters, numbers and underscores only.';
-      err.style.display = 'block'; return;
-    }
-    err.style.display = 'none';
-    // Update avatar initials
-    document.getElementById('avatarInitials').textContent = sn[0].toUpperCase();
-    goStep(2);
-  }
-
-  function goStep3() {
-    // Validate at least one selection per group
-    const groups = ['phone','tablet','computer','tv','console'];
-    const err = document.getElementById('s2err');
-    for (const g of groups) {
-      const selected = document.querySelectorAll(`.chip.on[data-group="${g}"]`);
-      if (selected.length === 0) {
-        err.textContent = `Please select at least one option for every category (use "None" if you don't have one).`;
-        err.style.display = 'block';
-        document.getElementById('dg-'+g).scrollIntoView({behavior:'smooth',block:'center'});
-        return;
-      }
-    }
-    err.style.display = 'none';
-    goStep(3);
-  }
-
-  function toggleChip(el) {
-    // Deselect "None" if selecting something else
-    const group = el.dataset.group;
-    const noneChip = document.querySelector(`.chip[data-group="${group}"][data-val="no_${group}"]`);
-    if (noneChip) noneChip.classList.remove('on');
-    el.classList.toggle('on');
-  }
-
-  function toggleChipExclusive(el, group) {
-    // Deselect all others in group
-    document.querySelectorAll(`.chip[data-group="${group}"]`).forEach(c => c.classList.remove('on'));
-    el.classList.add('on');
-  }
-
-  function getDevices() {
-    const devices = {};
-    const groups = ['phone','tablet','computer','tv','console'];
-    groups.forEach(g => {
-      devices[g] = Array.from(document.querySelectorAll(`.chip.on[data-group="${g}"]`)).map(c => c.dataset.val);
-    });
-    return devices;
-  }
-
-  function previewAvatar(input) {
-    const file = input.files[0];
-    if (!file) return;
-    if (file.size > 5*1024*1024) { alert('Image must be under 5MB.'); return; }
-    const reader = new FileReader();
-    reader.onload = e => {
-      avatarBase64 = e.target.result;
-      const circle = document.getElementById('avatarCircle');
-      let img = circle.querySelector('img');
-      if (!img) { img = document.createElement('img'); circle.insertBefore(img, circle.firstChild); }
-      img.src = avatarBase64;
-      document.getElementById('avatarInitials').style.display = 'none';
-      circle.style.background = 'transparent';
-    };
-    reader.readAsDataURL(file);
-  }
-
-  async function saveAll(skipPhoto = false) {
-    const btn = document.getElementById('saveBtn');
-    const err = document.getElementById('s3err');
-    btn.disabled = true; btn.textContent = 'Saving…';
-
-    try {
-      // Upload avatar if provided and not skipping
-      if (avatarBase64 && !skipPhoto) {
-        const avatarRes = await fetch('/api/member/profile/avatar', {
-          method: 'POST', headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ image: avatarBase64 })
-        }).then(r => r.json()).catch(() => ({}));
-        if (avatarRes.error) console.warn('Avatar upload failed:', avatarRes.error);
-      }
-
-      // Save profile (screen name + color)
-      const profileRes = await fetch('/api/member/profile/setup', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          screen_name: document.getElementById('screen_name').value.trim(),
-          avatar_color: selectedColor
-        })
-      });
-      const profileData = await profileRes.json();
-      if (!profileRes.ok) {
-        err.textContent = profileData.error || 'Failed to save profile.';
-        err.style.display = 'block';
-        btn.disabled = false; btn.textContent = 'Save Profile';
-        return;
-      }
-
-      // Save devices
-      await fetch('/api/member/profile/devices', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ devices: getDevices() })
-      });
-
-      window.location.href = '/dashboard.html';
-    } catch(e) {
-      err.textContent = 'Connection error. Please try again.';
+function goStep3() {
+  const groups = ['phone','tablet','computer','tv','console'];
+  const err = document.getElementById('s2err');
+  for (const g of groups) {
+    if (!document.querySelector(`.chip.on[data-group="${g}"]`)) {
+      err.textContent = `Please select at least one option for each category (use "None" if not applicable).`;
       err.style.display = 'block';
-      btn.disabled = false; btn.textContent = 'Save Profile';
+      document.getElementById('dg-'+g).scrollIntoView({behavior:'smooth',block:'center'});
+      return;
     }
   }
+  err.style.display = 'none';
+  goStep(3);
+}
 
-  // Pre-fill if editing
-  fetch('/api/member/me').then(r => r.json()).then(d => {
-    if (!d.authenticated) { window.location.href = '/login.html'; return; }
-    const isEditing = new URLSearchParams(location.search).get('edit');
-    if (d.member?.setup_done && !isEditing) { window.location.href = '/dashboard.html'; return; }
+function toggleChip(el) {
+  const g = el.dataset.group;
+  document.querySelector(`.chip[data-group="${g}"][data-val="no_${g}"]`)?.classList.remove('on');
+  el.classList.toggle('on');
+}
 
-    const p = d.member?.profile;
-    if (p?.screen_name) {
-      document.getElementById('screen_name').value = p.screen_name;
-      document.getElementById('avatarInitials').textContent = p.screen_name[0].toUpperCase();
-    } else if (d.member?.first_name) {
-      document.getElementById('screen_name').value = d.member.first_name;
-      document.getElementById('avatarInitials').textContent = d.member.first_name[0].toUpperCase();
-    }
-    if (p?.avatar_color) {
-      selectedColor = p.avatar_color;
-      document.querySelectorAll('.cdot').forEach(dot => {
-        dot.classList.toggle('on', dot.style.background === selectedColor);
-      });
-      updateAvatarColor();
-    }
-    if (p?.avatar_url) {
-      const circle = document.getElementById('avatarCircle');
-      const img = document.createElement('img');
-      img.src = p.avatar_url;
-      circle.insertBefore(img, circle.firstChild);
-      document.getElementById('avatarInitials').style.display = 'none';
-    }
-    // Pre-fill devices if editing
-    if (isEditing && p?.devices) {
-      const devs = typeof p.devices === 'string' ? JSON.parse(p.devices) : p.devices;
-      Object.entries(devs).forEach(([group, vals]) => {
-        vals.forEach(val => {
-          const chip = document.querySelector(`.chip[data-group="${group}"][data-val="${val}"]`);
-          if (chip) chip.classList.add('on');
-        });
-      });
-    }
+function toggleExclusive(el, g) {
+  document.querySelectorAll(`.chip[data-group="${g}"]`).forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function getDevices() {
+  const devices = {};
+  ['phone','tablet','computer','tv','console'].forEach(g => {
+    devices[g] = Array.from(document.querySelectorAll(`.chip.on[data-group="${g}"]`)).map(c => c.dataset.val);
   });
+  return devices;
+}
+
+function previewAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5*1024*1024) { alert('Image must be under 5MB.'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    avatarBase64 = e.target.result;
+    const circle = document.getElementById('avatarCircle');
+    let img = circle.querySelector('img');
+    if (!img) { img = document.createElement('img'); circle.insertBefore(img, circle.firstChild); }
+    img.src = avatarBase64;
+    document.getElementById('avatarInitials').style.display = 'none';
+    circle.style.background = 'transparent';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveAll(skipPhoto = false) {
+  const btn = document.getElementById('saveBtn');
+  const err = document.getElementById('s3err');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  try {
+    if (avatarBase64 && !skipPhoto) {
+      await fetch('/api/member/profile/avatar', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ image: avatarBase64 })
+      }).catch(()=>{});
+    }
+
+    const profileRes = await fetch('/api/member/profile/setup', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ screen_name: document.getElementById('screen_name').value.trim(), avatar_color: selectedColor })
+    });
+    const profileData = await profileRes.json();
+    if (!profileRes.ok) {
+      err.textContent = profileData.error || 'Failed to save profile.';
+      err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Save Profile'; return;
+    }
+
+    await fetch('/api/member/profile/devices', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ devices: getDevices() })
+    });
+
+    window.location.href = '/dashboard.html';
+  } catch(e) {
+    err.textContent = 'Connection error. Please try again.';
+    err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Save Profile';
+  }
+}
+
+let _originalSn = null;
+
+fetch('/api/member/me').then(r=>r.json()).then(d=>{
+  if (!d.authenticated) { window.location.href = '/login.html'; return; }
+  const isEditing = new URLSearchParams(location.search).get('edit');
+  if (d.member?.profile?.setup_done && !isEditing) { window.location.href = '/dashboard.html'; return; }
+
+  const p = d.member?.profile;
+
+  // If member came through join flow, they already have a screen name
+  if (p?.screen_name) {
+    _originalSn = p.screen_name;
+    _snValid = true;
+    document.getElementById('screen_name').value = p.screen_name;
+    document.getElementById('avatarInitials').textContent = p.screen_name[0].toUpperCase();
+    const hint = document.getElementById('sn-hint');
+    hint.textContent = '@'+p.screen_name+' — your current name';
+    hint.className = 'hint ok';
+  } else if (d.member?.first_name) {
+    document.getElementById('screen_name').value = d.member.first_name;
+    document.getElementById('avatarInitials').textContent = d.member.first_name[0].toUpperCase();
+  }
+
+  if (p?.avatar_color) {
+    selectedColor = p.avatar_color;
+    document.querySelectorAll('.cdot').forEach(dot => dot.classList.toggle('on', dot.style.background === selectedColor));
+    if (!avatarBase64) document.getElementById('avatarCircle').style.background = selectedColor;
+  }
+
+  if (p?.avatar_url) {
+    const circle = document.getElementById('avatarCircle');
+    const img = document.createElement('img');
+    img.src = p.avatar_url; circle.insertBefore(img, circle.firstChild);
+    document.getElementById('avatarInitials').style.display = 'none';
+  }
+
+  if (isEditing && p?.devices) {
+    const devs = typeof p.devices === 'string' ? JSON.parse(p.devices) : p.devices;
+    Object.entries(devs).forEach(([group, vals]) => {
+      vals.forEach(val => {
+        document.querySelector(`.chip[data-group="${group}"][data-val="${val}"]`)?.classList.add('on');
+      });
+    });
+  }
+});
 </script>
 </body>
 </html>

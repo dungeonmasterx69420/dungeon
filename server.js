@@ -281,6 +281,7 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE members ADD COLUMN jellyfin_server TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE profiles ADD COLUMN devices TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN phone TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN referred_by TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN notes TEXT').run(); } catch(e) {}
   // Create dealer earnings table
   try {
@@ -450,6 +451,27 @@ app.use((req, res, next) => {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+
+// Get members list for referral dropdown (public)
+app.get('/api/members/list', (req, res) => {
+  try {
+    const rows = db.prepare("SELECT p.screen_name FROM profiles p WHERE p.tier != 'neut' ORDER BY p.screen_name").all();
+    res.json(rows.map(r => r.screen_name));
+  } catch(e) { res.status(500).json([]); }
+});
+
+// Check screen name availability (public)
+app.get('/api/check/screen-name/:sn', (req, res) => {
+  try {
+    const sn = req.params.sn.trim();
+    if (!sn || sn.length < 2) return res.json({ available: false, reason: 'Too short' });
+    if (!/^[a-zA-Z0-9_]{2,20}$/.test(sn)) return res.json({ available: false, reason: 'Invalid characters' });
+    const taken = db.prepare('SELECT id FROM profiles WHERE LOWER(screen_name)=LOWER(?)').get(sn);
+    res.json({ available: !taken });
+  } catch(e) { res.status(500).json({ available: false }); }
+});
 
 // Serve join page (token is handled client-side)
 app.get('/join', (req, res) => {
@@ -750,7 +772,7 @@ app.post('/api/mod/applicants/:id/deny', requireMod, (req, res) => {
 
 // ── Public: submit application ────────────────────────────────────────────────
 app.post('/api/apply', submitLimiter, async (req, res) => {
-  const { first_name, last_name, email, phone, language, referral, notes, screen_name } = req.body;
+  const { first_name, last_name, email, phone, language, referral, notes, screen_name, devices } = req.body;
   if (!first_name || !last_name || !email) return res.status(400).json({ error: 'Name and email are required.' });
 
   if (!screen_name) return res.status(400).json({ error: 'A username is required.' });
@@ -762,8 +784,8 @@ app.post('/api/apply', submitLimiter, async (req, res) => {
   if (taken) return res.status(400).json({ error: 'That username is already taken. Please choose another.' });
 
   const id = genId();
-  db.prepare(`INSERT INTO applicants (id, first_name, last_name, email, phone, language, referral, notes, screen_name, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new')`)
-    .run(id, first_name.trim(), last_name.trim(), email.trim(), phone||'', language||'', referral||'', notes||'', screen_name.trim());
+  db.prepare(`INSERT INTO applicants (id, first_name, last_name, email, phone, language, referral, notes, screen_name, type, devices) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?)`)
+    .run(id, first_name.trim(), last_name.trim(), email.trim(), phone||'', language||'', referral||'', notes||'', screen_name.trim(), devices ? JSON.stringify(devices) : null);
 
   // Create a Neut profile immediately
   const profileId = genId();
@@ -2376,7 +2398,7 @@ app.post('/api/invite/:token/complete', async (req, res) => {
       return res.status(400).json({ error: 'This invite has expired' });
     }
 
-    const { first_name, last_name, screen_name, phone, devices } = req.body;
+    const { first_name, last_name, screen_name, phone, devices, referred_by } = req.body;
     if (!first_name || !screen_name) return res.status(400).json({ error: 'Name and screen name required' });
     if (!/^[a-zA-Z0-9_]{2,20}$/.test(screen_name)) return res.status(400).json({ error: 'Screen name must be 2-20 characters, letters/numbers/underscores only' });
 
@@ -2404,8 +2426,8 @@ app.post('/api/invite/:token/complete', async (req, res) => {
       const inviteCheck = db.prepare('SELECT status FROM invites WHERE token=?').get(req.params.token);
       if (inviteCheck.status === 'used') throw new Error('Already used');
 
-      db.prepare('INSERT INTO members (id, first_name, last_name, email, phone, password, plain_pass) VALUES (?,?,?,?,?,?,?)')
-        .run(memberId, first_name, last_name||'', email, phone||null, hashedPass, plain);
+      db.prepare('INSERT INTO members (id, first_name, last_name, email, phone, password, plain_pass, referred_by) VALUES (?,?,?,?,?,?,?,?)')
+        .run(memberId, first_name, last_name||'', email, phone||null, hashedPass, plain, referred_by||null);
       db.prepare("INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, devices) VALUES (?,?,?,?,'member',?,?)")
         .run(profileId, screen_name, email, color, memberId, devices ? JSON.stringify(devices) : null);
       db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(profileId, memberId);
