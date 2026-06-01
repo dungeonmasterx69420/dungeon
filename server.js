@@ -311,8 +311,10 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
       member_id TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       paid_at DATETIME,
-      used_at DATETIME
+      used_at DATETIME,
+      expires_at DATETIME
     )`).run();
+  try { db.prepare('ALTER TABLE invites ADD COLUMN expires_at DATETIME').run(); } catch(e) {}
   } catch(e) { console.error('invites table:', e.message); }
   // Migrate stremio credentials to jellyfin fields for existing members
   try {
@@ -2222,6 +2224,10 @@ app.post('/api/applicants/:id/promote', requireMod, async (req, res) => {
   } catch(e) { console.error('[promote]', e.message); res.status(500).json({ error: e.message }); }
 });
 
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 function mkRandPass() {
   const c='abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
   return Array.from({length:10},()=>c[Math.floor(Math.random()*c.length)]).join('');
@@ -2253,68 +2259,58 @@ app.get('/api/admin/redemptions', requireMod, (req, res) => {
 app.post('/api/admin/invites/create', requireMod, async (req, res) => {
   try {
     const { email, amount, note } = req.body;
-    if (!amount || amount < 1) return res.status(400).json({ error: 'Amount required' });
-    if (!STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured' });
+    if (!email || !isValidEmail(email)) return res.status(400).json({ error: 'Valid email required' });
+    if (!amount || amount < 1) return res.status(400).json({ error: 'Amount must be at least $1' });
+    if (!STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured — contact admin' });
 
     const token = require('crypto').randomBytes(24).toString('hex');
     const inviteId = genId();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
 
-    // Create Stripe checkout session
+    const stripeParams = new URLSearchParams({
+      'payment_method_types[]': 'card',
+      'line_items[0][price_data][currency]': 'usd',
+      'line_items[0][price_data][product_data][name]': 'Dungeon Membership',
+      'line_items[0][price_data][product_data][description]': note || 'One-time signup fee for Dungeon streaming service',
+      'line_items[0][price_data][unit_amount]': String(Math.round(amount * 100)),
+      'line_items[0][quantity]': '1',
+      'mode': 'payment',
+      'success_url': SITE_URL + '/join?token=' + token,
+      'cancel_url': SITE_URL + '/join?token=' + token + '&cancelled=1',
+      'customer_email': email,
+      'metadata[invite_token]': token,
+      'metadata[invite_id]': inviteId
+    });
+
     const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + STRIPE_SECRET_KEY,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-        'payment_method_types[]': 'card',
-        'line_items[0][price_data][currency]': 'usd',
-        'line_items[0][price_data][product_data][name]': 'Dungeon Membership',
-        'line_items[0][price_data][product_data][description]': note || 'One-time signup fee for Dungeon streaming service',
-        'line_items[0][price_data][unit_amount]': String(Math.round(amount * 100)),
-        'line_items[0][quantity]': '1',
-        'mode': 'payment',
-        'success_url': SITE_URL + '/join?token=' + token,
-        'cancel_url': SITE_URL + '/invite-cancelled.html',
-        'customer_email': email || '',
-        'metadata[invite_token]': token,
-        'metadata[invite_id]': inviteId
-      })
+      headers: { 'Authorization': 'Bearer ' + STRIPE_SECRET_KEY, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: stripeParams
     });
 
     const session = await stripeRes.json();
     if (!session.url) return res.status(500).json({ error: session.error?.message || 'Stripe error' });
 
-    // Save invite
-    const profile = db.prepare('SELECT id FROM profiles WHERE member_id=?').get(req.session.member?.id);
-    db.prepare(`INSERT INTO invites (id, token, email, created_by, amount, note, stripe_session_id) VALUES (?,?,?,?,?,?,?)`)
-      .run(inviteId, token, email||null, profile?.id||null, Math.round(amount*100), note||null, session.id);
+    const profile = db.prepare('SELECT id, tier FROM profiles WHERE member_id=?').get(req.session.member?.id);
+    db.prepare('INSERT INTO invites (id, token, email, created_by, amount, note, stripe_session_id, expires_at) VALUES (?,?,?,?,?,?,?,?)')
+      .run(inviteId, token, email, profile?.id||null, Math.round(amount*100), note||null, session.id, expiresAt);
 
-    // Record pending earnings for dealer
-    if (profile) {
-      const dealerProfile = db.prepare("SELECT tier FROM profiles WHERE id=?").get(profile.id);
-      if (dealerProfile && ['dealer','mod','admin','warden'].includes(dealerProfile.tier)) {
-        const earningsId = genId();
-        const dealerCut = Math.floor(Math.round(amount*100) * 0.5);
-        db.prepare('INSERT INTO dealer_earnings (id, dealer_profile_id, invite_id, amount, dealer_cut) VALUES (?,?,?,?,?)')
-          .run(earningsId, profile.id, inviteId, Math.round(amount*100), dealerCut);
-      }
+    if (profile && ['dealer','mod','admin','warden'].includes(profile.tier)) {
+      db.prepare('INSERT INTO dealer_earnings (id, dealer_profile_id, invite_id, amount, dealer_cut) VALUES (?,?,?,?,?)')
+        .run(genId(), profile.id, inviteId, Math.round(amount*100), Math.floor(Math.round(amount*100)*0.5));
     }
 
-    // Send invite email
-    if (email) {
-      const html = emailShell(`
-        <h2>You're Invited to Dungeon</h2>
-        <div class="rule"></div>
-        <p>You've been personally invited to join <strong>Dungeon</strong> — a private streaming service.</p>
-        <p>Click below to complete your signup. Your membership fee is <strong>$${amount}</strong>.</p>
-        ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
-        <a href="${session.url}" class="btn">Complete Signup — $${amount}</a>
-        <div class="rule"></div>
-        <p style="font-size:12px;color:#6b8f7a">This invite is for you only. Do not share this link. — The Dungeon Master</p>
-      `);
-      await sendMail(email, "You're Invited to Dungeon", html);
-    }
+    const html = emailShell(`
+      <h2>You're Invited to Dungeon</h2>
+      <div class="rule"></div>
+      <p>You've been personally invited to join <strong>Dungeon</strong> — a private streaming service.</p>
+      <p>Click below to complete your signup. Your membership fee is <strong>$${amount}</strong>.</p>
+      ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
+      <a href="${session.url}" class="btn">Complete Signup — $${amount}</a>
+      <div class="rule"></div>
+      <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. It is for you only. — The Dungeon Master</p>
+    `);
+    await sendMail(email, "You're Invited to Dungeon", html);
 
     res.json({ ok: true, url: session.url, token });
   } catch(e) {
@@ -2348,9 +2344,10 @@ app.delete('/api/admin/invites/:id', requireMod, (req, res) => {
 app.get('/api/invite/:token', (req, res) => {
   try {
     const invite = db.prepare('SELECT * FROM invites WHERE token=?').get(req.params.token);
-    if (!invite) return res.status(404).json({ error: 'Invalid invite' });
+    if (!invite) return res.status(404).json({ error: 'Invalid invite link' });
     if (invite.status === 'used') return res.status(400).json({ error: 'This invite has already been used' });
-    if (invite.status !== 'paid') return res.status(400).json({ error: 'Payment not completed' });
+    if (invite.expires_at && new Date(invite.expires_at) < new Date()) return res.status(400).json({ error: 'This invite link has expired' });
+    if (invite.status !== 'paid') return res.status(402).json({ error: 'payment_pending', email: invite.email, amount: invite.amount });
     res.json({ ok: true, email: invite.email, amount: invite.amount });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -2360,19 +2357,29 @@ app.post('/api/invite/:token/complete', async (req, res) => {
   try {
     const invite = db.prepare('SELECT * FROM invites WHERE token=?').get(req.params.token);
     if (!invite) return res.status(404).json({ error: 'Invalid invite' });
-    if (invite.status === 'used') return res.status(400).json({ error: 'Already used' });
+    if (invite.status === 'used') return res.status(400).json({ error: 'This invite has already been used' });
     if (invite.status !== 'paid') return res.status(400).json({ error: 'Payment not completed' });
+
+    // Check expiry
+    if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
+      return res.status(400).json({ error: 'This invite has expired' });
+    }
 
     const { first_name, last_name, screen_name, phone, devices } = req.body;
     if (!first_name || !screen_name) return res.status(400).json({ error: 'Name and screen name required' });
+    if (!/^[a-zA-Z0-9_]{2,20}$/.test(screen_name)) return res.status(400).json({ error: 'Screen name must be 2-20 characters, letters/numbers/underscores only' });
 
     // Check screen name not taken
-    const existing = db.prepare('SELECT id FROM profiles WHERE LOWER(screen_name)=LOWER(?)').get(screen_name);
-    if (existing) return res.status(400).json({ error: 'Screen name already taken' });
+    const snTaken = db.prepare('SELECT id FROM profiles WHERE LOWER(screen_name)=LOWER(?)').get(screen_name);
+    if (snTaken) return res.status(400).json({ error: 'Screen name already taken — try another' });
+
+    // Check email not already a member
+    const emailTaken = db.prepare('SELECT id FROM members WHERE LOWER(email)=LOWER(?)').get(invite.email);
+    if (emailTaken) return res.status(400).json({ error: 'An account with this email already exists' });
 
     const memberId = genId();
     const profileId = genId();
-    const plain = genId().substring(0, 10);
+    const plain = mkRandPass();
     let hashedPass = null;
     try { hashedPass = require('bcryptjs').hashSync(plain, 10); } catch(e) {}
 
@@ -2380,20 +2387,25 @@ app.post('/api/invite/:token/complete', async (req, res) => {
     const colors = ['#34d399','#60a5fa','#f87171','#fbbf24','#a78bfa'];
     const color = colors[Math.floor(Math.random()*colors.length)];
 
-    db.prepare('INSERT INTO members (id, first_name, last_name, email, phone, password, plain_pass) VALUES (?,?,?,?,?,?,?)')
-      .run(memberId, first_name, last_name||'', email, phone||null, hashedPass, plain);
+    // Use DB transaction to prevent race conditions
+    const createAccount = db.transaction(() => {
+      // Re-check inside transaction
+      const inviteCheck = db.prepare('SELECT status FROM invites WHERE token=?').get(req.params.token);
+      if (inviteCheck.status === 'used') throw new Error('Already used');
 
-    db.prepare("INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, devices) VALUES (?,?,?,?,'member',?,?)")
-      .run(profileId, screen_name, email, color, memberId, devices ? JSON.stringify(devices) : null);
+      db.prepare('INSERT INTO members (id, first_name, last_name, email, phone, password, plain_pass) VALUES (?,?,?,?,?,?,?)')
+        .run(memberId, first_name, last_name||'', email, phone||null, hashedPass, plain);
+      db.prepare("INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, devices) VALUES (?,?,?,?,'member',?,?)")
+        .run(profileId, screen_name, email, color, memberId, devices ? JSON.stringify(devices) : null);
+      db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(profileId, memberId);
+      db.prepare('UPDATE invites SET status=?, member_id=?, used_at=CURRENT_TIMESTAMP WHERE token=?').run('used', memberId, req.params.token);
+    });
 
-    db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(profileId, memberId);
-    db.prepare('UPDATE invites SET status=?, member_id=?, used_at=CURRENT_TIMESTAMP WHERE token=?').run('used', memberId, req.params.token);
+    createAccount();
 
-    // Set session
     req.session.member = db.prepare('SELECT * FROM members WHERE id=?').get(memberId);
     req.session.authenticated = true;
 
-    // Send welcome email
     try {
       await sendMail(email, 'Welcome to Dungeon', emailWelcome(first_name, screen_name, email, plain, ''));
     } catch(e) { console.error('Welcome email error:', e.message); }
@@ -2401,6 +2413,7 @@ app.post('/api/invite/:token/complete', async (req, res) => {
     res.json({ ok: true });
   } catch(e) {
     console.error('[invite/complete]', e.message);
+    if (e.message === 'Already used') return res.status(400).json({ error: 'This invite has already been used' });
     res.status(500).json({ error: e.message });
   }
 });
@@ -2479,56 +2492,55 @@ app.get('/api/dealer/dashboard', requireDealer, (req, res) => {
 app.post('/api/dealer/invites/create', requireDealer, async (req, res) => {
   try {
     const { email, amount, note } = req.body;
-    if (!amount || amount < 1) return res.status(400).json({ error: 'Amount required' });
-    if (!STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured' });
+    if (!email || !isValidEmail(email)) return res.status(400).json({ error: 'Valid email required' });
+    if (!amount || amount < 1) return res.status(400).json({ error: 'Amount must be at least $1' });
+    if (!STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured — contact admin' });
 
     const token = require('crypto').randomBytes(24).toString('hex');
     const inviteId = genId();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const stripeParams = new URLSearchParams({
+      'payment_method_types[]': 'card',
+      'line_items[0][price_data][currency]': 'usd',
+      'line_items[0][price_data][product_data][name]': 'Dungeon Membership',
+      'line_items[0][price_data][product_data][description]': note || 'One-time signup fee for Dungeon streaming service',
+      'line_items[0][price_data][unit_amount]': String(Math.round(amount * 100)),
+      'line_items[0][quantity]': '1',
+      'mode': 'payment',
+      'success_url': SITE_URL + '/join?token=' + token,
+      'cancel_url': SITE_URL + '/join?token=' + token + '&cancelled=1',
+      'customer_email': email,
+      'metadata[invite_token]': token,
+      'metadata[invite_id]': inviteId
+    });
 
     const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + STRIPE_SECRET_KEY, 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        'payment_method_types[]': 'card',
-        'line_items[0][price_data][currency]': 'usd',
-        'line_items[0][price_data][product_data][name]': 'Dungeon Membership',
-        'line_items[0][price_data][product_data][description]': note || 'One-time signup fee for Dungeon streaming service',
-        'line_items[0][price_data][unit_amount]': String(Math.round(amount * 100)),
-        'line_items[0][quantity]': '1',
-        'mode': 'payment',
-        'success_url': SITE_URL + '/join?token=' + token,
-        'cancel_url': SITE_URL + '/invite-cancelled.html',
-        'customer_email': email || '',
-        'metadata[invite_token]': token,
-        'metadata[invite_id]': inviteId
-      })
+      body: stripeParams
     });
 
     const session = await stripeRes.json();
     if (!session.url) return res.status(500).json({ error: session.error?.message || 'Stripe error' });
 
-    db.prepare('INSERT INTO invites (id, token, email, created_by, amount, note, stripe_session_id) VALUES (?,?,?,?,?,?,?)')
-      .run(inviteId, token, email||null, req.profile.id, Math.round(amount*100), note||null, session.id);
+    db.prepare('INSERT INTO invites (id, token, email, created_by, amount, note, stripe_session_id, expires_at) VALUES (?,?,?,?,?,?,?,?)')
+      .run(inviteId, token, email, req.profile.id, Math.round(amount*100), note||null, session.id, expiresAt);
 
-    // Record earnings
-    const dealerCut = Math.floor(Math.round(amount*100) * 0.5);
     db.prepare('INSERT INTO dealer_earnings (id, dealer_profile_id, invite_id, amount, dealer_cut) VALUES (?,?,?,?,?)')
-      .run(genId(), req.profile.id, inviteId, Math.round(amount*100), dealerCut);
+      .run(genId(), req.profile.id, inviteId, Math.round(amount*100), Math.floor(Math.round(amount*100)*0.5));
 
-    // Send email if provided
-    if (email) {
-      const html = emailShell(`
-        <h2>You're Invited to Dungeon</h2>
-        <div class="rule"></div>
-        <p>You've been personally invited to join <strong>Dungeon</strong> — a private streaming service.</p>
-        <p>Click below to complete your signup. Your membership fee is <strong>$${amount}</strong>.</p>
-        ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
-        <a href="${session.url}" class="btn">Complete Signup — $${amount}</a>
-        <div class="rule"></div>
-        <p style="font-size:12px;color:#6b8f7a">This invite is for you only. Do not share this link. — The Dungeon Master</p>
-      `);
-      await sendMail(email, "You're Invited to Dungeon", html);
-    }
+    const html = emailShell(`
+      <h2>You're Invited to Dungeon</h2>
+      <div class="rule"></div>
+      <p>You've been personally invited to join <strong>Dungeon</strong> — a private streaming service.</p>
+      <p>Click below to complete your signup. Your membership fee is <strong>$${amount}</strong>.</p>
+      ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
+      <a href="${session.url}" class="btn">Complete Signup — $${amount}</a>
+      <div class="rule"></div>
+      <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. It is for you only. — The Dungeon Master</p>
+    `);
+    await sendMail(email, "You're Invited to Dungeon", html);
 
     res.json({ ok: true, url: session.url, token });
   } catch(e) {
