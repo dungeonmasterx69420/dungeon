@@ -125,7 +125,7 @@
         </div>
       </div>
       ${isOwn
-        ? `<div style="margin-top:20px"><a href="/setup.html" style="font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--border2);padding:6px 14px;border-radius:6px">Edit Profile</a></div>`
+        ? `<div style="margin-top:20px"><a href="/setup.html?edit=1" style="font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--border2);padding:6px 14px;border-radius:6px">Edit Profile</a></div>`
         : `<div style="margin-top:20px"><a href="/messages.html?to=${p.id}" style="font-size:12px;font-weight:600;color:#0b0f0e;text-decoration:none;background:var(--green);padding:7px 16px;border-radius:6px;display:inline-block">Message</a></div>`
       }
     `;
@@ -192,7 +192,53 @@
   })();
 
   async function doSignOut(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
+
+  async function changePassword() {
+    const current = document.getElementById('pw-current').value;
+    const newPw = document.getElementById('pw-new').value;
+    const confirm = document.getElementById('pw-confirm').value;
+    const err = document.getElementById('pw-err');
+    const ok = document.getElementById('pw-ok');
+    err.style.display='none'; ok.style.display='none';
+
+    if (!current) { err.textContent='Current password required'; err.style.display='block'; return; }
+    if (!newPw || newPw.length < 6) { err.textContent='New password must be at least 6 characters'; err.style.display='block'; return; }
+    if (newPw !== confirm) { err.textContent='Passwords do not match'; err.style.display='block'; return; }
+
+    const r = await fetch('/api/member/change-password', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ current_password: current, new_password: newPw })
+    }).then(r=>r.json()).catch(e=>({error:e.message}));
+
+    if (r.error) { err.textContent=r.error; err.style.display='block'; return; }
+    ok.style.display='block';
+    document.getElementById('pw-current').value='';
+    document.getElementById('pw-new').value='';
+    document.getElementById('pw-confirm').value='';
+  }
 </script>
+
+
+  <!-- Change Password -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Change Password</div>
+    <div style="font-size:12px;color:var(--muted2);margin-bottom:16px">Update your Dungeon login password.</div>
+    <div id="pw-err" style="display:none;font-size:12px;color:var(--red);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:7px;padding:8px 12px;margin-bottom:12px"></div>
+    <div id="pw-ok" style="display:none;font-size:12px;color:var(--green);background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:7px;padding:8px 12px;margin-bottom:12px">Password updated successfully.</div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Current Password</div>
+      <input type="password" id="pw-current" placeholder="••••••••" style="width:100%;background:var(--surface2);border:1px solid rgba(52,211,153,.25);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:14px;padding:10px 13px;outline:none"/>
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">New Password</div>
+      <input type="password" id="pw-new" placeholder="Min 6 characters" style="width:100%;background:var(--surface2);border:1px solid rgba(52,211,153,.25);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:14px;padding:10px 13px;outline:none"/>
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Confirm New Password</div>
+      <input type="password" id="pw-confirm" placeholder="Repeat new password" style="width:100%;background:var(--surface2);border:1px solid rgba(52,211,153,.25);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:14px;padding:10px 13px;outline:none"/>
+    </div>
+    <button onclick="changePassword()" style="padding:10px 20px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Update Password</button>
+  </div>
 
   <footer id="pageFooter">
     <a href="/profile.html">My Profile</a>
