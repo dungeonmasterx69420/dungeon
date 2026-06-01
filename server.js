@@ -35,6 +35,8 @@ db.exec(`
     screen_name   TEXT,
     type          TEXT NOT NULL DEFAULT 'new',
     status        TEXT NOT NULL DEFAULT 'pending',
+    devices       TEXT,
+    archived      INTEGER DEFAULT 0,
     created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP
   );
