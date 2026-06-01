@@ -68,6 +68,7 @@
     <div class="field">
       <label>Password</label>
       <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"/>
+      <div style="text-align:right;margin-top:6px"><a href="/reset-password" style="font-size:12px;color:var(--muted,#6b8f7a);text-decoration:none">Forgot password?</a></div>
     </div>
     <button class="btn" id="loginBtn" onclick="login()">Sign In</button>
     <div class="error-msg" id="errorMsg"></div>
