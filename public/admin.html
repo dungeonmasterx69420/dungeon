@@ -321,21 +321,34 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
   <div class="sh-handle"></div>
   <div class="sh-title" id="f-title">Fulfill Redemption</div>
   <div class="sh-sub" id="f-sub"></div>
-  <div class="sh-info" id="f-info">Jellyfin account will be created and library access granted automatically. Credentials will be emailed.</div>
   <div class="sh-err" id="f-err"></div>
   <input type="hidden" id="f-rid"/>
   <input type="hidden" id="f-svc"/>
-  <div class="field"><label id="f-user-lbl">Jellyfin Username</label><input type="text" id="f-user" style="font-family:var(--mono)"/></div>
-  <div class="field"><label>Password</label>
-    <div style="display:flex;gap:6px">
-      <input type="text" id="f-pass" style="flex:1;font-family:var(--mono)"/>
-      <button class="btn btn-b" onclick="document.getElementById('f-pass').value=mkPass()" style="flex-shrink:0">⟳</button>
+
+  <!-- Existing sub — just extend -->
+  <div id="f-extend-view" style="display:none">
+    <div class="sh-info" id="f-extend-info"></div>
+    <div class="sacts">
+      <button class="btn btn-b" onclick="closeSheet('sh-fulfill')">Cancel</button>
+      <button class="btn btn-g" id="f-extend-btn" onclick="submitFulfill()">Add 30 Days</button>
     </div>
   </div>
-  <div class="field"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any extra info for the member…"></textarea></div>
-  <div class="sacts">
-    <button class="btn btn-b" onclick="closeSheet('sh-fulfill')">Cancel</button>
-    <button class="btn btn-g" id="f-btn" onclick="submitFulfill()">Send Credentials</button>
+
+  <!-- New account — needs credentials -->
+  <div id="f-new-view" style="display:none">
+    <div class="sh-info">Jellyfin account will be created and credentials emailed automatically.</div>
+    <div class="field"><label>Jellyfin Username</label><input type="text" id="f-user" style="font-family:var(--mono)"/></div>
+    <div class="field"><label>Password</label>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="f-pass" style="flex:1;font-family:var(--mono)"/>
+        <button class="btn btn-b" onclick="document.getElementById('f-pass').value=mkPass()" style="flex-shrink:0">⟳</button>
+      </div>
+    </div>
+    <div class="field"><label>Notes <span style="font-size:9px;color:var(--t3);text-transform:none;letter-spacing:0">optional</span></label><textarea id="f-notes" placeholder="Any extra info for the member…"></textarea></div>
+    <div class="sacts">
+      <button class="btn btn-b" onclick="closeSheet('sh-fulfill')">Cancel</button>
+      <button class="btn btn-g" id="f-btn" onclick="submitFulfill()">Send Credentials</button>
+    </div>
   </div>
 </div>
 
@@ -739,22 +752,36 @@ function setRedemFilter(val,el){
 function openFulfill(rid,svc,displayName,screenName,existingUser,existingPass,streamEnd,castEnd){
   $('f-rid').value=rid;$('f-svc').value=svc;
   $('f-title').textContent=svc==='stremio'?'🌊 Fulfill DungeonStream':'📡 Fulfill DungeonCast';
+  $('f-sub').textContent='@'+(displayName||screenName);
+  $('f-err').style.display='none';
 
-  // Check if already has sub
   const relevantEnd = svc==='stremio' ? streamEnd : castEnd;
   const endDate = relevantEnd ? new Date(relevantEnd) : null;
+  const hasExistingAccount = !!existingUser;
   const hasActiveSub = endDate && endDate > new Date();
-  const daysLeft = endDate ? Math.ceil((endDate-new Date())/86400000) : 0;
+  const daysLeft = hasActiveSub ? Math.ceil((endDate-new Date())/86400000) : 0;
 
-  $('f-sub').textContent=`Setting up account for @${displayName||screenName}`;
-  $('f-info').textContent = hasActiveSub
-    ? `⚡ Already has ${daysLeft} days left — this will add 30 more days (expires ${endDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}).`
-    : svc==='stremio' ? 'Jellyfin account will be created on dungeoncast.cc with Movies + Shows access.' : 'Jellyfin account will be created on dungeoncast.cc with Live TV access.';
-
-  // Pre-fill existing credentials if available, otherwise use screen name
-  $('f-user').value = existingUser || (screenName||displayName||'').toLowerCase().replace(/[^a-z0-9_]/g,'_').replace(/@/g,'').substring(0,20);
-  $('f-pass').value = existingPass || mkPass();
-  $('f-notes').value='';$('f-err').style.display='none';
+  if(hasExistingAccount){
+    // Already has account — just show extension confirmation
+    $('f-extend-view').style.display='block';
+    $('f-new-view').style.display='none';
+    const newEnd = hasActiveSub
+      ? new Date(endDate.getTime() + 30*24*60*60*1000)
+      : new Date(Date.now() + 30*24*60*60*1000);
+    $('f-extend-info').textContent = hasActiveSub
+      ? `@${displayName||screenName} currently has ${daysLeft} days left. Adding 30 days will extend their sub to ${newEnd.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}.`
+      : `@${displayName||screenName} has an expired account. Adding 30 days will reactivate until ${newEnd.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}.`;
+    $('f-user').value=existingUser;
+    $('f-pass').value=existingPass;
+    $('f-notes').value='';
+  } else {
+    // New account — show full form
+    $('f-extend-view').style.display='none';
+    $('f-new-view').style.display='block';
+    $('f-user').value=(screenName||displayName||'').toLowerCase().replace(/[^a-z0-9_]/g,'_').replace(/@/g,'').substring(0,20);
+    $('f-pass').value=mkPass();
+    $('f-notes').value='';
+  }
   openSheet('sh-fulfill');
 }
 
