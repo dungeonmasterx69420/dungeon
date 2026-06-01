@@ -284,6 +284,8 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE profiles ADD COLUMN devices TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN phone TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN referred_by TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN reset_token TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN reset_token_expires DATETIME').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN notes TEXT').run(); } catch(e) {}
   // Create dealer earnings table
   try {
@@ -2338,6 +2340,9 @@ app.post('/api/applicants/:id/promote', requireMod, async (req, res) => {
       memberId = genId();
       db.prepare('INSERT INTO members (id, first_name, last_name, email, phone, password, plain_pass) VALUES (?,?,?,?,?,?,?)')
         .run(memberId, applicant.first_name, applicant.last_name, applicant.email, applicant.phone||null, hashedPass, plain);
+    } else {
+      // Always update password to what was entered in the grant sheet
+      db.prepare('UPDATE members SET password=?, plain_pass=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run(hashedPass, plain, memberId);
     }
 
     // Get or create profile
@@ -2897,6 +2902,67 @@ app.post('/api/member/change-password', requireMember, async (req, res) => {
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
+
+
+// ── Password Reset ────────────────────────────────────────────────────────────
+
+// POST request password reset
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+
+    const member = db.prepare('SELECT * FROM members WHERE LOWER(email)=LOWER(?)').get(email);
+    // Always return success to prevent email enumeration
+    if (!member) return res.json({ ok: true });
+
+    const token = require('crypto').randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+
+    // Store token (reuse plain_pass column temporarily with prefix, or add to members)
+    db.prepare('UPDATE members SET reset_token=?, reset_token_expires=? WHERE id=?').run(token, expires, member.id);
+
+    const resetUrl = SITE_URL + '/reset-password?token=' + token;
+    const html = emailShell(`
+      <h2>Reset Your Password</h2>
+      <div class="rule"></div>
+      <p>Hi <strong>${member.first_name}</strong>,</p>
+      <p>We received a request to reset your Dungeon password. Click below to set a new one.</p>
+      <a href="${resetUrl}" class="btn">Reset Password</a>
+      <div class="rule"></div>
+      <p style="font-size:12px;color:#6b8f7a">This link expires in 1 hour. If you didn't request this, ignore this email.</p>
+    `);
+    await sendMail(member.email, 'Reset Your Dungeon Password', html);
+    res.json({ ok: true });
+  } catch(e) { console.error('[forgot-password]', e.message); res.status(500).json({ error: e.message }); }
+});
+
+// POST reset password with token
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { token, new_password } = req.body;
+    if (!token || !new_password) return res.status(400).json({ error: 'Token and password required' });
+    if (new_password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+    const member = db.prepare('SELECT * FROM members WHERE reset_token=?').get(token);
+    if (!member) return res.status(400).json({ error: 'Invalid or expired reset link' });
+    if (new Date(member.reset_token_expires) < new Date()) return res.status(400).json({ error: 'This reset link has expired. Please request a new one.' });
+
+    const bcrypt = require('bcryptjs');
+    const hashed = bcrypt.hashSync(new_password, 10);
+    db.prepare('UPDATE members SET password=?, plain_pass=?, reset_token=NULL, reset_token_expires=NULL, updated_at=CURRENT_TIMESTAMP WHERE id=?')
+      .run(hashed, new_password, member.id);
+
+    res.json({ ok: true });
+  } catch(e) { console.error('[reset-password]', e.message); res.status(500).json({ error: e.message }); }
+});
+
+// GET serve reset password page
+app.get('/reset-password', (req, res) => {
+  res.sendFile(require('path').join(__dirname, 'public', 'reset-password.html'));
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 // ── Admin: Subscribers ────────────────────────────────────────────────────────
 app.get('/api/admin/subscribers', requireAuth, (req, res) => {
