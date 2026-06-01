@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>Dungeon · Payouts</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--s3:#1a2422;--bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);--g:#34d399;--gb:rgba(52,211,153,.08);--txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;--red:#f87171;--amb:#fbbf24;--gold:#f59e0b;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif}
+html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans)}
+.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--g);text-decoration:none}
+.nav a,.nav button{font-size:13px;color:var(--t2);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:var(--sans)}
+.nav{display:flex;gap:12px;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bdr);border-bottom:1px solid var(--bdr)}
+.stat{background:var(--s1);padding:16px}
+.stat-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:6px}
+.stat-val{font-size:24px;font-weight:700;font-family:var(--mono)}
+.page{max-width:900px;margin:0 auto;padding:20px 16px 60px}
+.dealer-card{background:var(--s1);border:1px solid var(--bdr);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.dealer-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;gap:12px}
+.dealer-header:hover{background:var(--s2)}
+.dealer-name{font-size:14px;font-weight:600;color:var(--g)}
+.dealer-meta{font-size:12px;color:var(--t2);margin-top:2px}
+.dealer-stats{display:flex;gap:16px;align-items:center;flex-shrink:0}
+.owed-amount{font-size:18px;font-weight:700;font-family:var(--mono);color:var(--amb)}
+.owed-amount.zero{color:var(--t3)}
+.dealer-body{display:none;border-top:1px solid var(--bdr)}
+.dealer-card.open .dealer-body{display:block}
+.dealer-card.open .dealer-header{background:var(--s2)}
+.pay-all-bar{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:rgba(251,191,36,.04);border-bottom:1px solid var(--bdr)}
+.pay-all-text{font-size:12px;color:var(--t2)}
+.earn-table{width:100%}
+.earn-table th{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);padding:10px 16px;text-align:left;background:var(--s2);border-bottom:1px solid var(--bdr)}
+.earn-table td{padding:11px 16px;font-size:12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.earn-table tr:last-child td{border-bottom:none}
+.earn-table tr:hover td{background:var(--s2)}
+.mono{font-family:var(--mono)}
+.bdg{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;letter-spacing:.04em;white-space:nowrap}
+.bdg-g{background:var(--gb);color:var(--g);border:1px solid var(--bdr)}
+.bdg-a{background:rgba(251,191,36,.08);color:var(--amb);border:1px solid rgba(251,191,36,.2)}
+.bdg-b{background:var(--s3);color:var(--t2);border:1px solid var(--bdr)}
+.btn{font-size:11px;font-weight:700;padding:6px 12px;border-radius:7px;border:none;cursor:pointer;font-family:var(--sans);transition:opacity .15s;white-space:nowrap}
+.btn:hover{opacity:.8}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-g{background:var(--g);color:#000}
+.btn-amber{background:var(--amb);color:#000}
+.btn-b{background:var(--s3);border:1px solid var(--bdr2);color:var(--t2)}
+.empty{text-align:center;padding:48px;color:var(--t3);font-size:12px;font-family:var(--mono)}
+.chevron{color:var(--t3);font-size:14px;transition:transform .2s;flex-shrink:0}
+.dealer-card.open .chevron{transform:rotate(180deg)}
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}.dealer-stats{flex-direction:column;align-items:flex-end;gap:4px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/admin.html" class="logo">Dungeon</a>
+  <div class="nav">
+    <a href="/admin.html">← Admin</a>
+    <button onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat">
+    <div class="stat-label">Total Owed</div>
+    <div class="stat-val" id="st-owed" style="color:var(--amb)">—</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Total Paid Out</div>
+    <div class="stat-val" id="st-paid" style="color:var(--g)">—</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Active Dealers</div>
+    <div class="stat-val" id="st-dealers">—</div>
+  </div>
+</div>
+
+<div class="page">
+  <div id="dealer-list"><div class="empty">// loading…</div></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+fetch('/api/member/me').then(r=>r.json()).then(d=>{
+  if(!d.authenticated){window.location.href='/login.html';return;}
+  if(!['admin','warden'].includes(d.member?.profile?.tier)){window.location.href='/dashboard.html';return;}
+  load();
+});
+
+async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
+
+async function load(){
+  const dealers = await fetch('/api/admin/payouts').then(r=>r.json()).catch(()=>[]);
+  const totalOwed = dealers.reduce((s,d)=>s+d.owed,0);
+  const totalPaid = dealers.reduce((s,d)=>s+d.paidOut,0);
+  $('st-owed').textContent = '$'+(totalOwed/100).toFixed(2);
+  $('st-paid').textContent = '$'+(totalPaid/100).toFixed(2);
+  $('st-dealers').textContent = dealers.length;
+
+  const el = $('dealer-list');
+  if(!dealers.length){el.innerHTML='<div class="empty">// no dealer activity yet</div>';return;}
+
+  el.innerHTML = dealers.map(d => buildDealerCard(d)).join('');
+}
+
+function buildDealerCard(d){
+  const earned = d.earnings.filter(e => e.status === 'earned');
+  const paidOut = d.earnings.filter(e => e.status === 'paid_out');
+  const owedFmt = '$'+(d.owed/100).toFixed(2);
+  const paidFmt = '$'+(d.paidOut/100).toFixed(2);
+
+  const rows = d.earnings.filter(e => e.status === 'earned' || e.status === 'paid_out').map(e => {
+    const isPaid = e.status === 'paid_out';
+    return `<tr>
+      <td>${esc(e.invite_email||'—')}</td>
+      <td class="mono">$${(e.invite_amount/100).toFixed(2)}</td>
+      <td class="mono" style="color:${isPaid?'var(--g)':'var(--amb)'}">$${(e.dealer_cut/100).toFixed(2)}</td>
+      <td>${fmtDate(e.invite_paid_at||e.created_at)}</td>
+      <td><span class="bdg ${isPaid?'bdg-g':'bdg-a'}">${isPaid?'Paid Out':'Owed'}</span></td>
+      <td>${!isPaid?`<button class="btn btn-g" onclick="markPaid('${e.id}')">Mark Paid</button>`:''}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="dealer-card" id="dc-${d.id}">
+    <div class="dealer-header" onclick="toggleDealer('${d.id}')">
+      <div>
+        <div class="dealer-name">@${esc(d.screen_name||'unknown')}</div>
+        <div class="dealer-meta">${d.totalSales} sale${d.totalSales!==1?'s':''} · ${earned.length} owed · ${paidOut.length} paid out</div>
+      </div>
+      <div class="dealer-stats">
+        <div>
+          <div class="mono" style="font-size:10px;color:var(--t3);text-align:right">OWED</div>
+          <div class="owed-amount ${d.owed===0?'zero':''}">$${(d.owed/100).toFixed(2)}</div>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+    <div class="dealer-body">
+      ${d.owed > 0 ? `<div class="pay-all-bar">
+        <div class="pay-all-text">Mark all ${earned.length} unpaid commission${earned.length!==1?'s':''} as paid out to @${esc(d.screen_name)}</div>
+        <button class="btn btn-amber" onclick="payAll('${d.id}','${esc(d.screen_name)}',${d.owed})">Pay All — $${(d.owed/100).toFixed(2)}</button>
+      </div>` : ''}
+      <table class="earn-table">
+        <thead><tr>
+          <th>Client</th><th>Sale</th><th>Cut</th><th>Date</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody>${rows||'<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:20px;font-family:var(--mono)">No completed sales yet</td></tr>'}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function toggleDealer(id){
+  document.getElementById('dc-'+id).classList.toggle('open');
+}
+
+async function markPaid(earningId){
+  if(!confirm('Mark this commission as paid out?'))return;
+  await fetch('/api/admin/payouts/'+earningId+'/mark-paid',{method:'POST'});
+  load();
+}
+
+async function payAll(profileId, name, amount){
+  if(!confirm('Mark all owed commissions as paid out to @'+name+' ($'+(amount/100).toFixed(2)+')?'))return;
+  await fetch('/api/admin/payouts/dealer/'+profileId+'/pay-all',{method:'POST'});
+  load();
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtDate(d){if(!d)return'—';const dt=new Date(d);return isNaN(dt)?'—':dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+</script>
+</body>
+</html>

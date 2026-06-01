@@ -2486,10 +2486,10 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
       if (token) {
         db.prepare('UPDATE invites SET status=?, stripe_payment_intent=?, paid_at=CURRENT_TIMESTAMP WHERE token=?')
           .run('paid', session.payment_intent, token);
-        // Mark dealer earnings as paid
+        // Mark dealer earnings as earned (client paid - NOT yet paid out to dealer)
         const paidInvite = db.prepare('SELECT * FROM invites WHERE token=?').get(token);
         if (paidInvite) {
-          db.prepare("UPDATE dealer_earnings SET status='paid' WHERE invite_id=?").run(paidInvite.id);
+          db.prepare("UPDATE dealer_earnings SET status='earned' WHERE invite_id=?").run(paidInvite.id);
         }
         console.log('[stripe] Invite paid:', token);
       }
@@ -2523,8 +2523,8 @@ app.get('/api/dealer/dashboard', requireDealer, (req, res) => {
     `).all(pid);
 
     // Awaiting payout = invite was paid by client, but dealer hasn't been paid out yet
-    const awaitingPayout = earnings.filter(e => (e.invite_status === 'paid' || e.invite_status === 'used') && e.status !== 'paid');
-    const paidOut = earnings.filter(e => e.status === 'paid');
+    const awaitingPayout = earnings.filter(e => e.status === 'earned');
+    const paidOut = earnings.filter(e => e.status === 'paid_out');
     const totalSales = invites.filter(i => i.status === 'paid' || i.status === 'used').length;
     const totalRevenue = invites.filter(i => i.status === 'paid' || i.status === 'used').reduce((sum, i) => sum + i.amount, 0);
 
@@ -2676,6 +2676,49 @@ app.delete('/api/dealer/invites/:id', requireDealer, (req, res) => {
     if (invite.status === 'used') return res.status(400).json({ error: 'Cannot delete a used invite' });
     db.prepare('DELETE FROM dealer_earnings WHERE invite_id=?').run(invite.id);
     db.prepare('DELETE FROM invites WHERE id=?').run(invite.id);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+
+// ── Admin Payout Routes ───────────────────────────────────────────────────────
+
+// GET all dealers with their earnings summary
+app.get('/api/admin/payouts', requireMod, (req, res) => {
+  try {
+    // Get all dealers
+    const dealers = db.prepare("SELECT * FROM profiles WHERE tier IN ('dealer','mod','admin','warden')").all();
+    const result = dealers.map(dealer => {
+      const earnings = db.prepare(`
+        SELECT de.*, i.email as invite_email, i.amount as invite_amount, i.status as invite_status, i.used_at, i.paid_at
+        FROM dealer_earnings de
+        LEFT JOIN invites i ON de.invite_id = i.id
+        WHERE de.dealer_profile_id = ?
+        ORDER BY de.created_at DESC
+      `).all(dealer.id);
+      const owed = earnings.filter(e => e.status === 'earned').reduce((s,e) => s + e.dealer_cut, 0);
+      const paidOut = earnings.filter(e => e.status === 'paid_out').reduce((s,e) => s + e.dealer_cut, 0);
+      const totalSales = earnings.filter(e => e.status === 'earned' || e.status === 'paid_out').length;
+      return { ...dealer, earnings, owed, paidOut, totalSales };
+    }).filter(d => d.earnings.length > 0); // only show dealers who have activity
+    res.json(result);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST mark single earning as paid out
+app.post('/api/admin/payouts/:earningId/mark-paid', requireMod, (req, res) => {
+  try {
+    db.prepare("UPDATE dealer_earnings SET status='paid_out', paid_at=CURRENT_TIMESTAMP WHERE id=?").run(req.params.earningId);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST mark ALL owed earnings for a dealer as paid out
+app.post('/api/admin/payouts/dealer/:profileId/pay-all', requireMod, (req, res) => {
+  try {
+    db.prepare("UPDATE dealer_earnings SET status='paid_out', paid_at=CURRENT_TIMESTAMP WHERE dealer_profile_id=? AND status='earned'").run(req.params.profileId);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });

@@ -328,7 +328,7 @@ function renderEarnings(){
   const earned = _data.earnings.filter(e => e.invite_status === 'paid' || e.invite_status === 'used');
   if(!earned.length){el.innerHTML='<div class="earn-empty">// commissions will appear here once clients pay</div>';return;}
   el.innerHTML = earned.map(e => {
-    const isPaidOut = e.status === 'paid';
+    const isPaidOut = e.status === 'paid_out';
     const cut = '$'+(e.dealer_cut/100).toFixed(2);
     const sale = '$'+(e.amount/100).toFixed(2);
     return '<div class="earn-row">'
