@@ -836,8 +836,8 @@ app.post('/api/apply', submitLimiter, async (req, res) => {
   if (taken) return res.status(400).json({ error: 'That username is already taken. Please choose another.' });
 
   const id = genId();
-  db.prepare(`INSERT INTO applicants (id, first_name, last_name, email, phone, language, referral, notes, screen_name, type, devices) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?)`)
-    .run(id, first_name.trim(), last_name.trim(), email.trim(), phone||'', language||'', referral||'', notes||'', screen_name.trim(), devices ? JSON.stringify(devices) : null);
+  db.prepare(`INSERT INTO applicants (id, first_name, last_name, email, phone, language, referral, notes, screen_name, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new')`)
+    .run(id, first_name.trim(), last_name.trim(), email.trim(), phone||'', language||'', referral||'', notes||'', screen_name.trim());
 
   // Create a Neut profile immediately
   const profileId = genId();
