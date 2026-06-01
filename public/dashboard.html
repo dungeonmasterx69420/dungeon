@@ -310,7 +310,7 @@
 
     // Subscriptions
     let subHtml = '';
-    const isStaff = ['mod','admin','warden'].includes(tier);
+    const isStaff = ['dealer','mod','admin','warden'].includes(tier);
 
     if(isStaff){
       subHtml = `<div class="staff-badge"><span>🔑</span><span class="staff-badge-text">Staff Access</span><span class="staff-badge-sub">${tLabel}</span></div>`;

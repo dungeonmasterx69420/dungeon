@@ -2872,6 +2872,19 @@ app.post('/api/member/change-password', requireMember, async (req, res) => {
 
     const hashed = bcrypt.hashSync(new_password, 10);
     db.prepare('UPDATE members SET password=?, plain_pass=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run(hashed, new_password, member.id);
+
+    // Update Jellyfin password too
+    const username = member.jellyfin_user || member.stremio_email;
+    if (username && JELLYFIN_API_KEY) {
+      try {
+        const jfId = await jellyfinGetUserId(username, JELLYFIN_URL, JELLYFIN_API_KEY);
+        if (jfId) {
+          await jellyfinRequest('POST', '/Users/'+jfId+'/Password', { CurrentPw: member.plain_pass||'', NewPw: new_password }, JELLYFIN_URL, JELLYFIN_API_KEY);
+          console.log('[password] Updated Jellyfin password for:', username);
+        }
+      } catch(e) { console.error('[password] Jellyfin update error:', e.message); }
+    }
+
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });

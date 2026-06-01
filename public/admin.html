@@ -719,7 +719,7 @@ async function loadRedem(){
           <div class="rc-name">@${esc(r.screen_name||'unknown')} <span class="bdg ${bc}">${r.status}</span></div>
           <div class="rc-meta">${svc} · ${fmtDate(r.created_at)}</div>
         </div>
-        ${r.status==='pending'?`<button class="btn btn-g" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name||r.email||'')}','${esc(r.screen_name||'')}')">Fulfill →</button>`:''}
+        ${r.status==='pending'?`<button class="btn btn-g" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name||r.email||'')}','${esc(r.screen_name||'')}','${esc(r.jellyfin_user||'')}','${esc(r.jellyfin_pass||'')}','${r.stremio_end||''}','${r.iptv_end||''}')">Fulfill →</button>`:''}
       </div>
       ${r.status==='fulfilled'?`<div class="rc-rows">
         <div class="rc-row"><span class="rc-lbl">Server</span><span class="rc-val">${server}</span></div>
@@ -736,15 +736,24 @@ function setRedemFilter(val,el){
   el.classList.add('on');loadRedem();
 }
 
-function openFulfill(rid,svc,displayName,screenName){
+function openFulfill(rid,svc,displayName,screenName,existingUser,existingPass,streamEnd,castEnd){
   $('f-rid').value=rid;$('f-svc').value=svc;
   $('f-title').textContent=svc==='stremio'?'🌊 Fulfill DungeonStream':'📡 Fulfill DungeonCast';
+
+  // Check if already has sub
+  const relevantEnd = svc==='stremio' ? streamEnd : castEnd;
+  const endDate = relevantEnd ? new Date(relevantEnd) : null;
+  const hasActiveSub = endDate && endDate > new Date();
+  const daysLeft = endDate ? Math.ceil((endDate-new Date())/86400000) : 0;
+
   $('f-sub').textContent=`Setting up account for @${displayName||screenName}`;
-  $('f-info').textContent=svc==='stremio'
-    ?'Jellyfin account will be created on dungeoncast.cc with Movies + Shows access.'
-    :'Jellyfin account will be created on dungeoncast.cc with Live TV access.';
-  $('f-user').value=(screenName||displayName||'').toLowerCase().replace(/[^a-z0-9_]/g,'_').replace(/@/g,'').substring(0,20);
-  $('f-pass').value=mkPass();
+  $('f-info').textContent = hasActiveSub
+    ? `⚡ Already has ${daysLeft} days left — this will add 30 more days (expires ${endDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}).`
+    : svc==='stremio' ? 'Jellyfin account will be created on dungeoncast.cc with Movies + Shows access.' : 'Jellyfin account will be created on dungeoncast.cc with Live TV access.';
+
+  // Pre-fill existing credentials if available, otherwise use screen name
+  $('f-user').value = existingUser || (screenName||displayName||'').toLowerCase().replace(/[^a-z0-9_]/g,'_').replace(/@/g,'').substring(0,20);
+  $('f-pass').value = existingPass || mkPass();
   $('f-notes').value='';$('f-err').style.display='none';
   openSheet('sh-fulfill');
 }
