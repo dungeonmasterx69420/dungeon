@@ -535,6 +535,8 @@ app.use(session({
   cookie: { secure: false, httpOnly: true, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 },
 }));
 
+app.set('trust proxy', 1);
+
 const submitLimiter = rateLimit({ windowMs: 60*60*1000, max: 10, message: { error: 'Too many requests.' } });
 const loginLimiter = rateLimit({ windowMs: 5*60*1000, max: 10, message: { error: 'Too many attempts. Try again in 5 minutes.' } });
 
