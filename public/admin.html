@@ -632,10 +632,19 @@ function renderMembers(members){
           <button class="btn btn-b" onclick="openCredits('${m.id}','${m.profile_id_val||''}',${m.credit_balance||0})">Credits</button>
           <button class="btn btn-b" onclick="openEditSub('${m.id}','stream')">Stream Sub</button>
           <button class="btn btn-b" onclick="openEditSub('${m.id}','cast')">Cast Sub</button>
+          <button class="btn btn-r" style="font-size:10px;padding:5px 10px" onclick="deleteMember('${m.id}','${esc(m.screen_name||m.first_name)}')">Delete</button>
         </div>
       </div>
     </div>`;
   }).join('');
+}
+
+async function deleteMember(id, name){
+  if(!confirm('Permanently delete @'+name+'? This cannot be undone.'))return;
+  if(!confirm('Are you sure? All data for @'+name+' will be deleted.'))return;
+  const r = await fetch('/api/admin/members/'+id,{method:'DELETE'}).then(r=>r.json()).catch(e=>({error:e.message}));
+  if(r.error){alert('Error: '+r.error);return;}
+  loadAll();
 }
 
 function toggleMember(id){

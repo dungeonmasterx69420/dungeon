@@ -2989,6 +2989,27 @@ app.post('/api/member/welcome-done', requireMember, (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// DELETE member (admin only — warden tier)
+app.delete('/api/admin/members/:id', requireMod, (req, res) => {
+  try {
+    const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.params.id);
+    // Only warden can delete members
+    if (req.profile.tier !== 'warden') return res.status(403).json({ error: 'Only the Dungeon Master can delete members' });
+    // Delete all related records
+    if (profile) {
+      db.prepare('DELETE FROM credits WHERE profile_id=?').run(profile.id);
+      db.prepare('DELETE FROM redemptions WHERE profile_id=?').run(profile.id);
+      db.prepare('DELETE FROM dealer_earnings WHERE dealer_profile_id=?').run(profile.id);
+      db.prepare('DELETE FROM invites WHERE created_by=?').run(profile.id);
+      db.prepare('DELETE FROM messages WHERE profile_id=?').run(profile.id);
+      db.prepare('DELETE FROM profiles WHERE id=?').run(profile.id);
+    }
+    db.prepare('DELETE FROM members WHERE id=?').run(req.params.id);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── Admin: Subscribers ────────────────────────────────────────────────────────
 app.get('/api/admin/subscribers', requireAuth, (req, res) => {
   const rows = db.prepare(`
