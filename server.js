@@ -288,6 +288,10 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE members ADD COLUMN reset_token_expires DATETIME').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE profiles ADD COLUMN welcome_done INTEGER DEFAULT 0').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN credit_welcome_pending INTEGER DEFAULT 0').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_user TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_pass TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_expires DATETIME').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_notified INTEGER DEFAULT 0').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN notes TEXT').run(); } catch(e) {}
   // Create dealer earnings table
   try {
@@ -410,6 +414,22 @@ async function runSubscriptionCron() {
     sendMail(m.email, 'Your Dungeon subscription has ended', emailExpired(m.first_name)).catch(()=>{});
     db.prepare('UPDATE members SET expired_notified=1 WHERE id=?').run(m.id);
   }
+
+  // Revoke demo accounts that have expired
+  try {
+    const expiredDemos = db.prepare("SELECT * FROM demo_requests WHERE status='fulfilled' AND demo_expires IS NOT NULL AND datetime(demo_expires) <= datetime(?) AND demo_notified=0").all(nowISO);
+    for (const demo of expiredDemos) {
+      if (!demo.demo_user) continue;
+      try {
+        const jfId = await jellyfinGetUserId(demo.demo_user, JELLYFIN_URL, JELLYFIN_API_KEY);
+        if (jfId) {
+          await jellyfinRequest('POST', '/Users/'+jfId+'/Policy', { IsDisabled: true }, JELLYFIN_URL, JELLYFIN_API_KEY);
+          console.log('[demo] Expired — disabled:', demo.demo_user);
+        }
+      } catch(e) { console.error('[demo] Revoke error:', e.message); }
+      db.prepare('UPDATE demo_requests SET demo_notified=1 WHERE id=?').run(demo.id);
+    }
+  } catch(e) { console.error('[demo cron]', e.message); }
 
   // Revoke DungeonCast access when iptv_end has passed (only members not already notified)
   const castExpired = db.prepare(`
@@ -3024,6 +3044,67 @@ app.delete('/api/admin/members/:id', requireMod, (req, res) => {
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
+
+
+// ── Demo System ───────────────────────────────────────────────────────────────
+
+// GET all demo requests
+app.get('/api/admin/demos', requireMod, (req, res) => {
+  try {
+    res.json(db.prepare('SELECT * FROM demo_requests ORDER BY created_at DESC').all());
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST fulfill demo — creates temp Jellyfin account with 24h access
+app.post('/api/admin/demos/:id/fulfill', requireMod, async (req, res) => {
+  try {
+    const demo = db.prepare('SELECT * FROM demo_requests WHERE id=?').get(req.params.id);
+    if (!demo) return res.status(404).json({ error: 'Demo not found' });
+
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
+
+    // Create Jellyfin account on VPS
+    const createRes = await jellyfinCreateUser(username, password, JELLYFIN_URL, JELLYFIN_API_KEY);
+    console.log('[demo] Jellyfin create:', createRes?.status);
+
+    const jfId = await jellyfinGetUserId(username, JELLYFIN_URL, JELLYFIN_API_KEY);
+    if (jfId) {
+      await jellyfinGrantLibraryAccess(jfId, ['Movies', 'Shows'], JELLYFIN_URL, JELLYFIN_API_KEY);
+      console.log('[demo] Granted access to:', username);
+    }
+
+    db.prepare("UPDATE demo_requests SET status='fulfilled', fulfilled_at=CURRENT_TIMESTAMP, demo_user=?, demo_pass=?, demo_expires=? WHERE id=?")
+      .run(username, password, expires, demo.id);
+
+    // Send email if we have one
+    if (demo.email) {
+      const html = emailShell(`
+        <h2>Your Dungeon Demo is Ready</h2>
+        <div class="rule"></div>
+        <p>Hi there! Your 24-hour Dungeon demo account has been set up. Try it out and see what we're all about.</p>
+        <div class="box">
+          <div class="row"><span class="lbl">Server</span><span class="val">https://dungeoncast.cc</span></div>
+          <div class="row"><span class="lbl">Username</span><span class="val">${username}</span></div>
+          <div class="row"><span class="lbl">Password</span><span class="val">${password}</span></div>
+          <div class="row"><span class="lbl">Expires</span><span class="val">24 hours from now</span></div>
+        </div>
+        <p>Download <strong>Moonfin</strong> or <strong>Jellyfin</strong>, add the server URL, and sign in with the credentials above.</p>
+        <p style="font-size:12px;color:#6b8f7a">Like what you see? Ask the person who set up your demo about getting a full membership.</p>
+      `);
+      await sendMail(demo.email, 'Your Dungeon Demo Account', html).catch(e => console.error('Demo email error:', e.message));
+    }
+
+    res.json({ ok: true, expires });
+  } catch(e) {
+    console.error('[demo/fulfill]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 // ── Admin: Subscribers ────────────────────────────────────────────────────────
 app.get('/api/admin/subscribers', requireAuth, (req, res) => {
