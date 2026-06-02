@@ -207,6 +207,10 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
       <div class="sb-item" onclick="showPanel('invites',this)" id="nav-invites">
         <span class="icon">✉️</span> Invites
       </div>
+      <div class="sb-item" onclick="showPanel('demos',this)" id="nav-demos">
+        <span class="icon">🎬</span> Demos
+        <span class="sb-badge red" id="nb-demos" style="display:none"></span>
+      </div>
       <div class="sb-item" onclick="window.location.href='/payouts.html'" id="nav-payouts">
         <span class="icon">💰</span> Payouts
       </div>
@@ -276,6 +280,11 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
           <button class="btn btn-g" onclick="openInviteSheet()">+ Send Invite</button>
         </div>
         <div id="invite-list"><div class="empty">// no invites yet</div></div>
+      </div>
+
+      <!-- Demos -->
+      <div id="panel-demos" style="display:none">
+        <div id="demo-list"><div class="empty">// loading…</div></div>
       </div>
 
       <!-- Redemptions -->
@@ -443,10 +452,10 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
 async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
 
 // ── Panels ────────────────────────────────────────────────────────────────────
-const panelTitles={invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
+const panelTitles={demos:['Demos','Fulfill 24-hour demo requests'],invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
 
 function showPanel(name,el){
-  ['applications','members','redemptions','invites'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
+  ['applications','members','redemptions','invites','demos'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('on'));
   el.classList.add('on');
   const [title,sub]=panelTitles[name];
@@ -457,6 +466,7 @@ function showPanel(name,el){
   if(name==='members') loadMembers();
   if(name==='redemptions') loadRedem();
   if(name==='invites') loadInvites();
+  if(name==='demos') loadDemos();
 }
 
 // ── Sidebar (mobile) ─────────────────────────────────────────────────────────
@@ -465,10 +475,11 @@ function closeSidebar(){$('sidebar').classList.remove('open');$('sb-close').styl
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
 async function loadStats(){
-  const [apps,members,redems]=await Promise.all([
+  const [apps,members,redems,demos]=await Promise.all([
     fetch('/api/applicants').then(r=>r.json()).catch(()=>[]),
     fetch('/api/admin/members').then(r=>r.json()).catch(()=>[]),
-    fetch('/api/admin/redemptions').then(r=>r.json()).catch(()=>[])
+    fetch('/api/admin/redemptions').then(r=>r.json()).catch(()=>[]),
+    fetch('/api/admin/demos').then(r=>r.json()).catch(()=>[])
   ]);
   const pending=apps.filter(a=>(a.status||'pending')==='pending').length;
   const pendingR=redems.filter(r=>r.status==='pending').length;
@@ -482,12 +493,14 @@ async function loadStats(){
   $('st-members').textContent=members.length;
   $('st-subs').textContent=subs;
   $('st-redem').textContent=pendingR;
+  const pendingDemos=demos.filter(d=>d.status==='pending').length;
+  if(pendingDemos>0){$('nb-demos').textContent=pendingDemos;$('nb-demos').style.display='flex';}
   // Nav badges
   if(pending>0){$('nb-apps').textContent=pending;$('nb-apps').style.display='flex';}
   if(pendingR>0){$('nb-redem').textContent=pendingR;$('nb-redem').style.display='flex';}
 }
 
-function loadAll(){loadStats();loadApps();loadMembers();loadRedem();loadInvites();}
+function loadAll(){loadStats();loadApps();loadMembers();loadRedem();loadInvites();loadDemos();}
 
 // ── Applications ──────────────────────────────────────────────────────────────
 async function loadApps(){
@@ -898,6 +911,80 @@ async function deleteInvite(id) {
   if (!confirm('Delete this invite?')) return;
   await fetch('/api/admin/invites/' + id, {method:'DELETE'});
   loadInvites();
+}
+</script>
+
+<!-- Demo Fulfill Sheet -->
+<div class="sheet" id="sh-demo">
+  <div class="sh-handle"></div>
+  <div class="sh-title">Fulfill Demo</div>
+  <div class="sh-sub" id="demo-sub"></div>
+  <div class="sh-info">A temporary Jellyfin account will be created with 24-hour access. It will be automatically disabled after 24 hours.</div>
+  <div class="sh-err" id="demo-err"></div>
+  <input type="hidden" id="demo-id"/>
+  <div class="field"><label>Jellyfin Username</label><input type="text" id="demo-user" style="font-family:var(--mono)"/></div>
+  <div class="field"><label>Password</label>
+    <div style="display:flex;gap:6px">
+      <input type="text" id="demo-pass" style="flex:1;font-family:var(--mono)"/>
+      <button class="btn btn-b" onclick="document.getElementById('demo-pass').value=mkPass()" style="flex-shrink:0">⟳</button>
+    </div>
+  </div>
+  <div class="sacts">
+    <button class="btn btn-b" onclick="closeSheet('sh-demo')">Cancel</button>
+    <button class="btn btn-g" id="demo-btn" onclick="submitDemo()">Create Demo Account</button>
+  </div>
+</div>
+
+<script>
+// ── Demos ─────────────────────────────────────────────────────────────────────
+async function loadDemos() {
+  const demos = await fetch('/api/admin/demos').then(r=>r.json()).catch(()=>[]);
+  const el = $('demo-list');
+  if(!demos.length){el.innerHTML='<div class="empty">// no demo requests</div>';return;}
+  el.innerHTML = demos.map(d => {
+    const bc = d.status==='fulfilled'?'bdg-g':d.status==='pending'?'bdg-a':'bdg-b';
+    const expires = d.demo_expires ? new Date(d.demo_expires) : null;
+    const expired = expires && expires < new Date();
+    const timeLeft = expires && !expired ? Math.ceil((expires-new Date())/3600000)+'h left' : '';
+    return `<div class="rc">
+      <div class="rc-top">
+        <div>
+          <div class="rc-name">${esc(d.email||d.screen_name||'Unknown')} <span class="bdg ${bc}">${d.status}</span></div>
+          <div class="rc-meta">${d.service||'DungeonStream'} · ${fmtDate(d.created_at)}</div>
+          ${d.notes?`<div style="font-size:11px;color:var(--t2);margin-top:4px">${esc(d.notes)}</div>`:''}
+        </div>
+        ${d.status==='pending'?`<button class="btn btn-g" onclick="openDemo('${d.id}','${esc(d.email||d.screen_name||'')}')">Fulfill →</button>`:''}
+      </div>
+      ${d.status==='fulfilled'?`<div class="rc-rows">
+        <div class="rc-row"><span class="rc-lbl">Username</span><span class="rc-val">${esc(d.demo_user||'—')}</span></div>
+        <div class="rc-row"><span class="rc-lbl">Expires</span><span class="rc-val" style="color:${expired?'var(--red)':'var(--g)'}">${expires?expires.toLocaleString():'—'} ${timeLeft?'('+timeLeft+')':expired?'(expired)':''}</span></div>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function openDemo(id, label) {
+  $('demo-id').value=id;
+  $('demo-sub').textContent='Creating 24-hour demo for: '+label;
+  $('demo-user').value='demo_'+Math.random().toString(36).substring(2,8);
+  $('demo-pass').value=mkPass();
+  $('demo-err').style.display='none';
+  openSheet('sh-demo');
+}
+
+async function submitDemo() {
+  const id=$('demo-id').value;
+  const user=$('demo-user').value.trim();
+  const pass=$('demo-pass').value.trim();
+  const err=$('demo-err');
+  if(!user||!pass){err.textContent='Username and password required';err.style.display='block';return;}
+  const btn=$('demo-btn');btn.disabled=true;btn.textContent='Creating…';
+  const r=await fetch('/api/admin/demos/'+id+'/fulfill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user,password:pass})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.disabled=false;btn.textContent='Create Demo Account';
+  if(r.error){err.textContent=r.error;err.style.display='block';return;}
+  closeSheet('sh-demo');
+  loadDemos();
+  alert('Demo created! Expires in 24 hours.');
 }
 </script>
 </body>
