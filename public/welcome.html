@@ -7,90 +7,65 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{
-  --bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--s3:#1a2422;
-  --bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);
-  --g:#34d399;--gb:rgba(52,211,153,.08);
-  --txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;
-  --red:#f87171;--amb:#fbbf24;--gold:#f59e0b;
-  --mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;
-}
+:root{--bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);--g:#34d399;--gb:rgba(52,211,153,.08);--txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;--amb:#fbbf24;--gold:#f59e0b;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif}
 html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans)}
-.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center}
 .logo{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--g);text-decoration:none}
-.skip{font-size:12px;color:var(--t3);text-decoration:none}
-.skip:hover{color:var(--t2)}
-
-/* Progress */
 .prog-wrap{background:var(--s1);border-bottom:1px solid var(--bdr);padding:10px 20px}
 .prog-lbl{font-size:10px;color:var(--t3);font-family:var(--mono);margin-bottom:6px}
 .prog-bar{height:3px;background:var(--bdr);border-radius:2px;overflow:hidden}
 .prog-fill{height:100%;background:var(--g);border-radius:2px;transition:width .4s ease}
-
-/* Page */
-.page{max-width:580px;margin:0 auto;padding:28px 16px 80px}
+.page{max-width:560px;margin:0 auto;padding:28px 16px 80px}
 .step{display:none}.step.on{display:block}
 .step-eyebrow{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--g);font-family:var(--mono);margin-bottom:10px}
 .step-title{font-size:21px;font-weight:700;margin-bottom:8px;line-height:1.3}
 .step-sub{font-size:14px;color:var(--t2);margin-bottom:24px;line-height:1.7}
 
-/* ── DM Message Card ── */
+/* DM Card */
 .dm-card{background:var(--s1);border:1px solid var(--bdr2);border-radius:14px;padding:20px;margin-bottom:20px}
 .dm-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bdr)}
-.dm-avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--g);flex-shrink:0;background:var(--s2)}
+.dm-avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--g);flex-shrink:0}
 .dm-avatar-fallback{width:48px;height:48px;border-radius:50%;background:#a78bfa;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#000;border:2px solid var(--g);flex-shrink:0}
-.dm-info{flex:1}
-.dm-name{font-size:15px;font-weight:700;color:var(--txt);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.dm-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.25);font-family:var(--mono);letter-spacing:.04em}
+.dm-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.25);font-family:var(--mono)}
 .dm-handle{font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:2px}
 .dm-body p{font-size:14px;color:var(--t2);line-height:1.8;margin-bottom:12px}
 .dm-body p:last-child{margin-bottom:0}
 .dm-body strong{color:var(--txt)}
-.dm-body .highlight{color:var(--g)}
+.dm-body .hl{color:var(--g)}
 
-/* ── Info pills ── */
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-.info-pill{background:var(--s2);border:1px solid var(--bdr);border-radius:10px;padding:14px}
-.info-pill-icon{font-size:22px;margin-bottom:8px}
-.info-pill-title{font-size:12px;font-weight:700;margin-bottom:4px}
-.info-pill-sub{font-size:11px;color:var(--t2);line-height:1.5}
+/* Info pills */
+.pill-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.pill{background:var(--s2);border:1px solid var(--bdr);border-radius:10px;padding:14px}
+.pill-icon{font-size:20px;margin-bottom:7px}
+.pill-title{font-size:12px;font-weight:700;margin-bottom:3px}
+.pill-sub{font-size:11px;color:var(--t2);line-height:1.5}
 
-/* ── Device selector ── */
-.device-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
-.device-btn{background:var(--s1);border:1px solid var(--bdr2);border-radius:10px;padding:14px 12px;cursor:pointer;text-align:left;transition:all .15s;display:flex;align-items:center;gap:10px}
-.device-btn:hover{border-color:var(--g);background:var(--gb)}
-.device-btn.on{border-color:var(--g);background:var(--gb)}
-.device-icon{font-size:22px;flex-shrink:0}
-.device-name{font-size:12px;font-weight:600;color:var(--txt)}
-.device-sub{font-size:10px;color:var(--t2);margin-top:2px}
+/* Device selector */
+.device-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.dv-btn{background:var(--s1);border:1px solid var(--bdr2);border-radius:10px;padding:12px;cursor:pointer;text-align:left;transition:all .15s;display:flex;align-items:center;gap:10px}
+.dv-btn:hover{border-color:var(--g);background:var(--gb)}
+.dv-btn.on{border-color:var(--g);background:var(--gb)}
+.dv-icon{font-size:20px;flex-shrink:0}
+.dv-name{font-size:12px;font-weight:600;color:var(--txt)}
+.dv-sub{font-size:10px;color:var(--t2);margin-top:1px}
 
-.notice{background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--t2);line-height:1.7;margin-bottom:16px}
-.notice strong{color:var(--g)}
-
-/* App download link */
-.app-link{display:flex;align-items:center;gap:12px;background:var(--s2);border:1px solid var(--bdr2);border-radius:10px;padding:14px;text-decoration:none;margin-bottom:8px;transition:border-color .15s}
+.app-link{display:flex;align-items:center;gap:12px;background:var(--s2);border:1px solid var(--bdr2);border-radius:10px;padding:13px;text-decoration:none;margin-bottom:8px;transition:border-color .15s}
 .app-link:hover{border-color:var(--g)}
-.app-link-icon{font-size:24px;flex-shrink:0}
+.app-link-icon{font-size:22px;flex-shrink:0}
 .app-link-name{font-size:13px;font-weight:700;color:var(--txt)}
 .app-link-sub{font-size:11px;color:var(--t2);margin-top:2px}
 .app-link-arrow{margin-left:auto;color:var(--g);font-size:16px}
 
-/* Instruction cards */
-.instr-card{background:var(--s1);border:1px solid var(--bdr);border-radius:10px;padding:16px;margin-bottom:10px}
-.instr-row{display:flex;gap:12px;align-items:flex-start}
-.instr-num{width:26px;height:26px;border-radius:50%;background:var(--gb);border:1px solid var(--bdr2);color:var(--g);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--mono);flex-shrink:0;margin-top:1px}
-.instr-text{font-size:13px;line-height:1.7;color:var(--txt)}
-.instr-text strong{color:var(--g)}
-.instr-text a{color:var(--g);text-decoration:none}
+.notice{background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--t2);line-height:1.7;margin-bottom:14px}
+.notice strong{color:var(--g)}
 
-/* Credential box */
-.cred-box{background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;padding:14px;margin-top:12px}
-.cred-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.cred-row:last-child{margin-bottom:0}
-.cred-lbl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);width:76px;flex-shrink:0}
-.cred-val{font-size:12px;font-family:var(--mono);color:var(--txt);flex:1;word-break:break-all}
-.copy-btn{font-size:10px;padding:4px 10px;background:var(--s1);border:1px solid var(--bdr2);border-radius:6px;color:var(--t2);cursor:pointer;font-family:var(--sans);white-space:nowrap;flex-shrink:0;font-weight:600;transition:all .15s}
-.copy-btn:hover{color:var(--g);border-color:var(--g)}
+/* Step 3 - redeem */
+.redeem-card{background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;padding:20px;margin-bottom:14px}
+.redeem-step{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
+.redeem-step:last-child{margin-bottom:0}
+.rs-num{width:28px;height:28px;border-radius:50%;background:var(--gb);border:1px solid var(--bdr2);color:var(--g);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--mono);flex-shrink:0;margin-top:1px}
+.rs-text{font-size:13px;line-height:1.7;color:var(--txt)}
+.rs-text strong{color:var(--g)}
 
 /* Nav */
 .nav-btns{display:flex;gap:10px;margin-top:24px}
@@ -101,24 +76,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 .btn-b{background:var(--s2);border:1px solid var(--bdr2);color:var(--t2)}
 .btn-b:hover:not(:disabled){border-color:var(--g);color:var(--g);opacity:1}
 
-/* Done */
-.done-links{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
-.done-link{display:block;background:var(--s1);border:1px solid var(--bdr2);border-radius:10px;padding:16px;text-decoration:none;text-align:center;transition:border-color .15s}
-.done-link:hover{border-color:var(--g)}
-.done-link-icon{font-size:22px;margin-bottom:6px}
-.done-link-name{font-size:12px;font-weight:600;color:var(--txt)}
-.done-link-sub{font-size:10px;color:var(--t2);margin-top:2px}
-
-@media(max-width:480px){.info-grid,.device-grid,.done-links{grid-template-columns:1fr}}
+@media(max-width:480px){.pill-grid,.device-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
-<div class="topbar">
-  <a href="/dashboard.html" class="logo">⬡ Dungeon</a>
-<div></div>
-</div>
-
+<div class="topbar"><a href="#" class="logo">⬡ Dungeon</a></div>
 <div class="prog-wrap">
   <div class="prog-lbl" id="prog-lbl">Step 1 of 3</div>
   <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:33%"></div></div>
@@ -126,18 +88,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 
 <div class="page">
 
-  <!-- ── Step 1: Welcome message ── -->
+  <!-- Step 1: Welcome -->
   <div class="step on" id="step1">
     <div class="step-eyebrow">Welcome to the Dungeon</div>
     <div class="step-title">You made it. 🏰</div>
-
     <div class="dm-card">
       <div class="dm-header">
-        <div id="dm-avatar-wrap">
-          <div class="dm-avatar-fallback" id="dm-fallback">W</div>
-        </div>
-        <div class="dm-info">
-          <div class="dm-name">
+        <div id="dm-av"><div class="dm-avatar-fallback" id="dm-fallback">W</div></div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             <span class="dm-badge">⚔ Dungeon Master</span>
           </div>
           <div class="dm-handle">@one</div>
@@ -145,349 +104,142 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
       </div>
       <div class="dm-body">
         <p>Welcome to <strong>Dungeon</strong> — a private, invite-only streaming service. You're here because someone trusted you with an invite, and that means something. We keep this small and tight-knit on purpose.</p>
-        <p>Inside you'll find <strong class="highlight">movies, TV shows, and live TV</strong> — all running on our own <strong>Jellyfin</strong> servers. Jellyfin is open-source media software, kind of like a self-hosted Netflix. It's fast, clean, and yours to use.</p>
-        <p>To watch, you'll need an app. We recommend <strong class="highlight">Moonfin</strong> — it's the best Jellyfin client out there and works on phones, tablets, and TVs. If Moonfin isn't available on your device, the official <strong class="highlight">Jellyfin</strong> app works just as well and is available everywhere.</p>
-        <p>Take two minutes to go through this setup and you'll be watching in no time. Don't skip it — your credentials are in step 3.</p>
+        <p>Inside you'll find <span class="hl">movies, TV shows, and live TV</span> — all running on our own <strong>Jellyfin</strong> servers. Jellyfin is open-source media software, kind of like a self-hosted Netflix. It's fast, clean, and yours to use.</p>
+        <p>To watch, you'll need an app. We recommend <span class="hl">Moonfin</span> — the best Jellyfin client out there. If Moonfin isn't available on your device, the official <span class="hl">Jellyfin</span> app works just as well everywhere.</p>
         <p style="color:var(--g);font-weight:600">— The Dungeon Master</p>
       </div>
     </div>
-
-    <div class="info-grid">
-      <div class="info-pill">
-        <div class="info-pill-icon">🌊</div>
-        <div class="info-pill-title">DungeonStream</div>
-        <div class="info-pill-sub">Movies and TV shows. Your main library.</div>
-      </div>
-      <div class="info-pill">
-        <div class="info-pill-icon">📡</div>
-        <div class="info-pill-title">Live TV</div>
-        <div class="info-pill-sub">Live channels available inside the same app.</div>
-      </div>
-      <div class="info-pill">
-        <div class="info-pill-icon">🌙</div>
-        <div class="info-pill-title">Moonfin</div>
-        <div class="info-pill-sub">Best client. Android, iOS, Fire TV, Apple TV.</div>
-      </div>
-      <div class="info-pill">
-        <div class="info-pill-icon">🪼</div>
-        <div class="info-pill-title">Jellyfin App</div>
-        <div class="info-pill-sub">Works everywhere Moonfin doesn't.</div>
-      </div>
+    <div class="pill-grid">
+      <div class="pill"><div class="pill-icon">🌊</div><div class="pill-title">DungeonStream</div><div class="pill-sub">Movies and TV shows. Your main library.</div></div>
+      <div class="pill"><div class="pill-icon">📡</div><div class="pill-title">Live TV</div><div class="pill-sub">Live channels inside the same app.</div></div>
+      <div class="pill"><div class="pill-icon">🌙</div><div class="pill-title">Moonfin</div><div class="pill-sub">Best client. Android, iOS, Fire TV, Apple TV.</div></div>
+      <div class="pill"><div class="pill-icon">🪼</div><div class="pill-title">Jellyfin App</div><div class="pill-sub">Works everywhere Moonfin doesn't.</div></div>
     </div>
-
-    <div class="nav-btns">
-      <button class="btn btn-g" onclick="goStep(2)">Continue →</button>
-    </div>
+    <div class="nav-btns"><button class="btn btn-g" onclick="goStep(2)">Continue →</button></div>
   </div>
 
-  <!-- ── Step 2: Download the app ── -->
+  <!-- Step 2: Download -->
   <div class="step" id="step2">
     <div class="step-eyebrow">Step 1 — Get the App</div>
     <div class="step-title">Download the app</div>
-    <div class="step-sub">Pick your device and grab the right app. Both Moonfin and Jellyfin work with Dungeon — use whichever is available on your device.</div>
+    <div class="step-sub">Pick your device and grab the right app. Download it now so you're ready when your credentials arrive.</div>
 
     <div class="device-grid" id="device-grid">
-      <button class="device-btn" onclick="selectDevice('android')" data-device="android"><div class="device-icon">📱</div><div><div class="device-name">Android Phone</div><div class="device-sub">or Android Tablet</div></div></button>
-      <button class="device-btn" onclick="selectDevice('iphone')" data-device="iphone"><div class="device-icon">📱</div><div><div class="device-name">iPhone / iPad</div><div class="device-sub">iOS & iPadOS</div></div></button>
-      <button class="device-btn" onclick="selectDevice('firetv')" data-device="firetv"><div class="device-icon">📺</div><div><div class="device-name">Fire TV / Stick</div><div class="device-sub">Amazon Fire OS</div></div></button>
-      <button class="device-btn" onclick="selectDevice('androidtv')" data-device="androidtv"><div class="device-icon">📺</div><div><div class="device-name">Android TV</div><div class="device-sub">Google TV · Shield</div></div></button>
-      <button class="device-btn" onclick="selectDevice('appletv')" data-device="appletv"><div class="device-icon">📺</div><div><div class="device-name">Apple TV</div><div class="device-sub">tvOS</div></div></button>
-      <button class="device-btn" onclick="selectDevice('roku')" data-device="roku"><div class="device-icon">📺</div><div><div class="device-name">Roku</div><div class="device-sub">Roku TV · Stick · Ultra</div></div></button>
-      <button class="device-btn" onclick="selectDevice('browser')" data-device="browser"><div class="device-icon">💻</div><div><div class="device-name">Windows / Mac</div><div class="device-sub">Web browser</div></div></button>
+      <button class="dv-btn" onclick="selDev('android')" data-d="android"><div class="dv-icon">📱</div><div><div class="dv-name">Android</div><div class="dv-sub">Phone or Tablet</div></div></button>
+      <button class="dv-btn" onclick="selDev('iphone')" data-d="iphone"><div class="dv-icon">📱</div><div><div class="dv-name">iPhone / iPad</div><div class="dv-sub">iOS & iPadOS</div></div></button>
+      <button class="dv-btn" onclick="selDev('firetv')" data-d="firetv"><div class="dv-icon">📺</div><div><div class="dv-name">Fire TV / Stick</div><div class="dv-sub">Amazon Fire OS</div></div></button>
+      <button class="dv-btn" onclick="selDev('androidtv')" data-d="androidtv"><div class="dv-icon">📺</div><div><div class="dv-name">Android TV</div><div class="dv-sub">Google TV · Shield</div></div></button>
+      <button class="dv-btn" onclick="selDev('appletv')" data-d="appletv"><div class="dv-icon">📺</div><div><div class="dv-name">Apple TV</div><div class="dv-sub">tvOS</div></div></button>
+      <button class="dv-btn" onclick="selDev('roku')" data-d="roku"><div class="dv-icon">📺</div><div><div class="dv-name">Roku</div><div class="dv-sub">Roku TV · Stick · Ultra</div></div></button>
+      <button class="dv-btn" onclick="selDev('browser')" data-d="browser"><div class="dv-icon">💻</div><div><div class="dv-name">Windows / Mac</div><div class="dv-sub">Web browser</div></div></button>
     </div>
 
-    <div id="app-links-wrap" style="display:none">
-      <div id="app-links-content"></div>
-      <div class="notice" style="margin-top:12px">
-        <strong>Don't see it?</strong> If Moonfin, Jellyfin, or Wholphin don't show up on your app store, the easiest option is to <strong>cast from your phone</strong>. Open Jellyfin on your phone and use the cast button to stream to your TV — no sideloading needed.
-      </div>
+    <div id="app-links" style="display:none"></div>
+
+    <div class="notice">
+      <strong>Don't see it on your app store?</strong> If Moonfin, Jellyfin or Wholphin don't show up, the easiest option is to <strong>cast from your phone</strong> — open Jellyfin on your phone and cast to your TV. No sideloading needed.
     </div>
 
     <div class="nav-btns">
       <button class="btn btn-b" onclick="goStep(1)">← Back</button>
-      <button class="btn btn-g" id="step2-next" onclick="goStep(3)" disabled>Next →</button>
+      <button class="btn btn-g" id="s2-next" onclick="goStep(3)" disabled>Next →</button>
     </div>
   </div>
 
-  <!-- ── Step 3: Connect + credentials ── -->
+  <!-- Step 3: Get credentials -->
   <div class="step" id="step3">
-    <div class="step-eyebrow">Step 2 — Connect</div>
-    <div class="step-title">Your credentials</div>
-    <div class="step-sub">Here's everything you need to sign in. Tap any field to copy it.</div>
+    <div class="step-eyebrow">Step 2 — Get Access</div>
+    <div class="step-title">Redeem your credit</div>
+    <div class="step-sub">The app is downloaded — now you need your streaming credentials. Here's how to get them.</div>
 
-    <div id="no-creds-notice" class="notice" style="display:none">
-      <strong>Heads up —</strong> your streaming credentials aren't set up yet. Once you redeem a credit and your account is fulfilled, come back here and your server details will appear.
+    <div class="redeem-card">
+      <div class="redeem-step">
+        <div class="rs-num">1</div>
+        <div class="rs-text">Go to your <strong>Dashboard</strong> and find the <strong>Credits</strong> section.</div>
+      </div>
+      <div class="redeem-step">
+        <div class="rs-num">2</div>
+        <div class="rs-text">Tap <strong>Redeem</strong> and select <strong>DungeonStream</strong> for movies & shows, or <strong>DungeonCast</strong> for live TV.</div>
+      </div>
+      <div class="redeem-step">
+        <div class="rs-num">3</div>
+        <div class="rs-text">The Dungeon Master will set up your account and <strong>email you your credentials</strong>. This is usually done within a few hours.</div>
+      </div>
+      <div class="redeem-step">
+        <div class="rs-num">4</div>
+        <div class="rs-text">Once you have your credentials, <strong>open the app you downloaded</strong>, add <strong>https://dungeoncast.cc</strong> as the server, and sign in.</div>
+      </div>
     </div>
 
-    <div id="creds-section" style="display:none">
-      <div id="cred-user" style="display:none">—</div>
-      <div id="cred-pass" style="display:none">—</div>
-      <div id="cred-server" style="display:none">https://dungeoncast.cc</div>
-      <div id="step3-instructions"></div>
+    <div class="notice">
+      <strong>No credits yet?</strong> Contact support from your dashboard and the Dungeon Master will sort you out.
     </div>
 
     <div class="nav-btns">
       <button class="btn btn-b" onclick="goStep(2)">← Back</button>
-      <button class="btn btn-g" onclick="goStep(4)">I'm Connected →</button>
+      <button class="btn btn-g" onclick="finish()">Go to Dashboard →</button>
     </div>
-  </div>
-
-  <!-- ── Step 4: Done ── -->
-  <div class="step" id="step4">
-    <div style="font-size:52px;text-align:center;margin-bottom:16px">🏰</div>
-    <div class="step-eyebrow" style="text-align:center">You're all set</div>
-    <div class="step-title" style="text-align:center;margin-bottom:8px">Welcome to the Dungeon</div>
-    <div class="step-sub" style="text-align:center">A few things worth knowing before you dive in.</div>
-
-    <div class="instr-card"><div class="instr-row"><div class="instr-num">💳</div><div class="instr-text">Your subscription runs for <strong>30 days</strong>. Head to your dashboard to redeem another credit before it expires to keep access.</div></div></div>
-    <div class="instr-card"><div class="instr-row"><div class="instr-num">📱</div><div class="instr-text">You can use <strong>the same credentials on multiple devices</strong> — phone, tablet, TV. Install the app anywhere and sign in.</div></div></div>
-    <div class="instr-card"><div class="instr-row"><div class="instr-num">🔑</div><div class="instr-text">Your <strong>Dungeon login</strong> (email + password) is only for enterdungeon.cc. Your <strong>streaming credentials</strong> are what you use in Moonfin or Jellyfin.</div></div></div>
-    <div class="instr-card"><div class="instr-row"><div class="instr-num">❓</div><div class="instr-text">Need help? Use <strong><a href="/dashboard.html">Contact Support</a></strong> from your dashboard and the Dungeon Master will sort you out.</div></div></div>
-
-    <div class="done-links">
-      <a href="https://dungeoncast.cc" target="_blank" class="done-link">
-        <div class="done-link-icon">🌊</div>
-        <div class="done-link-name">Open in Browser</div>
-        <div class="done-link-sub">dungeoncast.cc</div>
-      </a>
-      <a href="/dashboard.html" class="done-link" onclick="markWelcomeDone()">
-        <div class="done-link-icon">🏠</div>
-        <div class="done-link-name">Dashboard</div>
-        <div class="done-link-sub">Your member hub</div>
-      </a>
-      <a href="/guides.html" class="done-link">
-        <div class="done-link-icon">📖</div>
-        <div class="done-link-name">All Guides</div>
-        <div class="done-link-sub">Setup help for every device</div>
-      </a>
-      <a href="/support.html" class="done-link">
-        <div class="done-link-icon">💬</div>
-        <div class="done-link-name">Support</div>
-        <div class="done-link-sub">Ask the Dungeon Master</div>
-      </a>
-    </div>
-  <div style="margin-top:24px">
-    <a href="/dashboard.html" style="display:block;padding:14px;background:var(--g);border-radius:8px;color:#000;font-size:14px;font-weight:700;text-align:center;text-decoration:none" onclick="markWelcomeDone()">Go to Dashboard →</a>
-  </div>
   </div>
 
 </div>
 
 <script>
 let currentStep = 1;
-let selectedDevice = null;
 
-const DEVICES = {
-  android: {
-    links: [
-      { name:'Moonfin for Android', sub:'Google Play Store', icon:'🌙', url:'https://play.google.com/store/apps/details?id=org.moonfin.androidtv' },
-      { name:'Jellyfin for Android', sub:'Google Play Store', icon:'🪼', url:'https://play.google.com/store/apps/details?id=org.jellyfin.mobile' },
-    ],
-    instructions: [
-      'Download <strong>Moonfin or Jellyfin</strong> from the Play Store using the links provided.',
-      'Open the app and tap <strong>Add Server</strong>.',
-      'Enter <strong>https://dungeoncast.cc</strong> and tap Connect.',
-      'Sign in with your <strong>Dungeon streaming username and password</strong>.',
-      'Tap <strong>Movies, Shows or Live TV</strong> and start watching.',
-    ]
-  },
-  iphone: {
-    links: [
-      { name:'Moonfin for iPhone & iPad', sub:'Apple App Store', icon:'🌙', url:'https://apps.apple.com/app/moonfin/id6761283970' },
-      { name:'Jellyfin for iPhone & iPad', sub:'Apple App Store', icon:'🪼', url:'https://apps.apple.com/app/jellyfin-mobile/id1480192618' },
-    ],
-    instructions: [
-      'Download <strong>Moonfin or Jellyfin</strong> from the App Store using the links provided.',
-      'Open the app and tap <strong>Add Server</strong>.',
-      'Enter <strong>https://dungeoncast.cc</strong> and tap Connect.',
-      'Sign in with your <strong>Dungeon streaming username and password</strong>.',
-      'Tap <strong>Movies, Shows or Live TV</strong> and start watching.',
-    ]
-  },
-  firetv: {
-    links: [
-      { name:'Jellyfin for Fire TV', sub:'Amazon Appstore — search "Jellyfin"', icon:'🪼', url:'https://www.amazon.com/s?k=jellyfin' },
-      { name:'Moonfin for Fire TV', sub:'Amazon Appstore — search "Moonfin"', icon:'🌙', url:'https://www.amazon.com/s?k=moonfin' },
-    ],
-    instructions: [
-      'Search for <strong>Jellyfin or Moonfin</strong> in the Amazon Appstore and install.',
-      'Open the app and select <strong>Add Server</strong>.',
-      'Enter <strong>https://dungeoncast.cc</strong> and tap Connect.',
-      'Sign in with your <strong>Dungeon streaming username and password</strong>.',
-      'Browse <strong>Movies, Shows or Live TV</strong> from the home screen.',
-    ]
-  },
-  androidtv: {
-    links: [
-      { name:'Moonfin for Android TV', sub:'Google Play Store', icon:'🌙', url:'https://play.google.com/store/apps/details?id=org.moonfin.androidtv' },
-      { name:'Jellyfin for Android TV', sub:'Google Play Store', icon:'🪼', url:'https://play.google.com/store/apps/details?id=org.jellyfin.androidtv' },
-    ],
-    instructions: [
-      'Search for <strong>Moonfin or Jellyfin</strong> in the Google Play Store on your TV.',
-      'Install and open the app, then select <strong>Add Server</strong>.',
-      'Enter <strong>https://dungeoncast.cc</strong> and tap Connect.',
-      'Sign in with your <strong>Dungeon streaming username and password</strong>.',
-      'Browse <strong>Movies, Shows or Live TV</strong> using your remote.',
-    ]
-  },
-  appletv: {
-    links: [
-      { name:'Moonfin for Apple TV', sub:'tvOS App Store', icon:'🌙', url:'https://apps.apple.com/app/moonfin/id6761283970' },
-      { name:'Jellyfin for Apple TV', sub:'tvOS App Store', icon:'🪼', url:'https://apps.apple.com/app/jellyfin-mobile/id1480192618' },
-    ],
-    instructions: [
-      'Search for <strong>Moonfin or Jellyfin</strong> in the App Store on your Apple TV.',
-      'Install and open the app, then select <strong>Add Server</strong>.',
-      'Enter <strong>https://dungeoncast.cc</strong> and tap Connect.',
-      'Sign in with your <strong>Dungeon streaming username and password</strong>.',
-      'Browse <strong>Movies, Shows or Live TV</strong> using the Siri Remote.',
-    ]
-  },
-  roku: {
-    links: [
-      { name:'Jellyfin for Roku', sub:'Roku Channel Store — search "Jellyfin"', icon:'🪼', url:'https://channelstore.roku.com/search#q=jellyfin' },
-    ],
-    instructions: [
-      'Press <strong>Home</strong> on your Roku remote → go to <strong>Streaming Channels</strong> → search for <strong>Jellyfin</strong>.',
-      'Install the official Jellyfin channel and open it.',
-      'Select <strong>Add Server</strong> and enter <strong>https://dungeoncast.cc</strong>.',
-      'Sign in with your <strong>Dungeon streaming username and password</strong>.',
-      'Browse <strong>Movies, Shows or Live TV</strong> using your Roku remote.',
-    ]
-  },
-  browser: {
-    links: [
-      { name:'Open dungeoncast.cc', sub:'No download needed — works in any browser', icon:'🌐', url:'https://dungeoncast.cc' },
-    ],
-    instructions: [
-      'Open any browser and go to <strong><a href="https://dungeoncast.cc" target="_blank">dungeoncast.cc</a></strong>.',
-      'Click <strong>Sign In</strong> in the top right.',
-      'Enter your <strong>Dungeon streaming username and password</strong>.',
-      'Browse <strong>Movies, Shows or Live TV</strong> directly in your browser.',
-    ]
-  }
+const APPS = {
+  android:  [{icon:'🌙',name:'Moonfin for Android',sub:'Google Play Store',url:'https://play.google.com/store/apps/details?id=org.moonfin.androidtv'},{icon:'🪼',name:'Jellyfin for Android',sub:'Google Play Store',url:'https://play.google.com/store/apps/details?id=org.jellyfin.mobile'}],
+  iphone:   [{icon:'🌙',name:'Moonfin for iPhone & iPad',sub:'Apple App Store',url:'https://apps.apple.com/app/moonfin/id6761283970'},{icon:'🪼',name:'Jellyfin for iPhone & iPad',sub:'Apple App Store',url:'https://apps.apple.com/app/jellyfin-mobile/id1480192618'}],
+  firetv:   [{icon:'🪼',name:'Jellyfin for Fire TV',sub:'Amazon Appstore — search "Jellyfin"',url:'https://www.amazon.com/s?k=jellyfin'},{icon:'🌙',name:'Moonfin for Fire TV',sub:'Amazon Appstore — search "Moonfin"',url:'https://www.amazon.com/s?k=moonfin'}],
+  androidtv:[{icon:'🌙',name:'Moonfin for Android TV',sub:'Google Play Store',url:'https://play.google.com/store/apps/details?id=org.moonfin.androidtv'},{icon:'🪼',name:'Jellyfin for Android TV',sub:'Google Play Store',url:'https://play.google.com/store/apps/details?id=org.jellyfin.androidtv'}],
+  appletv:  [{icon:'🌙',name:'Moonfin for Apple TV',sub:'tvOS App Store',url:'https://apps.apple.com/app/moonfin/id6761283970'},{icon:'🪼',name:'Jellyfin for Apple TV',sub:'tvOS App Store',url:'https://apps.apple.com/app/jellyfin-mobile/id1480192618'}],
+  roku:     [{icon:'🪼',name:'Jellyfin for Roku',sub:'Roku Channel Store — search "Jellyfin"',url:'https://channelstore.roku.com/search#q=jellyfin'}],
+  browser:  [{icon:'🌐',name:'Open dungeoncast.cc',sub:'No download needed — any browser',url:'https://dungeoncast.cc'}],
 };
-
-async function markWelcomeDone() {
-  await fetch('/api/member/welcome-done', {method:'POST'}).catch(()=>{});
-}
 
 function goStep(n) {
   document.getElementById('step'+currentStep).classList.remove('on');
   currentStep = n;
   document.getElementById('step'+n).classList.add('on');
-  const pct = (n/4)*100;
-  document.getElementById('prog-fill').style.width = pct+'%';
-  document.getElementById('prog-lbl').textContent = n < 4 ? 'Step '+n+' of 3' : 'Done!';
+  document.getElementById('prog-fill').style.width = ((n/3)*100)+'%';
+  document.getElementById('prog-lbl').textContent = n < 3 ? 'Step '+n+' of 3' : 'Almost done';
   window.scrollTo(0,0);
-  if(n===4) markWelcomeDone();
 }
 
-function selectDevice(key) {
-  selectedDevice = key;
-  document.querySelectorAll('.device-btn').forEach(b => b.classList.toggle('on', b.dataset.device===key));
-  const d = DEVICES[key];
-  const wrap = document.getElementById('app-links-wrap');
-  wrap.style.display = 'block';
-  document.getElementById('app-links-content').innerHTML = d.links.map(l =>
-    `<a href="${l.url}" target="_blank" class="app-link">
-      <div class="app-link-icon">${l.icon}</div>
-      <div><div class="app-link-name">${l.name}</div><div class="app-link-sub">${l.sub}</div></div>
+function selDev(key) {
+  document.querySelectorAll('.dv-btn').forEach(b=>b.classList.toggle('on',b.dataset.d===key));
+  const apps = APPS[key];
+  document.getElementById('app-links').style.display='block';
+  document.getElementById('app-links').innerHTML = apps.map(a=>
+    `<a href="${a.url}" target="_blank" class="app-link">
+      <div class="app-link-icon">${a.icon}</div>
+      <div><div class="app-link-name">${a.name}</div><div class="app-link-sub">${a.sub}</div></div>
       <div class="app-link-arrow">↗</div>
     </a>`
   ).join('');
-  document.getElementById('step2-next').disabled = false;
-
-  // Build step 3 instructions
-  const user = document.getElementById('cred-user')?.textContent || '—';
-  const pass = document.getElementById('cred-pass')?.textContent || '—';
-  const hasCredentials = user !== '—' && user;
-
-  document.getElementById('step3-instructions').innerHTML = d.instructions.map((text, i) => {
-    const showCreds = i === 2 && hasCredentials;
-    return `<div class="instr-card">
-      <div class="instr-row">
-        <div class="instr-num">${i+1}</div>
-        <div class="instr-text">${text}${showCreds ? buildCredBox() : ''}</div>
-      </div>
-    </div>`;
-  }).join('');
+  document.getElementById('s2-next').disabled = false;
 }
 
-function buildCredBox() {
-  const user = document.getElementById('cred-user')?.textContent||'—';
-  const pass = document.getElementById('cred-pass')?.textContent||'—';
-  return `<div class="cred-box" style="margin-top:10px">
-    <div class="cred-row">
-      <span class="cred-lbl">Server</span>
-      <span class="cred-val">https://dungeoncast.cc</span>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText('https://dungeoncast.cc').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>
-    </div>
-    <div class="cred-row">
-      <span class="cred-lbl">Username</span>
-      <span class="cred-val">${user}</span>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText('${user}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>
-    </div>
-    <div class="cred-row">
-      <span class="cred-lbl">Password</span>
-      <span class="cred-val">${pass}</span>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText('${pass}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>
-    </div>
-  </div>`;
+async function finish() {
+  await fetch('/api/member/welcome-done',{method:'POST'}).catch(()=>{});
+  window.location.href = '/dashboard.html';
 }
 
-function cp(id, btn) {
-  navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{
-    btn.textContent='✓'; setTimeout(()=>btn.textContent='Copy', 2000);
-  });
-}
-
-// Load data
 fetch('/api/member/me').then(r=>r.json()).then(d=>{
   if(!d.authenticated){window.location.href='/login.html';return;}
-  // Staff skip welcome
-  const tier=d.member?.profile?.tier;
-  if(['mod','admin','warden','dealer'].includes(tier)&&!d.member?.profile?.welcome_done){
-    markWelcomeDone();
-  }
-  const m = d.member;
-
-  // Load DM avatar
-  fetch('/api/dungeon-master').then(r=>r.json()).then(dm=>{
-    const wrap = document.getElementById('dm-avatar-wrap');
-    if(dm?.avatar_url){
-      wrap.innerHTML = `<img src="${dm.avatar_url}" class="dm-avatar" alt="${dm.screen_name}"/>`;
-    } else if(dm?.avatar_color) {
-      document.getElementById('dm-fallback').style.background = dm.avatar_color;
-    }
-  }).catch(()=>{});
-
-  // Load streaming credentials
-  if(m.jellyfin_user || m.stremio_email){
-    const user = m.jellyfin_user || m.stremio_email || '—';
-    const pass = m.plain_pass || m.stremio_pass || '—';
-    document.getElementById('cred-user').textContent = user;
-    document.getElementById('cred-pass').textContent = pass;
-    document.getElementById('creds-section').style.display = 'block';
-  } else {
-    document.getElementById('no-creds-notice').style.display = 'block';
-    document.getElementById('creds-section').style.display = 'none';
-  }
-
-  // Auto-select device from signup
-  if(m.profile?.devices){
-    try{
-      const devs = typeof m.profile.devices==='string' ? JSON.parse(m.profile.devices) : m.profile.devices;
-      const all = Object.values(devs).flat();
-      if(all.includes('firestick')) selectDevice('firetv');
-      else if(all.includes('android_tv')||all.includes('nvidia_shield')) selectDevice('androidtv');
-      else if(all.includes('apple_tv')) selectDevice('appletv');
-      else if(all.includes('iphone')||all.includes('ipad')) selectDevice('iphone');
-      else if(all.includes('android_phone')||all.includes('android_tablet')) selectDevice('android');
-      else if(all.includes('windows')||all.includes('mac')) selectDevice('browser');
-    }catch(e){}
+  const tier = d.member?.profile?.tier;
+  if(['mod','admin','warden','dealer'].includes(tier)){
+    fetch('/api/member/welcome-done',{method:'POST'}).then(()=>window.location.href='/dashboard.html');
+    return;
   }
 });
+
+fetch('/api/dungeon-master').then(r=>r.json()).then(dm=>{
+  if(dm?.avatar_url){
+    document.getElementById('dm-av').innerHTML=`<img src="${dm.avatar_url}" class="dm-avatar" alt="@one"/>`;
+  } else if(dm?.avatar_color){
+    document.getElementById('dm-fallback').style.background=dm.avatar_color;
+  }
+}).catch(()=>{});
 </script>
 </body>
 </html>
