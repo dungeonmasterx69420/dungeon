@@ -3002,7 +3002,7 @@ app.delete('/api/admin/members/:id', requireMod, (req, res) => {
       db.prepare('DELETE FROM redemptions WHERE profile_id=?').run(profile.id);
       db.prepare('DELETE FROM dealer_earnings WHERE dealer_profile_id=?').run(profile.id);
       db.prepare('DELETE FROM invites WHERE created_by=?').run(profile.id);
-      db.prepare('DELETE FROM messages WHERE profile_id=?').run(profile.id);
+      db.prepare('DELETE FROM messages WHERE sender_profile_id=? OR recipient_profile_id=?').run(profile.id, profile.id);
       db.prepare('DELETE FROM profiles WHERE id=?').run(profile.id);
     }
     db.prepare('DELETE FROM members WHERE id=?').run(req.params.id);
