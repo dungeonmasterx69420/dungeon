@@ -529,6 +529,11 @@ app.get('/join', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'join.html'));
 });
 
+// Serve welcome/onboarding guide
+app.get('/welcome', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'welcome.html'));
+});
+
 // Serve avatars
 app.use('/avatars', express.static(AVATAR_DIR));
 
@@ -1459,8 +1464,8 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
         <div class="row"><span class="lbl">Password</span><span class="val">${account_pass}</span></div>
       </div>
       <p>Download the Jellyfin app on your device and use the Server URL, username and password above to sign in.${notes ? '<br><br>Notes: ' + notes : ''}</p>
-      <p>Check out the <a href="https://enterdungeon.cc/guides.html" style="color:#34d399">Setup Guides</a> on your dashboard for step-by-step instructions on every device.</p>
-      <a href="https://enterdungeon.cc/dungeonstream.html" class="btn">Go to DungeonStream</a>
+      <p>Follow our <a href="https://enterdungeon.cc/welcome" style="color:#34d399">Getting Started Guide</a> to download the app and connect in under 2 minutes.</p>
+      <a href="https://enterdungeon.cc/welcome" class="btn">Get Started →</a>
       <div class="rule"></div>
       <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. — The Dungeon Master</p>
     ` : `
