@@ -287,6 +287,7 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE members ADD COLUMN reset_token TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN reset_token_expires DATETIME').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE profiles ADD COLUMN welcome_done INTEGER DEFAULT 0').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN credit_welcome_pending INTEGER DEFAULT 0').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN notes TEXT').run(); } catch(e) {}
   // Create dealer earnings table
   try {
@@ -544,6 +545,11 @@ app.get('/welcome', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'welcome.html'));
 });
 
+// Serve credit welcome guide
+app.get('/credit-welcome', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'credit-welcome.html'));
+});
+
 // Serve avatars
 app.use('/avatars', express.static(AVATAR_DIR));
 
@@ -716,6 +722,7 @@ app.get('/api/member/me', (req, res) => {
     stremio_end: m.stremio_end,
     iptv_start: m.iptv_start,
     iptv_end: m.iptv_end,
+    credit_welcome_pending: m.credit_welcome_pending || 0,
     profile: profile || null,
     setup_done: profile ? (profile.setup_done || 0) : 0,
   }});
@@ -1407,7 +1414,7 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
       const startBase = (existingEnd && existingEnd > now) ? existingEnd : now;
       const end = new Date(startBase); end.setMonth(end.getMonth() + 1);
       const start = member.stremio_start ? new Date(member.stremio_start) : now;
-      db.prepare('UPDATE members SET stremio_email=?, stremio_pass=?, jellyfin_user=?, jellyfin_pass=?, stremio_start=?, stremio_end=?, expired_notified=0, expiry_warned=0 WHERE id=?')
+      db.prepare('UPDATE members SET stremio_email=?, stremio_pass=?, jellyfin_user=?, jellyfin_pass=?, stremio_start=?, stremio_end=?, expired_notified=0, expiry_warned=0, credit_welcome_pending=1 WHERE id=?')
         .run(account_user, account_pass, account_user, account_pass, start.toISOString(), end.toISOString(), member.id);
       // Create Jellyfin account and grant library access on VPS
       try {
@@ -2979,6 +2986,14 @@ app.get('/reset-password', (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+
+// POST mark credit welcome as done
+app.post('/api/member/credit-welcome-done', requireMember, (req, res) => {
+  try {
+    db.prepare('UPDATE members SET credit_welcome_pending=0 WHERE id=?').run(req.session.member.id);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
 
 // POST mark welcome guide as done
 app.post('/api/member/welcome-done', requireMember, (req, res) => {
