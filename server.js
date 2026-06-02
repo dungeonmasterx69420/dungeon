@@ -524,6 +524,15 @@ app.get('/api/check/screen-name/:sn', (req, res) => {
   } catch(e) { res.status(500).json({ available: false }); }
 });
 
+
+// GET dungeon master profile for welcome page (public)
+app.get('/api/dungeon-master', (req, res) => {
+  try {
+    const profile = db.prepare("SELECT screen_name, avatar_url, avatar_color FROM profiles WHERE tier='warden' LIMIT 1").get();
+    res.json(profile || { screen_name: 'one', avatar_url: null, avatar_color: '#a78bfa' });
+  } catch(e) { res.json({ screen_name: 'one', avatar_url: null, avatar_color: '#a78bfa' }); }
+});
+
 // Serve join page (token is handled client-side)
 app.get('/join', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'join.html'));
