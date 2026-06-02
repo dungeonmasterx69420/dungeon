@@ -503,6 +503,68 @@ async function jellyfinCreateUser(username, password, serverUrl, apiKey) {
     return null;
   }
 }
+
+async function jellyfinGetUserId(username, serverUrl, apiKey) {
+  serverUrl = serverUrl || JELLYFIN_URL;
+  apiKey = apiKey || JELLYFIN_API_KEY;
+  try {
+    const res = await fetch(serverUrl + '/Users', {
+      headers: { 'X-Emby-Token': apiKey }
+    });
+    const users = await res.json();
+    const user = users.find(u => u.Name && u.Name.toLowerCase() === username.toLowerCase());
+    return user ? user.Id : null;
+  } catch(e) { console.error('[Jellyfin] GetUserId error:', e.message); return null; }
+}
+
+async function jellyfinGetLibraries(serverUrl, apiKey) {
+  serverUrl = serverUrl || JELLYFIN_URL;
+  apiKey = apiKey || JELLYFIN_API_KEY;
+  try {
+    const res = await fetch(serverUrl + '/Library/VirtualFolders', {
+      headers: { 'X-Emby-Token': apiKey }
+    });
+    return await res.json();
+  } catch(e) { console.error('[Jellyfin] GetLibraries error:', e.message); return []; }
+}
+
+async function jellyfinGrantLibraryAccess(userId, libraryNames, serverUrl, apiKey) {
+  serverUrl = serverUrl || JELLYFIN_URL;
+  apiKey = apiKey || JELLYFIN_API_KEY;
+  try {
+    const libraries = await jellyfinGetLibraries(serverUrl, apiKey);
+    const folderIds = libraries
+      .filter(l => libraryNames.includes(l.Name))
+      .map(l => l.ItemId);
+    if (!folderIds.length) { console.log('[Jellyfin] No matching libraries found for:', libraryNames); return; }
+    await jellyfinRequest('POST', '/Users/' + userId + '/Policy', {
+      IsAdministrator: false,
+      IsDisabled: false,
+      EnableAllFolders: false,
+      EnabledFolders: folderIds,
+      EnableMediaPlayback: true,
+      EnableAudioPlaybackTranscoding: true,
+      EnableVideoPlaybackTranscoding: true,
+      EnablePlaybackRemuxing: true,
+      EnabledDevices: [],
+      EnableAllDevices: true,
+    }, serverUrl, apiKey);
+  } catch(e) { console.error('[Jellyfin] GrantLibraryAccess error:', e.message); }
+}
+
+async function jellyfinRequest(method, path, body, serverUrl, apiKey) {
+  serverUrl = serverUrl || JELLYFIN_URL;
+  apiKey = apiKey || JELLYFIN_API_KEY;
+  try {
+    const res = await fetch(serverUrl + path, {
+      method,
+      headers: { 'Content-Type': 'application/json', 'X-Emby-Token': apiKey },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    return res.status;
+  } catch(e) { console.error('[Jellyfin] Request error:', e.message); return null; }
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 
 app.use((req, res, next) => {
