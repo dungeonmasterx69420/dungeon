@@ -286,6 +286,7 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE members ADD COLUMN referred_by TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN reset_token TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN reset_token_expires DATETIME').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE profiles ADD COLUMN welcome_done INTEGER DEFAULT 0').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN notes TEXT').run(); } catch(e) {}
   // Create dealer earnings table
   try {
@@ -2561,7 +2562,7 @@ app.post('/api/invite/:token/complete', async (req, res) => {
 
       db.prepare('INSERT INTO members (id, first_name, last_name, email, phone, password, plain_pass, referred_by) VALUES (?,?,?,?,?,?,?,?)')
         .run(memberId, first_name, last_name||'', email, phone||null, hashedPass, plain, referred_by||null);
-      db.prepare("INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, devices) VALUES (?,?,?,?,'member',?,?)")
+      db.prepare("INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, devices, setup_done) VALUES (?,?,?,?,'member',?,?,1)")
         .run(profileId, screen_name, email, color, memberId, devices ? JSON.stringify(devices) : null);
       db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(profileId, memberId);
       db.prepare('UPDATE invites SET status=?, member_id=?, used_at=CURRENT_TIMESTAMP WHERE token=?').run('used', memberId, req.params.token);
@@ -2977,6 +2978,16 @@ app.get('/reset-password', (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+
+
+// POST mark welcome guide as done
+app.post('/api/member/welcome-done', requireMember, (req, res) => {
+  try {
+    const profile = db.prepare('SELECT id FROM profiles WHERE member_id=?').get(req.session.member.id);
+    if (profile) db.prepare('UPDATE profiles SET welcome_done=1 WHERE id=?').run(profile.id);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
 
 // ── Admin: Subscribers ────────────────────────────────────────────────────────
 app.get('/api/admin/subscribers', requireAuth, (req, res) => {

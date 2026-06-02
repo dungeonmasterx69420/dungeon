@@ -75,7 +75,7 @@
   </div>
 </div>
 <script>
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{if(d.authenticated)window.location.href='/dashboard.html'});
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{if(d.authenticated){if(!d.member?.profile?.welcome_done){window.location.href='/welcome';}else{window.location.href='/dashboard.html';}}});
   async function login(){
     const email=document.getElementById('email').value.trim();
     const password=document.getElementById('password').value.trim();
@@ -86,7 +86,14 @@
     try{
       const res=await fetch('/api/member/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
       const data=await res.json();
-      if(res.ok){window.location.href='/dashboard.html'}
+      if(res.ok){
+        const me = await fetch('/api/member/me').then(r=>r.json()).catch(()=>({}));
+        if(!me.member?.profile?.welcome_done){
+          window.location.href='/welcome';
+        } else {
+          window.location.href='/dashboard.html';
+        }
+      }
       else{
         err.textContent=data.error||'Incorrect email or password.';
         err.style.display='block';
