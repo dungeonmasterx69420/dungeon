@@ -12,7 +12,7 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const WARDEN_EMAIL = 'dungeonmasterx69420@gmail.com';
+const WARDEN_EMAIL = process.env.WARDEN_EMAIL || 'dungeonmasterx69420@gmail.com';
 
 // ── Database ──────────────────────────────────────────────────────────────────
 const DATA_DIR    = process.env.DATA_DIR || path.join(__dirname, 'data');
@@ -211,11 +211,12 @@ for (const m of migrations) { try { db.exec(m); } catch(e) {} }
 
 // Tier config
 const TIERS = {
-  neut:    { label: 'Neut',      color: '#e2e8e4' },
-  member:  { label: 'Member',    color: '#60a5fa' },
-  mod:     { label: 'Moderator', color: '#34d399' },
-  admin:   { label: 'Admin',     color: '#f87171' },
-  warden:  { label: 'Dungeon Master',    color: '#fbbf24' },
+  neut:      { label: 'Neut',           color: '#e2e8e4' },
+  member:    { label: 'Member',         color: '#60a5fa' },
+  mod:       { label: 'Moderator',      color: '#34d399' },
+  admin:     { label: 'Admin',          color: '#f87171' },
+  warden:    { label: 'Dungeon Master', color: '#fbbf24' },
+  suspended: { label: 'Suspended',      color: '#6b7280' },
 };
 
 function genId() { return crypto.randomBytes(8).toString('hex'); }
@@ -780,6 +781,11 @@ app.post('/api/member/login', loginLimiter, (req, res) => {
     const msg = remaining > 0 ? `Incorrect email or password. ${remaining} attempt${remaining>1?'s':''} remaining.` : 'Account locked for 5 minutes.';
     return res.status(401).json({ error: msg });
   }
+  // Check if account is suspended
+  const memberProfile = db.prepare('SELECT tier FROM profiles WHERE member_id=?').get(member.id);
+  if (memberProfile?.tier === 'suspended') {
+    return res.status(403).json({ error: 'Your account has been suspended. Contact the Dungeon Master for assistance.' });
+  }
   clearAttempts(email.trim());
   db.prepare('UPDATE members SET last_login=CURRENT_TIMESTAMP WHERE id=?').run(member.id);
   req.session.member = { id: member.id, first_name: member.first_name, last_name: member.last_name, email: member.email };
@@ -797,7 +803,7 @@ app.post('/api/member/login', loginLimiter, (req, res) => {
     }
     if (attempt >= 9999) screenName = baseName + genId().slice(0,6);
     // Determine tier — warden if email matches
-    const tier = member.email.toLowerCase() === 'dungeonmasterx69420@gmail.com' ? 'warden' : 'member';
+    const tier = member.email.toLowerCase() === WARDEN_EMAIL.toLowerCase() ? 'warden' : 'member';
     const profileId = genId();
     db.prepare(`INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, setup_done) VALUES (?,?,?,?,?,?,0)`)
       .run(profileId, screenName, member.email, avatarColors(), tier, member.id);
@@ -1066,6 +1072,24 @@ app.delete('/api/members/:id', requireAuth, (req, res) => {
   const member = db.prepare('SELECT first_name, last_name, email FROM members WHERE id=?').get(req.params.id);
   db.prepare('DELETE FROM members WHERE id=?').run(req.params.id);
   auditLog('admin', 'admin', 'member_delete', 'member', req.params.id, `${member?.first_name} ${member?.last_name} <${member?.email}>`);
+  res.json({ ok: true });
+});
+
+// ── Admin: suspend / unsuspend member ────────────────────────────────────────
+app.post('/api/admin/members/:id/suspend', requireAuth, (req, res) => {
+  const { reason } = req.body;
+  const member = db.prepare('SELECT first_name, last_name, email FROM members WHERE id=?').get(req.params.id);
+  if (!member) return res.status(404).json({ error: 'Not found' });
+  db.prepare('UPDATE profiles SET tier=? WHERE member_id=?').run('suspended', req.params.id);
+  auditLog('admin', 'admin', 'member_suspend', 'member', req.params.id, `${member.first_name} ${member.last_name} — ${reason||'no reason'}`);
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/members/:id/unsuspend', requireAuth, (req, res) => {
+  const member = db.prepare('SELECT first_name, last_name, email FROM members WHERE id=?').get(req.params.id);
+  if (!member) return res.status(404).json({ error: 'Not found' });
+  db.prepare('UPDATE profiles SET tier=? WHERE member_id=?').run('member', req.params.id);
+  auditLog('admin', 'admin', 'member_unsuspend', 'member', req.params.id, `${member.first_name} ${member.last_name}`);
   res.json({ ok: true });
 });
 
@@ -2508,7 +2532,6 @@ app.post('/api/applicants/:id/promote', requireMod, async (req, res) => {
     }
 
     // Warden check
-    const WARDEN_EMAIL = process.env.WARDEN_EMAIL || '';
     if (WARDEN_EMAIL && applicant.email.toLowerCase() === WARDEN_EMAIL.toLowerCase()) {
       db.prepare("UPDATE profiles SET tier='warden' WHERE id=?").run(profile.id);
     }
@@ -3042,7 +3065,7 @@ app.post('/api/member/change-password', requireMember, async (req, res) => {
       try {
         const jfId = await jellyfinGetUserId(username, JELLYFIN_URL, JELLYFIN_API_KEY);
         if (jfId) {
-          await jellyfinRequest('POST', '/Users/'+jfId+'/Password', { CurrentPw: member.plain_pass||'', NewPw: new_password }, JELLYFIN_URL, JELLYFIN_API_KEY);
+          await jellyfinRequest('POST', '/Users/'+jfId+'/Password', { CurrentPw: current_password, NewPw: new_password }, JELLYFIN_URL, JELLYFIN_API_KEY);
           console.log('[password] Updated Jellyfin password for:', username);
         }
       } catch(e) { console.error('[password] Jellyfin update error:', e.message); }
@@ -3068,7 +3091,6 @@ app.post('/api/auth/forgot-password', passwordResetLimiter, async (req, res) => 
     const token = require('crypto').randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
 
-    // Store token (reuse plain_pass column temporarily with prefix, or add to members)
     db.prepare('UPDATE members SET reset_token=?, reset_token_expires=? WHERE id=?').run(token, expires, member.id);
 
     const resetUrl = SITE_URL + '/reset-password?token=' + token;

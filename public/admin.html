@@ -625,7 +625,7 @@ function renderMembers(members){
     const cDays=cEnd?Math.ceil((cEnd-now)/86400000):null;
     const init=((m.first_name||'?')[0]+(m.last_name||'?')[0]).toUpperCase();
     const tier=m.tier||'member';
-    const tierBdg=tier==='warden'?'bdg-a':tier==='admin'?'bdg-blue':tier==='mod'?'bdg-g':tier==='dealer'?'bdg-gold':'bdg-b';
+    const tierBdg=tier==='warden'?'bdg-a':tier==='admin'?'bdg-blue':tier==='mod'?'bdg-g':tier==='dealer'?'bdg-gold':tier==='suspended'?'bdg-r':'bdg-b';
     const devices=fmtDevices(m.devices);
 
     return `<div class="card" id="mc-${m.id}">
@@ -673,11 +673,30 @@ function renderMembers(members){
           <button class="btn btn-b" onclick="openCredits('${m.id}','${m.profile_id_val||''}',${m.credit_balance||0})">Credits</button>
           <button class="btn btn-b" onclick="openEditSub('${m.id}','stream')">Stream Sub</button>
           <button class="btn btn-b" onclick="openEditSub('${m.id}','cast')">Cast Sub</button>
+          ${m.tier==='suspended'
+            ? `<button class="btn" style="font-size:10px;padding:5px 10px;background:var(--g);color:#0b0f0e" onclick="unsuspendMember('${m.id}','${esc(m.screen_name||m.first_name)}')">Unsuspend</button>`
+            : `<button class="btn" style="font-size:10px;padding:5px 10px;background:var(--amb);color:#0b0f0e" onclick="suspendMember('${m.id}','${esc(m.screen_name||m.first_name)}')">Suspend</button>`
+          }
           <button class="btn btn-r" style="font-size:10px;padding:5px 10px" onclick="deleteMember('${m.id}','${esc(m.screen_name||m.first_name)}')">Delete</button>
         </div>
       </div>
     </div>`;
   }).join('');
+}
+
+async function suspendMember(id, name){
+  const reason = prompt('Reason for suspending @'+name+' (optional):');
+  if(reason === null) return;
+  const r = await fetch('/api/admin/members/'+id+'/suspend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  if(r.error){alert('Error: '+r.error);return;}
+  loadAll();
+}
+
+async function unsuspendMember(id, name){
+  if(!confirm('Unsuspend @'+name+'?'))return;
+  const r = await fetch('/api/admin/members/'+id+'/unsuspend',{method:'POST'}).then(r=>r.json()).catch(e=>({error:e.message}));
+  if(r.error){alert('Error: '+r.error);return;}
+  loadAll();
 }
 
 async function deleteMember(id, name){
