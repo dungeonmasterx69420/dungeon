@@ -103,7 +103,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
       </div>
     </div>
 
-    <div class="notice">These are your <strong>streaming credentials</strong> — different from your Dungeon login. Use these inside the Moonfin or Jellyfin app only.</div>
+    <div class="notice">These are your <strong>streaming credentials</strong> — different from your Dungeon login. Use these inside the Jellyfin app only.</div>
 
     <div class="nav-btns"><button class="btn btn-g" onclick="goStep(2)">Continue →</button></div>
   </div>
@@ -141,7 +141,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 
     <div class="instr-card"><div class="instr-row"><div class="instr-num">💳</div><div class="instr-text">Your subscription runs for <strong>30 days</strong>. Redeem another credit from your dashboard before it expires to keep access.</div></div></div>
     <div class="instr-card"><div class="instr-row"><div class="instr-num">📱</div><div class="instr-text">You can use the <strong>same credentials on multiple devices</strong> — phone, tablet, TV. Install the app anywhere and sign in.</div></div></div>
-    <div class="instr-card"><div class="instr-row"><div class="instr-num">🔑</div><div class="instr-text">Your <strong>Dungeon login</strong> (email + password) is only for enterdungeon.cc. Your <strong>streaming credentials</strong> are for Moonfin / Jellyfin.</div></div></div>
+    <div class="instr-card"><div class="instr-row"><div class="instr-num">🔑</div><div class="instr-text">Your <strong>Dungeon login</strong> (email + password) is only for enterdungeon.cc. Your <strong>streaming credentials</strong> are for Jellyfin.</div></div></div>
     <div class="instr-card"><div class="instr-row"><div class="instr-num">❓</div><div class="instr-text">Need help? Use <strong><a href="/dashboard.html">Contact Support</a></strong> from your dashboard.</div></div></div>
 
     <div class="done-links">
@@ -162,11 +162,11 @@ let currentStep = 1;
 let _user = '', _pass = '';
 
 const INSTRS = {
-  android:  ['Download <strong>Moonfin or Jellyfin</strong> from the Play Store if you haven\'t already.','Open the app and tap <strong>Add Server</strong>.','Enter <strong>https://dungeoncast.cc</strong> and tap Connect.','Sign in with your credentials above.','Tap <strong>Movies, Shows or Live TV</strong> and start watching.'],
-  iphone:   ['Download <strong>Moonfin or Jellyfin</strong> from the App Store if you haven\'t already.','Open the app and tap <strong>Add Server</strong>.','Enter <strong>https://dungeoncast.cc</strong> and tap Connect.','Sign in with your credentials above.','Tap <strong>Movies, Shows or Live TV</strong> and start watching.'],
-  firetv:   ['Search for <strong>Jellyfin or Moonfin</strong> in the Amazon Appstore and install.','Open the app and select <strong>Add Server</strong>.','Enter <strong>https://dungeoncast.cc</strong> and tap Connect.','Sign in with your credentials above.','Browse <strong>Movies, Shows or Live TV</strong> from the home screen.'],
-  androidtv:['Search for <strong>Moonfin or Jellyfin</strong> in the Google Play Store on your TV.','Install and open the app, then select <strong>Add Server</strong>.','Enter <strong>https://dungeoncast.cc</strong> and tap Connect.','Sign in with your credentials above.','Browse <strong>Movies, Shows or Live TV</strong> using your remote.'],
-  appletv:  ['Search for <strong>Moonfin or Jellyfin</strong> in the App Store on your Apple TV.','Install and open the app, then select <strong>Add Server</strong>.','Enter <strong>https://dungeoncast.cc</strong> and tap Connect.','Sign in with your credentials above.','Browse <strong>Movies, Shows or Live TV</strong> using the Siri Remote.'],
+  android:  ['Download <strong>Jellyfin</strong> from the Play Store if you haven\'t already.','Open the app and tap <strong>Add Server</strong>.','Enter <strong>https://dungeoncast.cc</strong> and tap Connect.','Sign in with your credentials above.','Tap <strong>Movies, Shows or Live TV</strong> and start watching.'],
+  iphone:   ['Download <strong>Jellyfin</strong> from the App Store if you haven\'t already.','Open the app and tap <strong>Add Server</strong>.','Enter <strong>https://dungeoncast.cc</strong> and tap Connect.','Sign in with your credentials above.','Tap <strong>Movies, Shows or Live TV</strong> and start watching.'],
+  firetv:   ['Search for <strong>Jellyfin</strong> in the Amazon Appstore and install.','Open the app and select <strong>Add Server</strong>.','Enter <strong>https://dungeoncast.cc</strong> and tap Connect.','Sign in with your credentials above.','Browse <strong>Movies, Shows or Live TV</strong> from the home screen.'],
+  androidtv:['Search for <strong>Jellyfin</strong> in the Google Play Store on your TV.','Install and open the app, then select <strong>Add Server</strong>.','Enter <strong>https://dungeoncast.cc</strong> and tap Connect.','Sign in with your credentials above.','Browse <strong>Movies, Shows or Live TV</strong> using your remote.'],
+  appletv:  ['Search for <strong>Jellyfin</strong> in the App Store on your Apple TV.','Install and open the app, then select <strong>Add Server</strong>.','Enter <strong>https://dungeoncast.cc</strong> and tap Connect.','Sign in with your credentials above.','Browse <strong>Movies, Shows or Live TV</strong> using the Siri Remote.'],
   roku:     ['Press <strong>Home</strong> → <strong>Streaming Channels</strong> → search for <strong>Jellyfin</strong>.','Install the official Jellyfin channel and open it.','Select <strong>Add Server</strong> and enter <strong>https://dungeoncast.cc</strong>.','Sign in with your credentials above.','Browse <strong>Movies, Shows or Live TV</strong> with your Roku remote.'],
   browser:  ['Open any browser and go to <strong><a href="https://dungeoncast.cc" target="_blank">dungeoncast.cc</a></strong>.','Click <strong>Sign In</strong> in the top right.','Enter your credentials above.','Browse <strong>Movies, Shows or Live TV</strong> directly in your browser.'],
 };

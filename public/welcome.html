@@ -105,15 +105,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
       <div class="dm-body">
         <p>Welcome to <strong>Dungeon</strong> — a private, invite-only streaming service. You're here because someone trusted you with an invite, and that means something. We keep this small and tight-knit on purpose.</p>
         <p>Inside you'll find <span class="hl">movies, TV shows, and live TV</span> — all running on our own <strong>Jellyfin</strong> servers. Jellyfin is open-source media software, kind of like a self-hosted Netflix. It's fast, clean, and yours to use.</p>
-        <p>To watch, you'll need an app. We recommend <span class="hl">Moonfin</span> — the best Jellyfin client out there. If Moonfin isn't available on your device, the official <span class="hl">Jellyfin</span> app works just as well everywhere.</p>
+        <p>To watch, you'll need an app. We recommend <span class="hl">Jellyfin</span> — the best Jellyfin client out there. If Jellyfin isn't available on your device, the official <span class="hl">Jellyfin</span> app works just as well everywhere.</p>
         <p style="color:var(--g);font-weight:600">— The Dungeon Master</p>
       </div>
     </div>
     <div class="pill-grid">
       <div class="pill"><div class="pill-icon">🌊</div><div class="pill-title">DungeonStream</div><div class="pill-sub">Movies and TV shows. Your main library.</div></div>
       <div class="pill"><div class="pill-icon">📡</div><div class="pill-title">DungeonCast</div><div class="pill-sub">Live TV channels inside the same app.</div></div>
-      <div class="pill"><div class="pill-icon">🌙</div><div class="pill-title">Moonfin</div><div class="pill-sub">Best client. Android, iOS, Fire TV, Apple TV.</div></div>
-      <div class="pill"><div class="pill-icon">🪼</div><div class="pill-title">Jellyfin App</div><div class="pill-sub">Works everywhere Moonfin doesn't.</div></div>
+      <div class="pill"><div class="pill-icon">🌙</div><div class="pill-title">Jellyfin</div><div class="pill-sub">Best client. Android, iOS, Fire TV, Apple TV.</div></div>
+      <div class="pill"><div class="pill-icon">🪼</div><div class="pill-title">Jellyfin App</div><div class="pill-sub">Works everywhere Jellyfin doesn't.</div></div>
     </div>
     <div class="nav-btns"><button class="btn btn-g" onclick="goStep(2)">Continue →</button></div>
   </div>
@@ -137,7 +137,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
     <div id="app-links" style="display:none"></div>
 
     <div class="notice">
-      <strong>Don't see it on your app store?</strong> If Moonfin, Jellyfin or Wholphin don't show up, the easiest option is to <strong>cast from your phone</strong> — open Jellyfin on your phone and cast to your TV. No sideloading needed.
+      <strong>Don't see it on your app store?</strong> If Jellyfin, Jellyfin or Wholphin don't show up, the easiest option is to <strong>cast from your phone</strong> — open Jellyfin on your phone and cast to your TV. No sideloading needed.
     </div>
 
     <div class="nav-btns">
@@ -187,11 +187,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 let currentStep = 1;
 
 const APPS = {
-  android:  [{icon:'🌙',name:'Moonfin for Android',sub:'Google Play Store',url:'https://play.google.com/store/apps/details?id=org.moonfin.androidtv'},{icon:'🪼',name:'Jellyfin for Android',sub:'Google Play Store',url:'https://play.google.com/store/apps/details?id=org.jellyfin.mobile'}],
-  iphone:   [{icon:'🌙',name:'Moonfin for iPhone & iPad',sub:'Apple App Store',url:'https://apps.apple.com/app/moonfin/id6761283970'},{icon:'🪼',name:'Jellyfin for iPhone & iPad',sub:'Apple App Store',url:'https://apps.apple.com/app/jellyfin-mobile/id1480192618'}],
-  firetv:   [{icon:'🪼',name:'Jellyfin for Fire TV',sub:'Amazon Appstore — search "Jellyfin"',url:'https://www.amazon.com/s?k=jellyfin'},{icon:'🌙',name:'Moonfin for Fire TV',sub:'Amazon Appstore — search "Moonfin"',url:'https://www.amazon.com/s?k=moonfin'}],
-  androidtv:[{icon:'🌙',name:'Moonfin for Android TV',sub:'Google Play Store',url:'https://play.google.com/store/apps/details?id=org.moonfin.androidtv'},{icon:'🪼',name:'Jellyfin for Android TV',sub:'Google Play Store',url:'https://play.google.com/store/apps/details?id=org.jellyfin.androidtv'}],
-  appletv:  [{icon:'🌙',name:'Moonfin for Apple TV',sub:'tvOS App Store',url:'https://apps.apple.com/app/moonfin/id6761283970'},{icon:'🪼',name:'Jellyfin for Apple TV',sub:'tvOS App Store',url:'https://apps.apple.com/app/jellyfin-mobile/id1480192618'}],
+  android:  [{icon:'🪼',name:'Jellyfin for Android',sub:'Google Play Store',url:'https://play.google.com/store/apps/details?id=org.jellyfin.mobile'}],
+  iphone:   [{icon:'🪼',name:'Jellyfin for iPhone & iPad',sub:'Apple App Store',url:'https://apps.apple.com/app/jellyfin-mobile/id1480192618'}],
+  firetv:   [{icon:'🪼',name:'Jellyfin for Fire TV',sub:'Amazon Appstore — search "Jellyfin"',url:'https://www.amazon.com/s?k=jellyfin'}],
+  androidtv:[{icon:'🪼',name:'Jellyfin for Android TV',sub:'Google Play Store',url:'https://play.google.com/store/apps/details?id=org.jellyfin.androidtv'}],
+  appletv:  [{icon:'🪼',name:'Jellyfin for Apple TV',sub:'tvOS App Store',url:'https://apps.apple.com/app/jellyfin-mobile/id1480192618'}],
   roku:     [{icon:'🪼',name:'Jellyfin for Roku',sub:'Roku Channel Store — search "Jellyfin"',url:'https://channelstore.roku.com/search#q=jellyfin'}],
   browser:  [{icon:'🌐',name:'Open dungeoncast.cc',sub:'No download needed — any browser',url:'https://dungeoncast.cc'}],
 };

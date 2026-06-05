@@ -163,23 +163,11 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
     You earn <strong>50%</strong> of every signup you close. Send an invite → your client pays → your cut shows up here. The Dungeon Master pays you out manually — track what's owed below.
   </div>
 
-  <!-- Quick Demo -->
-  <div class="section">
-    <div class="section-head">
-      <div class="section-title">Quick Demo</div>
-      <button class="btn btn-g" onclick="openDemoSheet()">🎬 Send Demo</button>
-    </div>
-    <div class="info" style="margin-bottom:0;font-size:11px">
-      Instantly create a <strong>24-hour demo account</strong> on DungeonStream and email the credentials to a prospect. Up to <strong>3 demos per day</strong>.
-    </div>
-    <div id="demo-history" style="margin-top:10px"></div>
-  </div>
-
   <!-- Invites -->
   <div class="section">
     <div class="section-head">
       <div class="section-title">My Invites</div>
-      <button class="btn btn-gold" onclick="openInviteSheet()">+ New Invite</button>
+      <button class="btn btn-b" onclick="openDemoSheet()" style="margin-right:6px">🎬 Send Demo</button><button class="btn btn-gold" onclick="openInviteSheet()">+ New Invite</button>
     </div>
     <div id="invite-list"><div class="empty">// no invites yet</div></div>
   </div>
@@ -204,33 +192,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 
 <!-- Overlay -->
 <div class="overlay" id="overlay" onclick="closeAllSheets()"></div>
-
-<!-- Demo Sheet -->
-<div class="sheet" id="sh-demo">
-  <div class="sh-handle"></div>
-  <div class="sh-title">Send a Demo</div>
-  <div class="sh-sub">A 24-hour DungeonStream account will be created automatically and the credentials emailed directly to your prospect.</div>
-  <div class="sh-err" id="demo-err"></div>
-  <div id="demo-success" style="display:none;text-align:center;padding:16px 0">
-    <div style="font-size:40px;margin-bottom:12px">✅</div>
-    <div style="font-size:15px;font-weight:700;margin-bottom:6px">Demo Sent!</div>
-    <div style="font-size:12px;color:var(--t2);line-height:1.7" id="demo-success-msg"></div>
-  </div>
-  <div id="demo-form">
-    <div class="field">
-      <label>Prospect Email</label>
-      <input type="email" id="demo-email" placeholder="prospect@email.com"/>
-    </div>
-    <div class="field">
-      <label>Personal Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional — included in the email</span></label>
-      <input type="text" id="demo-note" placeholder="e.g. Check out the new shows section"/>
-    </div>
-    <div class="sacts">
-      <button class="btn btn-b" onclick="closeSheet('sh-demo')">Cancel</button>
-      <button class="btn btn-g" id="demo-btn" onclick="sendDemo()">Send Demo</button>
-    </div>
-  </div>
-</div>
 
 <!-- New Invite Sheet -->
 <div class="sheet" id="sh-invite">
@@ -469,32 +430,6 @@ async function deleteInviteById(btn){
   loadDashboard();
 }
 
-// ── Demo ──────────────────────────────────────────────────────────────────────
-function openDemoSheet(){
-  $('demo-email').value=''; $('demo-note').value='';
-  $('demo-err').style.display='none';
-  $('demo-success').style.display='none';
-  $('demo-form').style.display='block';
-  openSheet('sh-demo');
-}
-
-async function sendDemo(){
-  const email=$('demo-email').value.trim();
-  const note=$('demo-note').value.trim();
-  const err=$('demo-err');
-  if(!email){err.textContent='Prospect email required';err.style.display='block';return;}
-  const btn=$('demo-btn');btn.disabled=true;btn.textContent='Creating account…';
-  err.style.display='none';
-  const r=await fetch('/api/dealer/demo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,note})}).then(r=>r.json()).catch(e=>({error:e.message}));
-  btn.disabled=false;btn.textContent='Send Demo';
-  if(r.error){err.textContent=r.error;err.style.display='block';return;}
-  $('demo-form').style.display='none';
-  const exp=r.expires?new Date(r.expires).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true})+' today':'24 hours from now';
-  $('demo-success-msg').innerHTML='Demo account <strong>'+esc(r.username)+'</strong> created and emailed to <strong>'+esc(email)+'</strong>.<br>Expires at '+exp+'.';
-  $('demo-success').style.display='block';
-  loadDashboard();
-}
-
 // ── Sheets ────────────────────────────────────────────────────────────────────
 function openSheet(id){$('overlay').classList.add('on');$(id).classList.add('on');}
 function closeSheet(id){$(id).classList.remove('on');$('overlay').classList.remove('on');}
@@ -503,6 +438,42 @@ function closeAllSheets(){document.querySelectorAll('.sheet.on').forEach(s=>s.cl
 // ── Utils ─────────────────────────────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fmtDate(d){if(!d)return'—';const dt=new Date(d);return isNaN(dt)?'—':dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+</script>
+
+<!-- Demo Sheet -->
+<div class="sheet" id="sh-demo">
+  <div class="sh-handle"></div>
+  <div class="sh-title">Send Demo Request</div>
+  <div class="sh-sub">Submit a demo request for a potential client. The Dungeon Master will set up a 24-hour trial account and send them credentials.</div>
+  <div class="sh-err" id="demo-err"></div>
+  <div class="field"><label>Client Email</label><input type="email" id="demo-email" placeholder="client@email.com"/></div>
+  <div class="field"><label>Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="text" id="demo-note" placeholder="Any info for the Dungeon Master…"/></div>
+  <div class="sacts">
+    <button class="btn btn-b" onclick="closeSheet('sh-demo')">Cancel</button>
+    <button class="btn btn-gold" id="demo-btn" onclick="sendDemo()">Submit Request</button>
+  </div>
+</div>
+
+<script>
+function openDemoSheet(){
+  document.getElementById('demo-email').value='';
+  document.getElementById('demo-note').value='';
+  document.getElementById('demo-err').style.display='none';
+  openSheet('sh-demo');
+}
+
+async function sendDemo(){
+  const email=document.getElementById('demo-email').value.trim();
+  const note=document.getElementById('demo-note').value.trim();
+  const err=document.getElementById('demo-err');
+  if(!email){err.textContent='Email required';err.style.display='block';return;}
+  const btn=document.getElementById('demo-btn');btn.disabled=true;btn.textContent='Submitting…';
+  const r=await fetch('/api/dealer/demo/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,note})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.disabled=false;btn.textContent='Submit Request';
+  if(r.error){err.textContent=r.error;err.style.display='block';return;}
+  closeSheet('sh-demo');
+  alert('Demo request submitted! The Dungeon Master will set it up shortly.');
+}
 </script>
 </body>
 </html>
