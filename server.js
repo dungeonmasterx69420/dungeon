@@ -2971,6 +2971,88 @@ app.delete('/api/dealer/invites/:id', requireDealer, (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── Dealer: send demo ─────────────────────────────────────────────────────────
+// Dealers can provision a 24-hour Jellyfin demo account for a prospect
+app.post('/api/dealer/demo', requireDealer, async (req, res) => {
+  try {
+    const { email, note } = req.body;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Valid email required' });
+    }
+
+    // Rate limit: max 3 demos per dealer per day
+    const dayAgo = new Date(Date.now() - 24*60*60*1000).toISOString();
+    const recentCount = db.prepare(
+      "SELECT COUNT(*) as n FROM demo_requests WHERE profile_id=? AND created_at > ?"
+    ).get(req.profile.id, dayAgo).n;
+    if (recentCount >= 3) {
+      return res.status(429).json({ error: 'Demo limit reached — you can send up to 3 demos per day.' });
+    }
+
+    // Check if this email already has an active demo
+    const existing = db.prepare(
+      "SELECT * FROM demo_requests WHERE email=? AND status='fulfilled' AND datetime(demo_expires) > datetime('now')"
+    ).get(email.toLowerCase());
+    if (existing) {
+      return res.status(409).json({ error: 'This email already has an active demo account.' });
+    }
+
+    // Generate credentials
+    const rand = crypto.randomBytes(4).toString('hex');
+    const username = 'demo_' + rand;
+    const password = crypto.randomBytes(6).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 8) + rand.slice(0,2);
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+    // Create Jellyfin account
+    if (!JELLYFIN_API_KEY) {
+      return res.status(503).json({ error: 'Jellyfin not configured on this server.' });
+    }
+    const createRes = await jellyfinCreateUser(username, password, JELLYFIN_URL, JELLYFIN_API_KEY);
+    console.log('[dealer/demo] Jellyfin create:', createRes?.status, 'for', email);
+
+    const jfId = await jellyfinGetUserId(username, JELLYFIN_URL, JELLYFIN_API_KEY);
+    if (!jfId) {
+      return res.status(500).json({ error: 'Failed to create Jellyfin account. Try again or contact the Dungeon Master.' });
+    }
+    await jellyfinGrantLibraryAccess(jfId, ['Movies', 'Shows'], JELLYFIN_URL, JELLYFIN_API_KEY);
+    console.log('[dealer/demo] Granted Movies+Shows to:', username);
+
+    // Record in demo_requests
+    const demoId = genId();
+    db.prepare(`INSERT INTO demo_requests (id, profile_id, service, status, email, screen_name, notes, demo_user, demo_pass, demo_expires, fulfilled_at)
+      VALUES (?, ?, 'stream', 'fulfilled', ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`)
+      .run(demoId, req.profile.id, email.toLowerCase(), req.profile.screen_name, note||'Dealer demo', username, password, expires);
+
+    auditLog(req.profile.id, req.profile.screen_name, 'dealer_demo_sent', 'demo_request', demoId, `${email} — @${username}`);
+
+    // Send email to prospect
+    const dealerName = req.profile.screen_name;
+    const html = emailShell(`
+      <h2>Your Dungeon Demo is Ready</h2>
+      <div class="rule"></div>
+      <p>You've been invited to try <strong>Dungeon</strong> — a members-only streaming service. Your 24-hour demo account is set up and ready to use.</p>
+      <div class="box">
+        <div class="row"><span class="lbl">Server</span><span class="val">https://dungeoncast.cc</span></div>
+        <div class="row"><span class="lbl">Username</span><span class="val">${username}</span></div>
+        <div class="row"><span class="lbl">Password</span><span class="val">${password}</span></div>
+        <div class="row"><span class="lbl">Expires</span><span class="val">24 hours from now</span></div>
+      </div>
+      <p>Download <strong>Jellyfin</strong> on your device, add the server URL above, and sign in with the credentials. Movies and TV shows are available to browse immediately.</p>
+      ${note ? `<p style="font-size:12px;color:#94a3a0;border-left:2px solid rgba(52,211,153,.3);padding-left:12px;margin-top:4px">"${note}"</p>` : ''}
+      <div class="rule"></div>
+      <p style="font-size:12px;color:#6b8f7a">Enjoying it? Contact <strong>@${dealerName}</strong> about getting a full membership. — The Dungeon Master</p>
+    `);
+    await sendMail(email, 'Your Dungeon Demo Account is Ready', html).catch(e => {
+      console.error('[dealer/demo] Email failed:', e.message);
+    });
+
+    res.json({ ok: true, username, expires });
+  } catch(e) {
+    console.error('[dealer/demo]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 
