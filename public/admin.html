@@ -214,6 +214,9 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
       <div class="sb-item" onclick="window.location.href='/payouts.html'" id="nav-payouts">
         <span class="icon">💰</span> Payouts
       </div>
+      <div class="sb-item" onclick="showPanel('audit',this)" id="nav-audit">
+        <span class="icon">📋</span> Audit Log
+      </div>
     </nav>
     <div class="sb-footer">
       <div class="sb-user">
@@ -285,6 +288,11 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
       <!-- Demos -->
       <div id="panel-demos" style="display:none">
         <div id="demo-list"><div class="empty">// loading…</div></div>
+      </div>
+
+      <!-- Audit Log -->
+      <div id="panel-audit" style="display:none">
+        <div id="audit-list"><div class="empty">// loading…</div></div>
       </div>
 
       <!-- Redemptions -->
@@ -452,10 +460,11 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
 async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
 
 // ── Panels ────────────────────────────────────────────────────────────────────
-const panelTitles={demos:['Demos','Fulfill 24-hour demo requests'],invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
+const panelTitles={demos:['Demos','Fulfill 24-hour demo requests'],invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions'],audit:['Audit Log','Track admin actions and changes']};
 
 function showPanel(name,el){
-  ['applications','members','redemptions','invites','demos'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
+  ['applications','members','redemptions','invites','demos','audit'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
+  if(name==='audit') loadAuditLog();
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('on'));
   el.classList.add('on');
   const [title,sub]=panelTitles[name];
@@ -501,6 +510,24 @@ async function loadStats(){
 }
 
 function loadAll(){loadStats();loadApps();loadMembers();loadRedem();loadInvites();loadDemos();}
+
+async function loadAuditLog(){
+  const el=$('audit-list');
+  el.innerHTML='<div class="empty">// loading…</div>';
+  try {
+    const rows=await fetch('/api/admin/audit-logs?limit=200').then(r=>r.json());
+    if(!rows.length){el.innerHTML='<div class="empty">// no audit entries yet</div>';return;}
+    el.innerHTML=rows.map(e=>`
+      <div class="rc" style="padding:12px 16px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="bdg bdg-b" style="font-size:10px">${esc(e.action)}</span>
+          ${e.target_type?`<span style="font-size:11px;color:var(--t3)">${esc(e.target_type)}</span>`:''}
+          <span style="font-size:12px;color:var(--txt)">${esc(e.detail||'')}</span>
+        </div>
+        <div style="font-size:10px;color:var(--t3);margin-top:4px">${fmtDate(e.created_at)} · by ${esc(e.actor_name||'system')}</div>
+      </div>`).join('');
+  } catch(err){el.innerHTML=`<div class="empty">// error: ${err.message}</div>`;}
+}
 
 // ── Applications ──────────────────────────────────────────────────────────────
 async function loadApps(){
@@ -598,7 +625,7 @@ function renderMembers(members){
     const cDays=cEnd?Math.ceil((cEnd-now)/86400000):null;
     const init=((m.first_name||'?')[0]+(m.last_name||'?')[0]).toUpperCase();
     const tier=m.tier||'member';
-    const tierBdg=tier==='warden'?'bdg-a':tier==='admin'?'bdg-blue':tier==='mod'?'bdg-g':tier==='dealer'?'bdg-gold':'bdg-b';
+    const tierBdg=tier==='warden'?'bdg-a':tier==='admin'?'bdg-blue':tier==='mod'?'bdg-g':tier==='dealer'?'bdg-gold':tier==='suspended'?'bdg-r':'bdg-b';
     const devices=fmtDevices(m.devices);
 
     return `<div class="card" id="mc-${m.id}">
@@ -626,6 +653,7 @@ function renderMembers(members){
           <div class="di"><div class="dl">Phone</div><div class="dv ${m.phone?'':'dim'}">${m.phone||'Not set'}</div></div>
           <div class="di"><div class="dl">Credits</div><div class="dv mono">${m.credit_balance||0}</div></div>
           <div class="di"><div class="dl">Member Since</div><div class="dv">${fmtDate(m.created_at)}</div></div>
+          <div class="di"><div class="dl">Last Login</div><div class="dv ${m.last_login?'':'dim'}">${m.last_login?fmtDate(m.last_login):'Never'}</div></div>
           <div class="di full">
             <div class="dl">🌊 DungeonStream — <span style="font-family:var(--mono);text-transform:none;letter-spacing:0;font-size:10px;color:${sAct?'var(--g)':'var(--red)'}">${sAct?(sDays+'d left'):(sEnd?'Expired':'No sub')}</span></div>
             <div class="dv mono">${esc(m.jellyfin_user||m.stremio_email||'—')}</div>
@@ -645,11 +673,30 @@ function renderMembers(members){
           <button class="btn btn-b" onclick="openCredits('${m.id}','${m.profile_id_val||''}',${m.credit_balance||0})">Credits</button>
           <button class="btn btn-b" onclick="openEditSub('${m.id}','stream')">Stream Sub</button>
           <button class="btn btn-b" onclick="openEditSub('${m.id}','cast')">Cast Sub</button>
+          ${m.tier==='suspended'
+            ? `<button class="btn" style="font-size:10px;padding:5px 10px;background:var(--g);color:#0b0f0e" onclick="unsuspendMember('${m.id}','${esc(m.screen_name||m.first_name)}')">Unsuspend</button>`
+            : `<button class="btn" style="font-size:10px;padding:5px 10px;background:var(--amb);color:#0b0f0e" onclick="suspendMember('${m.id}','${esc(m.screen_name||m.first_name)}')">Suspend</button>`
+          }
           <button class="btn btn-r" style="font-size:10px;padding:5px 10px" onclick="deleteMember('${m.id}','${esc(m.screen_name||m.first_name)}')">Delete</button>
         </div>
       </div>
     </div>`;
   }).join('');
+}
+
+async function suspendMember(id, name){
+  const reason = prompt('Reason for suspending @'+name+' (optional):');
+  if(reason === null) return;
+  const r = await fetch('/api/admin/members/'+id+'/suspend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  if(r.error){alert('Error: '+r.error);return;}
+  loadAll();
+}
+
+async function unsuspendMember(id, name){
+  if(!confirm('Unsuspend @'+name+'?'))return;
+  const r = await fetch('/api/admin/members/'+id+'/unsuspend',{method:'POST'}).then(r=>r.json()).catch(e=>({error:e.message}));
+  if(r.error){alert('Error: '+r.error);return;}
+  loadAll();
 }
 
 async function deleteMember(id, name){
