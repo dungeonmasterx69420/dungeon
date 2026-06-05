@@ -220,6 +220,13 @@ const TIERS = {
 
 function genId() { return crypto.randomBytes(8).toString('hex'); }
 
+function auditLog(actorId, actorName, action, targetType, targetId, detail) {
+  try {
+    db.prepare('INSERT INTO audit_logs (id,actor_id,actor_name,action,target_type,target_id,detail) VALUES (?,?,?,?,?,?,?)')
+      .run(genId(), actorId||null, actorName||null, action, targetType||null, targetId||null, detail||null);
+  } catch(e) { console.error('[audit]', e.message); }
+}
+
 function avatarColors() {
   const colors = ['#60a5fa','#34d399','#f87171','#fbbf24','#a78bfa','#fb7185','#38bdf8','#4ade80'];
   return colors[Math.floor(Math.random() * colors.length)];
@@ -338,6 +345,17 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE members ADD COLUMN plain_pass TEXT').run(); } catch(e) {}
   // Add stremio_auth_key column
   try { db.prepare('ALTER TABLE members ADD COLUMN stremio_auth_key TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN last_login DATETIME').run(); } catch(e) {}
+  try { db.prepare(`CREATE TABLE IF NOT EXISTS audit_logs (
+    id TEXT PRIMARY KEY,
+    actor_id TEXT,
+    actor_name TEXT,
+    action TEXT NOT NULL,
+    target_type TEXT,
+    target_id TEXT,
+    detail TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`).run(); } catch(e) {}
   // Fix unlinked profiles - match by email
   try {
     db.prepare(`UPDATE profiles SET member_id=(SELECT m.id FROM members m WHERE LOWER(m.email)=LOWER(profiles.email) LIMIT 1) WHERE member_id IS NULL AND email IS NOT NULL`).run();
@@ -378,8 +396,19 @@ async function runSubscriptionCron() {
   const now = new Date();
   const nowISO = now.toISOString();
   const in3days = new Date(now); in3days.setDate(in3days.getDate() + 3);
+  const in7days = new Date(now); in7days.setDate(in7days.getDate() + 7);
 
-  // Warn expiring soon (uses stremio_end as primary sub date)
+  // Warn expiring in 7 days (early reminder)
+  const expiring7 = db.prepare(`
+    SELECT * FROM members
+    WHERE stremio_end IS NOT NULL AND expiry_warned=0
+    AND datetime(stremio_end) <= datetime(?) AND datetime(stremio_end) > datetime(?)
+  `).all(in7days.toISOString(), in3days.toISOString());
+  for (const m of expiring7) {
+    sendMail(m.email, 'Your Dungeon subscription expires in 7 days', emailExpiringSoon(m.first_name, m.stremio_end)).catch(()=>{});
+  }
+
+  // Warn expiring soon (3-day final reminder)
   const expiring = db.prepare(`
     SELECT * FROM members
     WHERE stremio_end IS NOT NULL AND expiry_warned=0
@@ -646,6 +675,7 @@ app.set('trust proxy', 1);
 
 const submitLimiter = rateLimit({ windowMs: 60*60*1000, max: 10, message: { error: 'Too many requests.' } });
 const loginLimiter = rateLimit({ windowMs: 5*60*1000, max: 10, message: { error: 'Too many attempts. Try again in 5 minutes.' } });
+const passwordResetLimiter = rateLimit({ windowMs: 15*60*1000, max: 5, message: { error: 'Too many reset attempts. Try again in 15 minutes.' } });
 
 // Per-email lockout tracking
 const loginAttempts = new Map(); // email -> { count, lockedUntil }
@@ -714,8 +744,10 @@ app.post('/api/login', loginLimiter, (req, res) => {
   const { password } = req.body;
   const adminPassword = (process.env.ADMIN_PASSWORD || 'p00p').trim();
   const submitted = (password || '').trim();
-  console.log(`Login attempt. Expected: "${adminPassword}" Got: "${submitted}" Match: ${submitted === adminPassword}`);
-  if (submitted !== adminPassword) return res.status(401).json({ error: 'Incorrect password' });
+  if (submitted !== adminPassword) {
+    console.log('[auth] Admin login failed');
+    return res.status(401).json({ error: 'Incorrect password' });
+  }
   req.session.authenticated = true;
   req.session.save(err => {
     if (err) return res.status(500).json({ error: 'Session error' });
@@ -749,19 +781,21 @@ app.post('/api/member/login', loginLimiter, (req, res) => {
     return res.status(401).json({ error: msg });
   }
   clearAttempts(email.trim());
+  db.prepare('UPDATE members SET last_login=CURRENT_TIMESTAMP WHERE id=?').run(member.id);
   req.session.member = { id: member.id, first_name: member.first_name, last_name: member.last_name, email: member.email };
 
   // Ensure a profile exists for existing members who predate the profile system
   const existingProfile = db.prepare('SELECT id FROM profiles WHERE member_id=?').get(member.id);
   if (!existingProfile) {
     // Generate a unique placeholder screen name from their first name
-    let baseName = member.first_name.replace(/[^a-zA-Z0-9_]/g,'').slice(0,16) || 'member';
+    let baseName = member.first_name.replace(/[^a-zA-Z0-9_]/g,'').slice(0,12) || 'member';
     let screenName = baseName;
     let attempt = 0;
-    while (db.prepare('SELECT id FROM profiles WHERE LOWER(screen_name)=LOWER(?)').get(screenName)) {
+    while (db.prepare('SELECT id FROM profiles WHERE LOWER(screen_name)=LOWER(?)').get(screenName) && attempt < 9999) {
       attempt++;
       screenName = baseName + attempt;
     }
+    if (attempt >= 9999) screenName = baseName + genId().slice(0,6);
     // Determine tier — warden if email matches
     const tier = member.email.toLowerCase() === 'dungeonmasterx69420@gmail.com' ? 'warden' : 'member';
     const profileId = genId();
@@ -890,7 +924,9 @@ app.post('/api/member/profile/avatar', requireMember, (req, res) => {
 app.patch('/api/admin/profiles/:id/tier', requireAuth, (req, res) => {
   const { tier } = req.body;
   if (!Object.keys(TIERS).includes(tier)) return res.status(400).json({ error: 'Invalid tier' });
+  const prev = db.prepare('SELECT tier, screen_name FROM profiles WHERE id=?').get(req.params.id);
   db.prepare('UPDATE profiles SET tier=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run(tier, req.params.id);
+  auditLog('admin', 'admin', 'tier_change', 'profile', req.params.id, `${prev?.tier} → ${tier} (@${prev?.screen_name})`);
   res.json({ ok: true });
 });
 
@@ -989,7 +1025,9 @@ app.post('/api/member/suggest', requireMember, submitLimiter, (req, res) => {
 app.patch('/api/applicants/:id/status', requireAuth, (req, res) => {
   const { status } = req.body;
   if (!['pending','approved','denied','mod_approved'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+  const applicant = db.prepare('SELECT first_name, last_name, email FROM applicants WHERE id=?').get(req.params.id);
   db.prepare('UPDATE applicants SET status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run(status, req.params.id);
+  auditLog('admin', 'admin', `applicant_${status}`, 'applicant', req.params.id, `${applicant?.first_name} ${applicant?.last_name} <${applicant?.email}>`);
   res.json({ ok: true });
 });
 
@@ -1013,7 +1051,7 @@ app.post('/api/members/:id/renew', requireAuth, (req, res) => {
 
 // ── Admin: members ────────────────────────────────────────────────────────────
 app.get('/api/members', requireAuth, (req, res) => {
-  const members = db.prepare(`SELECT m.id, m.first_name, m.last_name, m.email, m.stremio_email, m.stremio_pass, m.stremio_start, m.stremio_end, m.iptv_start, m.iptv_end, m.notes, m.created_at, m.plain_pass, m.stremio_auth_key, p.id as profile_id_val, p.screen_name, p.tier, p.avatar_url, p.avatar_color, COALESCE(c.amount,0) as credit_balance FROM members m LEFT JOIN profiles p ON (p.member_id=m.id OR (p.member_id IS NULL AND LOWER(p.email)=LOWER(m.email))) LEFT JOIN credits c ON c.profile_id=p.id ORDER BY m.created_at DESC`).all();
+  const members = db.prepare(`SELECT m.id, m.first_name, m.last_name, m.email, m.stremio_email, m.stremio_pass, m.stremio_start, m.stremio_end, m.iptv_start, m.iptv_end, m.notes, m.created_at, m.last_login, m.plain_pass, m.stremio_auth_key, p.id as profile_id_val, p.screen_name, p.tier, p.avatar_url, p.avatar_color, COALESCE(c.amount,0) as credit_balance FROM members m LEFT JOIN profiles p ON (p.member_id=m.id OR (p.member_id IS NULL AND LOWER(p.email)=LOWER(m.email))) LEFT JOIN credits c ON c.profile_id=p.id ORDER BY m.created_at DESC`).all();
   res.json(members);
 });
 
@@ -1025,7 +1063,9 @@ app.patch('/api/members/:id', requireAuth, (req, res) => {
 });
 
 app.delete('/api/members/:id', requireAuth, (req, res) => {
+  const member = db.prepare('SELECT first_name, last_name, email FROM members WHERE id=?').get(req.params.id);
   db.prepare('DELETE FROM members WHERE id=?').run(req.params.id);
+  auditLog('admin', 'admin', 'member_delete', 'member', req.params.id, `${member?.first_name} ${member?.last_name} <${member?.email}>`);
   res.json({ ok: true });
 });
 
@@ -1494,7 +1534,8 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
       // Stack subscription — add 30 days to existing end date if still active
       const existingEnd = member.stremio_end ? new Date(member.stremio_end) : null;
       const startBase = (existingEnd && existingEnd > now) ? existingEnd : now;
-      const end = new Date(startBase); end.setMonth(end.getMonth() + 1);
+      const end = new Date(startBase);
+      end.setDate(end.getDate() + 30);
       const start = member.stremio_start ? new Date(member.stremio_start) : now;
       db.prepare('UPDATE members SET stremio_email=?, stremio_pass=?, jellyfin_user=?, jellyfin_pass=?, stremio_start=?, stremio_end=?, expired_notified=0, expiry_warned=0, credit_welcome_pending=1 WHERE id=?')
         .run(account_user, account_pass, account_user, account_pass, start.toISOString(), end.toISOString(), member.id);
@@ -1522,8 +1563,12 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
         db.prepare('INSERT INTO iptv_accounts (id,profile_id,nodecast_user,xtream_url,xtream_user,xtream_pass,status) VALUES (?,?,?,?,?,?,?)')
           .run(genId(), profile.id, account_user, xtream_url||'http://line.dungeoncast.cc', xtream_user||account_user, xtream_pass||account_pass, 'active');
       }
+      const existingIptvEnd = member.iptv_end ? new Date(member.iptv_end) : null;
+      const iptvBase = (existingIptvEnd && existingIptvEnd > now) ? existingIptvEnd : now;
+      const iptvEnd = new Date(iptvBase);
+      iptvEnd.setDate(iptvEnd.getDate() + 30);
       db.prepare('UPDATE members SET iptv_start=?, iptv_end=? WHERE id=?')
-        .run(now.toISOString(), end.toISOString(), member.id);
+        .run(now.toISOString(), iptvEnd.toISOString(), member.id);
 
       // Create Jellyfin account on TV server + grant Live TV access
       try {
@@ -3011,7 +3056,7 @@ app.post('/api/member/change-password', requireMember, async (req, res) => {
 // ── Password Reset ────────────────────────────────────────────────────────────
 
 // POST request password reset
-app.post('/api/auth/forgot-password', async (req, res) => {
+app.post('/api/auth/forgot-password', passwordResetLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email required' });
@@ -3183,16 +3228,22 @@ app.get('/api/admin/subscribers', requireAuth, (req, res) => {
   res.json(rows);
 });
 
+// ── Audit Logs ────────────────────────────────────────────────────────────────
+app.get('/api/admin/audit-logs', requireAuth, (req, res) => {
+  const limit = Math.min(parseInt(req.query.limit)||100, 500);
+  const rows = db.prepare('SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT ?').all(limit);
+  res.json(rows);
+});
+
 // ── Stats ─────────────────────────────────────────────────────────────────────
 app.get('/api/stats', requireAuth, (req, res) => {
   res.json({
-    applicants: db.prepare('SELECT COUNT(*) as n FROM applicants WHERE archived=0').get().n,
-    pending: db.prepare("SELECT COUNT(*) as n FROM applicants WHERE status='pending' AND archived=0").get().n,
-    pending:    db.prepare("SELECT COUNT(*) as n FROM applicants WHERE status='pending'").get().n,
-    members:    db.prepare('SELECT COUNT(*) as n FROM members').get().n,
-    denied:     db.prepare("SELECT COUNT(*) as n FROM applicants WHERE status='denied'").get().n,
-    support:    db.prepare("SELECT COUNT(*) as n FROM support_messages WHERE status='open'").get().n,
-    mod_approved: db.prepare("SELECT COUNT(*) as n FROM applicants WHERE status='mod_approved'").get().n,
+    applicants:   db.prepare('SELECT COUNT(*) as n FROM applicants WHERE archived=0').get().n,
+    pending:      db.prepare("SELECT COUNT(*) as n FROM applicants WHERE status='pending' AND archived=0").get().n,
+    members:      db.prepare('SELECT COUNT(*) as n FROM members').get().n,
+    denied:       db.prepare("SELECT COUNT(*) as n FROM applicants WHERE status='denied' AND archived=0").get().n,
+    support:      db.prepare("SELECT COUNT(*) as n FROM support_messages WHERE status='open'").get().n,
+    mod_approved: db.prepare("SELECT COUNT(*) as n FROM applicants WHERE status='mod_approved' AND archived=0").get().n,
   });
 });
 
@@ -3200,7 +3251,7 @@ app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 
 app.listen(PORT, () => {
   console.log(`Dungeon running on port ${PORT}`);
-  console.log(`Admin password: "${(process.env.ADMIN_PASSWORD || 'p00p').trim()}"`);
-  console.log(`Warden email: ${WARDEN_EMAIL}`);
+  if (!process.env.ADMIN_PASSWORD) console.warn('[warn] ADMIN_PASSWORD not set — using default. Set it in production!');
+  if (!process.env.SESSION_SECRET) console.warn('[warn] SESSION_SECRET not set — using default. Set it in production!');
   console.log(`Email: ${transporter ? `configured (${GMAIL_USER})` : 'not configured'}`);
 });
