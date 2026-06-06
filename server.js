@@ -12,7 +12,7 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const WARDEN_EMAIL = 'dungeonmasterx69420@gmail.com';
+const WARDEN_EMAIL = process.env.WARDEN_EMAIL || 'realenterdungeon@gmail.com';
 
 // ── Database ──────────────────────────────────────────────────────────────────
 const DATA_DIR    = process.env.DATA_DIR || path.join(__dirname, 'data');
@@ -763,7 +763,7 @@ app.post('/api/member/login', loginLimiter, (req, res) => {
       screenName = baseName + attempt;
     }
     // Determine tier — warden if email matches
-    const tier = member.email.toLowerCase() === 'dungeonmasterx69420@gmail.com' ? 'warden' : 'member';
+    const tier = member.email.toLowerCase() === (process.env.WARDEN_EMAIL || 'realenterdungeon@gmail.com').toLowerCase() ? 'warden' : 'member';
     const profileId = genId();
     db.prepare(`INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, setup_done) VALUES (?,?,?,?,?,?,0)`)
       .run(profileId, screenName, member.email, avatarColors(), tier, member.id);
