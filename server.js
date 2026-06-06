@@ -4,6 +4,8 @@ const bcrypt     = require('bcryptjs');
 const session    = require('express-session');
 const rateLimit  = require('express-rate-limit');
 const nodemailer = require('nodemailer');
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'Dungeon Master <noreply@enterdungeon.cc>';
 const path       = require('path');
 const fs         = require('fs');
 const crypto     = require('crypto');
@@ -234,10 +236,29 @@ const transporter = GMAIL_USER && GMAIL_PASS
   ? nodemailer.createTransport({ service: 'gmail', auth: { user: GMAIL_USER, pass: GMAIL_PASS } })
   : null;
 
+async function sendMailResend(to, subject, html) {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + RESEND_API_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: FROM_EMAIL, to, subject, html })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Resend error');
+  return data;
+}
+
 async function sendMail(to, subject, html) {
+  // Use Resend if configured, fall back to Gmail
+  if (RESEND_API_KEY) {
+    try {
+      await sendMailResend(to, subject, html);
+      console.log(`[email/resend] To: ${to} | ${subject}`);
+      return;
+    } catch(e) { console.error('[email/resend] Error:', e.message); }
+  }
   if (!transporter) { console.log(`[email skipped] To: ${to} | ${subject}`); return; }
   try {
-    await transporter.sendMail({ from: `"Dungeon Master" <${GMAIL_USER}>`, to, subject, html });
+    await transporter.sendMail({ from: FROM_EMAIL, to, subject, html });
     console.log(`[email sent] To: ${to} | ${subject}`);
   } catch (err) { console.error(`[email failed] ${err.message}`); }
 }
