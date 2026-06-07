@@ -1011,7 +1011,6 @@ async function submitDemo() {
     <button class="btn btn-g" id="fi-btn" onclick="sendFreeInvite()">Send Invite</button>
   </div>
 </div>
-
 <script>
 function openFreeInviteSheet(){
   document.getElementById('fi-email').value='';
@@ -1020,7 +1019,6 @@ function openFreeInviteSheet(){
   document.getElementById('fi-err').style.display='none';
   openSheet('sh-free-invite');
 }
-
 async function sendFreeInvite(){
   const email=document.getElementById('fi-email').value.trim();
   const tier=document.getElementById('fi-tier').value;
