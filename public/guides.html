@@ -1,242 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon · Guides</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
-    *{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--amber:#fbbf24}
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
-    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
-    .back-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;transition:color .2s}
-    .back-link:hover{color:var(--text)}
-    .page{max-width:760px;margin:0 auto;padding:36px 24px 80px}
-    .page-title{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;font-weight:400;color:var(--text);margin-bottom:16px;line-height:1.6}
-    .page-sub{font-size:14px;color:var(--muted2);margin-bottom:32px;line-height:1.6}
-    .divider{height:1px;background:var(--border);margin-bottom:28px}
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>Dungeon · Guides</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);--g:#34d399;--gb:rgba(52,211,153,.08);--txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans)}
+.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--g);text-decoration:none}
+.nav{display:flex;gap:12px;align-items:center}
+.nav a,.nav button{font-size:13px;color:var(--t2);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:var(--sans)}
+.nav a:hover,.nav button:hover{color:var(--txt)}
 
-    /* Guide cards */
-    .guide{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden}
-    .guide-header{padding:20px 24px;cursor:pointer;display:flex;align-items:center;gap:16px;transition:background .15s;user-select:none}
-    .guide-header:hover{background:var(--surface2)}
-    .guide-icon{font-size:24px;flex-shrink:0}
-    .guide-head-text{flex:1}
-    .guide-tag{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-    .guide-name{font-size:15px;font-weight:600;color:var(--text)}
-    .guide-desc{font-size:13px;color:var(--muted2);margin-top:3px}
-    .guide-chevron{font-size:13px;color:var(--muted);transition:transform .2s}
-    .guide.open .guide-chevron{transform:rotate(180deg)}
+.page{max-width:600px;margin:0 auto;padding:28px 16px 60px}
+h1{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--txt);margin-bottom:6px;line-height:1.8}
+.sub{font-size:14px;color:var(--t2);margin-bottom:28px;line-height:1.6}
 
-    .guide-body{display:none;padding:0 24px 24px;border-top:1px solid var(--border)}
-    .guide.open .guide-body{display:block}
+/* Steps */
+.section-title{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--g);font-family:var(--mono);margin-bottom:14px;margin-top:28px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--bdr)}
 
-    .guide-section-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);margin:20px 0 14px;display:flex;align-items:center;gap:10px}
-    .guide-section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.step{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--bdr)}
+.step:last-child{border-bottom:none}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--gb);border:1px solid var(--bdr2);color:var(--g);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--mono);flex-shrink:0;margin-top:1px}
+.step-text{font-size:14px;color:var(--t2);line-height:1.7}
+.step-text strong{color:var(--txt)}
+.step-text a{color:var(--g);text-decoration:none}
 
-    .steps{list-style:none;display:flex;flex-direction:column;gap:0}
-    .steps li{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border)}
-    .steps li:last-child{border-bottom:none}
-    .step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--green-bg);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--green);margin-top:1px}
-    .step-text{font-size:14px;color:var(--muted2);line-height:1.7}
-    .step-text strong{color:var(--text);font-weight:600}
-    .step-text a{color:var(--green);text-decoration:none}
-    .step-text a:hover{text-decoration:underline}
-    .step-note{margin-top:8px;padding:10px 14px;background:var(--green-bg);border-left:2px solid var(--green);border-radius:0 6px 6px 0;font-size:13px;color:var(--muted2);line-height:1.6}
+/* App download buttons */
+.app-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0;max-width:360px}
+.app-btn{display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--bdr2);border-radius:10px;padding:12px 14px;text-decoration:none;transition:border-color .15s}
+.app-btn:hover{border-color:var(--g)}
+.app-btn-icon{font-size:20px;flex-shrink:0}
+.app-btn-name{font-size:13px;font-weight:600;color:var(--txt)}
+.app-btn-store{font-size:11px;color:var(--t2);margin-top:1px}
 
-    .tech-block{margin-top:16px;padding:16px 18px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)}
-    .tech-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--amber);margin-bottom:8px}
-    .tech-text{font-size:13px;color:var(--muted2);line-height:1.7}
-    .tech-text a{color:var(--green);text-decoration:none}
-    .tech-text a:hover{text-decoration:underline}
-    .tech-text strong{color:var(--text);font-weight:600}
+/* Quick connect box */
+.tip-box{background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:14px 16px;margin-top:20px;font-size:13px;color:var(--t2);line-height:1.7}
+.tip-box strong{color:var(--g)}
 
-    .guide.dimmed{opacity:0.4;pointer-events:none}
-    .coming-badge{font-size:11px;font-weight:600;padding:3px 10px;background:rgba(107,143,122,0.15);color:var(--muted);border-radius:20px;margin-left:8px}
+/* Server URL box */
+.server-box{background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin:8px 0 16px}
+.server-url{font-family:var(--mono);font-size:14px;color:var(--txt)}
+.copy-btn{font-size:11px;padding:4px 10px;background:var(--s1);border:1px solid var(--bdr2);border-radius:6px;color:var(--t2);cursor:pointer;font-family:var(--sans);font-weight:600;transition:all .15s}
+.copy-btn:hover{color:var(--g);border-color:var(--g)}
 
-    @media(max-width:767px){.page{padding:24px 14px 60px}.guide-header{padding:16px 16px}.guide-body{padding:0 16px 20px}}
+footer{text-align:center;padding:28px 0 8px;font-size:12px;color:var(--t3);display:flex;flex-wrap:wrap;justify-content:center;gap:4px}
+footer a{color:var(--t3);text-decoration:none}
+footer a:hover{color:var(--t2)}
+.sep{color:var(--bdr2)}
 
-    footer{text-align:center;padding:32px 0 0;font-size:12px;color:var(--muted)}
-    footer a{color:var(--muted);text-decoration:none}
-    footer a:hover{color:var(--text)}
-
-    footer{text-align:center;padding:24px 0 16px;font-size:12px;color:var(--muted)}
-    footer a{color:var(--muted);text-decoration:none}
-    footer a:hover{color:var(--text)}
-    @media(max-width:767px){footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
-
-    .msg-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:var(--muted2);font-size:15px;transition:border-color .2s,color .2s;cursor:pointer}
-    .msg-icon-btn:hover{border-color:var(--green);color:var(--green)}
-    .msg-icon-badge{position:absolute;top:-5px;right:-5px;background:var(--red,#f87171);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
-  </style>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
-  <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
+@media(max-width:400px){.app-btns{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
+
 <div class="topbar">
-  <a href="/dashboard.html" class="logo" id="logoLink">Dungeon</a>
-  <div style="display:flex;align-items:center;gap:12px">
-    <a href="/dashboard.html" style="font-size:13px;color:var(--muted,#6b8f7a);text-decoration:none;font-weight:500">Dashboard</a>
-    <a href="/messages.html" style="font-size:13px;color:var(--muted,#6b8f7a);text-decoration:none;font-weight:500">Messages</a>
-    <button onclick="doSignOut()" style="font-size:13px;color:var(--muted,#6b8f7a);background:none;border:none;cursor:pointer;font-family:Inter,sans-serif;font-weight:500">Sign out</button>
+  <a href="/dashboard.html" class="logo">⬡ Dungeon</a>
+  <div class="nav">
+    <a href="/dashboard.html">Dashboard</a>
+    <button onclick="logout()">Sign Out</button>
   </div>
 </div>
+
 <div class="page">
-  <div class="page-title">Setup Guides</div>
-  <div class="page-sub">Step-by-step instructions for every platform. Tap a guide to expand it.</div>
-  <div class="divider"></div>
+  <h1>Setup Guide</h1>
+  <div class="sub">Get watching in 3 steps. Takes about 2 minutes.</div>
 
-
-    <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);letter-spacing:0.06em;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)">📺 DungeonStream</div>
-
-  <!-- Getting Started -->
-  <div class="guide" id="guide-start">
-    <div class="guide-header" onclick="toggleGuide('start')">
-      <div class="guide-icon">🚀</div>
-      <div class="guide-head-text">
-        <div class="guide-tag">All Devices</div>
-        <div class="guide-name">Getting Started</div>
-        <div class="guide-desc">Your server URL, username and password</div>
+  <!-- Step 1: Get your credentials -->
+  <div class="section-title">Step 1 — Your credentials</div>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-text">Go to your <strong><a href="/dungeonstream.html">DungeonStream page</a></strong> and copy your <strong>Server URL, Username and Password</strong>. You'll need these to sign in.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-text">Your server URL is always:
+      <div class="server-box">
+        <span class="server-url">https://dungeoncast.cc</span>
+        <button class="copy-btn" onclick="navigator.clipboard.writeText('https://dungeoncast.cc').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>
       </div>
-      <div class="guide-chevron">▼</div>
-    </div>
-    <div class="guide-body">
-      <div class="guide-section-label">Your Credentials</div>
-      <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Go to your <a href="/dungeonstream.html"><strong>DungeonStream page</strong></a> to find your credentials — Server URL, Username, and Password.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">The Server URL is always <strong>https://dungeoncast.cc</strong>. You'll need this along with your username and password to log into Jellyfin.</div></li>
-        <li><div class="step-num">3</div><div class="step-text">Download <strong>Jellyfin</strong> on your device — it works on Android, iPhone, iPad, Fire TV, Android TV and Apple TV.<div class="step-note">Your DungeonStream credentials are separate from your Dungeon login. Use your Dungeon login (email + password) only on enterdungeon.cc.</div></div></li>
-      </ul>
+      Your Dungeon login (email + password) is only for <strong>enterdungeon.cc</strong>. Your streaming credentials are separate.
     </div>
   </div>
 
-  <!-- Jellyfin Setup -->
-  <div class="guide" id="guide-jellyfin">
-    <div class="guide-header" onclick="toggleGuide('jellyfin')">
-      <div class="guide-icon">🌙</div>
-      <div class="guide-head-text">
-        <div class="guide-tag">All Devices</div>
-        <div class="guide-name">Jellyfin App Setup</div>
-        <div class="guide-desc">Android · iPhone · iPad · Android TV · Apple TV · Roku · Fire TV</div>
+  <!-- Step 2: Download the app -->
+  <div class="section-title">Step 2 — Download Jellyfin</div>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-text">Download the <strong>Jellyfin</strong> app for your device:
+      <div class="app-btns">
+        <a class="app-btn" href="https://apps.apple.com/app/jellyfin-mobile/id1480192618" target="_blank">
+          <div class="app-btn-icon">📱</div>
+          <div><div class="app-btn-name">Jellyfin</div><div class="app-btn-store">iPhone & iPad</div></div>
+        </a>
+        <a class="app-btn" href="https://play.google.com/store/apps/details?id=org.jellyfin.mobile" target="_blank">
+          <div class="app-btn-icon">📱</div>
+          <div><div class="app-btn-name">Jellyfin</div><div class="app-btn-store">Android</div></div>
+        </a>
       </div>
-      <div class="guide-chevron">▼</div>
-    </div>
-    <div class="guide-body">
-      <div class="guide-section-label">Android Phone & Tablet</div>
-      <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Download <strong>Jellyfin</strong> from the <a href="https://play.google.com/store/apps/details?id=org.jellyfin.androidtv" target="_blank">Google Play Store</a>.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">Open the app and tap <strong>Add Server</strong>. Enter <strong>https://dungeoncast.cc</strong> as the server URL.</div></li>
-        <li><div class="step-num">3</div><div class="step-text">Sign in with your DungeonStream username and password.</div></li>
-      </ul>
-      <div class="guide-section-label">iPhone & iPad</div>
-      <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Download <strong>Jellyfin</strong> from the <a href="https://apps.apple.com/app/jellyfin/id1480192618" target="_blank">App Store</a>.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">Tap <strong>Add Server</strong> and enter <strong>https://dungeoncast.cc</strong>.</div></li>
-        <li><div class="step-num">3</div><div class="step-text">Sign in with your DungeonStream username and password.</div></li>
-      </ul>
-      <div class="guide-section-label">Fire TV & Fire Stick</div>
-      <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Search for <strong>Jellyfin</strong> in the Amazon Appstore and install it.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">Open Jellyfin and add server <strong>https://dungeoncast.cc</strong>.</div></li>
-        <li><div class="step-num">3</div><div class="step-text">Sign in with your DungeonStream credentials.</div></li>
-      </ul>
-      <div class="guide-section-label">Android TV & Google TV</div>
-      <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Download <strong>Jellyfin</strong> from the Google Play Store on your TV.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">Add server <strong>https://dungeoncast.cc</strong> and sign in.</div></li>
-      </ul>
-      <div class="guide-section-label">Apple TV</div>
-      <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Download <strong>Jellyfin</strong> from the Apple TV App Store.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">Add server <strong>https://dungeoncast.cc</strong> and sign in with your DungeonStream credentials.</div></li>
-      </ul>
-      <div class="guide-section-label">Windows & Mac (Browser)</div>
-      <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Open any browser and go to <a href="https://dungeoncast.cc" target="_blank"><strong>dungeoncast.cc</strong></a>.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">Sign in with your DungeonStream username and password.</div></li>
-      </ul>
     </div>
   </div>
 
-  <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);letter-spacing:0.06em;margin:32px 0 16px;padding-bottom:10px;border-bottom:1px solid var(--border)">📡 DungeonCast</div>
+  <!-- Step 3: Connect -->
+  <div class="section-title">Step 3 — Connect</div>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-text">Open Jellyfin and tap <strong>Add Server</strong>. Enter <strong>https://dungeoncast.cc</strong> and tap Connect.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-text">Sign in with your <strong>streaming username and password</strong> from step 1.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-text">Tap <strong>Movies, Shows or Live TV</strong> and start watching.</div>
+  </div>
 
-  <!-- DungeonCast Getting Started -->
-  <div class="guide" id="guide-dc-start">
-    <div class="guide-header" onclick="toggleGuide('dc-start')">
-      <div class="guide-icon">📡</div>
-      <div class="guide-head-text">
-        <div class="guide-tag">All Devices</div>
-        <div class="guide-name">Getting Started</div>
-        <div class="guide-desc">Live TV powered by Jellyfin — same app as DungeonStream</div>
-      </div>
-      <div class="guide-chevron">▼</div>
-    </div>
-    <div class="guide-body">
-      <div class="guide-section-label">Setup</div>
-      <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">Go to your <a href="/dungeoncast.html"><strong>DungeonCast page</strong></a> to find your credentials.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">Download <strong>Jellyfin</strong> and add server <strong>https://dungeoncast.cc</strong> — same app as DungeonStream, but log in with your DungeonCast credentials.</div></li>
-        <li><div class="step-num">3</div><div class="step-text">Find <strong>Live TV</strong> in the main menu. Tap any channel to start watching.</div></li>
-      </ul>
-      <div class="guide-section-label">Watching Live TV</div>
-      <ul class="steps">
-        <li><div class="step-num">1</div><div class="step-text">From the home screen tap <strong>Live TV</strong> to see what's on now.</div></li>
-        <li><div class="step-num">2</div><div class="step-text">Use the <strong>Guide</strong> tab to browse the full TV schedule and upcoming programs.</div></li>
-        <li><div class="step-num">3</div><div class="step-text">Tap any channel or program to start watching.</div></li>
-      </ul>
-      <div class="tech-block">
-        <div class="tech-label">Tips</div>
-        <div class="tech-text">Live TV works best on a strong WiFi connection. If a channel buffers, go back and try again — some streams may be temporarily offline.</div>
-      </div>
-    </div>
+  <div class="tip-box">
+    <strong>Quick Connect — easy login on TV</strong><br>
+    Already signed in on your phone? Open Jellyfin on your TV, select <strong>Quick Connect</strong>, then enter the code shown on your TV into the Jellyfin app on your phone under <strong>Settings → Quick Connect</strong>. No need to type your password on the TV.
   </div>
 
   <footer id="pageFooter">
-    <a href="/profile.html">My Profile</a>
-    &nbsp;·&nbsp;
-    <a href="/directory.html">Directory</a>
-    &nbsp;·&nbsp;
-    <a href="/forum.html">Forum</a>
-    &nbsp;·&nbsp;
-    <a href="/dashboard.html">Dashboard</a>
+    <a href="/dashboard.html">Dashboard</a><span class="sep">·</span>
+    <a href="/dungeonstream.html">DungeonStream</a><span class="sep">·</span>
+    <a href="/profile.html">My Profile</a><span class="sep">·</span>
+    <a href="/support.html">Support</a>
   </footer>
+</div>
 
 <script>
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{if(!d.authenticated)window.location.href='/login.html'});
-  
-  function toggleGuide(id){document.getElementById('guide-'+id).classList.toggle('open')}
-
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{
-    if(!d.authenticated) return;
-    const tier = d.member?.profile?.tier;
-    const footer = document.getElementById('pageFooter');
-    if(!footer) return;
-    if(['mod','admin','warden'].includes(tier)){
-      const span=document.createElement('span');
-      let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
-      if(['admin','warden'].includes(tier)) extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
-      span.innerHTML=extra;
-      footer.appendChild(span);
-    }
-  }).catch(()=>{});
-
-  (function(){
-    fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
-      const badge = document.getElementById('msgIconBadge');
-      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
-    }).catch(()=>{});
-  })();
-
-  async function doSignOut(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
+fetch('/api/member/me').then(r=>r.json()).then(d=>{
+  if(!d.authenticated){window.location.href='/login.html';}
+});
+async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
 </script>
-
 </body>
 </html>
