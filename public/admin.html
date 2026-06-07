@@ -987,5 +987,56 @@ async function submitDemo() {
   alert('Demo created! Expires in 24 hours.');
 }
 </script>
+
+<!-- Free Invite Sheet -->
+<div class="sheet" id="sh-free-invite">
+  <div class="sh-handle"></div>
+  <div class="sh-title">Free Invite</div>
+  <div class="sh-sub">Send a free invite — no payment required. Great for family, friends or staff.</div>
+  <div class="sh-err" id="fi-err"></div>
+  <div class="field"><label>Email</label><input type="email" id="fi-email" placeholder="friend@email.com"/></div>
+  <div class="field">
+    <label>Tier</label>
+    <select id="fi-tier" style="width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:13px;padding:10px 12px;outline:none">
+      <option value="member">Member</option>
+      <option value="family">Family & Friends — permanent access</option>
+      <option value="dealer">DungeonDealer — reseller + permanent access</option>
+      <option value="mod">Mod</option>
+      <option value="admin">Admin</option>
+    </select>
+  </div>
+  <div class="field"><label>Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="text" id="fi-note" placeholder="Personal message…"/></div>
+  <div class="sacts">
+    <button class="btn btn-b" onclick="closeSheet('sh-free-invite')">Cancel</button>
+    <button class="btn btn-g" id="fi-btn" onclick="sendFreeInvite()">Send Invite</button>
+  </div>
+</div>
+
+<script>
+function openFreeInviteSheet(){
+  document.getElementById('fi-email').value='';
+  document.getElementById('fi-note').value='';
+  document.getElementById('fi-tier').value='member';
+  document.getElementById('fi-err').style.display='none';
+  openSheet('sh-free-invite');
+}
+
+async function sendFreeInvite(){
+  const email=document.getElementById('fi-email').value.trim();
+  const tier=document.getElementById('fi-tier').value;
+  const note=document.getElementById('fi-note').value.trim();
+  const err=document.getElementById('fi-err');
+  if(!email){err.textContent='Email required';err.style.display='block';return;}
+  const btn=document.getElementById('fi-btn');btn.disabled=true;btn.textContent='Sending…';
+  const r=await fetch('/api/admin/invites/create-free',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,tier,note})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.disabled=false;btn.textContent='Send Invite';
+  if(r.error){err.textContent=r.error;err.style.display='block';return;}
+  closeSheet('sh-free-invite');
+  loadAll();
+  if(r.url && confirm('Invite sent! Tap OK to copy the join link.')){
+    navigator.clipboard.writeText(r.url).catch(()=>prompt('Join link:',r.url));
+  }
+}
+</script>
 </body>
 </html>

@@ -420,7 +420,7 @@ async function runSubscriptionCron() {
   for (const m of streamExpired) {
     // Skip staff — they have permanent access
     const profile = db.prepare('SELECT tier FROM profiles WHERE member_id=?').get(m.id);
-    const isStaff = ['dealer','mod','admin','warden'].includes(profile?.tier);
+    const isStaff = ['family','dealer','mod','admin','warden'].includes(profile?.tier);
     if (isStaff) continue;
 
     // Disable on VPS Jellyfin
@@ -460,7 +460,7 @@ async function runSubscriptionCron() {
   `).all(nowISO);
   for (const m of castExpired) {
     const profile = db.prepare('SELECT tier FROM profiles WHERE member_id=?').get(m.id);
-    const isStaff = ['dealer','mod','admin','warden'].includes(profile?.tier);
+    const isStaff = ['family','dealer','mod','admin','warden'].includes(profile?.tier);
     if (isStaff) continue;
 
     try {
@@ -2337,7 +2337,7 @@ app.post('/api/admin/members/:id', requireMod, async (req, res) => {
         const oldTier = profile.tier;
         db.prepare('UPDATE profiles SET tier=? WHERE id=?').run(tier, profile.id);
 
-        const staffTiers = ['dealer','mod','admin','warden'];
+        const staffTiers = ['family','dealer','mod','admin','warden'];
         const isNowStaff = staffTiers.includes(tier);
         const wasStaff = staffTiers.includes(oldTier);
 
@@ -2672,8 +2672,9 @@ app.post('/api/invite/:token/complete', async (req, res) => {
 
       db.prepare('INSERT INTO members (id, first_name, last_name, email, phone, password, plain_pass, referred_by) VALUES (?,?,?,?,?,?,?,?)')
         .run(memberId, first_name, last_name||'', email, phone||null, hashedPass, plain, referred_by||null);
-      db.prepare("INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, devices, setup_done) VALUES (?,?,?,?,'member',?,?,1)")
-        .run(profileId, screen_name, email, color, memberId, devices ? JSON.stringify(devices) : null);
+      const inviteTier = ['family','dealer','mod','admin'].includes(req.body.tier) ? req.body.tier : 'member';
+      db.prepare("INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, devices, setup_done) VALUES (?,?,?,?,?,?,?,1)")
+        .run(profileId, screen_name, email, color, inviteTier, memberId, devices ? JSON.stringify(devices) : null);
       db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(profileId, memberId);
       db.prepare('UPDATE invites SET status=?, member_id=?, used_at=CURRENT_TIMESTAMP WHERE token=?').run('used', memberId, req.params.token);
     });
@@ -3201,6 +3202,41 @@ app.post('/api/dealer/demo/create', requireDealer, async (req, res) => {
       .run(id, req.profile.id, 'stream', 'pending', email, note||null);
 
     res.json({ ok: true, id });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// POST create free invite (admin only — no Stripe)
+app.post('/api/admin/invites/create-free', requireMod, async (req, res) => {
+  try {
+    const { email, note, tier } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+
+    const allowedTiers = ['member','family','dealer','mod','admin'];
+    const assignTier = allowedTiers.includes(tier) ? tier : 'member';
+
+    const token = require('crypto').randomBytes(24).toString('hex');
+    const id = genId();
+    const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
+
+    db.prepare('INSERT INTO invites (id, token, email, created_by, amount, note, status, expires_at) VALUES (?,?,?,?,0,?,?,?)')
+      .run(id, token, email, req.profile.id, note||null, 'paid', expires);
+
+    const joinUrl = (process.env.SITE_URL || 'https://enterdungeon.cc') + '/join?token=' + token + (assignTier !== 'member' ? '&tier=' + assignTier : '');
+
+    // Send welcome email
+    const html = emailShell(`
+      <h2>You've Been Invited to Dungeon</h2>
+      <div class="rule"></div>
+      <p>You've been personally invited to join Dungeon — a private streaming community.</p>
+      ${note ? `<p><em>"${note}"</em></p>` : ''}
+      <a href="${joinUrl}" class="btn">Accept Invite →</a>
+      <div class="rule"></div>
+      <p style="font-size:12px;color:#6b8f7a">This invite expires in 30 days.</p>
+    `);
+    await sendMail(email, "You're Invited to Dungeon", html).catch(e => console.error("Free invite email error:", e.message));
+
+    res.json({ ok: true, url: joinUrl, token });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
