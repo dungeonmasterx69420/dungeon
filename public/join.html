@@ -230,7 +230,7 @@ async function submit() {
   const r = await fetch('/api/invite/' + _token + '/complete', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ first_name: fn, last_name: ln, screen_name: sn, phone, devices: selectedDevices, referred_by: document.getElementById('referred-by').value || null, tier: new URLSearchParams(location.search).get('tier') || '' })
+    body: JSON.stringify({ first_name: fn, last_name: ln, screen_name: sn, phone, devices: selectedDevices, referred_by: document.getElementById('referred-by')?.value || null, tier: new URLSearchParams(location.search).get('tier') || '' })
   }).then(async r => ({ ok: r.ok, data: await r.json() }));
 
   btn.disabled = false; btn.textContent = 'Create My Account →';
