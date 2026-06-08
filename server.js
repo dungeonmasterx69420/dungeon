@@ -2664,6 +2664,8 @@ app.post('/api/invite/:token/complete', async (req, res) => {
     const colors = ['#34d399','#60a5fa','#f87171','#fbbf24','#a78bfa'];
     const color = colors[Math.floor(Math.random()*colors.length)];
 
+    const inviteTier = ['family','dealer','mod','admin'].includes(req.body.tier) ? req.body.tier : 'member';
+
     // Use DB transaction to prevent race conditions
     const createAccount = db.transaction(() => {
       // Re-check inside transaction
@@ -2672,7 +2674,7 @@ app.post('/api/invite/:token/complete', async (req, res) => {
 
       db.prepare('INSERT INTO members (id, first_name, last_name, email, phone, password, plain_pass, referred_by) VALUES (?,?,?,?,?,?,?,?)')
         .run(memberId, first_name, last_name||'', email, phone||null, hashedPass, plain, referred_by||null);
-      const inviteTier = ['family','dealer','mod','admin'].includes(req.body.tier) ? req.body.tier : 'member';
+      // inviteTier declared outside transaction so it's accessible after
       db.prepare("INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, devices, setup_done) VALUES (?,?,?,?,?,?,?,1)")
         .run(profileId, screen_name, email, color, inviteTier, memberId, devices ? JSON.stringify(devices) : null);
       db.prepare('UPDATE members SET profile_id=? WHERE id=?').run(profileId, memberId);
