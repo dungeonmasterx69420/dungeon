@@ -139,10 +139,38 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
     <div class="step-title" style="text-align:center;margin-bottom:8px">Welcome to the Dungeon</div>
     <div class="step-sub" style="text-align:center">A few things worth knowing.</div>
 
+    <div id="done-member-tips">
     <div class="instr-card"><div class="instr-row"><div class="instr-num">💳</div><div class="instr-text">Your subscription runs for <strong>30 days</strong>. Redeem another credit from your dashboard before it expires to keep access.</div></div></div>
     <div class="instr-card"><div class="instr-row"><div class="instr-num">📱</div><div class="instr-text">You can use the <strong>same credentials on multiple devices</strong> — phone, tablet, TV. Install the app anywhere and sign in.</div></div></div>
     <div class="instr-card"><div class="instr-row"><div class="instr-num">🔑</div><div class="instr-text">Your <strong>Dungeon login</strong> (email + password) is only for enterdungeon.cc. Your <strong>streaming credentials</strong> are for Jellyfin.</div></div></div>
     <div class="instr-card"><div class="instr-row"><div class="instr-num">❓</div><div class="instr-text">Need help? Use <strong><a href="/dashboard.html">Contact Support</a></strong> from your dashboard.</div></div></div>
+    </div>
+
+    <div id="done-family-tips" style="display:none">
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">💜</div><div class="instr-text">You have <strong>free access for life</strong> — no subscriptions, no credits needed. You're always in.</div></div></div>
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">📱</div><div class="instr-text">Use the <strong>same credentials on multiple devices</strong> — phone, tablet, TV. Install Jellyfin anywhere and sign in.</div></div></div>
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">🔑</div><div class="instr-text">Your <strong>Dungeon login</strong> (email + password) is only for enterdungeon.cc. Your <strong>streaming credentials</strong> are for Jellyfin.</div></div></div>
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">❓</div><div class="instr-text">Need help? Use <strong><a href="/dashboard.html">Contact Support</a></strong> from your dashboard.</div></div></div>
+    </div>
+
+    <div id="done-dealer-tips" style="display:none">
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">💰</div><div class="instr-text">You have <strong>lifetime access</strong> — as long as you keep making us coin. Send invites, close deals, stack commissions.</div></div></div>
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">🤝</div><div class="instr-text">Head to your <strong><a href="/dealer.html">DungeonDealer panel</a></strong> to send invites and track your earnings.</div></div></div>
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">📱</div><div class="instr-text">Use the <strong>same credentials on multiple devices</strong> — phone, tablet, TV. Install Jellyfin anywhere and sign in.</div></div></div>
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">🔑</div><div class="instr-text">Your <strong>Dungeon login</strong> (email + password) is only for enterdungeon.cc. Your <strong>streaming credentials</strong> are for Jellyfin.</div></div></div>
+    </div>
+
+    <div id="done-mod-tips" style="display:none">
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">🛡️</div><div class="instr-text">You have <strong>lifetime access</strong> — enjoy it, and keep the Discord and site in order. You know what to do.</div></div></div>
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">📱</div><div class="instr-text">Use the <strong>same credentials on multiple devices</strong> — phone, tablet, TV. Install Jellyfin anywhere and sign in.</div></div></div>
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">🔑</div><div class="instr-text">Your <strong>Dungeon login</strong> (email + password) is only for enterdungeon.cc. Your <strong>streaming credentials</strong> are for Jellyfin.</div></div></div>
+    </div>
+
+    <div id="done-admin-tips" style="display:none">
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">⚙️</div><div class="instr-text">You have <strong>lifetime access</strong>. Enjoy it. Admin stuff will reveal itself when the time comes — or it won't. Either way you're in.</div></div></div>
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">📱</div><div class="instr-text">Use the <strong>same credentials on multiple devices</strong> — phone, tablet, TV. Install Jellyfin anywhere and sign in.</div></div></div>
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">🔑</div><div class="instr-text">Your <strong>Dungeon login</strong> (email + password) is only for enterdungeon.cc. Your <strong>streaming credentials</strong> are for Jellyfin.</div></div></div>
+    </div>
 
     <div class="done-links">
       <a href="https://dungeoncast.cc" target="_blank" class="done-link"><div class="done-link-icon">🌊</div><div class="done-link-name">Open in Browser</div><div class="done-link-sub">dungeoncast.cc</div></a>
@@ -231,13 +259,31 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
   document.getElementById('cred-user').textContent = _user;
   document.getElementById('cred-pass').textContent = _pass;
 
-  // Customise done screen for family tier
+  // Customise done screen based on tier
   if(tier === 'family'){
     document.getElementById('done-icon').textContent = '💜';
     document.getElementById('done-title').textContent = 'Welcome to the Family';
     document.getElementById('done-sub').textContent = 'You have free access for life. No subscriptions, no expiry — just Dungeon.';
     document.getElementById('done-member-tips').style.display = 'none';
     document.getElementById('done-family-tips').style.display = 'block';
+  } else if(tier === 'dealer'){
+    document.getElementById('done-icon').textContent = '💸';
+    document.getElementById('done-title').textContent = 'Welcome, DungeonDealer';
+    document.getElementById('done-sub').textContent = 'Lifetime access is yours — keep making us coin.';
+    document.getElementById('done-member-tips').style.display = 'none';
+    document.getElementById('done-dealer-tips').style.display = 'block';
+  } else if(tier === 'mod'){
+    document.getElementById('done-icon').textContent = '🛡️';
+    document.getElementById('done-title').textContent = 'Welcome, Moderator';
+    document.getElementById('done-sub').textContent = 'Lifetime access — keep the peace and you're good.';
+    document.getElementById('done-member-tips').style.display = 'none';
+    document.getElementById('done-mod-tips').style.display = 'block';
+  } else if(tier === 'admin' || tier === 'warden'){
+    document.getElementById('done-icon').textContent = '⚙️';
+    document.getElementById('done-title').textContent = 'Welcome, Admin';
+    document.getElementById('done-sub').textContent = 'Lifetime access. Admin stuff will find you.';
+    document.getElementById('done-member-tips').style.display = 'none';
+    document.getElementById('done-admin-tips').style.display = 'block';
   }
 
   // Auto-select device from profile
