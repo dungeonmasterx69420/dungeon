@@ -115,28 +115,31 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
   <!-- Step 2: Download -->
   <div class="step" id="step2">
     <div class="step-eyebrow">Step 1 — Get the App</div>
-    <div class="step-title">Download the app</div>
-    <div class="step-sub">Pick your device and grab the right app. Download it now so you're ready when your credentials arrive.</div>
+    <div class="step-title">Download Jellyfin</div>
+    <div class="step-sub">Jellyfin is the recommended app. Download it for your phone — you can cast from your phone to any TV.</div>
 
-    <div class="device-grid" id="device-grid">
-      <button class="dv-btn" onclick="selDev('android')" data-d="android"><div class="dv-icon">📱</div><div><div class="dv-name">Android</div><div class="dv-sub">Phone or Tablet</div></div></button>
-      <button class="dv-btn" onclick="selDev('iphone')" data-d="iphone"><div class="dv-icon">📱</div><div><div class="dv-name">iPhone / iPad</div><div class="dv-sub">iOS & iPadOS</div></div></button>
-      <button class="dv-btn" onclick="selDev('firetv')" data-d="firetv"><div class="dv-icon">📺</div><div><div class="dv-name">Fire TV / Stick</div><div class="dv-sub">Amazon Fire OS</div></div></button>
-      <button class="dv-btn" onclick="selDev('androidtv')" data-d="androidtv"><div class="dv-icon">📺</div><div><div class="dv-name">Android TV</div><div class="dv-sub">Google TV · Shield</div></div></button>
-      <button class="dv-btn" onclick="selDev('appletv')" data-d="appletv"><div class="dv-icon">📺</div><div><div class="dv-name">Apple TV</div><div class="dv-sub">tvOS</div></div></button>
-      <button class="dv-btn" onclick="selDev('roku')" data-d="roku"><div class="dv-icon">📺</div><div><div class="dv-name">Roku</div><div class="dv-sub">Roku TV · Stick · Ultra</div></div></button>
-      <button class="dv-btn" onclick="selDev('browser')" data-d="browser"><div class="dv-icon">💻</div><div><div class="dv-name">Windows / Mac</div><div class="dv-sub">Web browser</div></div></button>
+    <div class="app-links" id="app-links" style="margin-bottom:14px">
+      <a href="https://apps.apple.com/app/jellyfin-mobile/id1480192618" target="_blank" class="app-link">
+        <div class="app-link-icon">📱</div>
+        <div><div class="app-link-name">Jellyfin for iPhone & iPad</div><div class="app-link-sub">App Store</div></div>
+        <div class="app-link-arrow">↗</div>
+      </a>
+      <a href="https://play.google.com/store/apps/details?id=org.jellyfin.mobile" target="_blank" class="app-link">
+        <div class="app-link-icon">📱</div>
+        <div><div class="app-link-name">Jellyfin for Android</div><div class="app-link-sub">Google Play Store</div></div>
+        <div class="app-link-arrow">↗</div>
+      </a>
     </div>
 
-    <div id="app-links" style="display:none"></div>
-
     <div class="notice">
-      <strong>Can't find the app?</strong> Try casting instead — open Jellyfin on your phone, find what you want to watch, and tap the cast icon to send it to your TV. No extra setup needed.
+      <strong>On a TV?</strong> Download Jellyfin directly from your TV's app store — it's available on Fire TV, Android TV, Apple TV and Roku. Or cast from your phone using the cast icon inside the Jellyfin app. No setup needed.<br/><br/>
+      <strong>Quick Connect</strong> — already signed in on your phone? On your TV open Jellyfin → Quick Connect, then enter the code shown into the Jellyfin app on your phone under Settings → Quick Connect. No need to type your password on the TV.<br/><br/>
+      <strong>Other clients</strong> — Swiftfin (iOS/tvOS) and Streamyfin (iOS/Android) are alternatives if Jellyfin doesn't work for you.
     </div>
 
     <div class="nav-btns">
       <button class="btn btn-b" onclick="goStep(1)">← Back</button>
-      <button class="btn btn-g" id="s2-next" onclick="goStep(3)" disabled>Next →</button>
+      <button class="btn btn-g" onclick="goStep(3)">Next →</button>
     </div>
   </div>
 

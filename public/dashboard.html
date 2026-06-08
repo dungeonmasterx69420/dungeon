@@ -244,8 +244,8 @@
 </div>
 
 <script>
-  const TIER_COLORS={neut:'#e2e8e4',member:'#60a5fa',dealer:'#f59e0b',mod:'#34d399',admin:'#f87171',warden:'#fbbf24'};
-  const TIER_LABELS={neut:'Neut',member:'Member',dealer:'DungeonDealer',mod:'Moderator',admin:'Admin',warden:'Dungeon Master'};
+  const TIER_COLORS={neut:'#e2e8e4',member:'#60a5fa',family:'#a78bfa',dealer:'#f59e0b',mod:'#34d399',admin:'#f87171',warden:'#fbbf24'};
+  const TIER_LABELS={neut:'Neut',member:'Member',family:'Family Pass',dealer:'DungeonDealer',mod:'Moderator',admin:'Admin',warden:'Dungeon Master'};
 
   function fmtDate(dt){
     if(!dt)return'';
@@ -315,7 +315,9 @@
     const isStaff = ['family','dealer','mod','admin','warden'].includes(tier);
 
     if(isStaff){
-      subHtml = `<div class="staff-badge"><span>🔑</span><span class="staff-badge-text">Staff Access</span><span class="staff-badge-sub">${tLabel}</span></div>`;
+      const badgeIcon = tier==='family'?'💜':'🔑';
+      const badgeText = tier==='family'?'Family Pass':'Staff Access';
+      subHtml = `<div class="staff-badge"><span>${badgeIcon}</span><span class="staff-badge-text">${badgeText}</span><span class="staff-badge-sub">${tLabel}</span></div>`;
     } else {
       let hasSub = false;
       if(m.stremio_end){ hasSub=true; subHtml+=renderSubRow('DungeonStream','📺',m.stremio_end,m.stremio_start,m.stremio_end); }

@@ -378,6 +378,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
     <label>Tier</label>
     <select id="m-tier">
       <option value="member">Member</option>
+      <option value="family">Family & Friends</option>
       <option value="dealer">DungeonDealer</option>
       <option value="mod">Mod</option>
       <option value="admin">Admin</option>
@@ -626,6 +627,7 @@ function renderMembers(members){
           <div class="di"><div class="dl">Phone</div><div class="dv ${m.phone?'':'dim'}">${m.phone||'Not set'}</div></div>
           <div class="di"><div class="dl">Credits</div><div class="dv mono">${m.credit_balance||0}</div></div>
           <div class="di"><div class="dl">Member Since</div><div class="dv">${fmtDate(m.created_at)}</div></div>
+          ${!['family','dealer','mod','admin','warden'].includes(tier)?`
           <div class="di full">
             <div class="dl">🌊 DungeonStream — <span style="font-family:var(--mono);text-transform:none;letter-spacing:0;font-size:10px;color:${sAct?'var(--g)':'var(--red)'}">${sAct?(sDays+'d left'):(sEnd?'Expired':'No sub')}</span></div>
             <div class="dv mono">${esc(m.jellyfin_user||m.stremio_email||'—')}</div>
@@ -636,6 +638,7 @@ function renderMembers(members){
             <div class="dv mono">${esc(m.jellyfin_user||'—')}</div>
             ${cEnd?`<div class="dv sub">${cEnd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>`:''}
           </div>`:''}
+          `:`<div class="di full"><div class="dl">Access</div><div class="dv" style="color:var(--g)">✓ Permanent Access</div></div>`}
           ${devices?`<div class="di full"><div class="dl">Devices</div><div class="dv" style="color:var(--t2);font-size:11px">${devices}</div></div>`:''}
           ${m.referred_by?`<div class="di"><div class="dl">Referred By</div><div class="dv" style="color:var(--g)">@${esc(m.referred_by)}</div></div>`:''}
           ${m.notes?`<div class="di full"><div class="dl">Notes</div><div class="dv" style="color:var(--t2)">${esc(m.notes)}</div></div>`:''}
