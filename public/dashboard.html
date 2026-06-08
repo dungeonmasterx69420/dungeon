@@ -317,7 +317,8 @@
     if(isStaff){
       const badgeIcon = tier==='family'?'💜':'🔑';
       const badgeText = tier==='family'?'Family Pass':'Staff Access';
-      subHtml = `<div class="staff-badge"><span>${badgeIcon}</span><span class="staff-badge-text">${badgeText}</span><span class="staff-badge-sub">${tLabel}</span></div>`;
+      const badgeSub = tier==='family'?'DungeonFam':tLabel;
+      subHtml = `<div class="staff-badge"><span>${badgeIcon}</span><span class="staff-badge-text">${badgeText}</span><span class="staff-badge-sub">${badgeSub}</span></div>`;
     } else {
       let hasSub = false;
       if(m.stremio_end){ hasSub=true; subHtml+=renderSubRow('DungeonStream','📺',m.stremio_end,m.stremio_start,m.stremio_end); }

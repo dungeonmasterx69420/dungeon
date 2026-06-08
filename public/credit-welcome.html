@@ -225,10 +225,20 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
   if(!d.member?.credit_welcome_pending){window.location.href='/dashboard.html';return;}
 
   const m = d.member;
+  const tier = m.profile?.tier || 'member';
   _user = m.jellyfin_user || m.stremio_email || '—';
   _pass = m.plain_pass || m.stremio_pass || '—';
   document.getElementById('cred-user').textContent = _user;
   document.getElementById('cred-pass').textContent = _pass;
+
+  // Customise done screen for family tier
+  if(tier === 'family'){
+    document.getElementById('done-icon').textContent = '💜';
+    document.getElementById('done-title').textContent = 'Welcome to the Family';
+    document.getElementById('done-sub').textContent = 'You have free access for life. No subscriptions, no expiry — just Dungeon.';
+    document.getElementById('done-member-tips').style.display = 'none';
+    document.getElementById('done-family-tips').style.display = 'block';
+  }
 
   // Auto-select device from profile
   if(m.profile?.devices){
