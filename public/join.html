@@ -61,8 +61,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 
   <!-- Signup form -->
   <div id="card-form" class="card" style="display:none">
-    <div>
-      <span class="paid-badge">✓ Payment Confirmed</span>
+    <div id="payment-badges">
+      <span class="paid-badge" id="paid-badge">✓ Payment Confirmed</span>
       <span class="amount-badge" id="amount-badge"></span>
     </div>
     <div class="title">Complete Your Account</div>
@@ -78,7 +78,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
       <div class="sn-hint" id="sn-hint">Letters, numbers and underscores only. 2-20 characters.</div>
     </div>
     <div class="field"><label>Phone <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="tel" id="phone" placeholder="+1 (555) 000-0000" autocomplete="tel"/></div>
-    </div>
     <button class="btn" id="submit-btn" onclick="submit()">Create My Account →</button>
   </div>
 
