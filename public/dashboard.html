@@ -332,16 +332,14 @@
 
     // Footer links for staff
     const footer = document.getElementById('footer');
-    if(['family','dealer','mod','admin','warden'].includes(tier)){
-      if(['family','dealer','mod','admin','warden'].includes(tier)){
-        footer.innerHTML += '<span class="sep"> · </span><a href="/dealer.html" style="color:#f59e0b">DungeonDealer</a>';
-      }
-      if(['mod','admin','warden'].includes(tier)){
-        footer.innerHTML += '<span class="sep"> · </span><a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
-      }
-      if(['admin','warden'].includes(tier)){
-        footer.innerHTML += '<span class="sep"> · </span><a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
-      }
+    if(['dealer','mod','admin','warden'].includes(tier)){
+      footer.innerHTML += '<span class="sep"> · </span><a href="/dealer.html" style="color:#f59e0b">DungeonDealer</a>';
+    }
+    if(['mod','admin','warden'].includes(tier)){
+      footer.innerHTML += '<span class="sep"> · </span><a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
+    }
+    if(['admin','warden'].includes(tier)){
+      footer.innerHTML += '<span class="sep"> · </span><a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
     }
   });
 
