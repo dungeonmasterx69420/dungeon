@@ -187,7 +187,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 
 <script>
 let currentStep = 1;
-let _user = '', _pass = '';
+let _user = '', _pass = '', _tier = 'member';
 
 const INSTRS = {
   android:  ['Download <strong>Jellyfin</strong> from the Play Store if you haven\'t already.','Open the app and tap <strong>Add Server</strong>.','Enter <strong>https://dungeoncast.cc</strong> and tap Connect.','Sign in with your credentials above.','Tap <strong>Movies, Shows or Live TV</strong> and start watching.'],
@@ -206,6 +206,7 @@ function goStep(n) {
   document.getElementById('prog-fill').style.width=((n/3)*100)+'%';
   document.getElementById('prog-lbl').textContent = n===1?'Step 1 of 3':n===2?'Step 2 of 3':'Almost done';
   window.scrollTo(0,0);
+  if(n===3) applyTierDoneScreen(_tier);
 }
 
 function selDev(key) {
@@ -228,7 +229,6 @@ function selDev(key) {
       <button class="copy-btn" onclick="navigator.clipboard.writeText('${_pass}').then(()=>{this.textContent='✓';setTimeout(()=>this.textContent='Copy',2000)})">Copy</button>
     </div>
   </div>`;
-
   document.getElementById('instructions').style.display='block';
   document.getElementById('instructions').innerHTML = steps.map((t,i)=>`
     <div class="instr-card">
@@ -248,47 +248,46 @@ async function finish(){
   await fetch('/api/member/credit-welcome-done',{method:'POST'}).catch(()=>{});
 }
 
-fetch('/api/member/me').then(r=>r.json()).then(d=>{
-  if(!d.authenticated){window.location.href='/login.html';return;}
-  if(!d.member?.credit_welcome_pending){window.location.href='/dashboard.html';return;}
+function applyTierDoneScreen(tier) {
+  ['done-member-tips','done-family-tips','done-dealer-tips','done-mod-tips','done-admin-tips']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.style.display='none'; });
 
-  const m = d.member;
-  const tier = m.profile?.tier || 'member';
-  // Default to member tips, override per tier below
-  document.getElementById('done-member-tips').style.display = 'block';
-  _user = m.jellyfin_user || m.stremio_email || '—';
-  _pass = m.plain_pass || m.stremio_pass || '—';
-  document.getElementById('cred-user').textContent = _user;
-  document.getElementById('cred-pass').textContent = _pass;
-
-  // Customise done screen based on tier
   if(tier === 'family'){
     document.getElementById('done-icon').textContent = '💜';
     document.getElementById('done-title').textContent = 'Welcome to the Family';
     document.getElementById('done-sub').textContent = 'You have free access for life. No subscriptions, no expiry — just Dungeon.';
-    document.getElementById('done-member-tips').style.display = 'none';
     document.getElementById('done-family-tips').style.display = 'block';
   } else if(tier === 'dealer'){
     document.getElementById('done-icon').textContent = '💸';
     document.getElementById('done-title').textContent = 'Welcome, DungeonDealer';
     document.getElementById('done-sub').textContent = 'Lifetime access is yours — keep making us coin.';
-    document.getElementById('done-member-tips').style.display = 'none';
     document.getElementById('done-dealer-tips').style.display = 'block';
   } else if(tier === 'mod'){
     document.getElementById('done-icon').textContent = '🛡️';
     document.getElementById('done-title').textContent = 'Welcome, Moderator';
     document.getElementById('done-sub').textContent = "Lifetime access — keep the peace and you're good.";
-    document.getElementById('done-member-tips').style.display = 'none';
     document.getElementById('done-mod-tips').style.display = 'block';
   } else if(tier === 'admin' || tier === 'warden'){
     document.getElementById('done-icon').textContent = '⚙️';
     document.getElementById('done-title').textContent = 'Welcome, Admin';
     document.getElementById('done-sub').textContent = 'Lifetime access. Admin stuff will find you.';
-    document.getElementById('done-member-tips').style.display = 'none';
     document.getElementById('done-admin-tips').style.display = 'block';
+  } else {
+    document.getElementById('done-member-tips').style.display = 'block';
   }
+}
 
-  // Auto-select device from profile
+fetch('/api/member/me').then(r=>r.json()).then(d=>{
+  if(!d.authenticated){window.location.href='/login.html';return;}
+  if(!d.member?.credit_welcome_pending){window.location.href='/dashboard.html';return;}
+
+  const m = d.member;
+  _tier = m.profile?.tier || 'member';
+  _user = m.jellyfin_user || m.stremio_email || '—';
+  _pass = m.plain_pass || m.stremio_pass || '—';
+  document.getElementById('cred-user').textContent = _user;
+  document.getElementById('cred-pass').textContent = _pass;
+
   if(m.profile?.devices){
     try{
       const devs = typeof m.profile.devices==='string'?JSON.parse(m.profile.devices):m.profile.devices;
