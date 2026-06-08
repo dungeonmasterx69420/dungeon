@@ -139,7 +139,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
     <div class="step-title" style="text-align:center;margin-bottom:8px">Welcome to the Dungeon</div>
     <div class="step-sub" style="text-align:center">A few things worth knowing.</div>
 
-    <div id="done-member-tips">
+    <div id="done-member-tips" style="display:none">
     <div class="instr-card"><div class="instr-row"><div class="instr-num">💳</div><div class="instr-text">Your subscription runs for <strong>30 days</strong>. Redeem another credit from your dashboard before it expires to keep access.</div></div></div>
     <div class="instr-card"><div class="instr-row"><div class="instr-num">📱</div><div class="instr-text">You can use the <strong>same credentials on multiple devices</strong> — phone, tablet, TV. Install the app anywhere and sign in.</div></div></div>
     <div class="instr-card"><div class="instr-row"><div class="instr-num">🔑</div><div class="instr-text">Your <strong>Dungeon login</strong> (email + password) is only for enterdungeon.cc. Your <strong>streaming credentials</strong> are for Jellyfin.</div></div></div>
@@ -254,6 +254,8 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
 
   const m = d.member;
   const tier = m.profile?.tier || 'member';
+  // Default to member tips, override per tier below
+  document.getElementById('done-member-tips').style.display = 'block';
   _user = m.jellyfin_user || m.stremio_email || '—';
   _pass = m.plain_pass || m.stremio_pass || '—';
   document.getElementById('cred-user').textContent = _user;
