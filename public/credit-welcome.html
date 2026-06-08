@@ -275,7 +275,7 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
   } else if(tier === 'mod'){
     document.getElementById('done-icon').textContent = '🛡️';
     document.getElementById('done-title').textContent = 'Welcome, Moderator';
-    document.getElementById('done-sub').textContent = 'Lifetime access — keep the peace and you're good.';
+    document.getElementById('done-sub').textContent = "Lifetime access — keep the peace and you're good.";
     document.getElementById('done-member-tips').style.display = 'none';
     document.getElementById('done-mod-tips').style.display = 'block';
   } else if(tier === 'admin' || tier === 'warden'){
