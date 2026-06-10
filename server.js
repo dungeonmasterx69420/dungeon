@@ -310,6 +310,7 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE profiles ADD COLUMN welcome_done INTEGER DEFAULT 0').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN credit_welcome_pending INTEGER DEFAULT 0').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_user TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_notified INTEGER DEFAULT 0').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_pass TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_expires DATETIME').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_notified INTEGER DEFAULT 0').run(); } catch(e) {}
@@ -444,8 +445,8 @@ async function runSubscriptionCron() {
       try {
         const jfId = await jellyfinGetUserId(demo.demo_user, JELLYFIN_URL, JELLYFIN_API_KEY);
         if (jfId) {
-          await jellyfinRequest('POST', '/Users/'+jfId+'/Policy', { IsDisabled: true }, JELLYFIN_URL, JELLYFIN_API_KEY);
-          console.log('[demo] Expired — disabled:', demo.demo_user);
+          await jellyfinRequest('DELETE', '/Users/'+jfId, null, JELLYFIN_URL, JELLYFIN_API_KEY);
+          console.log('[demo] Expired — deleted Jellyfin user:', demo.demo_user);
         }
       } catch(e) { console.error('[demo] Revoke error:', e.message); }
       db.prepare('UPDATE demo_requests SET demo_notified=1 WHERE id=?').run(demo.id);
@@ -3259,6 +3260,60 @@ app.post('/api/admin/invites/create-free', requireMod, async (req, res) => {
 
     res.json({ ok: true, url: joinUrl, token });
   } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// POST admin creates a demo link for a non-member (public accessible join link)
+app.post('/api/admin/demos/create-link', requireMod, async (req, res) => {
+  try {
+    const { email, note } = req.body;
+    const id = genId();
+    const token = require('crypto').randomBytes(24).toString('hex');
+    const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days to accept
+
+    db.prepare('INSERT INTO demo_requests (id, profile_id, service, status, email, notes) VALUES (?,?,?,?,?,?)')
+      .run(id, 'admin', 'stream', 'pending', email||null, note||null);
+
+    // Store token on the demo request for lookup
+    db.prepare('UPDATE demo_requests SET demo_pass=? WHERE id=?').run(token, id);
+
+    const demoUrl = (process.env.SITE_URL || 'https://enterdungeon.cc') + '/demo?token=' + token;
+
+    if (email) {
+      const html = emailShell(`
+        <h2>You're Invited to Try Dungeon</h2>
+        <div class="rule"></div>
+        <p>You've been invited to try out Dungeon — a private streaming service.</p>
+        ${note ? `<p><em>"${note}"</em></p>` : ''}
+        <p>Click below to claim your free 24-hour demo account:</p>
+        <a href="${demoUrl}" class="btn">Claim Demo Access →</a>
+        <div class="rule"></div>
+        <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days.</p>
+      `);
+      await sendMail(email, 'Try Dungeon Free — 24 Hour Demo', html).catch(e => console.error('Demo link email error:', e.message));
+    }
+
+    res.json({ ok: true, url: demoUrl, id });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET demo landing page
+app.get('/demo', (req, res) => {
+  res.sendFile(require('path').join(__dirname, 'public', 'demo.html'));
+});
+
+
+// GET demo status by token (public — for demo landing page)
+app.get('/api/demo/status', (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) return res.status(400).json({ ok: false, error: 'Token required' });
+    const demo = db.prepare('SELECT * FROM demo_requests WHERE demo_pass=?').get(token);
+    if (!demo) return res.json({ ok: false });
+    // Check if expired
+    if (demo.demo_expires && new Date(demo.demo_expires) < new Date()) return res.json({ ok: false, error: 'Expired' });
+    res.json({ ok: true, status: demo.status, demo_user: demo.demo_user, demo_pass: demo.status==='fulfilled' ? demo.demo_pass : null });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 // ── Admin: Subscribers ────────────────────────────────────────────────────────

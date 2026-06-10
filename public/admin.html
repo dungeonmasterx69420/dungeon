@@ -1039,5 +1039,46 @@ async function sendFreeInvite(){
   }
 }
 </script>
+
+<!-- Demo Link Sheet -->
+<div class="sheet" id="sh-demo-link">
+  <div class="sh-handle"></div>
+  <div class="sh-title">Send Demo Link</div>
+  <div class="sh-sub">Create a demo link for someone who hasn't signed up yet. They'll get a page with their credentials once you fulfill the demo.</div>
+  <div class="sh-err" id="dl-err"></div>
+  <div class="field"><label>Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional — send by email or copy link to text</span></label><input type="email" id="dl-email" placeholder="client@email.com"/></div>
+  <div class="field"><label>Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="text" id="dl-note" placeholder="Personal message…"/></div>
+  <div class="sacts">
+    <button class="btn btn-b" onclick="closeSheet('sh-demo-link')">Cancel</button>
+    <button class="btn btn-g" id="dl-btn" onclick="sendDemoLink()">Create Demo Link</button>
+  </div>
+</div>
+
+<script>
+function openDemoLinkSheet(){
+  document.getElementById('dl-email').value='';
+  document.getElementById('dl-note').value='';
+  document.getElementById('dl-err').style.display='none';
+  openSheet('sh-demo-link');
+}
+
+async function sendDemoLink(){
+  const email=document.getElementById('dl-email').value.trim();
+  const note=document.getElementById('dl-note').value.trim();
+  const err=document.getElementById('dl-err');
+  const btn=document.getElementById('dl-btn');
+  btn.disabled=true;btn.textContent='Creating…';
+  const r=await fetch('/api/admin/demos/create-link',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,note})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.disabled=false;btn.textContent='Create Demo Link';
+  if(r.error){err.textContent=r.error;err.style.display='block';return;}
+  closeSheet('sh-demo-link');
+  loadDemos();
+  if(r.url){
+    navigator.clipboard.writeText(r.url).then(()=>{
+      alert('Demo link created and copied to clipboard!\n\n'+r.url);
+    }).catch(()=>prompt('Copy this demo link to share:',r.url));
+  }
+}
+</script>
 </body>
 </html>
