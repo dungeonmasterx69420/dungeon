@@ -311,9 +311,13 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE members ADD COLUMN credit_welcome_pending INTEGER DEFAULT 0').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_user TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_notified INTEGER DEFAULT 0').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_token TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_credential TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_pass TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_expires DATETIME').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_notified INTEGER DEFAULT 0').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_token TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_credential TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN notes TEXT').run(); } catch(e) {}
   // Create dealer earnings table
   try {
@@ -3274,8 +3278,10 @@ app.post('/api/admin/demos/create-link', requireMod, async (req, res) => {
     db.prepare('INSERT INTO demo_requests (id, profile_id, service, status, email, notes) VALUES (?,?,?,?,?,?)')
       .run(id, 'admin', 'stream', 'pending', email||null, note||null);
 
-    // Store token on the demo request for lookup
-    db.prepare('UPDATE demo_requests SET demo_pass=? WHERE id=?').run(token, id);
+    db.prepare('UPDATE demo_requests SET demo_token=? WHERE id=?').run(token, id);
+
+    // Auto-create Jellyfin account immediately
+    await autoFulfillDemo(id);
 
     const demoUrl = (process.env.SITE_URL || 'https://enterdungeon.cc') + '/demo?token=' + token;
 
@@ -3308,11 +3314,11 @@ app.get('/api/demo/status', (req, res) => {
   try {
     const { token } = req.query;
     if (!token) return res.status(400).json({ ok: false, error: 'Token required' });
-    const demo = db.prepare('SELECT * FROM demo_requests WHERE demo_pass=?').get(token);
+    const demo = db.prepare('SELECT * FROM demo_requests WHERE demo_token=?').get(token);
     if (!demo) return res.json({ ok: false });
     // Check if expired
     if (demo.demo_expires && new Date(demo.demo_expires) < new Date()) return res.json({ ok: false, error: 'Expired' });
-    res.json({ ok: true, status: demo.status, demo_user: demo.demo_user, demo_pass: demo.status==='fulfilled' ? demo.demo_pass : null, demo_expires: demo.demo_expires });
+    res.json({ ok: true, status: demo.status, demo_user: demo.demo_user, demo_pass: demo.demo_credential, demo_expires: demo.demo_expires });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
@@ -3326,7 +3332,10 @@ app.post('/api/dealer/demo/create-link', requireDealer, async (req, res) => {
 
     db.prepare('INSERT INTO demo_requests (id, profile_id, service, status, email, notes) VALUES (?,?,?,?,?,?)')
       .run(id, req.profile.id, 'stream', 'pending', email||null, note||null);
-    db.prepare('UPDATE demo_requests SET demo_pass=? WHERE id=?').run(token, id);
+    db.prepare('UPDATE demo_requests SET demo_token=? WHERE id=?').run(token, id);
+
+    // Auto-create Jellyfin account immediately
+    await autoFulfillDemo(id);
 
     const demoUrl = (process.env.SITE_URL || 'https://enterdungeon.cc') + '/demo?token=' + token;
 
@@ -3346,6 +3355,29 @@ app.post('/api/dealer/demo/create-link', requireDealer, async (req, res) => {
     res.json({ ok: true, url: demoUrl, id });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
+
+
+// Helper: auto-create Jellyfin demo account
+async function autoFulfillDemo(demoId) {
+  try {
+    const username = 'demo_' + require('crypto').randomBytes(4).toString('hex');
+    const password = mkRandPass();
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+    await jellyfinCreateUser(username, password, JELLYFIN_URL, JELLYFIN_API_KEY);
+    const jfId = await jellyfinGetUserId(username, JELLYFIN_URL, JELLYFIN_API_KEY);
+    if (jfId) await jellyfinGrantLibraryAccess(jfId, ['Movies', 'Shows'], JELLYFIN_URL, JELLYFIN_API_KEY);
+
+    db.prepare("UPDATE demo_requests SET status='fulfilled', fulfilled_at=CURRENT_TIMESTAMP, demo_user=?, demo_credential=?, demo_expires=? WHERE id=?")
+      .run(username, password, expires, demoId);
+
+    console.log('[demo] Auto-fulfilled:', username);
+    return { username, password, expires };
+  } catch(e) {
+    console.error('[demo] Auto-fulfill error:', e.message);
+    return null;
+  }
+}
 
 // ── Admin: Subscribers ────────────────────────────────────────────────────────
 app.get('/api/admin/subscribers', requireAuth, (req, res) => {
