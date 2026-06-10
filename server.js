@@ -3312,8 +3312,39 @@ app.get('/api/demo/status', (req, res) => {
     if (!demo) return res.json({ ok: false });
     // Check if expired
     if (demo.demo_expires && new Date(demo.demo_expires) < new Date()) return res.json({ ok: false, error: 'Expired' });
-    res.json({ ok: true, status: demo.status, demo_user: demo.demo_user, demo_pass: demo.status==='fulfilled' ? demo.demo_pass : null });
+    res.json({ ok: true, status: demo.status, demo_user: demo.demo_user, demo_pass: demo.status==='fulfilled' ? demo.demo_pass : null, demo_expires: demo.demo_expires });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+
+// POST dealer creates a demo link for a non-member
+app.post('/api/dealer/demo/create-link', requireDealer, async (req, res) => {
+  try {
+    const { email, note } = req.body;
+    const id = genId();
+    const token = require('crypto').randomBytes(24).toString('hex');
+
+    db.prepare('INSERT INTO demo_requests (id, profile_id, service, status, email, notes) VALUES (?,?,?,?,?,?)')
+      .run(id, req.profile.id, 'stream', 'pending', email||null, note||null);
+    db.prepare('UPDATE demo_requests SET demo_pass=? WHERE id=?').run(token, id);
+
+    const demoUrl = (process.env.SITE_URL || 'https://enterdungeon.cc') + '/demo?token=' + token;
+
+    if (email) {
+      const html = emailShell(`
+        <h2>You're Invited to Try Dungeon</h2>
+        <div class="rule"></div>
+        <p>You've been invited to try out Dungeon — a private streaming service.</p>
+        ${note ? `<p><em>"${note}"</em></p>` : ''}
+        <a href="${demoUrl}" class="btn">Claim Demo Access →</a>
+        <div class="rule"></div>
+        <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days.</p>
+      `);
+      await sendMail(email, 'Try Dungeon Free — 24 Hour Demo', html).catch(e => console.error('Demo link email error:', e.message));
+    }
+
+    res.json({ ok: true, url: demoUrl, id });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── Admin: Subscribers ────────────────────────────────────────────────────────

@@ -443,14 +443,14 @@ function fmtDate(d){if(!d)return'—';const dt=new Date(d);return isNaN(dt)?'—
 <!-- Demo Sheet -->
 <div class="sheet" id="sh-demo">
   <div class="sh-handle"></div>
-  <div class="sh-title">Send Demo Request</div>
-  <div class="sh-sub">Submit a demo request for a potential client. The Dungeon Master will set up a 24-hour trial account and send them credentials.</div>
+  <div class="sh-title">Send Demo Link</div>
+  <div class="sh-sub">Create a 24-hour demo link for a potential client. Enter their email to send it, or copy the link to share manually.</div>
   <div class="sh-err" id="demo-err"></div>
-  <div class="field"><label>Client Email</label><input type="email" id="demo-email" placeholder="client@email.com"/></div>
+  <div class="field"><label>Client Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional — or copy link to share manually</span></label><input type="email" id="demo-email" placeholder="client@email.com"/></div>
   <div class="field"><label>Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="text" id="demo-note" placeholder="Any info for the Dungeon Master…"/></div>
   <div class="sacts">
     <button class="btn btn-b" onclick="closeSheet('sh-demo')">Cancel</button>
-    <button class="btn btn-gold" id="demo-btn" onclick="sendDemo()">Submit Request</button>
+    <button class="btn btn-gold" id="demo-btn" onclick="sendDemo()">Send Demo</button>
   </div>
 </div>
 
@@ -466,13 +466,17 @@ async function sendDemo(){
   const email=document.getElementById('demo-email').value.trim();
   const note=document.getElementById('demo-note').value.trim();
   const err=document.getElementById('demo-err');
-  if(!email){err.textContent='Email required';err.style.display='block';return;}
-  const btn=document.getElementById('demo-btn');btn.disabled=true;btn.textContent='Submitting…';
-  const r=await fetch('/api/dealer/demo/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,note})}).then(r=>r.json()).catch(e=>({error:e.message}));
-  btn.disabled=false;btn.textContent='Submit Request';
+  const btn=document.getElementById('demo-btn');
+  btn.disabled=true;btn.textContent='Creating…';
+  const r=await fetch('/api/dealer/demo/create-link',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,note})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.disabled=false;btn.textContent='Send Demo';
   if(r.error){err.textContent=r.error;err.style.display='block';return;}
   closeSheet('sh-demo');
-  alert('Demo request submitted! The Dungeon Master will set it up shortly.');
+  if(r.url){
+    navigator.clipboard.writeText(r.url).then(()=>{
+      alert('Demo link created and copied!\n\n'+r.url);
+    }).catch(()=>prompt('Copy this demo link to share:',r.url));
+  }
 }
 </script>
 </body>

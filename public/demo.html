@@ -6,86 +6,273 @@
 <title>Dungeon · Demo Access</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);--g:#34d399;--txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;--red:#f87171;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace}
-html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;align-items:center;justify-content:center;padding:20px}
-.box{width:100%;max-width:420px}
-.logo{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--g);text-align:center;margin-bottom:28px}
-.card{background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;padding:24px}
-.title{font-size:18px;font-weight:700;margin-bottom:6px}
-.sub{font-size:13px;color:var(--t2);margin-bottom:20px;line-height:1.6}
-.err{font-size:12px;color:var(--red);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;display:none}
-.cred-box{background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;padding:14px;margin-bottom:16px}
-.cred-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);--g:#34d399;--gb:rgba(52,211,153,.08);--txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;--red:#f87171;--amb:#fbbf24;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans)}
+.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center}
+.logo{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--g);text-decoration:none}
+.prog-wrap{background:var(--s1);border-bottom:1px solid var(--bdr);padding:10px 20px}
+.prog-lbl{font-size:10px;color:var(--t3);font-family:var(--mono);margin-bottom:6px}
+.prog-bar{height:3px;background:var(--bdr);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--amb);border-radius:2px;transition:width .4s ease}
+.page{max-width:560px;margin:0 auto;padding:28px 16px 80px}
+.step{display:none}.step.on{display:block}
+.step-eyebrow{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--amb);font-family:var(--mono);margin-bottom:10px}
+.step-title{font-size:21px;font-weight:700;margin-bottom:8px;line-height:1.3}
+.step-sub{font-size:14px;color:var(--t2);margin-bottom:24px;line-height:1.7}
+
+/* Loading / error cards */
+.solo-card{max-width:420px;margin:60px auto;background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;padding:28px;text-align:center}
+.solo-card .icon{font-size:42px;margin-bottom:14px}
+.solo-card .title{font-size:17px;font-weight:700;margin-bottom:8px}
+.solo-card .sub{font-size:13px;color:var(--t2);line-height:1.6}
+
+/* Cred box */
+.cred-box{background:var(--s2);border:1px solid var(--bdr2);border-radius:10px;padding:16px;margin-bottom:14px}
+.cred-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .cred-row:last-child{margin-bottom:0}
 .cred-lbl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);width:76px;flex-shrink:0}
-.cred-val{font-size:13px;font-family:var(--mono);color:var(--txt);flex:1;word-break:break-all}
-.copy-btn{font-size:10px;padding:4px 10px;background:var(--s1);border:1px solid var(--bdr2);border-radius:6px;color:var(--t2);cursor:pointer;font-weight:600;white-space:nowrap}
+.cred-val{font-size:12px;font-family:var(--mono);color:var(--txt);flex:1;word-break:break-all}
+.copy-btn{font-size:10px;padding:4px 10px;background:var(--s1);border:1px solid var(--bdr2);border-radius:6px;color:var(--t2);cursor:pointer;font-weight:600;white-space:nowrap;transition:all .15s}
 .copy-btn:hover{color:var(--g);border-color:var(--g)}
-.btn{display:block;width:100%;padding:13px;background:var(--g);border:none;border-radius:8px;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);text-align:center;text-decoration:none;margin-top:8px}
-.notice{font-size:12px;color:var(--t3);text-align:center;margin-top:14px;line-height:1.6}
-.loading{text-align:center;color:var(--t3);font-family:var(--mono);font-size:12px;padding:20px}
+
+/* Timer */
+.timer-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--amb)}
+.timer-box strong{font-family:var(--mono)}
+
+/* App links */
+.app-link{display:flex;align-items:center;gap:12px;background:var(--s2);border:1px solid var(--bdr2);border-radius:10px;padding:13px;text-decoration:none;margin-bottom:8px;transition:border-color .15s}
+.app-link:hover{border-color:var(--g)}
+.app-link-icon{font-size:22px;flex-shrink:0}
+.app-link-name{font-size:13px;font-weight:700;color:var(--txt)}
+.app-link-sub{font-size:11px;color:var(--t2);margin-top:2px}
+.app-link-arrow{margin-left:auto;color:var(--g);font-size:16px}
+
+/* Instructions */
+.instr-card{background:var(--s1);border:1px solid var(--bdr);border-radius:10px;padding:14px;margin-bottom:8px}
+.instr-row{display:flex;gap:12px;align-items:flex-start}
+.instr-num{width:26px;height:26px;border-radius:50%;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:var(--amb);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--mono);flex-shrink:0;margin-top:1px}
+.instr-text{font-size:13px;line-height:1.7;color:var(--txt)}
+.instr-text strong{color:var(--amb)}
+
+.notice{background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--t2);line-height:1.7;margin-bottom:14px}
+.notice strong{color:var(--g)}
+
+/* Nav */
+.nav-btns{display:flex;gap:10px;margin-top:24px}
+.btn{flex:1;padding:13px;border:none;border-radius:8px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.btn:hover{opacity:.85}
+.btn-amb{background:var(--amb);color:#000}
+.btn-b{background:var(--s2);border:1px solid var(--bdr2);color:var(--t2)}
+.btn-b:hover{border-color:var(--amb);color:var(--amb);opacity:1}
+
+@media(max-width:480px){.nav-btns{flex-direction:column}}
 </style>
 </head>
 <body>
-<div class="box">
-  <div class="logo">⬡ DUNGEON</div>
-  <div class="card" id="card-loading">
-    <div class="loading">Loading your demo…</div>
-  </div>
-  <div class="card" id="card-ready" style="display:none">
-    <div class="title">Your Demo is Ready 🎬</div>
-    <div class="sub">You have 24-hour access to Dungeon. Download Jellyfin, add the server and sign in with the credentials below.</div>
-    <div class="err" id="err"></div>
-    <div class="cred-box">
-      <div class="cred-row">
-        <span class="cred-lbl">Server</span>
-        <span class="cred-val" id="cred-server">https://dungeoncast.cc</span>
-        <button class="copy-btn" onclick="cp('cred-server',this)">Copy</button>
-      </div>
-      <div class="cred-row">
-        <span class="cred-lbl">Username</span>
-        <span class="cred-val" id="cred-user">—</span>
-        <button class="copy-btn" onclick="cp('cred-user',this)">Copy</button>
-      </div>
-      <div class="cred-row">
-        <span class="cred-lbl">Password</span>
-        <span class="cred-val" id="cred-pass">—</span>
-        <button class="copy-btn" onclick="cp('cred-pass',this)">Copy</button>
-      </div>
+
+<!-- Loading -->
+<div id="view-loading">
+  <div class="page" style="padding-top:60px">
+    <div class="solo-card">
+      <div class="icon">⏳</div>
+      <div class="title">Loading…</div>
     </div>
-    <a href="https://apps.apple.com/app/jellyfin-mobile/id1480192618" target="_blank" class="btn" style="background:var(--s2);color:var(--txt);border:1px solid var(--bdr2);margin-bottom:8px">📱 Jellyfin for iPhone / iPad</a>
-    <a href="https://play.google.com/store/apps/details?id=org.jellyfin.mobile" target="_blank" class="btn" style="background:var(--s2);color:var(--txt);border:1px solid var(--bdr2);margin-bottom:8px">📱 Jellyfin for Android</a>
-    <a href="https://dungeoncast.cc" target="_blank" class="btn">Open in Browser →</a>
-    <div class="notice">Access expires in 24 hours.<br/>Like what you see? Ask about getting a full membership.</div>
-  </div>
-  <div class="card" id="card-invalid" style="display:none">
-    <div class="title" style="color:var(--red)">Invalid Link</div>
-    <div class="sub">This demo link is invalid or has expired. Contact the person who sent it to get a new one.</div>
-  </div>
-  <div class="card" id="card-pending" style="display:none">
-    <div class="title">Demo Pending</div>
-    <div class="sub">Your demo account hasn't been set up yet. The Dungeon Master will set it up shortly — check back in a few minutes.</div>
   </div>
 </div>
+
+<!-- Invalid -->
+<div id="view-invalid" style="display:none">
+  <div class="page" style="padding-top:60px">
+    <div class="solo-card">
+      <div class="icon">🔒</div>
+      <div class="title">Invalid Link</div>
+      <div class="sub" style="margin-top:8px">This demo link is invalid or has expired. Ask the person who sent it to create a new one.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Pending -->
+<div id="view-pending" style="display:none">
+  <div class="page" style="padding-top:60px">
+    <div class="solo-card">
+      <div class="icon">⏰</div>
+      <div class="title">Almost Ready</div>
+      <div class="sub" style="margin-top:8px">Your demo account is being set up. Check back in a few minutes — this page will update automatically.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Onboarding flow -->
+<div id="view-flow" style="display:none">
+  <div class="topbar"><span class="logo">⬡ Dungeon</span></div>
+  <div class="prog-wrap">
+    <div class="prog-lbl" id="prog-lbl">Step 1 of 3</div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:33%"></div></div>
+  </div>
+
+  <div class="page">
+
+    <!-- Step 1: Welcome -->
+    <div class="step on" id="step1">
+      <div class="step-eyebrow">🎬 Demo Access</div>
+      <div class="step-title">You're in for 24 hours.</div>
+      <div class="step-sub">You've been given a free trial of Dungeon — a private streaming service with movies, TV shows and live TV. Here's how to get connected.</div>
+
+      <div class="timer-box">
+        ⏱️ Your access expires in <strong id="timer-display">24:00:00</strong>
+      </div>
+
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">🎬</div><div class="instr-text">This is a <strong>24-hour demo</strong>. Browse movies, shows and live TV — get a feel for what Dungeon is all about.</div></div></div>
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">💜</div><div class="instr-text">Like what you see? Ask the person who sent this link about getting <strong>full membership access</strong>.</div></div></div>
+
+      <div class="nav-btns"><button class="btn btn-amb" onclick="goStep(2)">Get Started →</button></div>
+    </div>
+
+    <!-- Step 2: Download -->
+    <div class="step" id="step2">
+      <div class="step-eyebrow">Step 1 — Get the App</div>
+      <div class="step-title">Download Jellyfin</div>
+      <div class="step-sub">Jellyfin is the app you'll use to watch. Download it for your phone or open in browser.</div>
+
+      <a href="https://apps.apple.com/app/jellyfin-mobile/id1480192618" target="_blank" class="app-link">
+        <div class="app-link-icon">📱</div>
+        <div><div class="app-link-name">Jellyfin for iPhone & iPad</div><div class="app-link-sub">App Store</div></div>
+        <div class="app-link-arrow">↗</div>
+      </a>
+      <a href="https://play.google.com/store/apps/details?id=org.jellyfin.mobile" target="_blank" class="app-link">
+        <div class="app-link-icon">📱</div>
+        <div><div class="app-link-name">Jellyfin for Android</div><div class="app-link-sub">Google Play Store</div></div>
+        <div class="app-link-arrow">↗</div>
+      </a>
+      <a href="https://dungeoncast.cc" target="_blank" class="app-link">
+        <div class="app-link-icon">🌐</div>
+        <div><div class="app-link-name">Open in Browser</div><div class="app-link-sub">No download needed</div></div>
+        <div class="app-link-arrow">↗</div>
+      </a>
+
+      <div class="nav-btns">
+        <button class="btn btn-b" onclick="goStep(1)">← Back</button>
+        <button class="btn btn-amb" onclick="goStep(3)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Connect -->
+    <div class="step" id="step3">
+      <div class="step-eyebrow">Step 2 — Connect</div>
+      <div class="step-title">Your demo credentials</div>
+      <div class="step-sub">Use these to sign into Jellyfin. Tap any field to copy it.</div>
+
+      <div class="cred-box">
+        <div class="cred-row">
+          <span class="cred-lbl">Server</span>
+          <span class="cred-val" id="cred-server">https://dungeoncast.cc</span>
+          <button class="copy-btn" onclick="cp('cred-server',this)">Copy</button>
+        </div>
+        <div class="cred-row">
+          <span class="cred-lbl">Username</span>
+          <span class="cred-val" id="cred-user">—</span>
+          <button class="copy-btn" onclick="cp('cred-user',this)">Copy</button>
+        </div>
+        <div class="cred-row">
+          <span class="cred-lbl">Password</span>
+          <span class="cred-val" id="cred-pass">—</span>
+          <button class="copy-btn" onclick="cp('cred-pass',this)">Copy</button>
+        </div>
+      </div>
+
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">1</div><div class="instr-text">Open Jellyfin and tap <strong>Add Server</strong>. Enter <strong>https://dungeoncast.cc</strong> and tap Connect.</div></div></div>
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">2</div><div class="instr-text">Sign in with the <strong>username and password</strong> above.</div></div></div>
+      <div class="instr-card"><div class="instr-row"><div class="instr-num">3</div><div class="instr-text">Tap <strong>Movies, Shows or Live TV</strong> and enjoy your 24 hours.</div></div></div>
+
+      <div class="notice"><strong>Remember</strong> — this access expires in 24 hours. Ask about becoming a full member to keep watching.</div>
+
+      <div class="nav-btns">
+        <button class="btn btn-b" onclick="goStep(2)">← Back</button>
+        <button class="btn btn-amb" onclick="goStep(4)">I'm Connected →</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Done -->
+    <div class="step" id="step4">
+      <div style="font-size:52px;text-align:center;margin-bottom:16px">🎬</div>
+      <div class="step-eyebrow" style="text-align:center">Enjoy the demo</div>
+      <div class="step-title" style="text-align:center;margin-bottom:8px">You're all set</div>
+      <div class="step-sub" style="text-align:center">You have 24 hours to explore everything Dungeon has to offer.</div>
+
+      <div class="timer-box" style="justify-content:center;margin-top:20px">
+        ⏱️ Time remaining: <strong id="timer-display2">24:00:00</strong>
+      </div>
+
+      <div style="margin-top:20px;display:grid;gap:10px">
+        <a href="https://dungeoncast.cc" target="_blank" style="display:block;padding:14px;background:var(--amb);border-radius:8px;color:#000;font-size:14px;font-weight:700;text-align:center;text-decoration:none">Open Jellyfin in Browser →</a>
+      </div>
+
+      <div class="notice" style="margin-top:16px;text-align:center">
+        Like what you see? Ask the person who sent this link about getting full access.
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <script>
-function show(id){['card-loading','card-ready','card-invalid','card-pending'].forEach(c=>document.getElementById(c).style.display=c===id?'block':'none');}
-function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{btn.textContent='✓';setTimeout(()=>btn.textContent='Copy',2000)});}
+let _expires = null;
+
+function show(id){
+  ['view-loading','view-invalid','view-pending','view-flow'].forEach(v=>document.getElementById(v).style.display=v===id?'block':'none');
+}
+
+function goStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('on'));
+  document.getElementById('step'+n).classList.add('on');
+  document.getElementById('prog-fill').style.width=((n/4)*100)+'%';
+  document.getElementById('prog-lbl').textContent = n<4?'Step '+n+' of 3':'You\'re in!';
+  window.scrollTo(0,0);
+}
+
+function cp(id,btn){
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{btn.textContent='✓';setTimeout(()=>btn.textContent='Copy',2000);});
+}
+
+function startTimer(expires){
+  _expires = new Date(expires);
+  function tick(){
+    const left = _expires - new Date();
+    if(left <= 0){
+      ['timer-display','timer-display2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='Expired';});
+      return;
+    }
+    const h=Math.floor(left/3600000);
+    const m=Math.floor((left%3600000)/60000);
+    const s=Math.floor((left%60000)/1000);
+    const str=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    ['timer-display','timer-display2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=str;});
+    setTimeout(tick,1000);
+  }
+  tick();
+}
 
 const token = new URLSearchParams(location.search).get('token');
-if(!token){ show('card-invalid'); }
+if(!token){ show('view-invalid'); }
 else {
   fetch('/api/demo/status?token='+token).then(r=>r.json()).then(d=>{
-    if(!d.ok){ show('card-invalid'); return; }
-    if(d.status === 'pending'){ show('card-pending'); return; }
+    if(!d.ok){ show('view-invalid'); return; }
+    if(d.status === 'pending'){
+      show('view-pending');
+      // Poll every 30 seconds
+      setTimeout(()=>location.reload(), 30000);
+      return;
+    }
     if(d.status === 'fulfilled' && d.demo_user){
       document.getElementById('cred-user').textContent = d.demo_user;
       document.getElementById('cred-pass').textContent = d.demo_pass;
-      show('card-ready');
+      if(d.demo_expires) startTimer(d.demo_expires);
+      show('view-flow');
     } else {
-      show('card-pending');
+      show('view-pending');
     }
-  }).catch(()=>show('card-invalid'));
+  }).catch(()=>show('view-invalid'));
 }
 </script>
 </body>
