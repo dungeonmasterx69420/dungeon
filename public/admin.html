@@ -207,6 +207,10 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
       <div class="sb-item" onclick="showPanel('invites',this)" id="nav-invites">
         <span class="icon">✉️</span> Invites
       </div>
+      <div class="sb-item" onclick="showPanel('support',this)" id="nav-support">
+        <span class="icon">💬</span> Support
+        <span class="sb-badge red" id="nb-support" style="display:none"></span>
+      </div>
       <div class="sb-item" onclick="showPanel('demos',this)" id="nav-demos">
         <span class="icon">🎬</span> Demos
         <span class="sb-badge red" id="nb-demos" style="display:none"></span>
@@ -280,6 +284,11 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
           <button class="btn btn-b" onclick="openFreeInviteSheet()" style="margin-right:6px">🎁 Free Invite</button><button class="btn btn-g" onclick="openInviteSheet()">+ Send Invite</button>
         </div>
         <div id="invite-list"><div class="empty">// no invites yet</div></div>
+      </div>
+
+      <!-- Support -->
+      <div id="panel-support" style="display:none">
+        <div id="support-list"><div class="empty">// loading…</div></div>
       </div>
 
       <!-- Demos -->
@@ -457,10 +466,10 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
 async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
 
 // ── Panels ────────────────────────────────────────────────────────────────────
-const panelTitles={demos:['Demos','Fulfill 24-hour demo requests'],invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
+const panelTitles={support:['Support','Member support requests'],demos:['Demos','Fulfill 24-hour demo requests'],invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
 
 function showPanel(name,el){
-  ['applications','members','redemptions','invites','demos'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
+  ['applications','members','redemptions','invites','demos','support'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('on'));
   el.classList.add('on');
   const [title,sub]=panelTitles[name];
@@ -472,6 +481,7 @@ function showPanel(name,el){
   if(name==='redemptions') loadRedem();
   if(name==='invites') loadInvites();
   if(name==='demos') loadDemos();
+  if(name==='support') loadSupport();
 }
 
 // ── Sidebar (mobile) ─────────────────────────────────────────────────────────
@@ -505,7 +515,7 @@ async function loadStats(){
   if(pendingR>0){$('nb-redem').textContent=pendingR;$('nb-redem').style.display='flex';}
 }
 
-function loadAll(){loadStats();loadApps();loadMembers();loadRedem();loadInvites();loadDemos();}
+function loadAll(){loadStats();loadApps();loadMembers();loadRedem();loadInvites();loadDemos();loadSupport();}
 
 // ── Applications ──────────────────────────────────────────────────────────────
 async function loadApps(){
@@ -1082,6 +1092,49 @@ async function sendDemoLink(){
       alert('Demo link created and copied to clipboard!\n\n'+r.url);
     }).catch(()=>prompt('Copy this demo link to share:',r.url));
   }
+}
+</script>
+<script>
+// ── Support ───────────────────────────────────────────────────────────────────
+async function loadSupport() {
+  const tickets = await fetch('/api/support').then(r=>r.json()).catch(()=>[]);
+  const el = $('support-list');
+
+  // Update badge
+  const open = tickets.filter(t=>t.status==='open').length;
+  if(open>0){$('nb-support').textContent=open;$('nb-support').style.display='flex';}
+  else{$('nb-support').style.display='none';}
+
+  if(!tickets.length){el.innerHTML='<div class="empty">// no support requests</div>';return;}
+
+  el.innerHTML = tickets.map(t => {
+    const isOpen = t.status==='open';
+    return `<div class="rc" style="margin-bottom:10px">
+      <div class="rc-top">
+        <div>
+          <div class="rc-name">${esc(t.member_name||'Unknown')} <span class="bdg ${isOpen?'bdg-a':'bdg-g'}">${isOpen?'Open':'Resolved'}</span></div>
+          <div class="rc-meta">${esc(t.member_email||'')} · ${fmtDate(t.created_at)}</div>
+          <div style="font-size:13px;font-weight:600;margin-top:6px">${esc(t.subject||'No subject')}</div>
+          <div style="font-size:13px;color:var(--t2);margin-top:4px;line-height:1.6">${esc(t.message||'')}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          ${isOpen?`<button class="btn btn-g" style="font-size:10px;padding:5px 10px" onclick="resolveTicket('${t.id}')">Mark Resolved</button>`:''}
+          <button class="btn btn-r" style="font-size:10px;padding:5px 10px" onclick="deleteTicket('${t.id}')">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function resolveTicket(id){
+  await fetch('/api/support/'+id+'/status',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'resolved'})});
+  loadSupport();
+}
+
+async function deleteTicket(id){
+  if(!confirm('Delete this support ticket?'))return;
+  await fetch('/api/support/'+id,{method:'DELETE'});
+  loadSupport();
 }
 </script>
 </body>
