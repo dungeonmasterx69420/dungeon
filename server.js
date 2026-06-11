@@ -1059,18 +1059,18 @@ app.delete('/api/members/:id', requireAuth, (req, res) => {
 });
 
 // ── Admin: support ────────────────────────────────────────────────────────────
-app.get('/api/support', requireAuth, (req, res) => {
+app.get('/api/support', requireMod, (req, res) => {
   res.json(db.prepare('SELECT * FROM support_messages ORDER BY created_at DESC').all());
 });
 
-app.patch('/api/support/:id/status', requireAuth, (req, res) => {
+app.patch('/api/support/:id/status', requireMod, (req, res) => {
   const { status } = req.body;
   if (!['open','resolved'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
   db.prepare('UPDATE support_messages SET status=? WHERE id=?').run(status, req.params.id);
   res.json({ ok: true });
 });
 
-app.delete('/api/support/:id', requireAuth, (req, res) => {
+app.delete('/api/support/:id', requireMod, (req, res) => {
   db.prepare('DELETE FROM support_messages WHERE id=?').run(req.params.id);
   res.json({ ok: true });
 });
