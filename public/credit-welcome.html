@@ -174,13 +174,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 
     <div class="done-links">
       <a href="https://dungeoncast.cc" target="_blank" class="done-link"><div class="done-link-icon">🌊</div><div class="done-link-name">Open in Browser</div><div class="done-link-sub">dungeoncast.cc</div></a>
-      <a href="/dashboard.html" class="done-link" onclick="finish()"><div class="done-link-icon">🏠</div><div class="done-link-name">Dashboard</div><div class="done-link-sub">Your member hub</div></a>
-      <a href="/guides.html" class="done-link"><div class="done-link-icon">📖</div><div class="done-link-name">All Guides</div><div class="done-link-sub">Help for every device</div></a>
-      <a href="/support.html" class="done-link"><div class="done-link-icon">💬</div><div class="done-link-name">Support</div><div class="done-link-sub">Ask the Dungeon Master</div></a>
+      <a href="#" class="done-link" onclick="finish('/dashboard.html');return false;"><div class="done-link-icon">🏠</div><div class="done-link-name">Dashboard</div><div class="done-link-sub">Your member hub</div></a>
+      <a href="#" class="done-link" onclick="finish('/guides.html');return false;"><div class="done-link-icon">📖</div><div class="done-link-name">All Guides</div><div class="done-link-sub">Help for every device</div></a>
+      <a href="#" class="done-link" onclick="finish('/support.html');return false;"><div class="done-link-icon">💬</div><div class="done-link-name">Support</div><div class="done-link-sub">Ask the Dungeon Master</div></a>
     </div>
 
     <div style="margin-top:16px">
-      <a href="/dashboard.html" onclick="finish()" style="display:block;padding:14px;background:var(--g);border-radius:8px;color:#000;font-size:14px;font-weight:700;text-align:center;text-decoration:none">Go to Dashboard →</a>
+      <a href="#" onclick="finish('/dashboard.html');return false;" style="display:block;padding:14px;background:var(--g);border-radius:8px;color:#000;font-size:14px;font-weight:700;text-align:center;text-decoration:none">Go to Dashboard →</a>
     </div>
   </div>
 </div>
@@ -244,8 +244,9 @@ function cp(id,btn){
   navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{btn.textContent='✓';setTimeout(()=>btn.textContent='Copy',2000);});
 }
 
-async function finish(){
+async function finish(dest){
   await fetch('/api/member/credit-welcome-done',{method:'POST'}).catch(()=>{});
+  window.location.href = dest || '/dashboard.html';
 }
 
 function applyTierDoneScreen(tier) {
