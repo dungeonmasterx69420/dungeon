@@ -21,19 +21,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 .field input,.field select,.field textarea{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:14px;padding:11px 13px;outline:none;transition:border-color .15s;appearance:none}
 .field input:focus,.field select:focus{border-color:var(--g)}
 .field input::placeholder,.field textarea::placeholder{color:var(--t3)}
-.field input.err,.field select.err{border-color:var(--red)}
 .field-hint{font-size:10px;color:var(--t3);margin-top:4px;font-family:var(--mono)}
 .field-hint.ok{color:var(--g)}
 .field-hint.bad{color:var(--red)}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.select-wrap{position:relative}
-.select-wrap::after{content:'▾';position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none;font-size:12px}
-.select-wrap select{padding-right:36px;cursor:pointer}
-.select-wrap select option{background:var(--s2)}
-.devices{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
-.dv{background:var(--s2);border:1px solid var(--bdr);border-radius:7px;padding:9px 10px;cursor:pointer;font-size:12px;color:var(--t2);transition:all .15s;display:flex;align-items:center;gap:6px;user-select:none}
-.dv:hover{border-color:var(--bdr2);color:var(--txt)}
-.dv.on{background:var(--gb);border-color:var(--g);color:var(--g)}
 .divider{height:1px;background:var(--bdr);margin:20px 0}
 .terms-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:16px}
 .terms-row input[type=checkbox]{width:16px;height:16px;margin-top:2px;accent-color:var(--g);cursor:pointer;flex-shrink:0}
@@ -50,13 +41,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 footer{text-align:center;padding:20px;font-size:12px;color:var(--t3)}
 footer a{color:var(--t3);text-decoration:none}
 footer a:hover{color:var(--t2)}
-@media(max-width:480px){.frow{grid-template-columns:1fr}.devices{grid-template-columns:1fr}}
+@media(max-width:480px){.frow{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <a href="/" class="logo" id="logoLink">Dungeon</a>
+  <a href="/" class="logo" id="logoLink">⬡ Dungeon</a>
 </div>
 
 <div class="page">
@@ -75,7 +66,7 @@ footer a:hover{color:var(--t2)}
             <input type="text" id="fn" placeholder="Seymour" autocomplete="given-name"/>
           </div>
           <div class="field">
-            <label>Last Name <span style="color:var(--g)">*</span></label>
+            <label>Last Name <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label>
             <input type="text" id="ln" placeholder="Buttocks" autocomplete="family-name"/>
           </div>
         </div>
@@ -83,7 +74,7 @@ footer a:hover{color:var(--t2)}
         <div class="field">
           <label>Screen Name <span style="color:var(--g)">*</span> <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">— your @username</span></label>
           <input type="text" id="sn" placeholder="yourcoolname" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
-          <div class="field-hint" id="sn-hint">Letters, numbers and underscores only. 3-20 characters.</div>
+          <div class="field-hint" id="sn-hint">Letters, numbers and underscores only. 3–20 characters.</div>
         </div>
 
         <div class="field">
@@ -97,28 +88,8 @@ footer a:hover{color:var(--t2)}
         </div>
 
         <div class="field">
-          <label>Referred by <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label>
-          <div class="select-wrap">
-            <select id="referral">
-              <option value="">Select a member…</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Your Devices <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">select all that apply</span></label>
-          <div class="devices">
-            <div class="dv" data-val="iphone" onclick="toggleDev(this)">📱 iPhone</div>
-            <div class="dv" data-val="ipad" onclick="toggleDev(this)">📱 iPad</div>
-            <div class="dv" data-val="android_phone" onclick="toggleDev(this)">📱 Android</div>
-            <div class="dv" data-val="firestick" onclick="toggleDev(this)">📺 Fire Stick</div>
-            <div class="dv" data-val="android_tv" onclick="toggleDev(this)">📺 Android TV</div>
-            <div class="dv" data-val="apple_tv" onclick="toggleDev(this)">📺 Apple TV</div>
-            <div class="dv" data-val="roku" onclick="toggleDev(this)">📺 Roku</div>
-            <div class="dv" data-val="windows" onclick="toggleDev(this)">💻 Windows</div>
-            <div class="dv" data-val="mac" onclick="toggleDev(this)">💻 Mac</div>
-            <div class="dv" data-val="smart_tv" onclick="toggleDev(this)">📺 Smart TV</div>
-          </div>
+          <label>Referred by <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional — enter their @username</span></label>
+          <input type="text" id="referral" placeholder="@username"/>
         </div>
 
         <div class="divider"></div>
@@ -151,14 +122,12 @@ footer a:hover{color:var(--t2)}
 let _snTimer = null;
 let _snValid = false;
 
-function toggleDev(el){ el.classList.toggle('on'); }
-
 function validateSn(input){
   const val = input.value.replace(/[^a-zA-Z0-9_]/g,'');
   input.value = val;
   const hint = document.getElementById('sn-hint');
   _snValid = false;
-  if(!val){ hint.textContent='Letters, numbers and underscores only. 3-20 characters.'; hint.className='field-hint'; return; }
+  if(!val){ hint.textContent='Letters, numbers and underscores only. 3–20 characters.'; hint.className='field-hint'; return; }
   if(val.length < 3){ hint.textContent='Too short — minimum 3 characters'; hint.className='field-hint bad'; return; }
   hint.textContent='Checking availability…'; hint.className='field-hint';
   clearTimeout(_snTimer);
@@ -170,28 +139,29 @@ function validateSn(input){
 }
 
 async function submitForm(){
-  const fn=$('fn').value.trim(), ln=$('ln').value.trim();
-  const sn=$('sn').value.trim(), email=$('email').value.trim();
-  const banner=$('errBanner');
+  const fn=document.getElementById('fn').value.trim();
+  const ln=document.getElementById('ln').value.trim();
+  const sn=document.getElementById('sn').value.trim();
+  const email=document.getElementById('email').value.trim();
+  const banner=document.getElementById('errBanner');
   banner.style.display='none';
 
   if(!fn){ banner.textContent='First name is required'; banner.style.display='block'; return; }
   if(!sn || sn.length<3){ banner.textContent='Screen name must be at least 3 characters'; banner.style.display='block'; return; }
   if(!_snValid){ banner.textContent='Please choose an available screen name'; banner.style.display='block'; return; }
   if(!email || !email.includes('@')){ banner.textContent='Valid email is required'; banner.style.display='block'; return; }
-  if(!$('terms').checked){ banner.textContent='You must agree to the Terms of Service'; banner.style.display='block'; return; }
+  if(!document.getElementById('terms').checked){ banner.textContent='You must agree to the Terms of Service'; banner.style.display='block'; return; }
 
-  const devices = Array.from(document.querySelectorAll('.dv.on')).map(el=>el.dataset.val);
-  const btn=$('submitBtn'); btn.disabled=true; btn.textContent='Submitting…';
+  const btn=document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='Submitting…';
 
   const r = await fetch('/api/apply',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
       first_name:fn, last_name:ln, screen_name:sn, email,
-      phone:$('phone').value.trim(),
-      referral:$('referral').value||'',
-      devices, notes:''
+      phone:document.getElementById('phone').value.trim(),
+      referral:document.getElementById('referral').value.trim().replace(/^@/,''),
+      devices:[], notes:''
     })
   }).then(async r=>({ok:r.ok,data:await r.json()})).catch(e=>({ok:false,data:{error:e.message}}));
 
@@ -199,28 +169,13 @@ async function submitForm(){
 
   if(!r.ok){ banner.textContent=r.data.error||'Something went wrong'; banner.style.display='block'; return; }
 
-  $('formView').style.display='none';
-  $('successView').style.display='block';
+  document.getElementById('formView').style.display='none';
+  document.getElementById('successView').style.display='block';
 }
-
-function $(id){ return document.getElementById(id); }
-
-// Load referral dropdown
-fetch('/api/members/list').then(r=>r.json()).then(members=>{
-  const sel=$('referral');
-  members.forEach(sn=>{
-    const opt=document.createElement('option');
-    opt.value=sn; opt.textContent='@'+sn;
-    sel.appendChild(opt);
-  });
-  // Pre-fill from URL param
-  const ref=new URLSearchParams(window.location.search).get('ref');
-  if(ref) sel.value=ref;
-}).catch(()=>{});
 
 // Smart logo link
 fetch('/api/member/me').then(r=>r.json()).then(d=>{
-  if(d.authenticated) $('logoLink').href='/dashboard.html';
+  if(d.authenticated) document.getElementById('logoLink').href='/dashboard.html';
 }).catch(()=>{});
 </script>
 </body>
