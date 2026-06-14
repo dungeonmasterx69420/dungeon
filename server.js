@@ -2369,8 +2369,8 @@ app.post('/api/admin/members/:id', requireMod, async (req, res) => {
             }
             // Set permanent subscription (10 years)
             const forever = new Date(Date.now() + 10*365*24*60*60*1000).toISOString();
-            db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, credit_welcome_pending=1 WHERE id=?')
-              .run(username, password, username, password, new Date().toISOString(), forever, new Date().toISOString(), forever, req.params.id);
+            db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, credit_welcome_pending=1 WHERE id=?')
+              .run(username, password, password, username, password, new Date().toISOString(), forever, new Date().toISOString(), forever, req.params.id);
             console.log('[tier] Staff promotion — granted permanent access to:', username);
           } catch(e) { console.error('[tier] Jellyfin grant error:', e.message); }
 
@@ -2708,8 +2708,8 @@ app.post('/api/invite/:token/complete', async (req, res) => {
         const jfId = await jellyfinGetUserId(jfUser, JELLYFIN_URL, JELLYFIN_API_KEY);
         if (jfId) await jellyfinGrantLibraryAccess(jfId, ['Movies', 'Shows'], JELLYFIN_URL, JELLYFIN_API_KEY);
         const forever = new Date(Date.now() + 10*365*24*60*60*1000).toISOString();
-        db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, credit_welcome_pending=1 WHERE id=?')
-          .run(jfUser, jfPass, jfUser, jfPass, new Date().toISOString(), forever, new Date().toISOString(), forever, memberId);
+        db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, credit_welcome_pending=1 WHERE id=?')
+          .run(jfUser, jfPass, jfPass, jfUser, jfPass, new Date().toISOString(), forever, new Date().toISOString(), forever, memberId);
         console.log('[invite/complete] Created Jellyfin account for staff tier:', jfUser);
       } catch(e) { console.error('[invite/complete] Jellyfin error:', e.message); }
     }
