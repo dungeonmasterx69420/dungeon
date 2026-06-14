@@ -12,10 +12,10 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
     *{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;--red-bg:rgba(248,113,113,0.1)}
+    :root{--bg:#080c0b;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;--red-bg:rgba(248,113,113,0.1)}
     html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
 
-    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
     .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
     .nav{display:flex;align-items:center;gap:20px}
     .nav a,.nav button{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color .2s}
@@ -111,7 +111,7 @@
 <body>
 
 <div class="topbar">
-  <a href="/" class="logo">Dungeon</a>
+  <a href="/" class="logo" id="logoLink">Dungeon</a>
   <div class="nav">
     <a href="/dashboard.html">Dashboard</a>
     <a href="/forum.html">Forum</a>
@@ -149,7 +149,7 @@
     &nbsp;·&nbsp;
     <a href="/forum.html">Forum</a>
     &nbsp;·&nbsp;
-    <a href="/dashboard.html">Members</a>
+    <a href="/dashboard.html">Dashboard</a>
   </footer>
 </div>
 
@@ -180,7 +180,7 @@
 </div>
 
 <script>
-  const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Warden',color:'#fbbf24'}};
+  const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Dungeon Master',color:'#fbbf24'}};
 
   let myProfile = null;
   let activeTab = 'inbox';
@@ -205,11 +205,11 @@
     if(['mod','admin','warden'].includes(tier)){
       const span=document.createElement('span');span.style.whiteSpace='nowrap';
       let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
-      if(['admin','warden'].includes(tier)) extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Warden</a>';
+      if(['admin','warden'].includes(tier)) extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
       span.innerHTML=extra;footer.appendChild(span);
     } else if(['admin','warden'].includes(tier)){
       const span=document.createElement('span');
-      span.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Warden</a>';
+      span.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
       footer.appendChild(span);
     }
   }
@@ -405,6 +405,14 @@
     fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
       const badge = document.getElementById('msgIconBadge');
       if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
+    }).catch(()=>{});
+  })();
+
+  // Smart logo link — go to dashboard if logged in, home if not
+  (function(){
+    fetch('/api/member/me').then(r=>r.json()).then(d=>{
+      const logo = document.getElementById('logoLink');
+      if(logo && d.authenticated) logo.href = '/dashboard.html';
     }).catch(()=>{});
   })();
 </script>

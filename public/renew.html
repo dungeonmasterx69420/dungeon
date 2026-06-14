@@ -5,34 +5,37 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon · Sign In</title>
+  <title>Dungeon · Renew</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
     *{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --bg:#080c0b;--surface:#111915;--surface2:#172118;
-      --border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
-      --green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);
-      --text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;
-    }
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;display:flex;flex-direction:column}
+    :root{--bg:#080c0b;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171}
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
     .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
-    .center{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 32px;width:100%;max-width:380px}
-    .card-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px}
-    .card-sub{font-size:13px;color:var(--muted2);margin-bottom:28px}
-    .field{margin-bottom:18px}
+    .back-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;transition:color .2s}
+    .back-link:hover{color:var(--text)}
+    .page{max-width:520px;margin:0 auto;padding:40px 24px 80px}
+    .page-title{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:10px !important;font-weight:400 !important;color:var(--text);margin-bottom:16px;line-height:1.6}
+    .page-sub{font-size:14px;color:var(--muted2);margin-bottom:32px;line-height:1.6}
+    .divider{height:1px;background:var(--border);margin-bottom:24px}
+    .field{margin-bottom:16px}
     label{display:block;font-size:12px;font-weight:600;color:var(--muted2);margin-bottom:7px;letter-spacing:0.04em;text-transform:uppercase}
-    input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s}
-    input:focus{border-color:var(--green)}
-    input::placeholder{color:var(--muted)}
-    .btn{width:100%;margin-top:8px;padding:12px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s}
+    textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s;resize:none;height:100px;line-height:1.6}
+    textarea:focus{border-color:var(--green)}
+    textarea::placeholder{color:var(--muted)}
+    .error-banner{display:none;font-size:13px;color:var(--red);margin-bottom:16px;padding:12px 14px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:8px}
+    .btn{width:100%;padding:13px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:8px}
     .btn:hover{opacity:0.9}
     .btn:disabled{opacity:0.4;cursor:not-allowed}
-    .error-msg{display:none;margin-top:14px;font-size:13px;color:var(--red);text-align:center}
-    @media(max-width:767px){.card{padding:28px 20px}}
+    #successPage{display:none;text-align:center;padding:60px 0}
+    .success-icon{font-size:48px;margin-bottom:20px}
+    .success-title{font-size:22px;font-weight:600;color:var(--text);margin-bottom:10px}
+    .success-sub{font-size:14px;color:var(--muted2);line-height:1.7;margin-bottom:28px}
+    .dash-link{display:inline-block;padding:10px 24px;border:1px solid var(--border2);border-radius:8px;color:var(--muted2);font-size:13px;font-weight:500;text-decoration:none;transition:border-color .2s,color .2s}
+    .dash-link:hover{border-color:var(--green);color:var(--green)}
+    @media(max-width:767px){.page{padding:28px 16px 60px}}
 
     footer{text-align:center;padding:32px 0 0;font-size:12px;color:var(--muted)}
     footer a{color:var(--muted);text-decoration:none}
@@ -57,56 +60,37 @@
 <div class="topbar">
   <a href="/" class="logo" id="logoLink">Dungeon</a>
 </div>
-<div class="center">
-  <div class="card">
-    <div class="card-title">Member Sign In</div>
-    
+<div class="page">
+  <div class="page-title">Request Renewal</div>
+  <div class="page-sub">Submit a renewal request and the Dungeon Master will extend your access for another month.</div>
+  <div class="divider"></div>
+  <div id="formPage">
+    <div class="error-banner" id="errorBanner"></div>
     <div class="field">
-      <label>Email</label>
-      <input type="email" id="email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')login()"/>
+      <label>Notes (optional)</label>
+      <textarea id="notes" placeholder="Anything you'd like to include…"></textarea>
     </div>
-    <div class="field">
-      <label>Password</label>
-      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"/>
-      <div style="text-align:right;margin-top:6px"><a href="/reset-password" style="font-size:12px;color:var(--muted,#6b8f7a);text-decoration:none">Forgot password?</a></div>
-    </div>
-    <button class="btn" id="loginBtn" onclick="login()">Sign In</button>
-    <div class="error-msg" id="errorMsg"></div>
+    <div class="divider"></div>
+    <button class="btn" id="submitBtn" onclick="submitRenewal()">Submit Renewal Request</button>
+  </div>
+  <div id="successPage">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Renewal Requested</div>
+    <div class="success-sub">Your request has been received. The Dungeon Master will extend your access shortly.</div>
+    <a href="/dashboard.html" class="dash-link">Back to Dashboard</a>
   </div>
 </div>
 <script>
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{if(d.authenticated){if(!d.member?.profile?.welcome_done){window.location.href='/welcome';}else{window.location.href='/dashboard.html';}}});
-  async function login(){
-    const email=document.getElementById('email').value.trim();
-    const password=document.getElementById('password').value.trim();
-    const btn=document.getElementById('loginBtn');
-    const err=document.getElementById('errorMsg');
-    if(!email||!password){err.textContent='Both fields are required.';err.style.display='block';return}
-    btn.disabled=true;btn.textContent='Signing in…';err.style.display='none';
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{if(!d.authenticated)window.location.href='/login.html'});
+  async function submitRenewal(){
+    const btn=document.getElementById('submitBtn'),banner=document.getElementById('errorBanner');
+    btn.disabled=true;btn.textContent='Submitting…';banner.style.display='none';
     try{
-      const res=await fetch('/api/member/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+      const res=await fetch('/api/member/renew',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({notes:document.getElementById('notes').value.trim()})});
       const data=await res.json();
-      if(res.ok){
-        const me = await fetch('/api/member/me').then(r=>r.json()).catch(()=>({}));
-        if(!me.member?.profile?.welcome_done){
-          window.location.href='/welcome';
-        } else {
-          window.location.href='/dashboard.html';
-        }
-      }
-      else{
-        err.textContent=data.error||'Incorrect email or password.';
-        err.style.display='block';
-        btn.disabled=false;
-        btn.textContent='Sign In';
-        // If locked out, disable form temporarily
-        if(data.error && data.error.includes('locked')) {
-          btn.disabled=true;
-          btn.textContent='Locked — try again in 5 min';
-          setTimeout(()=>{btn.disabled=false;btn.textContent='Sign In';err.style.display='none';},5*60*1000);
-        }
-      }
-    }catch{err.textContent='Connection error. Please try again.';err.style.display='block';btn.disabled=false;btn.textContent='Sign In'}
+      if(res.ok){document.getElementById('formPage').style.display='none';document.getElementById('successPage').style.display='block'}
+      else{banner.textContent=data.error||'Something went wrong.';banner.style.display='block';btn.disabled=false;btn.textContent='Submit Renewal Request'}
+    }catch{banner.textContent='Connection error. Please try again.';banner.style.display='block';btn.disabled=false;btn.textContent='Submit Renewal Request'}
   }
 
 

@@ -8,15 +8,16 @@
   <title>Dungeon · Suggest</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
     *{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#0b0f0e;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171}
+    :root{--bg:#080c0b;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171}
     html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
-    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
-    .logo{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;font-weight:400;color:var(--green);letter-spacing:0.04em;text-decoration:none}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
     .back-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;transition:color .2s}
     .back-link:hover{color:var(--text)}
     .page{max-width:520px;margin:0 auto;padding:40px 24px 80px}
-    .page-title{font-family:'Press Start 2P','Minecraft',monospace;font-size:10px;font-weight:400;color:var(--text);margin-bottom:16px;line-height:1.6}
+    .page-title{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:10px !important;font-weight:400 !important;color:var(--text);margin-bottom:16px;line-height:1.6}
     .page-sub{font-size:14px;color:var(--muted2);margin-bottom:32px;line-height:1.6}
     .divider{height:1px;background:var(--border);margin-bottom:24px}
     .field{margin-bottom:16px}
@@ -36,6 +37,15 @@
     .dash-link{display:inline-block;padding:10px 24px;border:1px solid var(--border2);border-radius:8px;color:var(--muted2);font-size:13px;font-weight:500;text-decoration:none;transition:border-color .2s,color .2s}
     .dash-link:hover{border-color:var(--green);color:var(--green)}
     @media(max-width:767px){.page{padding:28px 16px 60px}}
+
+    footer{text-align:center;padding:24px 0 16px;font-size:12px;color:var(--muted)}
+    footer a{color:var(--muted);text-decoration:none}
+    footer a:hover{color:var(--text)}
+    @media(max-width:767px){footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
+
+    .msg-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:var(--muted2);font-size:15px;transition:border-color .2s,color .2s;cursor:pointer}
+    .msg-icon-btn:hover{border-color:var(--green);color:var(--green)}
+    .msg-icon-badge{position:absolute;top:-5px;right:-5px;background:var(--red,#f87171);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
   </style>
   <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
@@ -45,12 +55,12 @@
 </head>
 <body>
 <div class="topbar">
-  <a href="/" class="logo">Dungeon</a>
+  <a href="/" class="logo" id="logoLink">Dungeon</a>
   <a href="/dashboard.html" class="back-link">Dashboard</a>
 </div>
 <div class="page">
   <div class="page-title">Suggest a Feature</div>
-  <div class="page-sub">Have an idea? Share it with the Warden — all suggestions are considered.</div>
+  <div class="page-sub">Have an idea? Share it with the Dungeon Master — all suggestions are considered.</div>
   <div class="divider"></div>
   <div id="formPage">
     <div class="error-banner" id="errorBanner"></div>
@@ -68,7 +78,7 @@
   <div id="successPage">
     <div class="success-icon">✅</div>
     <div class="success-title">Suggestion Received</div>
-    <div class="success-sub">Thanks for the idea. The Warden will take it into consideration.</div>
+    <div class="success-sub">Thanks for the idea. The Dungeon Master will take it into consideration.</div>
     <a href="/dashboard.html" class="dash-link">Back to Dashboard</a>
   </div>
 </div>
@@ -86,6 +96,55 @@
       else{banner.textContent=data.error||'Something went wrong.';banner.style.display='block';btn.disabled=false;btn.textContent='Submit Suggestion'}
     }catch{banner.textContent='Connection error. Please try again.';banner.style.display='block';btn.disabled=false;btn.textContent='Submit Suggestion'}
   }
+
+
+  // Dynamic footer links based on tier
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if(!d.authenticated) return;
+    const tier = d.member?.profile?.tier;
+    const footer = document.getElementById('pageFooter');
+    if(!footer) return;
+    if(['mod','admin','warden'].includes(tier)){
+      const span=document.createElement('span');
+      span.style.whiteSpace='nowrap';
+      let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
+      if(['admin','warden'].includes(tier)){
+        extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
+      }
+      span.innerHTML=extra;
+      footer.appendChild(span);
+    } else if(['admin','warden'].includes(tier)){
+      const span=document.createElement('span');
+      span.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
+      footer.appendChild(span);
+    }
+  }).catch(()=>{});
+
+  // Message unread badge in topbar
+  (function(){
+    fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
+      const badge = document.getElementById('msgIconBadge');
+      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
+    }).catch(()=>{});
+  })();
+
+  // Smart logo link — go to dashboard if logged in, home if not
+  (function(){
+    fetch('/api/member/me').then(r=>r.json()).then(d=>{
+      const logo = document.getElementById('logoLink');
+      if(logo && d.authenticated) logo.href = '/dashboard.html';
+    }).catch(()=>{});
+  })();
 </script>
+
+  <footer id="pageFooter">
+    <a href="/profile.html">My Profile</a>
+    &nbsp;·&nbsp;
+    <a href="/directory.html">Directory</a>
+    &nbsp;·&nbsp;
+    <a href="/forum.html">Forum</a>
+    &nbsp;·&nbsp;
+    <a href="/dashboard.html">Dashboard</a>
+  </footer>
 </body>
 </html>
