@@ -7,18 +7,18 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
   <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
     *{box-sizing:border-box;margin:0;padding:0}
     :root{--bg:#080c0b;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;--red-bg:rgba(248,113,113,0.1)}
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif}
 
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
     .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
     .nav{display:flex;align-items:center;gap:20px}
-    .nav a,.nav button{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color .2s}
+    .nav a,.nav button{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color .2s}
     .nav a:hover,.nav button:hover{color:var(--text)}
 
     .page{max-width:720px;margin:0 auto;padding:32px 24px 80px}
@@ -26,12 +26,12 @@
     .page-title{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:13px !important;font-weight:400 !important;color:var(--text);line-height:1.6}
 
     /* Compose btn */
-    .compose-btn{padding:9px 18px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;text-decoration:none;display:inline-block}
+    .compose-btn{padding:9px 18px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;text-decoration:none;display:inline-block}
     .compose-btn:hover{opacity:0.9}
 
     /* Tabs */
     .tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:0}
-    .tab-btn{font-size:13px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;padding:10px 0;margin-right:24px;transition:color .2s,border-color .2s;margin-bottom:-1px;display:flex;align-items:center;gap:6px}
+    .tab-btn{font-size:13px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'DM Sans',sans-serif;padding:10px 0;margin-right:24px;transition:color .2s,border-color .2s;margin-bottom:-1px;display:flex;align-items:center;gap:6px}
     .tab-btn:hover{color:var(--text)}
     .tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
     .unread-dot{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center}
@@ -62,7 +62,7 @@
     .msg-list-view.hidden{display:none}
 
     .detail-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-    .back-btn{font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;transition:color .2s;padding:0;display:flex;align-items:center;gap:4px}
+    .back-btn{font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:color .2s;padding:0;display:flex;align-items:center;gap:4px}
     .back-btn:hover{color:var(--text)}
     .detail-subject{font-size:17px;font-weight:600;color:var(--text);margin-bottom:16px}
     .detail-meta{display:flex;align-items:center;gap:10px;margin-bottom:20px;font-size:13px;color:var(--muted2)}
@@ -72,7 +72,7 @@
     .detail-avatar img{width:100%;height:100%;object-fit:cover}
     .detail-body{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;font-size:14px;color:var(--muted2);line-height:1.75;white-space:pre-wrap;word-break:break-word;margin-bottom:20px}
     .detail-actions{display:flex;gap:10px}
-    .detail-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;border:1px solid var(--border2);background:transparent;color:var(--muted2)}
+    .detail-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;border:1px solid var(--border2);background:transparent;color:var(--muted2)}
     .detail-btn:hover{border-color:var(--green);color:var(--green)}
     .detail-btn.danger:hover{border-color:var(--red);color:var(--red)}
 
@@ -83,7 +83,7 @@
     .modal-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:20px}
     .field{margin-bottom:16px}
     label{display:block;font-size:11px;font-weight:600;color:var(--muted2);margin-bottom:7px;letter-spacing:0.04em;text-transform:uppercase}
-    input,textarea,select{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s;appearance:none}
+    input,textarea,select{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s;appearance:none}
     input:focus,textarea:focus,select:focus{border-color:var(--green)}
     input::placeholder,textarea::placeholder{color:var(--muted)}
     select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b8f7a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
@@ -91,7 +91,7 @@
     textarea{resize:vertical;min-height:120px;line-height:1.6}
     .error-msg{display:none;font-size:12px;color:var(--red);margin-bottom:12px;padding:10px 12px;background:var(--red-bg);border:1px solid rgba(248,113,113,0.2);border-radius:6px}
     .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
-    .modal-btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .2s;border:none}
+    .modal-btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .2s;border:none}
     .modal-btn.cancel{background:var(--surface2);color:var(--muted2)}
     .modal-btn.cancel:hover{color:var(--text)}
     .modal-btn.send{background:var(--green);color:#0b0f0e}

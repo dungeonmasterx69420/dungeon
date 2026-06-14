@@ -6,12 +6,12 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
   <title>Dungeon · Support</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
     *{box-sizing:border-box;margin:0;padding:0}
     :root{--bg:#080c0b;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171}
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif}
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
     .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
     .back-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;transition:color .2s}
@@ -22,12 +22,12 @@
     .divider{height:1px;background:var(--border);margin-bottom:24px}
     .field{margin-bottom:16px}
     label{display:block;font-size:12px;font-weight:600;color:var(--muted2);margin-bottom:7px;letter-spacing:0.04em;text-transform:uppercase}
-    input,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s;appearance:none}
+    input,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s;appearance:none}
     input:focus,textarea:focus{border-color:var(--green)}
     input::placeholder,textarea::placeholder{color:var(--muted)}
     textarea{resize:none;height:140px;line-height:1.6}
     .error-banner{display:none;font-size:13px;color:var(--red);margin-bottom:16px;padding:12px 14px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:8px}
-    .btn{width:100%;padding:13px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:8px}
+    .btn{width:100%;padding:13px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:8px}
     .btn:hover{opacity:0.9}
     .btn:disabled{opacity:0.4;cursor:not-allowed}
     #successPage{display:none;text-align:center;padding:60px 0}
@@ -63,7 +63,7 @@
   <div style="display:flex;align-items:center;gap:12px">
     <a href="/dashboard.html" style="font-size:13px;color:var(--muted,#6b8f7a);text-decoration:none;font-weight:500">Dashboard</a>
     <a href="/messages.html" style="font-size:13px;color:var(--muted,#6b8f7a);text-decoration:none;font-weight:500">Messages</a>
-    <button onclick="doSignOut()" style="font-size:13px;color:var(--muted,#6b8f7a);background:none;border:none;cursor:pointer;font-family:Inter,sans-serif;font-weight:500">Sign out</button>
+    <button onclick="doSignOut()" style="font-size:13px;color:var(--muted,#6b8f7a);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500">Sign out</button>
   </div>
 </div>
 <div class="page">

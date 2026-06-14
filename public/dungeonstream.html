@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
   <title>Dungeon · DungeonStream</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     :root{--bg:#080c0b;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;--amber:#fbbf24;}
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;display:flex;flex-direction:column}
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;flex-direction:column}
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
     .logo{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;color:var(--green);text-decoration:none;letter-spacing:.04em}
     .nav{display:flex;align-items:center;gap:12px}
-    .nav a,.nav button{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color .2s}
+    .nav a,.nav button{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color .2s}
     .nav a:hover,.nav button:hover{color:var(--text)}
     .msg-btn{position:relative;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--muted2);font-size:14px;transition:border-color .2s,color .2s}
     .msg-btn:hover{border-color:var(--green);color:var(--green)}
@@ -29,9 +29,9 @@
     .cred-val-row{display:flex;align-items:center;gap:8px}
     .cred-val{flex:1;font-size:14px;color:var(--text);word-break:break-all}
     .cred-val.mono{font-family:monospace;letter-spacing:.05em}
-    .copy-btn{font-size:11px;padding:4px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0}
+    .copy-btn{font-size:11px;padding:4px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0}
     .copy-btn:hover{color:var(--green);border-color:var(--green)}
-    .show-btn{font-size:11px;padding:4px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0}
+    .show-btn{font-size:11px;padding:4px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0}
     .sub-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
     .sub-expiry{font-size:13px;color:var(--muted2)}
     .sub-days{font-size:24px;font-weight:700}

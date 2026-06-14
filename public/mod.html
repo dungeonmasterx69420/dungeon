@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
   <title>Dungeon · Mod Panel</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
     *{box-sizing:border-box;margin:0;padding:0}
@@ -19,13 +19,13 @@
       --red:#f87171;--red-bg:rgba(248,113,113,0.1);--red-border:rgba(248,113,113,0.25);
       --amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1);
     }
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
+    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif}
 
     /* Topbar */
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
     .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
     .topbar-right{display:flex;gap:16px;align-items:center}
-    .topbar-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color .2s}
+    .topbar-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color .2s}
     .topbar-link:hover{color:var(--text)}
     .greeting{font-size:13px;color:var(--muted2)}
 
@@ -40,7 +40,7 @@
 
     /* Tabs */
     .tabs{display:flex;border-bottom:1px solid var(--border);padding:0 28px;background:var(--surface)}
-    .tab-btn{font-size:13px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Inter',sans-serif;padding:14px 0;margin-right:28px;transition:color .2s,border-color .2s;margin-bottom:-1px}
+    .tab-btn{font-size:13px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'DM Sans',sans-serif;padding:14px 0;margin-right:28px;transition:color .2s,border-color .2s;margin-bottom:-1px}
     .tab-btn:hover{color:var(--text)}
     .tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
 
@@ -53,7 +53,7 @@
     .list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
     .list-label{font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)}
     .filters{display:flex;gap:4px}
-    .filter-btn{font-size:12px;font-weight:500;padding:5px 12px;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--muted2);cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+    .filter-btn{font-size:12px;font-weight:500;padding:5px 12px;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
     .filter-btn:hover{color:var(--text);border-color:var(--border2)}
     .filter-btn.active{color:var(--green);border-color:var(--border2);background:var(--green-bg)}
 
@@ -78,7 +78,7 @@
     .badge-mod{background:var(--green-bg2);color:var(--green);font-size:10px;padding:2px 8px;border-radius:4px;margin-left:6px}
 
     /* Action buttons */
-    .act{font-size:12px;font-weight:500;background:none;border:none;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;padding:6px 12px;transition:background .15s,color .15s;color:var(--muted2)}
+    .act{font-size:12px;font-weight:500;background:none;border:none;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:6px 12px;transition:background .15s,color .15s;color:var(--muted2)}
     .act:hover{background:var(--surface2);color:var(--text)}
     .act:disabled{opacity:0.4;cursor:not-allowed}
     .act.green{color:var(--green)}
