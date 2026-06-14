@@ -616,12 +616,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 // Get members list for referral dropdown (public)
-app.get('/api/members/list', (req, res) => {
-  try {
-    const rows = db.prepare("SELECT p.screen_name FROM profiles p WHERE p.tier != 'neut' ORDER BY p.screen_name").all();
-    res.json(rows.map(r => r.screen_name));
-  } catch(e) { res.status(500).json([]); }
-});
+// /api/members/list removed - was publicly exposing member list
 
 // Check screen name availability (public)
 app.get('/api/check/screen-name/:sn', (req, res) => {
@@ -665,13 +660,14 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'dungeon-secret-change-me',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, httpOnly: true, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 },
+  cookie: { secure: process.env.NODE_ENV === 'production', httpOnly: true, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 },
 }));
 
 app.set('trust proxy', 1);
 
 const submitLimiter = rateLimit({ windowMs: 60*60*1000, max: 10, message: { error: 'Too many requests.' } });
 const loginLimiter = rateLimit({ windowMs: 5*60*1000, max: 10, message: { error: 'Too many attempts. Try again in 5 minutes.' } });
+const forgotLimiter = rateLimit({ windowMs: 60*60*1000, max: 5, message: { error: 'Too many password reset requests. Try again in an hour.' } });
 
 // Per-email lockout tracking
 const loginAttempts = new Map(); // email -> { count, lockedUntil }
@@ -1085,7 +1081,8 @@ app.delete('/api/support/:id', requireMod, (req, res) => {
 // Extend member subscription
 app.post('/api/admin/members/:id/extend', requireAuth, (req, res) => {
   const { service, new_end } = req.body;
-  const field = service === 'stream' ? 'stremio_end' : 'iptv_end';
+  const field = service === 'stream' ? 'stremio_end' : service === 'cast' ? 'iptv_end' : null;
+  if (!field) return res.status(400).json({ error: 'Invalid service' });
   db.prepare(`UPDATE members SET ${field}=? WHERE id=?`).run(new_end, req.params.id);
   res.json({ ok: true });
 });
@@ -3059,7 +3056,7 @@ app.post('/api/member/change-password', requireMember, async (req, res) => {
 // ── Password Reset ────────────────────────────────────────────────────────────
 
 // POST request password reset
-app.post('/api/auth/forgot-password', async (req, res) => {
+app.post('/api/auth/forgot-password', forgotLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email required' });
