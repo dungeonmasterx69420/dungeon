@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
 <title>Dungeon · Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -26,19 +26,21 @@
   --blue:#60a5fa;
   --mono:'JetBrains Mono',monospace;
   --sans:'DM Sans',sans-serif;
+  --display:'Press Start 2P',monospace;
   --r:10px;
 }
 html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:14px;line-height:1.5}
 
 /* ── Layout ── */
 .layout{display:flex;height:100vh;overflow:hidden}
-.sidebar{width:220px;background:var(--s1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;flex-shrink:0;transition:transform .25s}
+.sidebar{width:220px;background:var(--s1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;flex-shrink:0;transition:transform .25s;position:relative}
+.sidebar::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 20% at 50% 0%, rgba(52,211,153,.07), transparent 60%)}
 .main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
 
 /* ── Sidebar ── */
-.sb-logo{padding:20px 18px 16px;border-bottom:1px solid var(--bdr)}
-.sb-logo-text{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--g);letter-spacing:.06em}
-.sb-logo-sub{font-size:10px;color:var(--t3);margin-top:2px;font-family:var(--mono)}
+.sb-logo{padding:20px 18px 16px;border-bottom:1px solid var(--bdr);position:relative}
+.sb-logo-text{font-family:var(--display);font-size:11px;font-weight:400;color:var(--g);letter-spacing:.04em;text-shadow:0 0 10px rgba(52,211,153,.5);line-height:1.5}
+.sb-logo-sub{font-size:9px;color:var(--t3);margin-top:8px;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase}
 .sb-nav{padding:10px 8px;flex:1}
 .sb-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--t2);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:2px;position:relative}
 .sb-item:hover{background:var(--s2);color:var(--txt)}
