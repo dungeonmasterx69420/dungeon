@@ -8,62 +8,80 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    :root{--bg:#080c0b;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;--amber:#fbbf24;}
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;flex-direction:column}
-    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-    .logo{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;color:var(--green);text-decoration:none;letter-spacing:.04em}
+    :root{
+      --void:#060908;--stone:#0d1311;--moss:#141c19;--raise:#172019;
+      --ember:#34d399;--ember-soft:rgba(52,211,153,.14);--ember-line:rgba(52,211,153,.22);
+      --border:rgba(52,211,153,.12);--border2:rgba(52,211,153,.28);
+      --ash:#6f8f84;--ash2:#94a3a0;--bone:#dce8e3;--red:#f87171;--amber:#fbbf24;
+      --display:'Press Start 2P',monospace;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+    }
+    html,body{min-height:100vh}
+    body{background:var(--void);color:var(--bone);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;position:relative}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(90% 40% at 50% -5%, rgba(52,211,153,.07), transparent 55%)}
+    .topbar{position:sticky;top:0;z-index:10;background:rgba(13,19,17,.85);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(8px)}
+    .logo{font-family:var(--display);font-size:11px;color:var(--ember);text-decoration:none;letter-spacing:.04em;text-shadow:0 0 10px rgba(52,211,153,.5)}
     .nav{display:flex;align-items:center;gap:12px}
-    .nav a,.nav button{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color .2s}
-    .nav a:hover,.nav button:hover{color:var(--text)}
-    .msg-btn{position:relative;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--muted2);font-size:14px;transition:border-color .2s,color .2s}
-    .msg-btn:hover{border-color:var(--green);color:var(--green)}
+    .nav a,.nav button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ash);text-decoration:none;background:none;border:none;cursor:pointer;transition:color .2s;padding:4px 2px}
+    .nav a:hover,.nav button:hover,.nav a:focus-visible,.nav button:focus-visible{color:var(--bone);outline:none}
+    .msg-btn{position:relative;width:32px;height:32px;border-radius:8px;background:var(--moss);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ash);font-size:14px;transition:border-color .2s,color .2s}
+    .msg-btn:hover{border-color:var(--ember);color:var(--ember)}
     .msg-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.5}
-    .page{flex:1;max-width:700px;margin:0 auto;padding:32px 16px 60px;width:100%}
-    .page-title{font-family:'Press Start 2P','Minecraft',monospace;font-size:13px;color:var(--text);margin-bottom:8px;line-height:1.8}
-    .page-sub{font-size:14px;color:var(--muted2);margin-bottom:28px;line-height:1.7}
-    .cred-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px;margin-bottom:24px}
-    .cred-card-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:16px}
-    .badge{font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px}
-    .cred-row{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px}
-    .cred-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+    .page{position:relative;z-index:2;flex:1;max-width:700px;margin:0 auto;padding:30px 16px 60px;width:100%}
+
+    .page-head{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+    .page-sigil{font-size:24px;color:var(--ember);text-shadow:0 0 14px rgba(52,211,153,.6);line-height:1}
+    .page-title{font-family:var(--display);font-size:14px;color:var(--bone);line-height:1.6;text-shadow:0 0 16px rgba(52,211,153,.3)}
+    .page-sub{font-size:14px;color:var(--ash);margin-bottom:28px;line-height:1.7}
+
+    .cred-card{background:linear-gradient(180deg, rgba(23,32,25,.55), rgba(13,19,17,.55));border:1px solid var(--border2);border-radius:14px;padding:20px;margin-bottom:24px;backdrop-filter:blur(4px)}
+    .cred-card-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:16px}
+    .badge{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+    .cred-row{background:var(--stone);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px}
+    .cred-label{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ash);margin-bottom:6px}
     .cred-val-row{display:flex;align-items:center;gap:8px}
-    .cred-val{flex:1;font-size:14px;color:var(--text);word-break:break-all}
-    .cred-val.mono{font-family:monospace;letter-spacing:.05em}
-    .copy-btn{font-size:11px;padding:4px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0}
-    .copy-btn:hover{color:var(--green);border-color:var(--green)}
-    .show-btn{font-size:11px;padding:4px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0}
+    .cred-val{flex:1;font-size:14px;color:var(--bone);word-break:break-all}
+    .cred-val.mono{font-family:var(--mono);letter-spacing:.05em}
+    .copy-btn,.show-btn{font-family:var(--mono);font-size:10px;padding:5px 10px;background:var(--moss);border:1px solid var(--border2);border-radius:6px;color:var(--ash);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:color .2s,border-color .2s}
+    .copy-btn:hover,.show-btn:hover{color:var(--ember);border-color:var(--ember)}
     .sub-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
-    .sub-expiry{font-size:13px;color:var(--muted2)}
-    .sub-days{font-size:24px;font-weight:700}
-    .cred-note{font-size:12px;color:var(--muted2);line-height:1.6;margin-top:12px}
-    .cred-note a{color:var(--green);text-decoration:none}
+    .sub-expiry{font-family:var(--mono);font-size:12px;color:var(--ash)}
+    .sub-days{font-family:var(--display);font-size:18px}
+    .cred-note{font-size:12px;color:var(--ash);line-height:1.7;margin-top:12px}
+    .cred-note a{color:var(--ember);text-decoration:none}
     .no-account{text-align:center;padding:8px 0 4px}
-    .no-account p{font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:14px}
-    .redeem-btn{display:inline-block;padding:10px 20px;background:var(--green);border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:700;text-decoration:none}
-    .section-head{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:28px 0 14px;display:flex;align-items:center;gap:10px}
+    .no-account p{font-size:13px;color:var(--ash);line-height:1.7;margin-bottom:14px}
+    .redeem-btn{display:inline-block;padding:11px 22px;background:var(--ember);border-radius:8px;color:var(--void);font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 0 16px rgba(52,211,153,.3);transition:transform .15s}
+    .redeem-btn:hover{transform:translateY(-1px)}
+
+    .section-head{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ash);margin:28px 0 14px;display:flex;align-items:center;gap:12px}
     .section-head::after{content:'';flex:1;height:1px;background:var(--border)}
     .app-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px}
-    .app-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;transition:border-color .2s,background .2s}
-    .app-card:hover{border-color:var(--border2);background:var(--surface2)}
+    .app-card{background:var(--moss);border:1px solid var(--border);border-radius:11px;padding:14px;display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;transition:border-color .2s,transform .15s}
+    .app-card:hover{border-color:var(--border2);transform:translateY(-2px)}
     .app-icon{font-size:22px;flex-shrink:0;width:30px;text-align:center}
-    .app-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
-    .app-platform{font-size:11px;color:var(--muted2)}
-    .app-tag{display:inline-block;font-size:9px;font-weight:600;padding:1px 6px;border-radius:10px;background:var(--green-bg);color:var(--green);margin-left:4px;vertical-align:middle}
+    .app-name{font-size:13px;font-weight:600;color:var(--bone);margin-bottom:2px}
+    .app-platform{font-family:var(--mono);font-size:10px;color:var(--ash)}
+    .app-tag{display:inline-block;font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 6px;border-radius:10px;background:var(--ember-soft);color:var(--ember);margin-left:4px;vertical-align:middle;text-transform:uppercase;letter-spacing:.04em}
     .features{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
-    .feat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+    .feat{background:var(--moss);border:1px solid var(--border);border-radius:11px;padding:16px}
     .feat-icon{font-size:22px;margin-bottom:10px}
-    .feat-title{font-size:13px;font-weight:600;margin-bottom:4px}
-    .feat-desc{font-size:12px;color:var(--muted2);line-height:1.6}
-    footer{text-align:center;padding:24px 0 8px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:center;gap:4px}
-    footer a{color:var(--muted);text-decoration:none}
-    footer a:hover{color:var(--text)}
-    .sep{color:var(--border2)}
-    @media(max-width:480px){.page{padding:20px 12px 50px}.app-grid{grid-template-columns:1fr}.features{grid-template-columns:1fr}}
+    .feat-title{font-size:13px;font-weight:700;margin-bottom:4px}
+    .feat-desc{font-size:12px;color:var(--ash);line-height:1.6}
+
+    footer{text-align:center;padding:24px 0 8px;font-family:var(--mono);font-size:11px;color:var(--ash);display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+    footer a{color:var(--ash);text-decoration:none;transition:color .2s}
+    footer a:hover{color:var(--ember)}
+    .sep{color:#2c3d36}
+    @media(max-width:480px){.page{padding:22px 12px 50px}.app-grid{grid-template-columns:1fr}.features{grid-template-columns:1fr}.page-title{font-size:12px}}
   </style>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
 </head>
 <body>
 <div class="topbar">
-  <a href="/dashboard.html" class="logo">Dungeon</a>
+  <a href="/dashboard.html" class="logo">⬡ Dungeon</a>
   <div class="nav">
     <a href="/dashboard.html">Dashboard</a>
     <a href="/messages.html" class="msg-btn">✉<span class="msg-badge" id="msgBadge"></span></a>
@@ -72,13 +90,15 @@
 </div>
 
 <div class="page">
-  <div class="page-title">DungeonCast</div>
+  <div class="page-head">
+    <span class="page-sigil" aria-hidden="true">📡</span>
+    <div class="page-title">DungeonCast</div>
+  </div>
   <div class="page-sub">Live TV, sports, PPV events and more — powered by Jellyfin and your Dungeon membership.</div>
 
-  <!-- Credential card -->
   <div class="cred-card">
-    <div class="cred-card-title">📡 Your DungeonCast Account <span class="badge" id="statusBadge"></span></div>
-    <div id="credPlaceholder" style="font-size:13px;color:var(--muted2);line-height:1.6">Your DungeonCast credentials will appear here once the Dungeon Master activates your account.</div>
+    <div class="cred-card-title">Your DungeonCast Account <span class="badge" id="statusBadge"></span></div>
+    <div id="credPlaceholder" style="font-size:13px;color:var(--ash);line-height:1.7">Your DungeonCast credentials will appear here once the Dungeon Master activates your account.</div>
     <div id="credActive" style="display:none">
       <div class="cred-row">
         <div class="cred-label">Server URL</div>
@@ -119,7 +139,6 @@
     </div>
   </div>
 
-  <!-- App downloads -->
   <div class="section-head">Get the App</div>
   <div class="app-grid">
     <a class="app-card" href="https://play.google.com/store/apps/details?id=org.jellyfin.androidtv" target="_blank" rel="noopener">
@@ -136,15 +155,12 @@
     </a>
   </div>
 
-  <!-- Features -->
   <div class="section-head">What's Included</div>
   <div class="features">
-    <div class="feat"><div class="feat-icon">🏆</div><div class="feat-title">Live Sports</div><div class="feat-desc">NFL, NBA, MLB, NHL, EPL, Champions League and more — live as they happen.</div></div>
-    <div class="feat"><div class="feat-icon">🥊</div><div class="feat-title">PPV Events</div><div class="feat-desc">UFC, boxing, WWE — all major pay-per-view events included at no extra charge.</div></div>
-    <div class="feat"><div class="feat-icon">📺</div><div class="feat-title">Live TV Channels</div><div class="feat-desc">Hundreds of live channels — news, entertainment, sports. US and international.</div></div>
-    <div class="feat"><div class="feat-icon">🏎️</div><div class="feat-title">Formula 1</div><div class="feat-desc">Every race, qualifying and practice live. Never miss a lap of the season.</div></div>
-    <div class="feat"><div class="feat-icon">📱</div><div class="feat-title">Any Device</div><div class="feat-desc">iPhone, Android, Fire Stick, Apple TV, Smart TV, Windows, Mac and more.</div></div>
-    <div class="feat"><div class="feat-icon">💳</div><div class="feat-title">1 Credit / Month</div><div class="feat-desc">1 credit gets you a full month. Same system as DungeonStream.</div></div>
+    <div class="feat"><div class="feat-icon">📡</div><div class="feat-title">Live TV & Sports</div><div class="feat-desc">Thousands of live channels — sports, news, entertainment and more.</div></div>
+    <div class="feat"><div class="feat-icon">🥊</div><div class="feat-title">PPV Events</div><div class="feat-desc">Major fights and pay-per-view events included at no extra cost.</div></div>
+    <div class="feat"><div class="feat-icon">🔑</div><div class="feat-title">Your Own Account</div><div class="feat-desc">Personal login with dedicated credentials just for you.</div></div>
+    <div class="feat"><div class="feat-icon">💳</div><div class="feat-title">1 Credit / Month</div><div class="feat-desc">1 credit gets you a full month. Credits never expire.</div></div>
   </div>
 
   <footer id="pageFooter">
@@ -188,35 +204,37 @@
     loadFooter(m?.profile?.tier);
 
     const badge = document.getElementById('statusBadge');
+    const user = m.jellyfin_user || m.stremio_email;
+    const pass = m.jellyfin_pass || m.stremio_pass;
 
-    if (m.iptv_end) {
+    if (user) {
       document.getElementById('credPlaceholder').style.display = 'none';
       document.getElementById('credActive').style.display = 'block';
+      document.getElementById('jellyfinUser').textContent = user;
+      passRaw = pass || '';
 
-      let dt = m.iptv_end;
-      if (!dt.endsWith('Z') && !dt.includes('+')) dt = dt.replace(' ','T') + 'Z';
-      const expDate = new Date(dt);
-      const days = Math.ceil((expDate - new Date()) / 86400000);
-      document.getElementById('subExpiry').textContent = 'Expires ' + expDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-      const dEl = document.getElementById('subDays');
-      dEl.textContent = days > 0 ? days + 'd left' : 'Expired';
-      dEl.style.color = days > 7 ? 'var(--green)' : days > 0 ? 'var(--amber)' : 'var(--red)';
-      badge.textContent = days > 0 ? 'Active' : 'Expired';
-      badge.style.background = days > 0 ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.1)';
-      badge.style.color = days > 0 ? 'var(--green)' : 'var(--red)';
-
-      // Load credentials
-      fetch('/api/iptv/me').then(r => r.json()).then(account => {
-        if (account && account.nodecast_user) {
-          document.getElementById('dcUser').textContent = account.nodecast_user;
-          passRaw = account.xtream_pass || '';
-        }
-      }).catch(() => {});
+      if (m.stremio_end) {
+        let dt = m.stremio_end;
+        if (!dt.endsWith('Z') && !dt.includes('+')) dt = dt.replace(' ','T') + 'Z';
+        const expDate = new Date(dt);
+        const days = Math.ceil((expDate - new Date()) / 86400000);
+        document.getElementById('subExpiry').textContent = 'Expires ' + expDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        const dEl = document.getElementById('subDays');
+        dEl.textContent = days > 0 ? days + 'd left' : 'Expired';
+        dEl.style.color = days > 7 ? 'var(--ember)' : days > 0 ? 'var(--amber)' : 'var(--red)';
+        badge.textContent = days > 0 ? 'Active' : 'Expired';
+        badge.style.background = days > 0 ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.1)';
+        badge.style.color = days > 0 ? 'var(--ember)' : 'var(--red)';
+      } else {
+        badge.textContent = 'Active';
+        badge.style.background = 'rgba(52,211,153,0.12)';
+        badge.style.color = 'var(--ember)';
+      }
     } else {
       document.getElementById('credNone').style.display = 'block';
       badge.textContent = 'No Account';
       badge.style.background = 'rgba(148,163,160,0.1)';
-      badge.style.color = 'var(--muted2)';
+      badge.style.color = 'var(--ash2)';
     }
   }).catch(() => { window.location.href = '/login.html'; });
 
@@ -225,7 +243,7 @@
     if (!footer || !tier) return;
     if (['mod','admin','warden'].includes(tier)) {
       const span = document.createElement('span');
-      let extra = '<span class="sep">·</span><a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
+      let extra = '<span class="sep">·</span><a href="/mod.html" style="color:var(--ember)">Mod Panel</a>';
       if (['admin','warden'].includes(tier)) extra += '<span class="sep">·</span><a href="/admin.html" style="color:var(--red)">Admin</a>';
       span.innerHTML = extra; footer.appendChild(span);
     }

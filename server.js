@@ -1979,6 +1979,25 @@ app.get('/api/forum/categories', requireMember, (req, res) => {
   res.json(result);
 });
 
+// Recent threads across all categories (for dashboard)
+app.get('/api/forum/recent', requireMember, (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 4, 10);
+    const threads = db.prepare(`
+      SELECT t.id, t.title, t.created_at, t.category_id,
+             c.name as category_name,
+             p.screen_name, p.tier,
+             (SELECT COUNT(*) FROM forum_posts WHERE thread_id=t.id) as reply_count
+      FROM forum_threads t
+      JOIN profiles p ON t.profile_id = p.id
+      LEFT JOIN forum_categories c ON c.id = t.category_id
+      ORDER BY t.created_at DESC
+      LIMIT ?
+    `).all(limit);
+    res.json(threads);
+  } catch(e) { res.json([]); }
+});
+
 // ── Forum: threads in category ────────────────────────────────────────────────
 app.get('/api/forum/categories/:id/threads', requireMember, (req, res) => {
   const threads = db.prepare(`

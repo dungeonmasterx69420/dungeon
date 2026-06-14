@@ -8,59 +8,222 @@
   <title>Dungeon</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
-    *{box-sizing:border-box;margin:0;padding:0}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     :root{
-      --bg:#080c0b;--surface:#111915;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);
-      --green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;
+      --void:#060908;--stone:#0d1311;--ember:#34d399;
+      --ember-soft:rgba(52,211,153,.14);--ember-line:rgba(52,211,153,.22);
+      --ash:#6f8f84;--bone:#dce8e3;
+      --display:'Press Start 2P',monospace;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
     }
-    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif}
-    body{display:flex;flex-direction:column;min-height:100vh}
+    html,body{height:100%}
+    body{
+      background:var(--void);color:var(--bone);font-family:var(--sans);
+      min-height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden;
+    }
 
+    /* Torch-lit pool of light in the center, darkness at the edges */
+    .lightpool{
+      position:fixed;inset:0;z-index:0;pointer-events:none;
+      background:
+        radial-gradient(60% 50% at 50% 42%, rgba(52,211,153,.13), rgba(52,211,153,.04) 45%, transparent 70%),
+        radial-gradient(40% 35% at 50% 40%, rgba(52,211,153,.10), transparent 65%);
+    }
+    @media (prefers-reduced-motion: no-preference){
+      .lightpool{animation:flicker 6s ease-in-out infinite}
+    }
+    @keyframes flicker{
+      0%,100%{opacity:1}
+      42%{opacity:.86}
+      45%{opacity:1}
+      48%{opacity:.92}
+      70%{opacity:1}
+      73%{opacity:.8}
+      76%{opacity:.97}
+    }
+    /* Vignette to deepen the corners */
+    .vignette{
+      position:fixed;inset:0;z-index:0;pointer-events:none;
+      background:radial-gradient(120% 100% at 50% 45%, transparent 40%, rgba(0,0,0,.55) 100%);
+    }
+
+    /* Rising embers */
+    .embers{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+    .ember{
+      position:absolute;bottom:-12px;width:3px;height:3px;border-radius:50%;
+      background:var(--ember);box-shadow:0 0 6px var(--ember),0 0 12px rgba(52,211,153,.5);
+      opacity:0;
+    }
+    @media (prefers-reduced-motion: no-preference){
+      .ember{animation:rise linear infinite}
+    }
+    @keyframes rise{
+      0%{transform:translateY(0) translateX(0);opacity:0}
+      8%{opacity:.8}
+      80%{opacity:.5}
+      100%{transform:translateY(-92vh) translateX(var(--drift,10px));opacity:0}
+    }
+
+    /* Topbar */
     .topbar{
-      background:var(--surface);border-bottom:1px solid var(--border);
-      padding:12px 20px;display:flex;align-items:center;justify-content:space-between;
+      position:relative;z-index:3;
+      padding:16px 22px;display:flex;align-items:center;justify-content:space-between;
     }
-    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none;line-height:1.4}
-    .warden-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;transition:color .2s}
-    .warden-link:hover{color:var(--text)}
-
-
-    .center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
-
-    .tagline{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:9px !important;font-weight:400 !important;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:32px;line-height:1.6}
-
-    .seek-btn{font-family:'Press Start 2P','Minecraft',monospace !important;
-      display:inline-block;padding:14px 48px;
-      background:var(--green-bg);border:1px solid var(--green);border-radius:8px;
-      color:var(--green);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;
-      letter-spacing:0.06em;text-decoration:none;text-transform:uppercase;
-      transition:background .2s,color .2s;
+    .logo{
+      font-family:var(--display);font-size:11px;color:var(--ember);
+      letter-spacing:.04em;text-decoration:none;line-height:1.4;
+      text-shadow:0 0 10px rgba(52,211,153,.5);
     }
-    .seek-btn:hover{background:var(--green);color:#0b0f0e}
+    .signin{
+      font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+      color:var(--ash);text-decoration:none;transition:color .2s;
+      padding:8px 4px;
+    }
+    .signin:hover,.signin:focus-visible{color:var(--bone);outline:none}
 
-    @media(max-width:767px){
-      .topbar{padding:14px 20px}
+    /* Stage */
+    .stage{
+      position:relative;z-index:2;flex:1;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      text-align:center;padding:32px 24px 56px;
+    }
+
+    .sigil{
+      font-size:26px;color:var(--ember);line-height:1;margin-bottom:30px;
+      text-shadow:0 0 14px rgba(52,211,153,.7),0 0 28px rgba(52,211,153,.35);
+    }
+    @media (prefers-reduced-motion: no-preference){
+      .sigil{animation:pulse 4.5s ease-in-out infinite}
+    }
+    @keyframes pulse{
+      0%,100%{text-shadow:0 0 14px rgba(52,211,153,.7),0 0 28px rgba(52,211,153,.35)}
+      50%{text-shadow:0 0 18px rgba(52,211,153,.9),0 0 40px rgba(52,211,153,.5)}
+    }
+
+    .wordmark{
+      font-family:var(--display);
+      font-size:clamp(22px,7.5vw,46px);
+      color:var(--bone);letter-spacing:.04em;line-height:1.25;
+      text-shadow:0 0 18px rgba(52,211,153,.45),0 0 2px rgba(52,211,153,.6);
+      margin-bottom:26px;
+    }
+
+    .eyebrow{
+      font-family:var(--mono);font-size:10px;font-weight:600;
+      letter-spacing:.28em;text-transform:uppercase;color:var(--ember);
+      margin-bottom:16px;
+      display:flex;align-items:center;gap:12px;
+    }
+    .eyebrow::before,.eyebrow::after{
+      content:'';width:26px;height:1px;background:var(--ember-line);
+    }
+
+    .headline{
+      font-size:clamp(15px,4.2vw,19px);font-weight:500;color:var(--ash);
+      line-height:1.6;max-width:34ch;margin-bottom:38px;
+    }
+    .headline b{color:var(--bone);font-weight:600}
+
+    .actions{display:flex;flex-direction:column;align-items:center;gap:18px}
+    .knock{
+      font-family:var(--sans);font-size:14px;font-weight:700;letter-spacing:.04em;
+      text-transform:uppercase;text-decoration:none;
+      color:var(--void);background:var(--ember);
+      padding:15px 46px;border-radius:9px;
+      box-shadow:0 0 22px rgba(52,211,153,.35),inset 0 0 0 1px rgba(255,255,255,.1);
+      transition:transform .15s ease,box-shadow .2s ease;
+    }
+    .knock:hover,.knock:focus-visible{
+      transform:translateY(-2px);
+      box-shadow:0 0 34px rgba(52,211,153,.55),inset 0 0 0 1px rgba(255,255,255,.15);
+      outline:none;
+    }
+    .knock:focus-visible{outline:2px solid var(--bone);outline-offset:3px}
+
+    .key{
+      font-family:var(--mono);font-size:12px;letter-spacing:.06em;
+      color:var(--ash);text-decoration:none;transition:color .2s;
+      border-bottom:1px solid transparent;padding-bottom:2px;
+    }
+    .key:hover,.key:focus-visible{color:var(--ember);border-bottom-color:var(--ember-line);outline:none}
+
+    /* Footer */
+    .foot{
+      position:relative;z-index:3;text-align:center;
+      padding:18px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+      color:#3c5249;
+    }
+    .foot a{color:#3c5249;text-decoration:none;transition:color .2s}
+    .foot a:hover{color:var(--ash)}
+    .foot .dot{margin:0 8px;opacity:.5}
+
+    @media(max-width:520px){
+      .topbar{padding:14px 18px}
+      .sigil{margin-bottom:24px;font-size:23px}
+      .wordmark{margin-bottom:22px}
     }
   </style>
   <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
   <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
-  <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
 </head>
 <body>
 
-<div class="topbar">
-  <a href="/" class="logo" id="logoLink">Dungeon</a>
-  <div style="display:flex;align-items:center;gap:16px">
-    <a href="/admin.html" class="warden-link">Dungeon Master</a>
-    <a href="/dashboard.html" class="warden-link">Dashboard</a>
+  <div class="lightpool"></div>
+  <div class="vignette"></div>
+
+  <div class="embers" id="embers" aria-hidden="true"></div>
+
+  <div class="topbar">
+    <a href="/" class="logo" id="logoLink">⬡ Dungeon</a>
+    <a href="/login.html" class="signin">Sign In</a>
   </div>
-</div>
 
-<div class="center">
-  <div class="tagline">Members Only</div>
-  <a href="/apply.html" class="seek-btn">Apply</a>
-</div>
+  <main class="stage">
+    <div class="sigil" aria-hidden="true">⬡</div>
+    <div class="wordmark">DUNGEON</div>
+    <div class="eyebrow">By Invitation Only</div>
+    <p class="headline">You found the door. <b>Few are let through.</b></p>
+    <div class="actions">
+      <a href="/apply.html" class="knock">Apply to Enter</a>
+      <a href="/login.html" class="key">I have a key →</a>
+    </div>
+  </main>
 
+  <footer class="foot">
+    <a href="/terms.html">Terms</a><span class="dot">·</span><a href="/privacy.html">Privacy</a>
+  </footer>
+
+<script>
+  // Scatter embers with varied positions, sizes, timing
+  (function(){
+    const wrap = document.getElementById('embers');
+    if(!wrap) return;
+    const n = 8;
+    for(let i=0;i<n;i++){
+      const e = document.createElement('span');
+      e.className = 'ember';
+      const left = 8 + Math.random()*84;          // vw
+      const size = 2 + Math.random()*2.5;         // px
+      const dur  = 7 + Math.random()*7;           // s
+      const delay= Math.random()*8;               // s
+      const drift= (Math.random()*40 - 20).toFixed(0)+'px';
+      e.style.left = left+'vw';
+      e.style.width = size+'px';
+      e.style.height = size+'px';
+      e.style.setProperty('--drift', drift);
+      e.style.animationDuration = dur+'s';
+      e.style.animationDelay = delay+'s';
+      wrap.appendChild(e);
+    }
+  })();
+
+  // Send signed-in members straight to their dashboard from the logo
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if(d && d.authenticated){
+      document.getElementById('logoLink').setAttribute('href','/dashboard.html');
+    }
+  }).catch(()=>{});
+</script>
+</body>
+</html>

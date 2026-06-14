@@ -12,7 +12,7 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
     *{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#080c0b;--surface:#111915;--surface2:#172118;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.25);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);--text:#e2e8e4;--muted:#6b8f7a;--muted2:#94a3a0;--red:#f87171;--red-bg:rgba(248,113,113,0.1)}
+    :root{--bg:#060908;--surface:#141c19;--surface2:#0d1311;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.28);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);--text:#dce8e3;--muted:#6f8f84;--muted2:#8fa89e;--red:#f87171;--red-bg:rgba(248,113,113,0.1)}
     html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif}
 
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
@@ -106,12 +106,19 @@
     .msg-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:var(--muted2);font-size:15px;transition:border-color .2s,color .2s;cursor:pointer}
     .msg-icon-btn:hover{border-color:var(--green);color:var(--green)}
     .msg-icon-badge{position:absolute;top:-5px;right:-5px;background:var(--red,#f87171);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
-  </style>
+  
+/* torchlight ambience */
+body{position:relative}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(90% 38% at 50% -6%, rgba(52,211,153,.07), transparent 55%)}
+.topbar,.page,.center,footer{position:relative;z-index:1}
+.logo{text-shadow:0 0 10px rgba(52,211,153,.5)}
+.page-title{text-shadow:0 0 16px rgba(52,211,153,.3)}
+</style>
 </head>
 <body>
 
 <div class="topbar">
-  <a href="/" class="logo" id="logoLink">Dungeon</a>
+  <a href="/" class="logo" id="logoLink">⬡ Dungeon</a>
   <div class="nav">
     <a href="/dashboard.html">Dashboard</a>
     <a href="/forum.html">Forum</a>

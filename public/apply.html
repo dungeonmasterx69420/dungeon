@@ -7,135 +7,185 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{--bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);--g:#34d399;--gb:rgba(52,211,153,.08);--txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;--red:#f87171;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif}
-html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;flex-direction:column}
-.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
-.logo{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--g);text-decoration:none;letter-spacing:.04em}
-.page{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px 60px}
-.box{width:100%;max-width:480px}
-.card{background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;padding:24px}
-.title{font-size:18px;font-weight:700;margin-bottom:6px}
-.sub{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.7}
-.field{margin-bottom:14px}
-.field label{display:block;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:5px}
-.field input,.field select,.field textarea{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:14px;padding:11px 13px;outline:none;transition:border-color .15s;appearance:none}
-.field input:focus,.field select:focus{border-color:var(--g)}
-.field input::placeholder,.field textarea::placeholder{color:var(--t3)}
-.field-hint{font-size:10px;color:var(--t3);margin-top:4px;font-family:var(--mono)}
-.field-hint.ok{color:var(--g)}
+:root{
+  --void:#060908;--stone:#0d1311;--moss:#141c19;
+  --ember:#34d399;--ember-soft:rgba(52,211,153,.14);--ember-line:rgba(52,211,153,.22);
+  --border:rgba(52,211,153,.12);--border2:rgba(52,211,153,.28);
+  --ash:#6f8f84;--ash2:#94a3a0;--bone:#dce8e3;--red:#f87171;
+  --display:'Press Start 2P',monospace;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+html,body{min-height:100vh}
+body{background:var(--void);color:var(--bone);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;position:relative;overflow-x:hidden}
+.lightpool{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(50% 40% at 50% 30%, rgba(52,211,153,.10), transparent 66%)}
+@media (prefers-reduced-motion: no-preference){.lightpool{animation:flicker 6s ease-in-out infinite}}
+@keyframes flicker{0%,100%{opacity:1}43%{opacity:.86}46%{opacity:1}72%{opacity:.83}75%{opacity:.97}}
+.vignette{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(130% 100% at 50% 35%, transparent 45%, rgba(0,0,0,.5) 100%)}
+
+.topbar{position:relative;z-index:3;padding:16px 22px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--display);font-size:11px;color:var(--ember);letter-spacing:.04em;text-decoration:none;text-shadow:0 0 10px rgba(52,211,153,.5)}
+.back{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ash);text-decoration:none;transition:color .2s;padding:8px 4px}
+.back:hover,.back:focus-visible{color:var(--bone);outline:none}
+
+.page{position:relative;z-index:2;flex:1;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px 56px}
+.box{width:100%;max-width:460px}
+
+.intro{text-align:center;margin-bottom:24px}
+.sigil{font-size:22px;color:var(--ember);margin-bottom:16px;text-shadow:0 0 14px rgba(52,211,153,.6)}
+@media (prefers-reduced-motion: no-preference){.sigil{animation:pulse 4.5s ease-in-out infinite}}
+@keyframes pulse{0%,100%{text-shadow:0 0 14px rgba(52,211,153,.6)}50%{text-shadow:0 0 20px rgba(52,211,153,.85),0 0 36px rgba(52,211,153,.4)}}
+.eyebrow{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:var(--ember);margin-bottom:10px}
+.title{font-family:var(--display);font-size:15px;color:var(--bone);letter-spacing:.03em;margin-bottom:12px;text-shadow:0 0 16px rgba(52,211,153,.35)}
+.sub{font-size:13px;color:var(--ash);line-height:1.7;max-width:36ch;margin:0 auto}
+
+.card{background:rgba(13,19,17,.7);border:1px solid var(--border);border-radius:14px;padding:24px;backdrop-filter:blur(4px)}
+
+.err-banner{font-size:12px;color:var(--red);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:8px;padding:10px 12px;margin-bottom:16px;display:none;line-height:1.5}
+
+.field{margin-bottom:15px}
+.field label{display:block;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ash);margin-bottom:6px}
+.field label .req{color:var(--ember)}
+.field label .opt{color:#4d6b62;font-size:8px;text-transform:none;letter-spacing:0}
+.field input,.field textarea{width:100%;background:var(--stone);border:1px solid var(--border2);border-radius:9px;color:var(--bone);font-family:var(--sans);font-size:14px;padding:11px 13px;outline:none;transition:border-color .2s,box-shadow .2s}
+.field input:focus,.field textarea:focus{border-color:var(--ember);box-shadow:0 0 0 3px var(--ember-soft)}
+.field input::placeholder{color:#4d6b62}
+.field-hint{font-size:10px;color:#4d6b62;margin-top:5px;font-family:var(--mono);line-height:1.4}
+.field-hint.ok{color:var(--ember)}
 .field-hint.bad{color:var(--red)}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.divider{height:1px;background:var(--bdr);margin:20px 0}
-.terms-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:16px}
-.terms-row input[type=checkbox]{width:16px;height:16px;margin-top:2px;accent-color:var(--g);cursor:pointer;flex-shrink:0}
-.terms-row label{font-size:12px;color:var(--t2);line-height:1.6;cursor:pointer}
-.terms-row a{color:var(--g);text-decoration:none}
-.btn{width:100%;padding:13px;background:var(--g);border:none;border-radius:8px;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);transition:opacity .2s}
-.btn:hover{opacity:.85}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.err-banner{font-size:12px;color:var(--red);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;display:none;line-height:1.5}
-.success{text-align:center;padding:20px 0;display:none}
-.success-icon{font-size:48px;margin-bottom:16px}
-.success-title{font-size:20px;font-weight:700;margin-bottom:8px}
-.success-sub{font-size:13px;color:var(--t2);line-height:1.7}
-footer{text-align:center;padding:20px;font-size:12px;color:var(--t3)}
-footer a{color:var(--t3);text-decoration:none}
-footer a:hover{color:var(--t2)}
-@media(max-width:480px){.frow{grid-template-columns:1fr}}
+
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+.terms-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
+.terms-row input[type=checkbox]{width:16px;height:16px;margin-top:2px;accent-color:var(--ember);cursor:pointer;flex-shrink:0}
+.terms-row label{font-size:12px;color:var(--ash);line-height:1.6;cursor:pointer}
+.terms-row a{color:var(--ember);text-decoration:none}
+.terms-row a:hover{opacity:.8}
+
+.btn{width:100%;padding:14px;background:var(--ember);border:none;border-radius:9px;color:var(--void);font-family:var(--sans);font-size:14px;font-weight:700;letter-spacing:.03em;cursor:pointer;
+  box-shadow:0 0 20px rgba(52,211,153,.3),inset 0 0 0 1px rgba(255,255,255,.1);transition:transform .15s,box-shadow .2s}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 0 30px rgba(52,211,153,.5),inset 0 0 0 1px rgba(255,255,255,.15)}
+.btn:focus-visible{outline:2px solid var(--bone);outline-offset:3px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.signin-line{text-align:center;margin-top:18px;font-family:var(--mono);font-size:11px;color:var(--ash)}
+.signin-line a{color:var(--ember);text-decoration:none;border-bottom:1px solid var(--ember-line);padding-bottom:1px}
+.signin-line a:hover{opacity:.8}
+
+.success{text-align:center;padding:24px 0;display:none}
+.success-sigil{font-size:42px;margin-bottom:18px;color:var(--ember);text-shadow:0 0 24px rgba(52,211,153,.6)}
+.success-title{font-family:var(--display);font-size:14px;color:var(--bone);margin-bottom:14px;line-height:1.5}
+.success-sub{font-size:13px;color:var(--ash);line-height:1.7;max-width:32ch;margin:0 auto}
+
+.foot{position:relative;z-index:3;text-align:center;padding:18px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:#3c5249}
+.foot a{color:#3c5249;text-decoration:none}
+.foot a:hover{color:var(--ash)}
+.foot .dot{margin:0 7px;opacity:.5}
+
+@media(max-width:520px){.topbar{padding:14px 18px}.frow{grid-template-columns:1fr}.title{font-size:13px}}
 </style>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
 </head>
 <body>
+<div class="lightpool"></div>
+<div class="vignette"></div>
 
 <div class="topbar">
   <a href="/" class="logo" id="logoLink">⬡ Dungeon</a>
+  <a href="/" class="back">← Door</a>
 </div>
 
 <div class="page">
   <div class="box">
-    <div class="card">
 
-      <!-- Form -->
-      <div id="formView">
-        <div class="title">Request Access</div>
-        <div class="sub">Submit your details and the Dungeon Master will review your request.</div>
-        <div class="err-banner" id="errBanner"></div>
-
-        <div class="frow">
-          <div class="field">
-            <label>First Name <span style="color:var(--g)">*</span></label>
-            <input type="text" id="fn" placeholder="Seymour" autocomplete="given-name"/>
-          </div>
-          <div class="field">
-            <label>Last Name <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label>
-            <input type="text" id="ln" placeholder="Buttocks" autocomplete="family-name"/>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Screen Name <span style="color:var(--g)">*</span> <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">— your @username</span></label>
-          <input type="text" id="sn" placeholder="yourcoolname" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
-          <div class="field-hint" id="sn-hint">Letters, numbers and underscores only. 3–20 characters.</div>
-        </div>
-
-        <div class="field">
-          <label>Email Address <span style="color:var(--g)">*</span></label>
-          <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
-        </div>
-
-        <div class="field">
-          <label>Phone <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label>
-          <input type="text" id="phone" placeholder="+1 (555) 000-0000" autocomplete="tel"/>
-        </div>
-
-        <div class="field">
-          <label>Referred by <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional — enter their @username</span></label>
-          <input type="text" id="referral" placeholder="@username"/>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="terms-row">
-          <input type="checkbox" id="terms"/>
-          <label for="terms">I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a></label>
-        </div>
-
-        <button class="btn" id="submitBtn" onclick="submitForm()">Submit Request</button>
-      </div>
-
-      <!-- Success -->
-      <div class="success" id="successView">
-        <div class="success-icon">✅</div>
-        <div class="success-title">Request Submitted</div>
-        <div class="success-sub">Your request has been received.<br/>The Dungeon Master will be in touch at your email address.</div>
-      </div>
-
+    <div class="intro" id="introView">
+      <div class="sigil" aria-hidden="true">⬡</div>
+      <div class="eyebrow">Request Access</div>
+      <div class="title">Knock</div>
+      <p class="sub">Leave your details. The Dungeon Master reviews every request and reaches out to those who make the cut.</p>
     </div>
+
+    <div class="card" id="formView">
+      <div class="err-banner" id="errBanner"></div>
+
+      <div class="frow">
+        <div class="field">
+          <label>First Name <span class="req">*</span></label>
+          <input type="text" id="fn" placeholder="Seymour" autocomplete="given-name"/>
+        </div>
+        <div class="field">
+          <label>Last Name <span class="opt">optional</span></label>
+          <input type="text" id="ln" placeholder="Buttocks" autocomplete="family-name"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Screen Name <span class="req">*</span> <span class="opt">— your @username</span></label>
+        <input type="text" id="sn" placeholder="yourcoolname" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
+        <div class="field-hint" id="sn-hint">Letters, numbers and underscores. 3–20 characters.</div>
+      </div>
+
+      <div class="field">
+        <label>Email Address <span class="req">*</span></label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+
+      <div class="field">
+        <label>Phone <span class="opt">optional</span></label>
+        <input type="text" id="phone" placeholder="+1 (555) 000-0000" autocomplete="tel"/>
+      </div>
+
+      <div class="field">
+        <label>Referred By <span class="opt">optional — their @username</span></label>
+        <input type="text" id="referral" placeholder="@username"/>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="terms-row">
+        <input type="checkbox" id="terms"/>
+        <label for="terms">I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a></label>
+      </div>
+
+      <button class="btn" id="submitBtn" onclick="submitForm()">Knock on the Door</button>
+
+      <div class="signin-line">Already have a key? <a href="/login.html">Sign in →</a></div>
+    </div>
+
+    <div class="success" id="successView">
+      <div class="success-sigil" aria-hidden="true">⬡</div>
+      <div class="success-title">Your Knock Was Heard</div>
+      <p class="success-sub">The Dungeon Master has your request. If you're a fit, you'll hear back at your email.</p>
+    </div>
+
   </div>
 </div>
 
-<footer>
-  <a href="/terms.html">Terms</a> &nbsp;·&nbsp;
-  <a href="/privacy.html">Privacy</a>
+<footer class="foot">
+  <a href="/terms.html">Terms</a><span class="dot">·</span><a href="/privacy.html">Privacy</a>
 </footer>
 
 <script>
-let _snTimer = null;
-let _snValid = false;
+let _snTimer=null, _snValid=false;
 
 function validateSn(input){
-  const val = input.value.replace(/[^a-zA-Z0-9_]/g,'');
-  input.value = val;
-  const hint = document.getElementById('sn-hint');
-  _snValid = false;
-  if(!val){ hint.textContent='Letters, numbers and underscores only. 3–20 characters.'; hint.className='field-hint'; return; }
-  if(val.length < 3){ hint.textContent='Too short — minimum 3 characters'; hint.className='field-hint bad'; return; }
-  hint.textContent='Checking availability…'; hint.className='field-hint';
+  const val=input.value.replace(/[^a-zA-Z0-9_]/g,'');
+  input.value=val;
+  const hint=document.getElementById('sn-hint');
+  _snValid=false;
+  if(!val){hint.textContent='Letters, numbers and underscores. 3–20 characters.';hint.className='field-hint';return}
+  if(val.length<3){hint.textContent='Too short — minimum 3 characters';hint.className='field-hint bad';return}
+  hint.textContent='Checking availability…';hint.className='field-hint';
   clearTimeout(_snTimer);
-  _snTimer = setTimeout(async ()=>{
-    const r = await fetch('/api/check/screen-name/'+encodeURIComponent(val)).then(r=>r.json()).catch(()=>({available:false}));
-    if(r.available){ hint.textContent='@'+val+' is available ✓'; hint.className='field-hint ok'; _snValid=true; }
-    else{ hint.textContent='@'+val+' is already taken — try another'; hint.className='field-hint bad'; _snValid=false; }
-  }, 500);
+  _snTimer=setTimeout(async()=>{
+    const r=await fetch('/api/check/screen-name/'+encodeURIComponent(val)).then(r=>r.json()).catch(()=>({available:false}));
+    if(r.available){hint.textContent='@'+val+' is available ✓';hint.className='field-hint ok';_snValid=true}
+    else{hint.textContent='@'+val+' is already taken — try another';hint.className='field-hint bad';_snValid=false}
+  },500);
 }
 
 async function submitForm(){
@@ -146,36 +196,35 @@ async function submitForm(){
   const banner=document.getElementById('errBanner');
   banner.style.display='none';
 
-  if(!fn){ banner.textContent='First name is required'; banner.style.display='block'; return; }
-  if(!sn || sn.length<3){ banner.textContent='Screen name must be at least 3 characters'; banner.style.display='block'; return; }
-  if(!_snValid){ banner.textContent='Please choose an available screen name'; banner.style.display='block'; return; }
-  if(!email || !email.includes('@')){ banner.textContent='Valid email is required'; banner.style.display='block'; return; }
-  if(!document.getElementById('terms').checked){ banner.textContent='You must agree to the Terms of Service'; banner.style.display='block'; return; }
+  if(!fn){banner.textContent='First name is required';banner.style.display='block';return}
+  if(!sn||sn.length<3){banner.textContent='Screen name must be at least 3 characters';banner.style.display='block';return}
+  if(!_snValid){banner.textContent='Please choose an available screen name';banner.style.display='block';return}
+  if(!email||!email.includes('@')){banner.textContent='Valid email is required';banner.style.display='block';return}
+  if(!document.getElementById('terms').checked){banner.textContent='You must agree to the Terms of Service';banner.style.display='block';return}
 
-  const btn=document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='Submitting…';
+  const btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='Knocking…';
 
-  const r = await fetch('/api/apply',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
+  const r=await fetch('/api/apply',{
+    method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      first_name:fn, last_name:ln, screen_name:sn, email,
+      first_name:fn,last_name:ln,screen_name:sn,email,
       phone:document.getElementById('phone').value.trim(),
       referral:document.getElementById('referral').value.trim().replace(/^@/,''),
-      devices:[], notes:''
+      devices:[],notes:''
     })
   }).then(async r=>({ok:r.ok,data:await r.json()})).catch(e=>({ok:false,data:{error:e.message}}));
 
-  btn.disabled=false; btn.textContent='Submit Request';
+  btn.disabled=false;btn.textContent='Knock on the Door';
 
-  if(!r.ok){ banner.textContent=r.data.error||'Something went wrong'; banner.style.display='block'; return; }
+  if(!r.ok){banner.textContent=r.data.error||'Something went wrong';banner.style.display='block';return}
 
+  document.getElementById('introView').style.display='none';
   document.getElementById('formView').style.display='none';
   document.getElementById('successView').style.display='block';
 }
 
-// Smart logo link
 fetch('/api/member/me').then(r=>r.json()).then(d=>{
-  if(d.authenticated) document.getElementById('logoLink').href='/dashboard.html';
+  if(d.authenticated)document.getElementById('logoLink').href='/dashboard.html';
 }).catch(()=>{});
 </script>
 </body>
