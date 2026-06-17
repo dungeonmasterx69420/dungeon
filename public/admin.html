@@ -182,6 +182,31 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
   .di.full{grid-column:1}
   .frow{grid-template-columns:1fr}
 }
+/* Notification bell */
+.bell-wrap{position:relative;flex-shrink:0}
+.bell-btn{position:relative;width:38px;height:38px;border-radius:10px;background:var(--s2);border:1px solid var(--bdr);cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s}
+.bell-btn:hover{border-color:var(--bdr2);background:var(--s3)}
+.bell-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:10px;font-weight:700;font-family:var(--mono);min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--s1)}
+.bell-panel{position:absolute;top:46px;right:0;width:340px;max-width:calc(100vw - 32px);background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5),0 0 24px rgba(52,211,153,.06);z-index:50;overflow:hidden;display:none}
+.bell-panel.open{display:block}
+.bell-head{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-bottom:1px solid var(--bdr)}
+.bell-head-title{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t2)}
+.bell-clear{background:none;border:none;color:var(--t3);font-family:var(--mono);font-size:10px;cursor:pointer;transition:color .15s}
+.bell-clear:hover{color:var(--red)}
+.bell-list{max-height:380px;overflow-y:auto}
+.bell-item{display:flex;gap:11px;padding:12px 15px;border-bottom:1px solid var(--bdr);text-decoration:none;cursor:pointer;transition:background .15s}
+.bell-item:hover{background:var(--gb)}
+.bell-item.unseen{background:rgba(52,211,153,.05)}
+.bell-item-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.bell-item-body{flex:1;min-width:0}
+.bell-item-title{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:2px}
+.bell-item-text{font-size:12px;color:var(--t2);line-height:1.5;word-break:break-word}
+.bell-item-time{font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:3px}
+.bell-empty{padding:28px 15px;text-align:center;font-size:12px;color:var(--t3);font-family:var(--mono)}
+.bell-foot{padding:10px 15px;border-top:1px solid var(--bdr)}
+.bell-test{width:100%;padding:9px;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--t2);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .15s}
+.bell-test:hover{color:var(--g);border-color:var(--g)}
+@media(max-width:520px){.bell-panel{right:-8px}}
 </style>
 </head>
 <body>
@@ -245,7 +270,24 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
         <div class="header-title" id="header-title">Applications</div>
         <div class="header-sub" id="header-sub">Manage member applications</div>
       </div>
-      <div style="display:flex;gap:6px" id="header-actions"></div>
+      <div style="display:flex;gap:6px;align-items:center" id="header-actions"></div>
+      <div class="bell-wrap">
+        <button class="bell-btn" id="bellBtn" onclick="toggleBell(event)" title="Notifications">
+          🔔<span class="bell-badge" id="bellBadge" style="display:none">0</span>
+        </button>
+        <div class="bell-panel" id="bellPanel">
+          <div class="bell-head">
+            <span class="bell-head-title">Notifications</span>
+            <button class="bell-clear" onclick="clearNotifs()">Clear all</button>
+          </div>
+          <div class="bell-list" id="bellList">
+            <div class="bell-empty">No notifications yet</div>
+          </div>
+          <div class="bell-foot">
+            <button class="bell-test" onclick="testNotif(this)">Send test push</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Stats -->
@@ -517,7 +559,87 @@ async function loadStats(){
   if(pendingR>0){$('nb-redem').textContent=pendingR;$('nb-redem').style.display='flex';}
 }
 
-function loadAll(){loadStats();loadApps();loadMembers();loadRedem();loadInvites();loadDemos();loadSupport();}
+function loadAll(){loadStats();loadApps();loadMembers();loadRedem();loadInvites();loadDemos();loadSupport();loadBell();}
+
+// ── Notification bell ─────────────────────────────────────────────────────────
+const BELL_DOT={application:'var(--g)',support:'var(--amb)',demo:'var(--blue)',dealer:'var(--g)',redemption:'var(--amb)',test:'var(--t3)',info:'var(--t3)'};
+let _bellOpen=false;
+
+function bellTimeAgo(dt){
+  if(!dt)return'';
+  try{
+    if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';
+    const s=Math.floor((Date.now()-new Date(dt))/1000);
+    if(s<60)return'just now';
+    if(s<3600)return Math.floor(s/60)+'m ago';
+    if(s<86400)return Math.floor(s/3600)+'h ago';
+    if(s<604800)return Math.floor(s/86400)+'d ago';
+    return Math.floor(s/604800)+'w ago';
+  }catch{return''}
+}
+
+async function loadBell(){
+  const d=await fetch('/api/admin/notifications?limit=25').then(r=>r.json()).catch(()=>({notifications:[],unseen:0}));
+  const badge=document.getElementById('bellBadge');
+  if(d.unseen>0){badge.textContent=d.unseen>99?'99+':d.unseen;badge.style.display='flex';}
+  else badge.style.display='none';
+
+  const list=document.getElementById('bellList');
+  if(!d.notifications||!d.notifications.length){
+    list.innerHTML='<div class="bell-empty">No notifications yet</div>';
+    return;
+  }
+  list.innerHTML=d.notifications.map(n=>{
+    const dot=BELL_DOT[n.kind]||'var(--t3)';
+    const cls=n.seen?'':' unseen';
+    const onclick=n.link?`onclick="location.href='${n.link}'"`:'';
+    return `<div class="bell-item${cls}" ${onclick}>
+      <div class="bell-item-dot" style="background:${dot}"></div>
+      <div class="bell-item-body">
+        <div class="bell-item-title">${esc(n.title||'')}</div>
+        <div class="bell-item-text">${esc(n.body||'')}</div>
+        <div class="bell-item-time">${bellTimeAgo(n.created_at)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleBell(e){
+  if(e)e.stopPropagation();
+  const panel=document.getElementById('bellPanel');
+  _bellOpen=!_bellOpen;
+  panel.classList.toggle('open',_bellOpen);
+  if(_bellOpen){
+    // mark all seen when opened
+    fetch('/api/admin/notifications/seen',{method:'POST'}).then(()=>{
+      document.getElementById('bellBadge').style.display='none';
+    }).catch(()=>{});
+  }
+}
+
+async function clearNotifs(){
+  await fetch('/api/admin/notifications',{method:'DELETE'}).catch(()=>{});
+  loadBell();
+}
+
+async function testNotif(btn){
+  btn.textContent='Sending…';btn.disabled=true;
+  const r=await fetch('/api/admin/notifications/test',{method:'POST'}).then(r=>r.json()).catch(()=>({}));
+  btn.textContent=r.configured?'Sent ✓ check your phone':'Sent (no phone topic set)';
+  setTimeout(()=>{btn.textContent='Send test push';btn.disabled=false;loadBell();},2500);
+}
+
+// close bell when clicking outside
+document.addEventListener('click',e=>{
+  const wrap=document.querySelector('.bell-wrap');
+  if(_bellOpen&&wrap&&!wrap.contains(e.target)){
+    _bellOpen=false;
+    document.getElementById('bellPanel').classList.remove('open');
+  }
+});
+
+// poll the bell every 30s so new events appear without a refresh
+setInterval(loadBell, 30000);
 
 // ── Applications ──────────────────────────────────────────────────────────────
 async function loadApps(){
