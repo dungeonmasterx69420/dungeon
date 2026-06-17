@@ -1125,6 +1125,99 @@ app.post('/api/admin/notifications/test', requireMod, async (req, res) => {
   res.json({ ok: true, configured: !!NTFY_TOPIC });
 });
 
+// ── Admin overview (landing dashboard) ────────────────────────────────────────
+app.get('/api/admin/overview', requireMod, (req, res) => {
+  try {
+    const now = new Date();
+    const iso = d => d ? (String(d).includes('T') ? d : String(d).replace(' ','T')+'Z') : null;
+
+    // --- Needs attention counts ---
+    const pendingApps = db.prepare("SELECT COUNT(*) c FROM applicants WHERE status='pending'").get().c;
+    const openTickets = db.prepare("SELECT COUNT(*) c FROM support_messages WHERE status='open'").get().c;
+    let pendingRedem = 0, pendingDemos = 0;
+    try { pendingRedem = db.prepare("SELECT COUNT(*) c FROM redemptions WHERE status='pending'").get().c; } catch(e){}
+    try { pendingDemos = db.prepare("SELECT COUNT(*) c FROM demo_requests WHERE status='pending'").get().c; } catch(e){}
+
+    // --- Key numbers ---
+    const totalMembers = db.prepare("SELECT COUNT(*) c FROM members").get().c;
+    const members = db.prepare("SELECT stremio_end, iptv_end FROM members").all();
+    let activeSubs = 0, expiringSoon = 0;
+    const soon = new Date(now.getTime() + 7*86400000);
+    for (const m of members) {
+      const se = m.stremio_end ? new Date(iso(m.stremio_end)) : null;
+      const ce = m.iptv_end ? new Date(iso(m.iptv_end)) : null;
+      const active = (se && se > now) || (ce && ce > now);
+      if (active) activeSubs++;
+      // expiring within 7 days (and not already expired)
+      const soonest = [se, ce].filter(Boolean).filter(d => d > now).sort((a,b)=>a-b)[0];
+      if (soonest && soonest <= soon) expiringSoon++;
+    }
+
+    // --- Unified recent activity feed (broad — many sources) ---
+    const events = [];
+    const push = (kind, icon, title, text, at) => { if (at) events.push({ kind, icon, title, text, at: iso(at) }); };
+
+    // New applications
+    db.prepare("SELECT first_name, screen_name, status, type, created_at FROM applicants ORDER BY created_at DESC LIMIT 15").all()
+      .forEach(a => push('application','📥', a.type==='renewal'?'Renewal request':'New application',
+        `${a.first_name||'Someone'}${a.screen_name?' (@'+a.screen_name+')':''}${a.status&&a.status!=='pending'?' · '+a.status:''}`, a.created_at));
+
+    // New members (joined / onboarded)
+    db.prepare("SELECT first_name, last_name, created_at FROM members ORDER BY created_at DESC LIMIT 10").all()
+      .forEach(m => push('member','🎉','New member joined', `${m.first_name||''} ${m.last_name||''}`.trim(), m.created_at));
+
+    // Support tickets
+    db.prepare("SELECT member_name, subject, status, created_at FROM support_messages ORDER BY created_at DESC LIMIT 10").all()
+      .forEach(s => push('support','💬', s.status==='resolved'?'Ticket (resolved)':'Support ticket',
+        `${s.member_name}: ${s.subject}`, s.created_at));
+
+    // Demo requests
+    try {
+      db.prepare("SELECT screen_name, service, status, created_at FROM demo_requests ORDER BY created_at DESC LIMIT 10").all()
+        .forEach(d => push('demo','🎬','Demo request',
+          `@${d.screen_name||'member'} · ${d.service==='stream'?'DungeonStream':'DungeonCast'}${d.status&&d.status!=='pending'?' · '+d.status:''}`, d.created_at));
+    } catch(e){}
+
+    // Redemptions
+    try {
+      db.prepare("SELECT service, status, created_at FROM redemptions ORDER BY created_at DESC LIMIT 10").all()
+        .forEach(r => push('redemption','💳','Credit redemption',
+          `${r.service||'service'}${r.status&&r.status!=='pending'?' · '+r.status:''}`, r.created_at));
+    } catch(e){}
+
+    // Dealer invites that got PAID (a sale closed)
+    try {
+      db.prepare(`SELECT i.email, i.amount, i.paid_at, p.screen_name dealer
+                  FROM invites i LEFT JOIN profiles p ON i.created_by = p.id
+                  WHERE i.paid_at IS NOT NULL ORDER BY i.paid_at DESC LIMIT 10`).all()
+        .forEach(i => push('dealer','🤝','Dealer sale closed',
+          `${i.dealer?'@'+i.dealer:'A dealer'} → ${i.email||'client'} ($${(i.amount/100).toFixed(0)})`, i.paid_at));
+    } catch(e){}
+
+    // Sort by time desc, take top 20
+    events.sort((a,b) => new Date(b.at) - new Date(a.at));
+    const activity = events.slice(0, 20);
+
+    res.json({
+      attention: {
+        applications: pendingApps,
+        tickets: openTickets,
+        redemptions: pendingRedem,
+        demos: pendingDemos
+      },
+      numbers: {
+        members: totalMembers,
+        activeSubs,
+        expiringSoon
+      },
+      activity
+    });
+  } catch(e) {
+    console.error('[overview]', e.message);
+    res.status(500).json({ error: e.message, attention:{}, numbers:{}, activity:[] });
+  }
+});
+
 app.get('/api/support', requireMod, (req, res) => {
   res.json(db.prepare('SELECT * FROM support_messages ORDER BY created_at DESC').all());
 });

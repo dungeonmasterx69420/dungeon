@@ -182,6 +182,39 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
   .di.full{grid-column:1}
   .frow{grid-template-columns:1fr}
 }
+/* Overview panel */
+.ov-attention{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px}
+.ov-att-card{background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;padding:16px 18px;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s;display:flex;align-items:center;gap:14px}
+.ov-att-card:hover{transform:translateY(-2px);border-color:var(--g);box-shadow:0 6px 20px rgba(0,0,0,.35),0 0 16px rgba(52,211,153,.1)}
+.ov-att-icon{font-size:24px;flex-shrink:0}
+.ov-att-num{font-family:var(--display);font-size:22px;line-height:1;margin-bottom:5px}
+.ov-att-label{font-family:var(--mono);font-size:11px;color:var(--t2);letter-spacing:.02em}
+.ov-att-card.amber .ov-att-num{color:var(--amb)} .ov-att-card.amber{border-color:rgba(251,191,36,.3)}
+.ov-att-card.red .ov-att-num{color:var(--red)} .ov-att-card.red{border-color:rgba(248,113,113,.3)}
+.ov-att-card.green .ov-att-num{color:var(--g)}
+.ov-allclear{grid-column:1/-1;background:var(--gb);border:1px solid var(--bdr);border-radius:12px;padding:22px;text-align:center}
+.ov-allclear-icon{font-size:30px;margin-bottom:8px}
+.ov-allclear-text{font-family:var(--mono);font-size:13px;color:var(--g);letter-spacing:.04em}
+.ov-allclear-sub{font-size:12px;color:var(--t3);margin-top:4px}
+
+.ov-grid{display:grid;grid-template-columns:1fr 300px;gap:24px}
+.ov-section-label{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--t3);margin-bottom:14px}
+.ov-activity{display:flex;flex-direction:column;gap:2px}
+.ov-act-item{display:flex;gap:13px;padding:13px 14px;background:var(--s1);border:1px solid var(--bdr);border-radius:10px}
+.ov-act-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center;margin-top:1px}
+.ov-act-body{flex:1;min-width:0}
+.ov-act-title{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:2px}
+.ov-act-text{font-size:12px;color:var(--t2);line-height:1.5;word-break:break-word}
+.ov-act-time{font-family:var(--mono);font-size:10px;color:var(--t3);white-space:nowrap;flex-shrink:0;margin-top:2px}
+.ov-loading,.ov-empty{padding:30px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--t3)}
+
+.ov-numbers{display:flex;flex-direction:column;gap:12px}
+.ov-num-card{background:var(--s1);border:1px solid var(--bdr);border-radius:10px;padding:16px 18px}
+.ov-num-val{font-family:var(--display);font-size:20px;color:var(--txt);line-height:1;margin-bottom:6px}
+.ov-num-val.green{color:var(--g)} .ov-num-val.amber{color:var(--amb)}
+.ov-num-label{font-family:var(--mono);font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.08em}
+@media(max-width:860px){.ov-grid{grid-template-columns:1fr}.ov-col-side{order:-1}.ov-numbers{flex-direction:row;flex-wrap:wrap}.ov-num-card{flex:1;min-width:140px}}
+
 /* Notification bell */
 .bell-wrap{position:relative;flex-shrink:0}
 .bell-btn{position:relative;width:38px;height:38px;border-radius:10px;background:var(--s2);border:1px solid var(--bdr);cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s}
@@ -203,9 +236,6 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
 .bell-item-text{font-size:12px;color:var(--t2);line-height:1.5;word-break:break-word}
 .bell-item-time{font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:3px}
 .bell-empty{padding:28px 15px;text-align:center;font-size:12px;color:var(--t3);font-family:var(--mono)}
-.bell-foot{padding:10px 15px;border-top:1px solid var(--bdr)}
-.bell-test{width:100%;padding:9px;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--t2);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .15s}
-.bell-test:hover{color:var(--g);border-color:var(--g)}
 @media(max-width:520px){.bell-panel{right:-8px}}
 </style>
 </head>
@@ -219,7 +249,10 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
       <div class="sb-logo-sub">Admin Console</div>
     </div>
     <nav class="sb-nav">
-      <div class="sb-item on" onclick="showPanel('applications',this)" id="nav-applications">
+      <div class="sb-item on" onclick="showPanel('overview',this)" id="nav-overview">
+        <span class="icon">📊</span> Overview
+      </div>
+      <div class="sb-item" onclick="showPanel('applications',this)" id="nav-applications">
         <span class="icon">📋</span> Applications
         <span class="sb-badge red" id="nb-apps" style="display:none"></span>
       </div>
@@ -267,8 +300,8 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
     <div class="header">
       <button class="mobile-menu" onclick="toggleSidebar()">☰</button>
       <div>
-        <div class="header-title" id="header-title">Applications</div>
-        <div class="header-sub" id="header-sub">Manage member applications</div>
+        <div class="header-title" id="header-title">Overview</div>
+        <div class="header-sub" id="header-sub">What needs your attention</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center" id="header-actions"></div>
       <div class="bell-wrap">
@@ -282,9 +315,6 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
           </div>
           <div class="bell-list" id="bellList">
             <div class="bell-empty">No notifications yet</div>
-          </div>
-          <div class="bell-foot">
-            <button class="bell-test" onclick="testNotif(this)">Send test push</button>
           </div>
         </div>
       </div>
@@ -301,8 +331,25 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
     <!-- Panels -->
     <div class="content">
 
+      <!-- Overview -->
+      <div id="panel-overview">
+        <div id="ov-attention" class="ov-attention"></div>
+        <div class="ov-grid">
+          <div class="ov-col-main">
+            <div class="ov-section-label">Recent Activity</div>
+            <div id="ov-activity" class="ov-activity">
+              <div class="ov-loading">Loading activity…</div>
+            </div>
+          </div>
+          <div class="ov-col-side">
+            <div class="ov-section-label">At a Glance</div>
+            <div id="ov-numbers" class="ov-numbers"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Applications -->
-      <div id="panel-applications">
+      <div id="panel-applications" style="display:none">
         <div class="filters">
           <button class="fb on" onclick="setAppFilter('pending',this)">Pending</button>
           <button class="fb" onclick="setAppFilter('approved',this)">Approved</button>
@@ -510,16 +557,17 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
 async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
 
 // ── Panels ────────────────────────────────────────────────────────────────────
-const panelTitles={support:['Support','Member support requests'],demos:['Demos','Fulfill 24-hour demo requests'],invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
+const panelTitles={overview:['Overview','What needs your attention'],support:['Support','Member support requests'],demos:['Demos','Fulfill 24-hour demo requests'],invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
 
 function showPanel(name,el){
-  ['applications','members','redemptions','invites','demos','support'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
+  ['overview','applications','members','redemptions','invites','demos','support'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('on'));
   el.classList.add('on');
   const [title,sub]=panelTitles[name];
   $('header-title').textContent=title;
   $('header-sub').textContent=sub;
   closeSidebar();
+  if(name==='overview') loadOverview();
   if(name==='applications') loadApps();
   if(name==='members') loadMembers();
   if(name==='redemptions') loadRedem();
@@ -559,7 +607,64 @@ async function loadStats(){
   if(pendingR>0){$('nb-redem').textContent=pendingR;$('nb-redem').style.display='flex';}
 }
 
-function loadAll(){loadStats();loadApps();loadMembers();loadRedem();loadInvites();loadDemos();loadSupport();loadBell();}
+function loadAll(){loadStats();loadOverview();loadApps();loadMembers();loadRedem();loadInvites();loadDemos();loadSupport();loadBell();}
+
+// ── Overview landing ──────────────────────────────────────────────────────────
+function ovTimeAgo(dt){
+  if(!dt)return'';
+  try{
+    if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';
+    const s=Math.floor((Date.now()-new Date(dt))/1000);
+    if(s<60)return'now';
+    if(s<3600)return Math.floor(s/60)+'m';
+    if(s<86400)return Math.floor(s/3600)+'h';
+    if(s<604800)return Math.floor(s/86400)+'d';
+    return Math.floor(s/604800)+'w';
+  }catch{return''}
+}
+
+async function loadOverview(){
+  const d=await fetch('/api/admin/overview').then(r=>r.json()).catch(()=>({attention:{},numbers:{},activity:[]}));
+
+  // --- Needs attention ---
+  const a=d.attention||{};
+  const cards=[];
+  if(a.applications>0) cards.push(['red','📥',a.applications,a.applications===1?'application waiting':'applications waiting','applications']);
+  if(a.tickets>0)      cards.push(['amber','💬',a.tickets,a.tickets===1?'open ticket':'open tickets','support']);
+  if(a.redemptions>0)  cards.push(['amber','💳',a.redemptions,a.redemptions===1?'order to fulfill':'orders to fulfill','redemptions']);
+  if(a.demos>0)        cards.push(['amber','🎬',a.demos,a.demos===1?'demo request':'demo requests','demos']);
+
+  const att=$('ov-attention');
+  if(cards.length===0){
+    att.innerHTML=`<div class="ov-allclear"><div class="ov-allclear-icon">✓</div><div class="ov-allclear-text">All caught up</div><div class="ov-allclear-sub">Nothing needs your attention right now</div></div>`;
+  } else {
+    att.innerHTML=cards.map(([cls,icon,num,label,panel])=>
+      `<div class="ov-att-card ${cls}" onclick="showPanel('${panel}',document.getElementById('nav-${panel}'))">
+        <span class="ov-att-icon">${icon}</span>
+        <div><div class="ov-att-num">${num}</div><div class="ov-att-label">${label}</div></div>
+      </div>`).join('');
+  }
+
+  // --- Numbers ---
+  const n=d.numbers||{};
+  $('ov-numbers').innerHTML=`
+    <div class="ov-num-card"><div class="ov-num-val">${n.members??'—'}</div><div class="ov-num-label">Total Members</div></div>
+    <div class="ov-num-card"><div class="ov-num-val green">${n.activeSubs??'—'}</div><div class="ov-num-label">Active Subscribers</div></div>
+    <div class="ov-num-card"><div class="ov-num-val ${n.expiringSoon>0?'amber':''}">${n.expiringSoon??'—'}</div><div class="ov-num-label">Expiring in 7 Days</div></div>`;
+
+  // --- Activity feed ---
+  const feed=$('ov-activity');
+  if(!d.activity||!d.activity.length){
+    feed.innerHTML='<div class="ov-empty">No recent activity</div>';
+  } else {
+    feed.innerHTML=d.activity.map(ev=>
+      `<div class="ov-act-item">
+        <span class="ov-act-icon">${ev.icon||'•'}</span>
+        <div class="ov-act-body"><div class="ov-act-title">${esc(ev.title||'')}</div><div class="ov-act-text">${esc(ev.text||'')}</div></div>
+        <span class="ov-act-time">${ovTimeAgo(ev.at)}</span>
+      </div>`).join('');
+  }
+}
 
 // ── Notification bell ─────────────────────────────────────────────────────────
 const BELL_DOT={application:'var(--g)',support:'var(--amb)',demo:'var(--blue)',dealer:'var(--g)',redemption:'var(--amb)',test:'var(--t3)',info:'var(--t3)'};
