@@ -2819,7 +2819,7 @@ app.get('/api/invite/:token', (req, res) => {
     if (invite.status === 'used') return res.status(400).json({ error: 'This invite has already been used' });
     if (invite.expires_at && new Date(invite.expires_at) < new Date()) return res.status(400).json({ error: 'This invite link has expired' });
     if (invite.status !== 'paid') return res.status(402).json({ error: 'payment_pending', email: invite.email, amount: invite.amount });
-    res.json({ ok: true, email: invite.email, amount: invite.amount });
+    res.json({ ok: true, email: invite.email, amount: invite.amount, needsEmail: !invite.email });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -2840,12 +2840,25 @@ app.post('/api/invite/:token/complete', async (req, res) => {
     if (!first_name || !screen_name) return res.status(400).json({ error: 'Name and screen name required' });
     if (!/^[a-zA-Z0-9_]{2,20}$/.test(screen_name)) return res.status(400).json({ error: 'Screen name must be 2-20 characters, letters/numbers/underscores only' });
 
+    // Determine the account email.
+    // - Paid invites: email comes from Stripe (set on the invite by the webhook).
+    // - Free no-email invites: the user supplies it here on the join page.
+    let acctEmail = invite.email;
+    if (!acctEmail) {
+      const submitted = (req.body.email || '').trim();
+      if (!submitted) return res.status(400).json({ error: 'Email required' });
+      if (!isValidEmail(submitted)) return res.status(400).json({ error: 'That email looks invalid' });
+      acctEmail = submitted;
+      // persist it onto the invite for the records
+      db.prepare('UPDATE invites SET email=? WHERE token=?').run(acctEmail, req.params.token);
+    }
+
     // Check screen name not taken
     const snTaken = db.prepare('SELECT id FROM profiles WHERE LOWER(screen_name)=LOWER(?)').get(screen_name);
     if (snTaken) return res.status(400).json({ error: 'Screen name already taken — try another' });
 
     // Check email not already a member
-    const emailTaken = db.prepare('SELECT id FROM members WHERE LOWER(email)=LOWER(?)').get(invite.email);
+    const emailTaken = db.prepare('SELECT id FROM members WHERE LOWER(email)=LOWER(?)').get(acctEmail);
     if (emailTaken) return res.status(400).json({ error: 'An account with this email already exists' });
 
     const memberId = genId();
@@ -2854,7 +2867,7 @@ app.post('/api/invite/:token/complete', async (req, res) => {
     let hashedPass = null;
     try { hashedPass = require('bcryptjs').hashSync(plain, 10); } catch(e) {}
 
-    const email = invite.email;
+    const email = acctEmail;
     const colors = ['#34d399','#60a5fa','#f87171','#fbbf24','#a78bfa'];
     const color = colors[Math.floor(Math.random()*colors.length)];
 
@@ -2941,6 +2954,12 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
       const session = event.data.object;
       const token = session.metadata?.invite_token;
       if (token) {
+        // Capture the email Stripe collected (for invites created without one)
+        const stripeEmail = session.customer_details?.email || session.customer_email || null;
+        const existing = db.prepare('SELECT email FROM invites WHERE token=?').get(token);
+        if (existing && !existing.email && stripeEmail) {
+          db.prepare('UPDATE invites SET email=? WHERE token=?').run(stripeEmail, token);
+        }
         db.prepare('UPDATE invites SET status=?, stripe_payment_intent=?, paid_at=CURRENT_TIMESTAMP WHERE token=?')
           .run('paid', session.payment_intent, token);
         // Mark dealer earnings as earned (client paid - NOT yet paid out to dealer)
@@ -2948,7 +2967,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         if (paidInvite) {
           db.prepare("UPDATE dealer_earnings SET status='earned' WHERE invite_id=?").run(paidInvite.id);
         }
-        console.log('[stripe] Invite paid:', token);
+        console.log('[stripe] Invite paid:', token, stripeEmail ? '('+stripeEmail+')' : '');
       }
     }
 
@@ -3001,7 +3020,9 @@ app.get('/api/dealer/dashboard', requireDealer, (req, res) => {
 app.post('/api/dealer/invites/create', requireDealer, async (req, res) => {
   try {
     const { email, amount, note } = req.body;
-    if (!email || !isValidEmail(email)) return res.status(400).json({ error: 'Valid email required' });
+    // Email is now OPTIONAL — if omitted, Stripe collects it on the payment page
+    const hasEmail = email && email.trim();
+    if (hasEmail && !isValidEmail(email.trim())) return res.status(400).json({ error: 'That email looks invalid' });
     if (!amount || amount < 1) return res.status(400).json({ error: 'Amount must be at least $1' });
     if (!STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured — contact admin' });
 
@@ -3019,10 +3040,13 @@ app.post('/api/dealer/invites/create', requireDealer, async (req, res) => {
       'mode': 'payment',
       'success_url': SITE_URL + '/join?token=' + token,
       'cancel_url': SITE_URL + '/join?token=' + token + '&cancelled=1',
-      'customer_email': email,
       'metadata[invite_token]': token,
       'metadata[invite_id]': inviteId
     });
+    // If the dealer supplied an email, pre-fill it; otherwise Stripe asks the buyer for one.
+    if (hasEmail) {
+      stripeParams.set('customer_email', email.trim());
+    }
 
     const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
@@ -3034,29 +3058,32 @@ app.post('/api/dealer/invites/create', requireDealer, async (req, res) => {
     if (!session.url) return res.status(500).json({ error: session.error?.message || 'Stripe error' });
 
     db.prepare('INSERT INTO invites (id, token, email, created_by, amount, note, stripe_session_id, expires_at) VALUES (?,?,?,?,?,?,?,?)')
-      .run(inviteId, token, email, req.profile.id, Math.round(amount*100), note||null, session.id, expiresAt);
+      .run(inviteId, token, hasEmail ? email.trim() : null, req.profile.id, Math.round(amount*100), note||null, session.id, expiresAt);
 
     db.prepare('INSERT INTO dealer_earnings (id, dealer_profile_id, invite_id, amount, dealer_cut) VALUES (?,?,?,?,?)')
       .run(genId(), req.profile.id, inviteId, Math.round(amount*100), Math.floor(Math.round(amount*100)*0.5));
 
-    const html = emailShell(`
-      <h2>You're Invited to Dungeon</h2>
-      <div class="rule"></div>
-      <p>You've been personally invited to join <strong>Dungeon</strong> — a private streaming service.</p>
-      <p>Click below to complete your signup. Your membership fee is <strong>$${amount}</strong>.</p>
-      ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
-      <a href="${session.url}" class="btn">Complete Signup — $${amount}</a>
-      <div class="rule"></div>
-      <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. It is for you only. — The Dungeon Master</p>
-    `);
-    await sendMail(email, "You're Invited to Dungeon", html);
+    // Only send an invite email if we actually have an address.
+    if (hasEmail) {
+      const html = emailShell(`
+        <h2>You're Invited to Dungeon</h2>
+        <div class="rule"></div>
+        <p>You've been personally invited to join <strong>Dungeon</strong> — a private streaming service.</p>
+        <p>Click below to complete your signup. Your membership fee is <strong>$${amount}</strong>.</p>
+        ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
+        <a href="${session.url}" class="btn">Complete Signup — $${amount}</a>
+        <div class="rule"></div>
+        <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. It is for you only. — The Dungeon Master</p>
+      `);
+      await sendMail(email.trim(), "You're Invited to Dungeon", html);
+    }
 
-    notify('Dealer sent an invite', `@${req.profile.screen_name} invited ${email} ($${amount})`, {
+    notify('Dealer sent an invite', `@${req.profile.screen_name} created an invite ($${amount})${hasEmail ? ' for '+email.trim() : ' (link to share)'}`, {
       kind: 'dealer', tags: 'handshake', priority: 3,
       link: '/admin.html', click: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/admin.html'
     });
 
-    res.json({ ok: true, url: session.url, token });
+    res.json({ ok: true, url: session.url, token, emailed: !!hasEmail });
   } catch(e) {
     console.error('[dealer/invite]', e.message);
     res.status(500).json({ error: e.message });
@@ -3427,7 +3454,8 @@ app.post('/api/dealer/demo/create', requireDealer, async (req, res) => {
 app.post('/api/admin/invites/create-free', requireMod, async (req, res) => {
   try {
     const { email, note, tier } = req.body;
-    if (!email) return res.status(400).json({ error: 'Email required' });
+    const hasEmail = email && email.trim();
+    if (hasEmail && !isValidEmail(email.trim())) return res.status(400).json({ error: 'That email looks invalid' });
 
     const allowedTiers = ['member','family','dealer','mod','admin'];
     const assignTier = allowedTiers.includes(tier) ? tier : 'member';
@@ -3437,23 +3465,25 @@ app.post('/api/admin/invites/create-free', requireMod, async (req, res) => {
     const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
 
     db.prepare('INSERT INTO invites (id, token, email, created_by, amount, note, status, expires_at) VALUES (?,?,?,?,0,?,?,?)')
-      .run(id, token, email, req.profile.id, note||null, 'paid', expires);
+      .run(id, token, hasEmail ? email.trim() : null, req.profile.id, note||null, 'paid', expires);
 
     const joinUrl = (process.env.SITE_URL || 'https://enterdungeon.cc') + '/join?token=' + token + (assignTier !== 'member' ? '&tier=' + assignTier : '');
 
-    // Send welcome email
-    const html = emailShell(`
-      <h2>You've Been Invited to Dungeon</h2>
-      <div class="rule"></div>
-      <p>You've been personally invited to join Dungeon — a private streaming community.</p>
-      ${note ? `<p><em>"${note}"</em></p>` : ''}
-      <a href="${joinUrl}" class="btn">Accept Invite →</a>
-      <div class="rule"></div>
-      <p style="font-size:12px;color:#6b8f7a">This invite expires in 30 days.</p>
-    `);
-    await sendMail(email, "You're Invited to Dungeon", html).catch(e => console.error("Free invite email error:", e.message));
+    // Only email if we have an address; otherwise the admin shares the link directly.
+    if (hasEmail) {
+      const html = emailShell(`
+        <h2>You've Been Invited to Dungeon</h2>
+        <div class="rule"></div>
+        <p>You've been personally invited to join Dungeon — a private streaming community.</p>
+        ${note ? `<p><em>"${note}"</em></p>` : ''}
+        <a href="${joinUrl}" class="btn">Accept Invite →</a>
+        <div class="rule"></div>
+        <p style="font-size:12px;color:#6b8f7a">This invite expires in 30 days.</p>
+      `);
+      await sendMail(email.trim(), "You're Invited to Dungeon", html).catch(e => console.error("Free invite email error:", e.message));
+    }
 
-    res.json({ ok: true, url: joinUrl, token });
+    res.json({ ok: true, url: joinUrl, token, emailed: !!hasEmail, tier: assignTier });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
