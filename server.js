@@ -197,6 +197,15 @@ db.exec(`
     status       TEXT NOT NULL DEFAULT 'open',
     created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS admin_notifications (
+    id         TEXT PRIMARY KEY,
+    kind       TEXT NOT NULL DEFAULT 'info',
+    title      TEXT NOT NULL,
+    body       TEXT,
+    link       TEXT,
+    seen       INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 // Safe migrations
@@ -261,6 +270,31 @@ async function sendMail(to, subject, html) {
     await transporter.sendMail({ from: FROM_EMAIL, to, subject, html });
     console.log(`[email sent] To: ${to} | ${subject}`);
   } catch (err) { console.error(`[email failed] ${err.message}`); }
+}
+
+// ── Push notifications (ntfy.sh) ──────────────────────────────────────────────
+// Fires a push to the admin's phone via ntfy. Set NTFY_TOPIC in env.
+// Also records the event in-app for the admin notification bell.
+const NTFY_TOPIC = process.env.NTFY_TOPIC || '';
+const NTFY_SERVER = process.env.NTFY_SERVER || 'https://ntfy.sh';
+
+async function notify(title, message, opts = {}) {
+  // 1) Record in-app (for the bell) — best effort
+  try {
+    db.prepare(`INSERT INTO admin_notifications (id, kind, title, body, link, created_at, seen)
+                VALUES (?, ?, ?, ?, ?, ?, 0)`)
+      .run(genId(), opts.kind || 'info', title, message, opts.link || '', new Date().toISOString());
+  } catch(e) { /* table may not exist yet on first boot; ignore */ }
+
+  // 2) Push to phone via ntfy — best effort, never blocks the request
+  if (!NTFY_TOPIC) return;
+  try {
+    const headers = { 'Title': title, 'Content-Type': 'text/plain' };
+    if (opts.priority) headers['Priority'] = String(opts.priority); // 1..5
+    if (opts.tags)     headers['Tags'] = opts.tags;                 // e.g. "bell,new"
+    if (opts.click)    headers['Click'] = opts.click;               // tap target URL
+    await fetch(`${NTFY_SERVER}/${NTFY_TOPIC}`, { method: 'POST', headers, body: message });
+  } catch(e) { console.error('[notify] ntfy error:', e.message); }
 }
 
 function emailShell(body) {
@@ -976,6 +1010,10 @@ app.post('/api/apply', submitLimiter, async (req, res) => {
     .run(profileId, screen_name.trim(), email.trim(), avatarColors(), id);
 
   try { await sendMail(email.trim(), 'Application Received — Dungeon', emailApplicationReceived(first_name.trim(), screen_name.trim())); } catch(e) { console.error('Apply email error:', e.message); }
+  notify('New application', `${first_name.trim()} (@${screen_name.trim()}) just applied`, {
+    kind: 'application', tags: 'inbox_tray', priority: 4,
+    link: '/admin.html', click: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/admin.html'
+  });
   res.json({ ok: true });
   } catch(e) { console.error('[apply]', e.message); res.status(500).json({ error: e.message }); }
 });
@@ -996,6 +1034,10 @@ app.post('/api/member/support', requireMember, submitLimiter, (req, res) => {
   if (!subject || !message) return res.status(400).json({ error: 'Subject and message are required.' });
   db.prepare(`INSERT INTO support_messages (id, member_id, member_name, member_email, subject, message) VALUES (?, ?, ?, ?, ?, ?)`)
     .run(genId(), m.id, `${m.first_name} ${m.last_name}`, m.email, subject.trim(), message.trim());
+  notify('New support ticket', `${m.first_name}: ${subject.trim()}`, {
+    kind: 'support', tags: 'speech_balloon', priority: 4,
+    link: '/admin.html', click: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/admin.html'
+  });
   res.json({ ok: true });
 });
 
@@ -1055,6 +1097,34 @@ app.delete('/api/members/:id', requireAuth, (req, res) => {
 });
 
 // ── Admin: support ────────────────────────────────────────────────────────────
+// ── Admin notifications (bell) ────────────────────────────────────────────────
+app.get('/api/admin/notifications', requireMod, (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+    const rows = db.prepare('SELECT * FROM admin_notifications ORDER BY created_at DESC LIMIT ?').all(limit);
+    const unseen = db.prepare('SELECT COUNT(*) c FROM admin_notifications WHERE seen=0').get().c;
+    res.json({ notifications: rows, unseen });
+  } catch(e) { res.json({ notifications: [], unseen: 0 }); }
+});
+
+app.post('/api/admin/notifications/seen', requireMod, (req, res) => {
+  try { db.prepare('UPDATE admin_notifications SET seen=1 WHERE seen=0').run(); } catch(e) {}
+  res.json({ ok: true });
+});
+
+app.delete('/api/admin/notifications', requireMod, (req, res) => {
+  try { db.prepare('DELETE FROM admin_notifications').run(); } catch(e) {}
+  res.json({ ok: true });
+});
+
+// Send a test push (so you can confirm ntfy works from the admin panel)
+app.post('/api/admin/notifications/test', requireMod, async (req, res) => {
+  await notify('Test notification', 'If you see this on your phone, ntfy is working. 🔔', {
+    kind: 'test', tags: 'white_check_mark', priority: 3
+  });
+  res.json({ ok: true, configured: !!NTFY_TOPIC });
+});
+
 app.get('/api/support', requireMod, (req, res) => {
   res.json(db.prepare('SELECT * FROM support_messages ORDER BY created_at DESC').all());
 });
@@ -1154,6 +1224,13 @@ app.post('/api/demo-request', requireMember, (req, res) => {
     db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
       .run(genId(), profile.id, warden.id, `Demo Request — ${svcName}`,
         `@${profile.screen_name} has requested a 24-hour ${svcName} demo.\n\nEmail: ${req.session.member.email}\n\nReview in the Admin Panel → Demos tab.`);
+  }
+  {
+    const svcName = service === 'stream' ? 'DungeonStream' : 'DungeonCast';
+    notify('New demo request', `@${profile.screen_name} wants a ${svcName} demo`, {
+      kind: 'demo', tags: 'movie_camera', priority: 3,
+      link: '/admin.html', click: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/admin.html'
+    });
   }
 
   res.json({ ok: true });
@@ -2880,6 +2957,11 @@ app.post('/api/dealer/invites/create', requireDealer, async (req, res) => {
       <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. It is for you only. — The Dungeon Master</p>
     `);
     await sendMail(email, "You're Invited to Dungeon", html);
+
+    notify('Dealer sent an invite', `@${req.profile.screen_name} invited ${email} ($${amount})`, {
+      kind: 'dealer', tags: 'handshake', priority: 3,
+      link: '/admin.html', click: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/admin.html'
+    });
 
     res.json({ ok: true, url: session.url, token });
   } catch(e) {
