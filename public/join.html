@@ -68,6 +68,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
     <div class="title">Complete Your Account</div>
     <div class="sub">Welcome to Dungeon. Set up your account below to get started.</div>
     <div class="err" id="err"></div>
+    <div class="field" id="email-field" style="display:none">
+      <label>Your Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">— where we send your login</span></label>
+      <input type="email" id="join-email" placeholder="you@email.com" autocomplete="email"/>
+    </div>
     <div class="frow">
       <div class="field"><label>First Name</label><input type="text" id="fn" placeholder="Seymour" autocomplete="given-name"/></div>
       <div class="field"><label>Last Name</label><input type="text" id="ln" placeholder="Buttocks" autocomplete="family-name"/></div>
@@ -182,8 +186,18 @@ async function checkInvite() {
 
   if (data.error) { showError(data.error); return; }
 
-  // Payment confirmed
-  document.getElementById('amount-badge').textContent = '$' + (data.amount/100).toFixed(2) + ' paid';
+  // Payment confirmed (or free invite)
+  if (data.amount > 0) {
+    document.getElementById('paid-badge').textContent = '✓ Payment Confirmed';
+    document.getElementById('amount-badge').textContent = '$' + (data.amount/100).toFixed(2) + ' paid';
+  } else {
+    document.getElementById('paid-badge').textContent = "✓ You're In";
+    document.getElementById('amount-badge').style.display = 'none';
+  }
+  // If the invite has no email on file (shared link), collect it here
+  if (data.needsEmail) {
+    document.getElementById('email-field').style.display = 'block';
+  }
   show('card-form');
   // Load referral dropdown
   fetch('/api/members/list').then(r=>r.json()).then(members => {
@@ -220,6 +234,15 @@ async function submit() {
   if (!/^[a-zA-Z0-9_]+$/.test(sn)) { err.textContent = 'Screen name can only contain letters, numbers and underscores'; err.style.display = 'block'; return; }
   if (!_snValid) { err.textContent = 'Please choose an available screen name'; err.style.display = 'block'; return; }
 
+  // If the email field is showing (shared-link invite), validate it
+  const emailField = document.getElementById('email-field');
+  let joinEmail = '';
+  if (emailField && emailField.style.display !== 'none') {
+    joinEmail = document.getElementById('join-email').value.trim();
+    if (!joinEmail) { err.textContent = 'Email is required'; err.style.display = 'block'; return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(joinEmail)) { err.textContent = 'Please enter a valid email'; err.style.display = 'block'; return; }
+  }
+
   err.style.display = 'none';
   const selectedDevices = [];
 
@@ -229,7 +252,7 @@ async function submit() {
   const r = await fetch('/api/invite/' + _token + '/complete', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ first_name: fn, last_name: ln, screen_name: sn, phone, devices: selectedDevices, referred_by: document.getElementById('referred-by')?.value || null, tier: new URLSearchParams(location.search).get('tier') || '' })
+    body: JSON.stringify({ first_name: fn, last_name: ln, screen_name: sn, phone, email: joinEmail, devices: selectedDevices, referred_by: document.getElementById('referred-by')?.value || null, tier: new URLSearchParams(location.search).get('tier') || '' })
   }).then(async r => ({ ok: r.ok, data: await r.json() }));
 
   btn.disabled = false; btn.textContent = 'Create My Account →';

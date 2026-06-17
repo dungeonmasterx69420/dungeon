@@ -1224,9 +1224,9 @@ async function submitDemo() {
 <div class="sheet" id="sh-free-invite">
   <div class="sh-handle"></div>
   <div class="sh-title">Free Invite</div>
-  <div class="sh-sub">Send a free invite — no payment required. Great for family, friends or staff.</div>
+  <div class="sh-sub">Send a free invite — no payment required. Great for family, friends or staff. Leave email blank to get a link you can text.</div>
   <div class="sh-err" id="fi-err"></div>
-  <div class="field"><label>Email</label><input type="email" id="fi-email" placeholder="friend@email.com"/></div>
+  <div class="field"><label>Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional — leave blank to share a link</span></label><input type="email" id="fi-email" placeholder="Leave blank to share a link instead"/></div>
   <div class="field">
     <label>Tier</label>
     <select id="fi-tier" style="width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:13px;padding:10px 12px;outline:none">
@@ -1240,7 +1240,19 @@ async function submitDemo() {
   <div class="field"><label>Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="text" id="fi-note" placeholder="Personal message…"/></div>
   <div class="sacts">
     <button class="btn btn-b" onclick="closeSheet('sh-free-invite')">Cancel</button>
-    <button class="btn btn-g" id="fi-btn" onclick="sendFreeInvite()">Send Invite</button>
+    <button class="btn btn-g" id="fi-btn" onclick="sendFreeInvite()">Create Invite</button>
+  </div>
+</div>
+
+<!-- Free Invite Share Link Sheet -->
+<div class="sheet" id="sh-free-share">
+  <div class="sh-handle"></div>
+  <div class="sh-title" id="fshare-title">Invite Link Ready</div>
+  <div class="sh-sub" id="fshare-sub">Text or send this free join link.</div>
+  <div class="field"><label>Join Link</label><input type="text" id="fshare-url" readonly onclick="this.select()" style="font-family:var(--mono);font-size:12px"/></div>
+  <div class="sacts">
+    <button class="btn btn-b" onclick="closeSheet('sh-free-share')">Done</button>
+    <button class="btn btn-g" id="fshare-copy" onclick="copyFreeShareLink()">Copy Link</button>
   </div>
 </div>
 <script>
@@ -1256,16 +1268,28 @@ async function sendFreeInvite(){
   const tier=document.getElementById('fi-tier').value;
   const note=document.getElementById('fi-note').value.trim();
   const err=document.getElementById('fi-err');
-  if(!email){err.textContent='Email required';err.style.display='block';return;}
-  const btn=document.getElementById('fi-btn');btn.disabled=true;btn.textContent='Sending…';
+  err.style.display='none';
+  if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){err.textContent='That email looks invalid';err.style.display='block';return;}
+  const btn=document.getElementById('fi-btn');btn.disabled=true;btn.textContent=email?'Sending…':'Creating…';
   const r=await fetch('/api/admin/invites/create-free',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,tier,note})}).then(r=>r.json()).catch(e=>({error:e.message}));
-  btn.disabled=false;btn.textContent='Send Invite';
+  btn.disabled=false;btn.textContent='Create Invite';
   if(r.error){err.textContent=r.error;err.style.display='block';return;}
   closeSheet('sh-free-invite');
   loadAll();
-  if(r.url && confirm('Invite sent! Tap OK to copy the join link.')){
-    navigator.clipboard.writeText(r.url).catch(()=>prompt('Join link:',r.url));
-  }
+  // Show the shareable join link
+  const tierLabel = r.tier && r.tier!=='member' ? ' ('+r.tier+' tier)' : '';
+  $('fshare-url').value = r.url;
+  $('fshare-title').textContent = r.emailed ? 'Invite Sent ✓' : 'Invite Link Ready';
+  $('fshare-sub').textContent = r.emailed
+    ? 'We emailed the join link'+tierLabel+'. You can also copy it below.'
+    : 'Text or send this free join link'+tierLabel+'. They\'ll enter their own email and set up their account — no payment needed.';
+  openSheet('sh-free-share');
+}
+function copyFreeShareLink(){
+  const url=$('fshare-url').value;
+  const btn=$('fshare-copy');
+  navigator.clipboard.writeText(url).then(()=>{btn.textContent='Copied ✓';setTimeout(()=>{btn.textContent='Copy Link';},1800);})
+    .catch(()=>{$('fshare-url').select();document.execCommand('copy');btn.textContent='Copied ✓';setTimeout(()=>{btn.textContent='Copy Link';},1800);});
 }
 </script>
 
