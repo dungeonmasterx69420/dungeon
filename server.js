@@ -2857,9 +2857,10 @@ app.post('/api/invite/:token/complete', async (req, res) => {
     const snTaken = db.prepare('SELECT id FROM profiles WHERE LOWER(screen_name)=LOWER(?)').get(screen_name);
     if (snTaken) return res.status(400).json({ error: 'Screen name already taken — try another' });
 
-    // Check email not already a member
-    const emailTaken = db.prepare('SELECT id FROM members WHERE LOWER(email)=LOWER(?)').get(acctEmail);
-    if (emailTaken) return res.status(400).json({ error: 'An account with this email already exists' });
+    // Check email not already used (check BOTH members and profiles — profiles.email is UNIQUE)
+    const emailInMembers = db.prepare('SELECT id FROM members WHERE LOWER(email)=LOWER(?)').get(acctEmail);
+    const emailInProfiles = db.prepare('SELECT id FROM profiles WHERE LOWER(email)=LOWER(?)').get(acctEmail);
+    if (emailInMembers || emailInProfiles) return res.status(400).json({ error: 'An account with this email already exists' });
 
     const memberId = genId();
     const profileId = genId();
@@ -2917,7 +2918,11 @@ app.post('/api/invite/:token/complete', async (req, res) => {
   } catch(e) {
     console.error('[invite/complete]', e.message);
     if (e.message === 'Already used') return res.status(400).json({ error: 'This invite has already been used' });
-    res.status(500).json({ error: e.message });
+    if (/UNIQUE constraint failed: profiles.email|UNIQUE constraint failed: members.email/.test(e.message))
+      return res.status(400).json({ error: 'An account with this email already exists' });
+    if (/UNIQUE constraint failed: profiles.screen_name/.test(e.message))
+      return res.status(400).json({ error: 'Screen name already taken — try another' });
+    res.status(500).json({ error: 'Could not create your account. Please try again or contact support.' });
   }
 });
 
