@@ -64,7 +64,19 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
 .mobile-menu{display:none;background:none;border:none;color:var(--t2);cursor:pointer;font-size:20px;padding:4px}
 
 /* ── Content ── */
-.content{padding:18px;flex:1}
+.content{padding:24px;flex:1}
+.content > div{max-width:1280px;margin-left:auto;margin-right:auto}
+/* Card lists flow into 2 columns on wide screens so boxes aren't giant full-width bars */
+#member-list,#app-list,#redem-list,#invite-list,#demo-list,#support-list{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;align-items:start
+}
+#member-list .empty,#app-list .empty,#redem-list .empty,#invite-list .empty,#demo-list .empty,#support-list .empty{grid-column:1/-1}
+#member-list .card,#app-list .card{margin-bottom:0}
+/* When a card is expanded, let it span the full width for its detail view */
+#member-list .card.expanded,#app-list .card.expanded,#redem-list .card.expanded,#demo-list .card.expanded,#support-list .card.expanded{grid-column:1/-1}
+@media(max-width:900px){
+  #member-list,#app-list,#redem-list,#invite-list,#demo-list,#support-list{grid-template-columns:1fr}
+}
 /* Shared panel header components (consistency across all panels) */
 .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
 .panel-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--mono)}
