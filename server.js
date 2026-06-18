@@ -1115,10 +1115,64 @@ app.get('/api/admin/channel-requests', requireMod, (req, res) => {
 });
 
 // Admin: update request status
-app.patch('/api/admin/channel-requests/:id', requireMod, (req, res) => {
+app.patch('/api/admin/channel-requests/:id', requireMod, async (req, res) => {
   const { status } = req.body;
   if (!['open','fulfilled','declined'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+
+  const cr = db.prepare('SELECT * FROM channel_requests WHERE id=?').get(req.params.id);
+  if (!cr) return res.status(404).json({ error: 'Request not found' });
+
+  const prevStatus = cr.status;
   db.prepare('UPDATE channel_requests SET status=? WHERE id=?').run(status, req.params.id);
+
+  // Notify the requester when we fulfill or decline (only on a real change)
+  if (status !== prevStatus && (status === 'fulfilled' || status === 'declined')) {
+    try {
+      const warden = db.prepare("SELECT * FROM profiles WHERE tier='warden' LIMIT 1").get();
+      const memberProfile = db.prepare('SELECT * FROM profiles WHERE member_id=? OR (member_id IS NULL AND LOWER(email)=LOWER(?)) LIMIT 1').get(cr.member_id, cr.member_email);
+      const label = cr.kind === 'event' ? 'event' : 'channel';
+
+      // In-app message
+      if (warden && memberProfile) {
+        const subject = status === 'fulfilled' ? `Live TV request added: ${cr.title}` : `Live TV request update: ${cr.title}`;
+        const body = status === 'fulfilled'
+          ? `Good news! Your ${label} request for "${cr.title}" has been added to DungeonCast. Fire up the app and check it out.${cr.event_date ? `\n\nEvent timing: ${cr.event_date}` : ''}\n\nEnjoy! — The Dungeon Master`
+          : `Thanks for your ${label} request for "${cr.title}". Unfortunately we weren't able to add this one right now. Feel free to reach out if you have questions.\n\n— The Dungeon Master`;
+        db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
+          .run(genId(), warden.id, memberProfile.id, subject, body);
+      }
+
+      // Email
+      if (cr.member_email) {
+        const firstName = (cr.member_name || '').split(' ')[0] || 'there';
+        if (status === 'fulfilled') {
+          const html = emailShell(`
+            <h2>Your Live TV Request is Ready</h2>
+            <div class="rule"></div>
+            <p>Hi ${firstName},</p>
+            <p>Good news — your ${label} request for <strong>${cr.title}</strong> has been added to DungeonCast.${cr.event_date ? ` (${cr.event_date})` : ''}</p>
+            <p>Open the DungeonCast app and you should find it in the lineup. Enjoy!</p>
+            <a href="https://dungeoncast.cc" class="btn">Open DungeonCast →</a>
+            <div class="rule"></div>
+            <p style="font-size:12px;color:#6b8f7a">— The Dungeon Master</p>
+          `);
+          await sendMail(cr.member_email, `Added: ${cr.title} — DungeonCast`, html).catch(e => console.error('[channel fulfill email]', e.message));
+        } else {
+          const html = emailShell(`
+            <h2>Update on Your Live TV Request</h2>
+            <div class="rule"></div>
+            <p>Hi ${firstName},</p>
+            <p>Thanks for requesting <strong>${cr.title}</strong>. Unfortunately we weren't able to add this one right now.</p>
+            <p>Feel free to reach out if you have any questions.</p>
+            <div class="rule"></div>
+            <p style="font-size:12px;color:#6b8f7a">— The Dungeon Master</p>
+          `);
+          await sendMail(cr.member_email, `Update: ${cr.title} — DungeonCast`, html).catch(e => console.error('[channel decline email]', e.message));
+        }
+      }
+    } catch(e) { console.error('[channel-request notify]', e.message); }
+  }
+
   res.json({ ok: true });
 });
 
