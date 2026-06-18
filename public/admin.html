@@ -67,15 +67,15 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
 .content{padding:24px;flex:1}
 .content > div{max-width:1280px;margin-left:auto;margin-right:auto}
 /* Card lists flow into 2 columns on wide screens so boxes aren't giant full-width bars */
-#member-list,#app-list,#redem-list,#invite-list,#demo-list,#support-list{
+#member-list,#app-list,#redem-list,#invite-list,#demo-list,#support-list,#channel-list{
   display:grid;grid-template-columns:repeat(2,1fr);gap:10px;align-items:start
 }
-#member-list .empty,#app-list .empty,#redem-list .empty,#invite-list .empty,#demo-list .empty,#support-list .empty{grid-column:1/-1}
+#member-list .empty,#app-list .empty,#redem-list .empty,#invite-list .empty,#demo-list .empty,#support-list .empty,#channel-list .empty{grid-column:1/-1}
 #member-list .card,#app-list .card{margin-bottom:0}
 /* When a card is expanded, let it span the full width for its detail view */
 #member-list .card.expanded,#app-list .card.expanded,#redem-list .card.expanded,#demo-list .card.expanded,#support-list .card.expanded{grid-column:1/-1}
 @media(max-width:900px){
-  #member-list,#app-list,#redem-list,#invite-list,#demo-list,#support-list{grid-template-columns:1fr}
+  #member-list,#app-list,#redem-list,#invite-list,#demo-list,#support-list,#channel-list{grid-template-columns:1fr}
 }
 /* Shared panel header components (consistency across all panels) */
 .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
@@ -281,6 +281,10 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
         <span class="icon">🎬</span> Demos
         <span class="sb-badge red" id="nb-demos" style="display:none"></span>
       </div>
+      <div class="sb-item" onclick="showPanel('channels',this)" id="nav-channels">
+        <span class="icon">📺</span> Live TV Requests
+        <span class="sb-badge red" id="nb-channels" style="display:none"></span>
+      </div>
       <div class="sb-item" onclick="window.location.href='/payouts.html'" id="nav-payouts">
         <span class="icon">💰</span> Payouts
       </div>
@@ -389,6 +393,17 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
           <button class="btn btn-b" onclick="openDemoLinkSheet()">🔗 Send Demo Link</button>
         </div>
         <div id="demo-list"><div class="empty">// loading…</div></div>
+      </div>
+
+      <!-- Live TV Requests -->
+      <div id="panel-channels" style="display:none">
+        <div class="filters" id="ch-filters">
+          <button class="fb on" onclick="filterChannels('open',this)">Open</button>
+          <button class="fb" onclick="filterChannels('fulfilled',this)">Fulfilled</button>
+          <button class="fb" onclick="filterChannels('declined',this)">Declined</button>
+          <button class="fb" onclick="filterChannels('all',this)">All</button>
+        </div>
+        <div id="channel-list"><div class="empty">// loading…</div></div>
       </div>
 
       <!-- Redemptions -->
@@ -557,10 +572,10 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
 async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
 
 // ── Panels ────────────────────────────────────────────────────────────────────
-const panelTitles={overview:['Overview','What needs your attention'],support:['Support','Member support requests'],demos:['Demos','Fulfill 24-hour demo requests'],invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
+const panelTitles={overview:['Overview','What needs your attention'],support:['Support','Member support requests'],demos:['Demos','Fulfill 24-hour demo requests'],channels:['Live TV Requests','Channel & event requests from members'],invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
 
 function showPanel(name,el){
-  ['overview','applications','members','redemptions','invites','demos','support'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
+  ['overview','applications','members','redemptions','invites','demos','channels','support'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('on'));
   el.classList.add('on');
   const [title,sub]=panelTitles[name];
@@ -573,6 +588,7 @@ function showPanel(name,el){
   if(name==='redemptions') loadRedem();
   if(name==='invites') loadInvites();
   if(name==='demos') loadDemos();
+  if(name==='channels') loadChannels();
   if(name==='support') loadSupport();
 }
 
@@ -596,11 +612,64 @@ async function loadStats(){
   setNavBadge('nb-apps',pending);
   setNavBadge('nb-redem',pendingR);
   setNavBadge('nb-demos',pendingDemos);
+  // Channel requests badge
+  fetch('/api/admin/channel-requests').then(r=>r.json()).then(ch=>{
+    setNavBadge('nb-channels', (ch||[]).filter(c=>c.status==='open').length);
+  }).catch(()=>{});
 }
 function setNavBadge(id,n){
   const el=$(id); if(!el)return;
   if(n>0){el.textContent=n;el.style.display='flex';}
   else el.style.display='none';
+}
+
+// ── Live TV Requests ──────────────────────────────────────────────────────────
+let _allChannels=[]; let _chFilter='open';
+async function loadChannels(){
+  _allChannels=await fetch('/api/admin/channel-requests').then(r=>r.json()).catch(()=>[]);
+  renderChannels();
+}
+function filterChannels(f,el){
+  _chFilter=f;
+  document.querySelectorAll('#ch-filters .fb').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  renderChannels();
+}
+function renderChannels(){
+  const el=$('channel-list');
+  let list=_allChannels;
+  if(_chFilter!=='all') list=_allChannels.filter(c=>c.status===_chFilter);
+  if(!list.length){el.innerHTML='<div class="empty">// no '+(_chFilter==='all'?'':_chFilter+' ')+'requests</div>';return;}
+  el.innerHTML=list.map(c=>{
+    const isEvent=c.kind==='event';
+    const stBdg=c.status==='fulfilled'?'bdg-g':c.status==='declined'?'bdg-r':'bdg-a';
+    const kindBdg=isEvent?'bdg-gold':'bdg-b';
+    return `<div class="card" style="margin-bottom:0">
+      <div class="ch" style="cursor:default">
+        <div class="ca" style="background:${isEvent?'#fbbf24':'#60a5fa'};font-size:16px">${isEvent?'🎟️':'📡'}</div>
+        <div class="ci">
+          <div class="cn">${esc(c.title)} <span class="bdg ${kindBdg}">${isEvent?'event':'channel'}</span> <span class="bdg ${stBdg}">${c.status}</span></div>
+          <div class="cs">@${esc(c.screen_name||'member')} · ${esc(c.member_name||'')}${c.event_date?' · 📅 '+esc(c.event_date):''}</div>
+          ${c.note?`<div class="cb" style="color:var(--t2);font-size:12px;margin-top:4px">"${esc(c.note)}"</div>`:''}
+          <div class="cb" style="margin-top:8px">
+            ${c.status!=='fulfilled'?`<button class="btn btn-g" style="font-size:11px;padding:5px 10px" onclick="setChannelStatus('${c.id}','fulfilled')">✓ Fulfilled</button>`:''}
+            ${c.status!=='declined'?`<button class="btn btn-b" style="font-size:11px;padding:5px 10px" onclick="setChannelStatus('${c.id}','declined')">Decline</button>`:''}
+            ${c.status!=='open'?`<button class="btn btn-b" style="font-size:11px;padding:5px 10px" onclick="setChannelStatus('${c.id}','open')">Reopen</button>`:''}
+            <button class="btn btn-r" style="font-size:11px;padding:5px 10px" onclick="deleteChannel('${c.id}')">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function setChannelStatus(id,status){
+  await fetch('/api/admin/channel-requests/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})}).catch(()=>{});
+  await loadChannels(); loadStats();
+}
+async function deleteChannel(id){
+  if(!confirm('Delete this request?'))return;
+  await fetch('/api/admin/channel-requests/'+id,{method:'DELETE'}).catch(()=>{});
+  await loadChannels(); loadStats();
 }
 
 function loadAll(){loadStats();loadOverview();loadApps();loadMembers();loadRedem();loadInvites();loadDemos();loadSupport();loadBell();}
@@ -629,6 +698,7 @@ async function loadOverview(){
   if(a.tickets>0)      cards.push(['amber','💬',a.tickets,a.tickets===1?'open ticket':'open tickets','support']);
   if(a.redemptions>0)  cards.push(['amber','💳',a.redemptions,a.redemptions===1?'order to fulfill':'orders to fulfill','redemptions']);
   if(a.demos>0)        cards.push(['amber','🎬',a.demos,a.demos===1?'demo request':'demo requests','demos']);
+  if(a.channels>0)     cards.push(['amber','📺',a.channels,a.channels===1?'Live TV request':'Live TV requests','channels']);
 
   const att=$('ov-attention');
   if(cards.length===0){
@@ -665,7 +735,7 @@ async function loadOverview(){
 }
 
 // ── Notification bell ─────────────────────────────────────────────────────────
-const BELL_DOT={application:'var(--g)',support:'var(--amb)',demo:'var(--blue)',dealer:'var(--g)',redemption:'var(--amb)',test:'var(--t3)',info:'var(--t3)'};
+const BELL_DOT={application:'var(--g)',support:'var(--amb)',demo:'var(--blue)',dealer:'var(--g)',redemption:'var(--amb)',channel:'var(--blue)',test:'var(--t3)',info:'var(--t3)'};
 let _bellOpen=false;
 
 function bellTimeAgo(dt){

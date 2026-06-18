@@ -206,6 +206,19 @@ db.exec(`
     seen       INTEGER NOT NULL DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS channel_requests (
+    id           TEXT PRIMARY KEY,
+    member_id    TEXT NOT NULL,
+    member_name  TEXT NOT NULL,
+    member_email TEXT NOT NULL,
+    screen_name  TEXT,
+    kind         TEXT NOT NULL DEFAULT 'channel',
+    title        TEXT NOT NULL,
+    event_date   TEXT,
+    note         TEXT,
+    status       TEXT NOT NULL DEFAULT 'open',
+    created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 // Safe migrations
@@ -1051,6 +1064,66 @@ app.post('/api/member/suggest', requireMember, submitLimiter, (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Live TV Requests ──────────────────────────────────────────────────────────
+// Helper: does this member have active Live TV (DungeonCast) access?
+function memberHasLiveTv(member) {
+  if (!member || !member.iptv_end) return false;
+  const end = new Date(String(member.iptv_end).includes('T') ? member.iptv_end : member.iptv_end + 'T00:00:00Z');
+  return end > new Date();
+}
+
+// Member: check if they can access the Live TV request page
+app.get('/api/member/livetv-access', requireMember, (req, res) => {
+  const m = db.prepare('SELECT iptv_end FROM members WHERE id=?').get(req.session.member.id);
+  res.json({ access: memberHasLiveTv(m) });
+});
+
+// Member: submit a Live TV request
+app.post('/api/member/channel-request', requireMember, submitLimiter, (req, res) => {
+  const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.session.member.id);
+  if (!memberHasLiveTv(m)) return res.status(403).json({ error: 'Live TV access required to request channels.' });
+
+  const { kind, title, event_date, note } = req.body;
+  if (!title || !title.trim()) return res.status(400).json({ error: 'Please tell us what channel or event you want.' });
+  const reqKind = kind === 'event' ? 'event' : 'channel';
+
+  const prof = db.prepare('SELECT screen_name FROM profiles WHERE member_id=? OR LOWER(email)=LOWER(?) LIMIT 1').get(m.id, m.email);
+  const sn = prof ? prof.screen_name : '';
+
+  db.prepare(`INSERT INTO channel_requests (id, member_id, member_name, member_email, screen_name, kind, title, event_date, note)
+              VALUES (?,?,?,?,?,?,?,?,?)`)
+    .run(genId(), m.id, `${m.first_name} ${m.last_name}`, m.email, sn, reqKind, title.trim(), (event_date||'').trim() || null, (note||'').trim() || null);
+
+  const whenStr = event_date ? ` (${event_date})` : '';
+  notify('New Live TV request', `${m.first_name}${sn?' (@'+sn+')':''} wants: ${title.trim()}${whenStr}`, {
+    kind: 'channel', tags: 'tv', priority: reqKind === 'event' ? 4 : 3,
+    link: '/admin.html', click: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/admin.html'
+  });
+
+  res.json({ ok: true });
+});
+
+// Admin: list Live TV requests
+app.get('/api/admin/channel-requests', requireMod, (req, res) => {
+  try {
+    res.json(db.prepare('SELECT * FROM channel_requests ORDER BY created_at DESC').all());
+  } catch(e) { res.json([]); }
+});
+
+// Admin: update request status
+app.patch('/api/admin/channel-requests/:id', requireMod, (req, res) => {
+  const { status } = req.body;
+  if (!['open','fulfilled','declined'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+  db.prepare('UPDATE channel_requests SET status=? WHERE id=?').run(status, req.params.id);
+  res.json({ ok: true });
+});
+
+// Admin: delete a request
+app.delete('/api/admin/channel-requests/:id', requireMod, (req, res) => {
+  db.prepare('DELETE FROM channel_requests WHERE id=?').run(req.params.id);
+  res.json({ ok: true });
+});
+
 // ── Admin: applicants ─────────────────────────────────────────────────────────
 
 app.patch('/api/applicants/:id/status', requireAuth, (req, res) => {
@@ -1134,9 +1207,10 @@ app.get('/api/admin/overview', requireMod, (req, res) => {
     // --- Needs attention counts ---
     const pendingApps = db.prepare("SELECT COUNT(*) c FROM applicants WHERE status='pending'").get().c;
     const openTickets = db.prepare("SELECT COUNT(*) c FROM support_messages WHERE status='open'").get().c;
-    let pendingRedem = 0, pendingDemos = 0;
+    let pendingRedem = 0, pendingDemos = 0, openChannelReqs = 0;
     try { pendingRedem = db.prepare("SELECT COUNT(*) c FROM redemptions WHERE status='pending'").get().c; } catch(e){}
     try { pendingDemos = db.prepare("SELECT COUNT(*) c FROM demo_requests WHERE status='pending'").get().c; } catch(e){}
+    try { openChannelReqs = db.prepare("SELECT COUNT(*) c FROM channel_requests WHERE status='open'").get().c; } catch(e){}
 
     // --- Key numbers ---
     const totalMembers = db.prepare("SELECT COUNT(*) c FROM members").get().c;
@@ -1194,6 +1268,13 @@ app.get('/api/admin/overview', requireMod, (req, res) => {
           `${i.dealer?'@'+i.dealer:'A dealer'} → ${i.email||'client'} ($${(i.amount/100).toFixed(0)})`, i.paid_at));
     } catch(e){}
 
+    // Live TV / channel requests
+    try {
+      db.prepare("SELECT screen_name, title, kind, event_date, status, created_at FROM channel_requests ORDER BY created_at DESC LIMIT 10").all()
+        .forEach(c => push('channel','📺', c.kind==='event'?'Live TV event request':'Live TV channel request',
+          `@${c.screen_name||'member'} · ${c.title}${c.event_date?' ('+c.event_date+')':''}${c.status&&c.status!=='open'?' · '+c.status:''}`, c.created_at));
+    } catch(e){}
+
     // Sort by time desc, take top 20
     events.sort((a,b) => new Date(b.at) - new Date(a.at));
     const activity = events.slice(0, 20);
@@ -1203,7 +1284,8 @@ app.get('/api/admin/overview', requireMod, (req, res) => {
         applications: pendingApps,
         tickets: openTickets,
         redemptions: pendingRedem,
-        demos: pendingDemos
+        demos: pendingDemos,
+        channels: openChannelReqs
       },
       numbers: {
         members: totalMembers,
