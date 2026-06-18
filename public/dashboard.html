@@ -354,15 +354,15 @@ footer .sep{color:#2c3d36}
       let hasSub = false;
       if(m.stremio_end){ hasSub=true; subHtml+=renderSubRow('DungeonStream','📺',m.stremio_end,m.stremio_start,m.stremio_end); }
       if(m.iptv_end){ hasSub=true; subHtml+=renderSubRow('DungeonCast','📡',m.iptv_end,m.iptv_start,m.iptv_end); }
-      // Show the Live TV Requests tile only if DungeonCast is currently active
-      try {
-        const ce = m.iptv_end ? new Date(String(m.iptv_end).includes('T')?m.iptv_end:m.iptv_end+'T00:00:00Z') : null;
-        if (ce && ce > new Date()) { const t=document.getElementById('tile-livetv'); if(t) t.style.display='flex'; }
-      } catch(e){}
       if(!hasSub){
         subHtml=`<div class="no-sub"><div class="no-sub-text">No active subscriptions.</div><a href="/redeem.html" class="redeem-btn">Redeem a Credit</a></div>`;
       }
     }
+    // Show the Live TV Requests tile if member is family/staff (permanent) OR DungeonCast is active
+    try {
+      const ce = m.iptv_end ? new Date(String(m.iptv_end).includes('T')?m.iptv_end:m.iptv_end+'T00:00:00Z') : null;
+      if (isStaff || (ce && ce > new Date())) { const t=document.getElementById('tile-livetv'); if(t) t.style.display='flex'; }
+    } catch(e){}
     document.getElementById('subSection').innerHTML = subHtml;
     document.getElementById('profileCard').style.display = 'block';
 

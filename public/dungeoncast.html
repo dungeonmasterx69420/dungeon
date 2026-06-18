@@ -197,8 +197,17 @@
     });
   }
 
-  fetch('/api/member/me').then(r => r.json()).then(d => {
-    if (!d.authenticated) { window.location.href = '/login.html'; return; }
+  fetch('/api/member/me', { credentials: 'same-origin' }).then(r => r.json()).then(d => {
+    if (!d.authenticated) {
+      // Retry once before giving up — guards against a transient auth blip
+      return fetch('/api/member/me', { credentials: 'same-origin' }).then(r => r.json()).then(d2 => {
+        if (!d2.authenticated) { window.location.href = '/login.html'; return Promise.reject('noauth'); }
+        return d2;
+      });
+    }
+    return d;
+  }).then(d => {
+    if (!d) return;
     const m = d.member;
     loadMsgBadge();
     loadFooter(m?.profile?.tier);

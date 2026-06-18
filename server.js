@@ -1066,8 +1066,12 @@ app.post('/api/member/suggest', requireMember, submitLimiter, (req, res) => {
 
 // ── Live TV Requests ──────────────────────────────────────────────────────────
 // Helper: does this member have active Live TV (DungeonCast) access?
+// Family/staff tiers have permanent access; everyone else needs a future iptv_end.
 function memberHasLiveTv(member) {
-  if (!member || !member.iptv_end) return false;
+  if (!member) return false;
+  const prof = db.prepare('SELECT tier FROM profiles WHERE member_id=? OR (member_id IS NULL AND LOWER(email)=LOWER(?)) LIMIT 1').get(member.id, member.email);
+  if (prof && ['family','dealer','mod','admin','warden'].includes(prof.tier)) return true;
+  if (!member.iptv_end) return false;
   const end = new Date(String(member.iptv_end).includes('T') ? member.iptv_end : member.iptv_end + 'T00:00:00Z');
   return end > new Date();
 }

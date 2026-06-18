@@ -11,11 +11,21 @@
 
   const MODS = ['mod','admin','warden'];
 
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{
-    const tier = d && d.authenticated && d.member && d.member.profile && d.member.profile.tier;
-    if (!tier || !MODS.includes(tier)) return;   // only staff see the bell
-    inject();
-  }).catch(()=>{});
+  // Defer until the page has fully loaded so we never race the host page's
+  // own /api/member/me auth check (which could cause a transient redirect).
+  function start(){
+    setTimeout(checkAccess, 800);
+  }
+  if (document.readyState === 'complete') start();
+  else window.addEventListener('load', start);
+
+  function checkAccess(){
+    fetch('/api/member/me', { credentials: 'same-origin' }).then(r=>r.json()).then(d=>{
+      const tier = d && d.authenticated && d.member && d.member.profile && d.member.profile.tier;
+      if (!tier || !MODS.includes(tier)) return;   // only staff see the bell
+      inject();
+    }).catch(()=>{});  // fully silent — never affects the host page
+  }
 
   function inject(){
     // --- styles ---
