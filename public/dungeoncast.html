@@ -223,17 +223,24 @@
       passRaw = pass || '';
 
       if (m.stremio_end) {
-        let dt = m.stremio_end;
-        if (!dt.endsWith('Z') && !dt.includes('+')) dt = dt.replace(' ','T') + 'Z';
-        const expDate = new Date(dt);
-        const days = Math.ceil((expDate - new Date()) / 86400000);
-        document.getElementById('subExpiry').textContent = 'Expires ' + expDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-        const dEl = document.getElementById('subDays');
-        dEl.textContent = days > 0 ? days + 'd left' : 'Expired';
-        dEl.style.color = days > 7 ? 'var(--ember)' : days > 0 ? 'var(--amber)' : 'var(--red)';
-        badge.textContent = days > 0 ? 'Active' : 'Expired';
-        badge.style.background = days > 0 ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.1)';
-        badge.style.color = days > 0 ? 'var(--ember)' : 'var(--red)';
+        try {
+          let dt = String(m.stremio_end);
+          if (!dt.endsWith('Z') && !dt.includes('+')) dt = dt.replace(' ','T') + 'Z';
+          const expDate = new Date(dt);
+          const days = Math.ceil((expDate - new Date()) / 86400000);
+          document.getElementById('subExpiry').textContent = 'Expires ' + expDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+          const dEl = document.getElementById('subDays');
+          dEl.textContent = days > 0 ? days + 'd left' : 'Expired';
+          dEl.style.color = days > 7 ? 'var(--ember)' : days > 0 ? 'var(--amber)' : 'var(--red)';
+          badge.textContent = days > 0 ? 'Active' : 'Expired';
+          badge.style.background = days > 0 ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.1)';
+          badge.style.color = days > 0 ? 'var(--ember)' : 'var(--red)';
+        } catch(e) {
+          console.error('[dungeoncast] date parse:', e);
+          badge.textContent = 'Active';
+          badge.style.background = 'rgba(52,211,153,0.12)';
+          badge.style.color = 'var(--ember)';
+        }
       } else {
         badge.textContent = 'Active';
         badge.style.background = 'rgba(52,211,153,0.12)';
@@ -245,7 +252,12 @@
       badge.style.background = 'rgba(148,163,160,0.1)';
       badge.style.color = 'var(--ash2)';
     }
-  }).catch(() => { window.location.href = '/login.html'; });
+  }).catch((err) => {
+    // A genuine auth failure already redirected above. If we get here, it was an
+    // error while rendering the page — log it but DON'T log the user out.
+    if (err === 'noauth') return;
+    console.error('[dungeoncast] render error:', err);
+  });
 
   function loadFooter(tier) {
     const footer = document.getElementById('pageFooter');
