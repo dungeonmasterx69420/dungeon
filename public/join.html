@@ -65,8 +65,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
       <span class="paid-badge" id="paid-badge">✓ Payment Confirmed</span>
       <span class="amount-badge" id="amount-badge"></span>
     </div>
-    <div class="title">Complete Your Account</div>
-    <div class="sub">Welcome to Dungeon. Set up your account below to get started.</div>
+    <div class="title" id="form-title">Complete Your Account</div>
+    <div class="sub" id="form-sub">Welcome to Dungeon. Set up your account below to get started.</div>
     <div class="err" id="err"></div>
     <div class="field" id="email-field" style="display:none">
       <label>Your Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">— where we send your login</span></label>
@@ -193,6 +193,12 @@ async function checkInvite() {
   } else {
     document.getElementById('paid-badge').textContent = "✓ You're In";
     document.getElementById('amount-badge').style.display = 'none';
+  }
+  // Father's Day promo theming
+  if (data.promo === 'fathers_day') {
+    document.getElementById('paid-badge').textContent = "🎁 Happy Father's Day";
+    document.getElementById('form-title').textContent = "Happy Father's Day!";
+    document.getElementById('form-sub').innerHTML = "Your first month of <strong>DungeonStream</strong> and <strong>DungeonCast</strong> is on us. Set up your account below to start watching.";
   }
   // If the invite has no email on file (shared link), collect it here
   if (data.needsEmail) {
