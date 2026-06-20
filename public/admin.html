@@ -285,6 +285,9 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
         <span class="icon">📺</span> Live TV Requests
         <span class="sb-badge red" id="nb-channels" style="display:none"></span>
       </div>
+      <div class="sb-item" onclick="showPanel('lookup',this)" id="nav-lookup">
+        <span class="icon">🔍</span> Account Lookup
+      </div>
       <div class="sb-item" onclick="window.location.href='/payouts.html'" id="nav-payouts">
         <span class="icon">💰</span> Payouts
       </div>
@@ -404,6 +407,16 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
           <button class="fb" onclick="filterChannels('all',this)">All</button>
         </div>
         <div id="channel-list"><div class="empty">// loading…</div></div>
+      </div>
+
+      <!-- Account Lookup -->
+      <div id="panel-lookup" style="display:none">
+        <div class="panel-head"><div class="panel-label">Find Account by Email</div></div>
+        <div style="display:flex;gap:8px;margin-bottom:18px;max-width:520px">
+          <input type="email" id="lookup-email" placeholder="email@example.com" style="flex:1;background:var(--s1);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-size:14px;padding:10px 14px;outline:none" onkeydown="if(event.key==='Enter')runLookup()"/>
+          <button class="btn btn-g" onclick="runLookup()">Search</button>
+        </div>
+        <div id="lookup-results"></div>
       </div>
 
       <!-- Redemptions -->
@@ -572,10 +585,10 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
 async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
 
 // ── Panels ────────────────────────────────────────────────────────────────────
-const panelTitles={overview:['Overview','What needs your attention'],support:['Support','Member support requests'],demos:['Demos','Fulfill 24-hour demo requests'],channels:['Live TV Requests','Channel & event requests from members'],invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
+const panelTitles={overview:['Overview','What needs your attention'],support:['Support','Member support requests'],demos:['Demos','Fulfill 24-hour demo requests'],channels:['Live TV Requests','Channel & event requests from members'],lookup:['Account Lookup','Find and remove accounts by email'],invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
 
 function showPanel(name,el){
-  ['overview','applications','members','redemptions','invites','demos','channels','support'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
+  ['overview','applications','members','redemptions','invites','demos','channels','lookup','support'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('on'));
   el.classList.add('on');
   const [title,sub]=panelTitles[name];
@@ -621,6 +634,59 @@ function setNavBadge(id,n){
   const el=$(id); if(!el)return;
   if(n>0){el.textContent=n;el.style.display='flex';}
   else el.style.display='none';
+}
+
+// ── Account Lookup ────────────────────────────────────────────────────────────
+async function runLookup(){
+  const email=$('lookup-email').value.trim();
+  const box=$('lookup-results');
+  if(!email){box.innerHTML='<div class="empty">Enter an email to search</div>';return;}
+  box.innerHTML='<div class="empty">Searching…</div>';
+  const d=await fetch('/api/admin/account-lookup?email='+encodeURIComponent(email)).then(r=>r.json()).catch(e=>({error:e.message}));
+  if(d.error){box.innerHTML='<div class="empty">'+esc(d.error)+'</div>';return;}
+
+  const total=d.summary.members+d.summary.profiles+d.summary.invites+d.summary.demos;
+  if(total===0){
+    box.innerHTML='<div class="card" style="padding:20px"><div style="color:var(--g)">✓ Nothing found for '+esc(d.email)+'</div><div style="color:var(--t3);font-size:13px;margin-top:6px">This email is clean — a new invite to it should work.</div></div>';
+    return;
+  }
+
+  let html='<div style="max-width:720px">';
+  html+='<div class="card" style="padding:16px;margin-bottom:14px"><div style="font-weight:600;margin-bottom:8px">Found for '+esc(d.email)+':</div><div style="font-family:var(--mono);font-size:12px;color:var(--t2);line-height:1.9">'+
+    `members: ${d.summary.members} · profiles: ${d.summary.profiles} · invites: ${d.summary.invites} · demos: ${d.summary.demos}</div></div>`;
+
+  d.members.forEach(m=>{
+    html+=`<div class="card" style="padding:14px;margin-bottom:8px"><div style="font-weight:600">👤 Member: ${esc(m.first_name||'')} ${esc(m.last_name||'')}</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--t2);margin-top:6px;line-height:1.8">
+      id: ${esc(m.id)}<br>jellyfin: ${esc(m.jellyfin_user||'—')}<br>stream ends: ${esc(m.stremio_end||'—')}<br>cast ends: ${esc(m.iptv_end||'—')}</div></div>`;
+  });
+  d.profiles.forEach(p=>{
+    html+=`<div class="card" style="padding:14px;margin-bottom:8px"><div style="font-weight:600">🪪 Profile: @${esc(p.screen_name||'')} <span class="bdg bdg-b">${esc(p.tier||'member')}</span></div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--t2);margin-top:6px">id: ${esc(p.id)}</div></div>`;
+  });
+  d.invites.forEach(i=>{
+    html+=`<div class="card" style="padding:14px;margin-bottom:8px"><div style="font-weight:600">✉️ Invite ${i.promo?'('+esc(i.promo)+')':''} <span class="bdg bdg-a">${esc(i.status)}</span></div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--t2);margin-top:6px">$${((i.amount||0)/100).toFixed(2)} · ${esc(i.created_at||'')}</div></div>`;
+  });
+  d.demos.forEach(dm=>{
+    html+=`<div class="card" style="padding:14px;margin-bottom:8px"><div style="font-weight:600">🎬 Demo @${esc(dm.screen_name||'')} <span class="bdg bdg-b">${esc(dm.status||'')}</span></div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--t2);margin-top:6px">jellyfin: ${esc(dm.demo_user||'—')} · expires: ${esc(dm.demo_expires||'—')}</div></div>`;
+  });
+
+  html+=`<div class="card" style="padding:16px;margin-top:14px;border-color:rgba(248,113,113,.3)">
+    <div style="font-weight:600;color:var(--red);margin-bottom:6px">⚠️ Purge Everything</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:12px">Permanently deletes all of the above and removes the Jellyfin users on both servers. This frees the email for a fresh invite. Cannot be undone.</div>
+    <button class="btn btn-r" onclick="purgeAccount('${esc(d.email)}')">Purge ${esc(d.email)}</button>
+  </div></div>`;
+  box.innerHTML=html;
+}
+
+async function purgeAccount(email){
+  if(!confirm('Permanently delete EVERYTHING tied to '+email+'?\n\nThis removes members, profiles, invites, demos, and Jellyfin users on both servers. Cannot be undone.'))return;
+  const d=await fetch('/api/admin/account-purge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  if(d.error){alert('Error: '+d.error);return;}
+  $('lookup-results').innerHTML='<div class="card" style="padding:20px"><div style="color:var(--g)">✓ Purged '+esc(email)+'</div><div style="color:var(--t3);font-size:13px;margin-top:6px">Removed '+d.purged.members+' member(s), '+d.purged.profiles+' profile(s), '+d.purged.jellyfin+' Jellyfin user(s). The email is now free for a new invite.</div></div>';
+  loadAll();
 }
 
 // ── Live TV Requests ──────────────────────────────────────────────────────────
