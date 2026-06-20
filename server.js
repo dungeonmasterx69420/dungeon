@@ -3611,6 +3611,20 @@ app.post('/api/member/welcome-done', requireMember, (req, res) => {
 
 
 // DELETE member (admin only — warden tier)
+// Clear the email off an invite (lets the buyer finish under a different email).
+// Useful when someone paid with an email that already has an account.
+app.post('/api/admin/invite-clear-email', requireMod, (req, res) => {
+  try {
+    if (req.profile.tier !== 'warden') return res.status(403).json({ error: 'Warden only' });
+    const token = (req.body.token || '').trim();
+    if (!token) return res.status(400).json({ error: 'Token required' });
+    const inv = db.prepare('SELECT * FROM invites WHERE token=?').get(token);
+    if (!inv) return res.status(404).json({ error: 'Invite not found' });
+    db.prepare('UPDATE invites SET email=NULL WHERE token=?').run(token);
+    res.json({ ok: true, joinUrl: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/join?token=' + token });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── Account Lookup & Cleanup (warden tool) ────────────────────────────────────
 // Find EVERYTHING tied to an email across all tables — useful for diagnosing
 // "email already exists" and cleaning up leftover/orphaned records.

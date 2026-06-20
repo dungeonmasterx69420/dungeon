@@ -665,8 +665,10 @@ async function runLookup(){
       <div style="font-family:var(--mono);font-size:12px;color:var(--t2);margin-top:6px">id: ${esc(p.id)}</div></div>`;
   });
   d.invites.forEach(i=>{
+    const canFree = i.status==='paid' && i.token;
     html+=`<div class="card" style="padding:14px;margin-bottom:8px"><div style="font-weight:600">✉️ Invite ${i.promo?'('+esc(i.promo)+')':''} <span class="bdg bdg-a">${esc(i.status)}</span></div>
-      <div style="font-family:var(--mono);font-size:12px;color:var(--t2);margin-top:6px">$${((i.amount||0)/100).toFixed(2)} · ${esc(i.created_at||'')}</div></div>`;
+      <div style="font-family:var(--mono);font-size:12px;color:var(--t2);margin-top:6px">$${((i.amount||0)/100).toFixed(2)} · ${esc(i.created_at||'')}</div>
+      ${canFree?`<div style="margin-top:10px"><button class="btn btn-b" style="font-size:11px;padding:6px 12px" onclick="freeInviteEmail('${esc(i.token)}')">↻ Free this email for re-signup</button><div style="font-size:11px;color:var(--t3);margin-top:6px">Use when someone paid with an email that already has an account — clears the email so they can finish under a different one (e.g. an alias). Payment still counts.</div></div>`:''}</div>`;
   });
   d.demos.forEach(dm=>{
     html+=`<div class="card" style="padding:14px;margin-bottom:8px"><div style="font-weight:600">🎬 Demo @${esc(dm.screen_name||'')} <span class="bdg bdg-b">${esc(dm.status||'')}</span></div>
@@ -679,6 +681,13 @@ async function runLookup(){
     <button class="btn btn-r" onclick="purgeAccount('${esc(d.email)}')">Purge ${esc(d.email)}</button>
   </div></div>`;
   box.innerHTML=html;
+}
+
+async function freeInviteEmail(token){
+  if(!confirm('Clear the email off this paid invite so they can finish signup under a different email?\n\nTheir payment still counts. Send them the join link again afterward.'))return;
+  const d=await fetch('/api/admin/invite-clear-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  if(d.error){alert('Error: '+d.error);return;}
+  prompt('Done! Send them THIS link to finish (they\'ll enter a new email — an alias like name+1@gmail.com works):', d.joinUrl);
 }
 
 async function purgeAccount(email){
