@@ -3611,6 +3611,76 @@ app.post('/api/member/welcome-done', requireMember, (req, res) => {
 
 
 // DELETE member (admin only — warden tier)
+// ── Account Lookup & Cleanup (warden tool) ────────────────────────────────────
+// Find EVERYTHING tied to an email across all tables — useful for diagnosing
+// "email already exists" and cleaning up leftover/orphaned records.
+app.get('/api/admin/account-lookup', requireMod, (req, res) => {
+  try {
+    const q = (req.query.email || '').trim().toLowerCase();
+    if (!q) return res.status(400).json({ error: 'Provide an email to search' });
+
+    const members = db.prepare('SELECT * FROM members WHERE LOWER(email)=?').all(q);
+    const profiles = db.prepare('SELECT * FROM profiles WHERE LOWER(email)=?').all(q);
+    const invites = db.prepare('SELECT id, token, email, amount, status, promo, created_at FROM invites WHERE LOWER(email)=?').all(q);
+    let demos = [];
+    try { demos = db.prepare('SELECT id, screen_name, member_email, status, demo_user, demo_expires, created_at FROM demo_requests WHERE LOWER(member_email)=?').all(q); } catch(e){}
+
+    res.json({ email: q, members, profiles, invites, demos,
+      summary: {
+        members: members.length, profiles: profiles.length,
+        invites: invites.length, demos: demos.length
+      }
+    });
+  } catch(e) { console.error('[account-lookup]', e.message); res.status(500).json({ error: e.message }); }
+});
+
+// Purge EVERYTHING tied to an email (warden only). Cleans members, profiles,
+// invites, demo_requests, and disables Jellyfin users on both servers.
+app.post('/api/admin/account-purge', requireMod, async (req, res) => {
+  try {
+    if (req.profile.tier !== 'warden') return res.status(403).json({ error: 'Only the Dungeon Master can purge accounts' });
+    const email = (req.body.email || '').trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: 'Email required' });
+
+    const members = db.prepare('SELECT * FROM members WHERE LOWER(email)=?').all(email);
+    const profiles = db.prepare('SELECT * FROM profiles WHERE LOWER(email)=?').all(email);
+
+    // Disable/delete Jellyfin users on both servers (best-effort)
+    const jfUsernames = new Set();
+    for (const m of members) { if (m.jellyfin_user) jfUsernames.add(m.jellyfin_user); if (m.stremio_email) jfUsernames.add(m.stremio_email); }
+    for (const p of profiles) { if (p.screen_name) jfUsernames.add(p.screen_name.toLowerCase().replace(/[^a-z0-9_]/g,'_')); }
+    let demos = [];
+    try { demos = db.prepare('SELECT * FROM demo_requests WHERE LOWER(member_email)=?').all(email); } catch(e){}
+    for (const d of demos) { if (d.demo_user) jfUsernames.add(d.demo_user); }
+
+    for (const uname of jfUsernames) {
+      for (const [url, key] of [[JELLYFIN_URL, JELLYFIN_API_KEY], [JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY]]) {
+        try {
+          const jfId = await jellyfinGetUserId(uname, url, key);
+          if (jfId) await jellyfinRequest('DELETE', '/Users/' + jfId, null, url, key);
+        } catch(e) { /* best effort */ }
+      }
+    }
+
+    // Delete DB records tied to each profile
+    for (const p of profiles) {
+      db.prepare('DELETE FROM credits WHERE profile_id=?').run(p.id);
+      db.prepare('DELETE FROM redemptions WHERE profile_id=?').run(p.id);
+      db.prepare('DELETE FROM dealer_earnings WHERE dealer_profile_id=?').run(p.id);
+      db.prepare('DELETE FROM messages WHERE sender_profile_id=? OR recipient_profile_id=?').run(p.id, p.id);
+      db.prepare('DELETE FROM profiles WHERE id=?').run(p.id);
+    }
+    db.prepare('DELETE FROM members WHERE LOWER(email)=?').run(email);
+    db.prepare('DELETE FROM invites WHERE LOWER(email)=?').run(email);
+    try { db.prepare('DELETE FROM demo_requests WHERE LOWER(member_email)=?').run(email); } catch(e){}
+
+    console.log('[account-purge] Purged everything for:', email, '| jellyfin users:', [...jfUsernames].join(', '));
+    res.json({ ok: true, purged: { members: members.length, profiles: profiles.length, jellyfin: jfUsernames.size } });
+  } catch(e) { console.error('[account-purge]', e.message); res.status(500).json({ error: e.message }); }
+});
+
+// ── Account Lookup & Cleanup end ──────────────────────────────────────────────
+
 app.delete('/api/admin/members/:id', requireMod, (req, res) => {
   try {
     const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.params.id);
