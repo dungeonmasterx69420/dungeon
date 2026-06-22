@@ -1873,8 +1873,12 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
         db.prepare('INSERT INTO iptv_accounts (id,profile_id,nodecast_user,xtream_url,xtream_user,xtream_pass,status) VALUES (?,?,?,?,?,?,?)')
           .run(genId(), profile.id, account_user, xtream_url||'http://line.dungeoncast.cc', xtream_user||account_user, xtream_pass||account_pass, 'active');
       }
+      // Stack IPTV subscription — add 30 days onto existing end date if still active
+      const existingIptvEnd = member.iptv_end ? new Date(member.iptv_end) : null;
+      const iptvStartBase = (existingIptvEnd && existingIptvEnd > now) ? existingIptvEnd : now;
+      const iptvEnd = new Date(iptvStartBase); iptvEnd.setMonth(iptvEnd.getMonth() + 1);
       db.prepare('UPDATE members SET iptv_start=?, iptv_end=?, cast_notified=0 WHERE id=?')
-        .run(now.toISOString(), end.toISOString(), member.id);
+        .run(now.toISOString(), iptvEnd.toISOString(), member.id);
 
       // Create Jellyfin account on TV server + grant Live TV access
       try {
