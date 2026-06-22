@@ -229,6 +229,7 @@ const migrations = [
   `ALTER TABLE members ADD COLUMN subscription_end DATETIME`,
   `ALTER TABLE members ADD COLUMN expiry_warned INTEGER DEFAULT 0`,
   `ALTER TABLE members ADD COLUMN expired_notified INTEGER DEFAULT 0`,
+  `ALTER TABLE members ADD COLUMN cast_notified INTEGER DEFAULT 0`,
   `ALTER TABLE members ADD COLUMN profile_id TEXT`,
 ];
 for (const m of migrations) { try { db.exec(m); } catch(e) {} }
@@ -505,16 +506,17 @@ async function runSubscriptionCron() {
     }
   } catch(e) { console.error('[demo cron]', e.message); }
 
-  // Revoke DungeonCast access when iptv_end has passed (only members not already notified)
+  // Revoke DungeonCast access when iptv_end has passed (uses its OWN flag,
+  // independent of DungeonStream, so neither can mask the other)
   const castExpired = db.prepare(`
     SELECT * FROM members
     WHERE iptv_end IS NOT NULL AND datetime(iptv_end) <= datetime(?)
-    AND expired_notified = 0
+    AND cast_notified = 0
   `).all(nowISO);
   for (const m of castExpired) {
     const profile = db.prepare('SELECT tier FROM profiles WHERE member_id=?').get(m.id);
     const isStaff = ['family','dealer','mod','admin','warden'].includes(profile?.tier);
-    if (isStaff) continue;
+    if (isStaff) { db.prepare('UPDATE members SET cast_notified=1 WHERE id=?').run(m.id); continue; }
 
     try {
       const jfTVId = await jellyfinGetUserId(m.jellyfin_user||m.stremio_email, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
@@ -522,6 +524,7 @@ async function runSubscriptionCron() {
         await jellyfinRequest('POST', '/Users/'+jfTVId+'/Policy', { IsDisabled: true }, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
         console.log('[cron] DungeonCast expired — disabled for:', m.jellyfin_user||m.stremio_email);
       }
+      db.prepare('UPDATE members SET cast_notified=1 WHERE id=?').run(m.id);
     } catch(e) { console.error('[cron] Jellyfin TV disable error:', e.message); }
   }
 }
@@ -1437,7 +1440,7 @@ app.post('/api/admin/stremio/:memberId', requireMod, (req, res) => {
 // Admin: update IPTV subscription dates
 app.post('/api/admin/iptv-dates/:memberId', requireMod, (req, res) => {
   const { iptv_start, iptv_end } = req.body;
-  db.prepare('UPDATE members SET iptv_start=?, iptv_end=? WHERE id=?')
+  db.prepare('UPDATE members SET iptv_start=?, iptv_end=?, cast_notified=0 WHERE id=?')
     .run(iptv_start||null, iptv_end||null, req.params.memberId);
   res.json({ ok: true });
 });
@@ -1591,7 +1594,7 @@ app.post('/api/admin/trex/create-line', requireAuth, async (req, res) => {
     if (memberId) {
       const now = new Date();
       const end = new Date(now); end.setMonth(end.getMonth() + (months || 1));
-      db.prepare('UPDATE members SET iptv_start=?, iptv_end=? WHERE id=?')
+      db.prepare('UPDATE members SET iptv_start=?, iptv_end=?, cast_notified=0 WHERE id=?')
         .run(now.toISOString(), end.toISOString(), memberId);
 
       // Create/update iptv_accounts record
@@ -1745,7 +1748,7 @@ app.post('/api/admin/nodecast/create-user', requireAuth, async (req, res) => {
       }
       if (memberId) {
         const mNow = new Date(); const mEnd = new Date(mNow); mEnd.setMonth(mEnd.getMonth()+1);
-        db.prepare('UPDATE members SET iptv_start=?, iptv_end=? WHERE id=?').run(mNow.toISOString(), mEnd.toISOString(), memberId);
+        db.prepare('UPDATE members SET iptv_start=?, iptv_end=?, cast_notified=0 WHERE id=?').run(mNow.toISOString(), mEnd.toISOString(), memberId);
       }
     }
 
@@ -1870,7 +1873,7 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
         db.prepare('INSERT INTO iptv_accounts (id,profile_id,nodecast_user,xtream_url,xtream_user,xtream_pass,status) VALUES (?,?,?,?,?,?,?)')
           .run(genId(), profile.id, account_user, xtream_url||'http://line.dungeoncast.cc', xtream_user||account_user, xtream_pass||account_pass, 'active');
       }
-      db.prepare('UPDATE members SET iptv_start=?, iptv_end=? WHERE id=?')
+      db.prepare('UPDATE members SET iptv_start=?, iptv_end=?, cast_notified=0 WHERE id=?')
         .run(now.toISOString(), end.toISOString(), member.id);
 
       // Create Jellyfin account on TV server + grant Live TV access
@@ -2707,7 +2710,7 @@ app.post('/api/admin/members/:id', requireMod, async (req, res) => {
             }
             // Set permanent subscription (10 years)
             const forever = new Date(Date.now() + 10*365*24*60*60*1000).toISOString();
-            db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, credit_welcome_pending=1 WHERE id=?')
+            db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, cast_notified=0, credit_welcome_pending=1 WHERE id=?')
               .run(username, password, password, username, password, new Date().toISOString(), forever, new Date().toISOString(), forever, req.params.id);
             console.log('[tier] Staff promotion — granted permanent access to:', username);
           } catch(e) { console.error('[tier] Jellyfin grant error:', e.message); }
@@ -2761,7 +2764,7 @@ app.post('/api/admin/members/:id/cast', requireMod, (req, res) => {
     const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.params.id);
     if (!m) return res.status(404).json({ error: 'Not found' });
     const toISO = d => !d ? null : d.includes('T') ? d : d + 'T00:00:00.000Z';
-    db.prepare('UPDATE members SET iptv_start=?, iptv_end=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')
+    db.prepare('UPDATE members SET iptv_start=?, iptv_end=?, cast_notified=0, updated_at=CURRENT_TIMESTAMP WHERE id=?')
       .run(toISO(start), toISO(end), req.params.id);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
@@ -3060,7 +3063,7 @@ app.post('/api/invite/:token/complete', async (req, res) => {
         const jfId = await jellyfinGetUserId(jfUser, JELLYFIN_URL, JELLYFIN_API_KEY);
         if (jfId) await jellyfinGrantLibraryAccess(jfId, ['Movies', 'Shows'], JELLYFIN_URL, JELLYFIN_API_KEY);
         const forever = new Date(Date.now() + 10*365*24*60*60*1000).toISOString();
-        db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, credit_welcome_pending=1 WHERE id=?')
+        db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, cast_notified=0, credit_welcome_pending=1 WHERE id=?')
           .run(jfUser, jfPass, jfPass, jfUser, jfPass, new Date().toISOString(), forever, new Date().toISOString(), forever, memberId);
         console.log('[invite/complete] Created Jellyfin account for staff tier:', jfUser);
       } catch(e) { console.error('[invite/complete] Jellyfin error:', e.message); }
@@ -3085,7 +3088,7 @@ app.post('/api/invite/:token/complete', async (req, res) => {
         const jfTVId = await jellyfinGetUserId(jfUser, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
         if (jfTVId) await jellyfinGrantLibraryAccess(jfTVId, ['Live TV'], JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
 
-        db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, expired_notified=0, expiry_warned=0, credit_welcome_pending=1 WHERE id=?')
+        db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, expired_notified=0, expiry_warned=0, cast_notified=0, credit_welcome_pending=1 WHERE id=?')
           .run(jfUser, jfPass, jfPass, jfUser, jfPass, now.toISOString(), oneMonth.toISOString(), now.toISOString(), oneMonth.toISOString(), memberId);
         console.log("[invite/complete] Father's Day promo — provisioned 1 month of both services for:", jfUser);
       } catch(e) { console.error("[invite/complete] Father's Day provision error:", e.message); }
