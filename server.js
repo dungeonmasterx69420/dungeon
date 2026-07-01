@@ -234,19 +234,6 @@ const migrations = [
 ];
 for (const m of migrations) { try { db.exec(m); } catch(e) {} }
 
-app.get('/debug/check-profile-id', (req, res) => {
-  try {
-    const result = db.prepare(`
-      SELECT r.id, r.profile_id, p.id AS profile_pk, p.member_id
-      FROM redemptions r LEFT JOIN profiles p ON p.id = r.profile_id
-      LIMIT 5
-    `).all();
-    res.json(result);
-  } catch (e) {
-    res.json({ error: e.message });
-  }
-});
-
 // Tier config
 const TIERS = {
   neut:    { label: 'Neut',      color: '#e2e8e4' },
