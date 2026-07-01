@@ -1,15 +1,3 @@
-app.get('/debug/check-profile-id', (req, res) => {
-  try {
-    const result = db.prepare(`
-      SELECT r.id, r.profile_id, p.id AS profile_pk, p.member_id
-      FROM redemptions r LEFT JOIN profiles p ON p.id = r.profile_id
-      LIMIT 5
-    `).all();
-    res.json(result);
-  } catch (e) {
-    res.json({ error: e.message });
-  }
-});
 const express    = require('express');
 const Database   = require('better-sqlite3');
 const bcrypt     = require('bcryptjs');
