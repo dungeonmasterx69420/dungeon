@@ -9,6 +9,8 @@ const FROM_EMAIL = process.env.FROM_EMAIL || 'Dungeon Master <noreply@enterdunge
 const path       = require('path');
 const fs         = require('fs');
 const crypto     = require('crypto');
+const { sgProvision, sgExtend, sgDisable, sgEnable, sgGetAddonUrl } = require('./stremgate');
+const STAFF_TIERS = ['family','dealer','mod','admin','warden'];
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -363,6 +365,24 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_credential TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_pass TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_expires DATETIME').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN stremgate_member_id TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN stremgate_username TEXT').run(); } catch(e) {}
+  try {
+    db.prepare(`CREATE TABLE IF NOT EXISTS events (
+      id          TEXT PRIMARY KEY,
+      title       TEXT NOT NULL,
+      sport       TEXT NOT NULL DEFAULT 'other',
+      description TEXT,
+      start_time  DATETIME NOT NULL,
+      end_time    DATETIME,
+      featured    INTEGER DEFAULT 0,
+      approved    INTEGER DEFAULT 0,
+      source      TEXT DEFAULT 'manual',
+      channel_request_id TEXT,
+      created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`).run();
+  } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_notified INTEGER DEFAULT 0').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_token TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_credential TEXT').run(); } catch(e) {}
@@ -485,6 +505,14 @@ async function runSubscriptionCron() {
         console.log('[cron] DungeonStream expired — disabled Jellyfin for:', m.stremio_email||m.jellyfin_user);
       }
     } catch(e) { console.error('[cron] Jellyfin disable error:', e.message); }
+
+    // Disable StremGate access
+    try {
+      if (m.stremgate_member_id) {
+        const sgRes = await sgDisable(m.stremgate_member_id);
+        console.log('[cron] StremGate disable for', m.email, '→', sgRes.ok ? 'ok' : 'failed');
+      }
+    } catch(e) { console.error('[cron] StremGate disable error:', e.message); }
 
     sendMail(m.email, 'Your Dungeon subscription has ended', emailExpired(m.first_name)).catch(()=>{});
     db.prepare('UPDATE members SET expired_notified=1 WHERE id=?').run(m.id);
@@ -789,6 +817,134 @@ function requireMod(req, res, next) {
   next();
 }
 
+
+// ── Events system (Patch C) ──────────────────────────────────────────────────
+
+// GET all events (admin — all; members — only approved + upcoming)
+app.get('/api/events', (req, res) => {
+  try {
+    if (req.session?.authenticated) {
+      const events = db.prepare('SELECT * FROM events ORDER BY start_time ASC').all();
+      return res.json(events);
+    }
+    if (req.session?.member) {
+      const events = db.prepare(`
+        SELECT id, title, sport, description, start_time, end_time, featured
+        FROM events
+        WHERE approved=1 AND (
+          datetime(start_time) >= datetime('now', '-4 hours')
+          OR (end_time IS NOT NULL AND datetime(end_time) >= datetime('now'))
+        )
+        ORDER BY start_time ASC
+      `).all();
+      return res.json(events);
+    }
+    return res.status(401).json({ error: 'Unauthorized' });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET current month events (members only) — for the schedule page
+app.get('/api/events/schedule', requireMember, (req, res) => {
+  try {
+    const { month, year } = req.query;
+    const m = parseInt(month) || new Date().getMonth() + 1;
+    const y = parseInt(year) || new Date().getFullYear();
+    const start = `${y}-${String(m).padStart(2,'0')}-01T00:00:00.000Z`;
+    const endMonth = m+1 > 12 ? 1 : m+1;
+    const endYear = m+1 > 12 ? y+1 : y; // FIX: December (m=12) must roll into next year, or end < start and the query always returns zero rows
+    const end   = `${endYear}-${String(endMonth).padStart(2,'0')}-01T00:00:00.000Z`;
+    const events = db.prepare(`
+      SELECT id, title, sport, description, start_time, end_time, featured
+      FROM events
+      WHERE approved=1
+        AND datetime(start_time) >= datetime(?)
+        AND datetime(start_time) < datetime(?)
+      ORDER BY start_time ASC
+    `).all(start, end);
+    // Is DungeonCast live right now?
+    const now = new Date().toISOString();
+    const liveNow = db.prepare(`
+      SELECT id, title, sport FROM events
+      WHERE approved=1
+        AND datetime(start_time) <= datetime(?)
+        AND (end_time IS NULL OR datetime(end_time) >= datetime(?))
+      LIMIT 1
+    `).get(now, now);
+    res.json({ events, liveNow: liveNow || null, month: m, year: y });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST create event (admin)
+app.post('/api/admin/events', requireAuth, (req, res) => {
+  try {
+    const { title, sport, description, start_time, end_time, featured, approved } = req.body;
+    if (!title || !start_time) return res.status(400).json({ error: 'Title and start time required' });
+    const id = genId();
+    db.prepare(`INSERT INTO events (id,title,sport,description,start_time,end_time,featured,approved,source)
+                VALUES (?,?,?,?,?,?,?,?,?)`)
+      .run(id, title.trim(), sport||'other', description||null, start_time, end_time||null,
+           featured ? 1 : 0, approved ? 1 : 0, 'manual');
+    res.json({ ok: true, id });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// PATCH update event (admin)
+app.patch('/api/admin/events/:id', requireAuth, (req, res) => {
+  try {
+    const { title, sport, description, start_time, end_time, featured, approved } = req.body;
+    const ev = db.prepare('SELECT * FROM events WHERE id=?').get(req.params.id);
+    if (!ev) return res.status(404).json({ error: 'Not found' });
+    db.prepare(`UPDATE events SET title=?,sport=?,description=?,start_time=?,end_time=?,
+                featured=?,approved=?,updated_at=CURRENT_TIMESTAMP WHERE id=?`)
+      .run(title??ev.title, sport??ev.sport, description??ev.description,
+           start_time??ev.start_time, end_time??ev.end_time,
+           featured!==undefined ? (featured?1:0) : ev.featured,
+           approved!==undefined ? (approved?1:0) : ev.approved,
+           req.params.id);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// DELETE event (admin)
+app.delete('/api/admin/events/:id', requireAuth, (req, res) => {
+  try {
+    db.prepare('DELETE FROM events WHERE id=?').run(req.params.id);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST approve a channel_request and promote it to an event
+app.post('/api/admin/events/from-request/:requestId', requireAuth, (req, res) => {
+  try {
+    const cr = db.prepare('SELECT * FROM channel_requests WHERE id=?').get(req.params.requestId);
+    if (!cr) return res.status(404).json({ error: 'Request not found' });
+    const { start_time, end_time, sport } = req.body;
+    if (!start_time) return res.status(400).json({ error: 'Start time required' });
+    const id = genId();
+    db.prepare(`INSERT INTO events (id,title,sport,description,start_time,end_time,featured,approved,source,channel_request_id)
+                VALUES (?,?,?,?,?,?,0,1,'request',?)`)
+      .run(id, cr.title, sport||'other', cr.note||null, start_time, end_time||null, cr.id);
+    db.prepare("UPDATE channel_requests SET status='fulfilled' WHERE id=?").run(cr.id);
+    res.json({ ok: true, id });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST bulk import monthly sports events (admin reviews/approves before they appear)
+app.post('/api/admin/events/bulk-import', requireAuth, (req, res) => {
+  try {
+    const { events } = req.body; // array of { title, sport, description, start_time, end_time }
+    if (!Array.isArray(events)) return res.status(400).json({ error: 'events must be an array' });
+    let imported = 0;
+    for (const ev of events) {
+      if (!ev.title || !ev.start_time) continue;
+      db.prepare(`INSERT OR IGNORE INTO events (id,title,sport,description,start_time,end_time,featured,approved,source)
+                  VALUES (?,?,?,?,?,?,0,0,'suggested')`)
+        .run(genId(), ev.title.trim(), ev.sport||'other', ev.description||null, ev.start_time, ev.end_time||null);
+      imported++;
+    }
+    res.json({ ok: true, imported });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
 
 // ── Health ────────────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ ok: true }));
@@ -3097,6 +3253,25 @@ app.post('/api/invite/:token/complete', async (req, res) => {
         console.log("[invite/complete] Father's Day promo — provisioned 1 month of both services for:", jfUser);
       } catch(e) { console.error("[invite/complete] Father's Day provision error:", e.message); }
     }
+
+    // --- StremGate provisioning ---
+    try {
+      const sgUsername = screen_name.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+      const sgPassword = mkRandPass() + '!1'; // meets StremGate password requirements
+      const sgResult = await sgProvision(sgUsername, sgPassword, 30);
+      if (sgResult.ok) {
+        db.prepare('UPDATE members SET stremgate_member_id=?, stremgate_username=? WHERE id=?')
+          .run(sgResult.memberId, sgUsername, memberId);
+        console.log('[stremgate] Provisioned:', sgUsername, '→', sgResult.memberId);
+      } else {
+        // Non-fatal — log it, notify warden, but don't fail the whole signup
+        console.error('[stremgate] Provision failed:', sgResult.error);
+        notify('StremGate provision failed', `Could not create StremGate account for @${screen_name}: ${sgResult.error}`, {
+          kind: 'error', tags: 'warning', priority: 4
+        });
+      }
+    } catch(e) { console.error('[stremgate] Provision error:', e.message); }
+    // --- end StremGate provisioning ---
 
     res.json({ ok: true });
   } catch(e) {
