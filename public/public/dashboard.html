@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>Dungeon · Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --void:#060908;--stone:#0d1311;--moss:#141c19;--raise:#172019;
+  --ember:#34d399;--ember-soft:rgba(52,211,153,.14);--ember-line:rgba(52,211,153,.22);
+  --border:rgba(52,211,153,.12);--border2:rgba(52,211,153,.28);
+  --ash:#6f8f84;--ash2:#94a3a0;--bone:#dce8e3;--red:#f87171;--amber:#fbbf24;
+  --display:'Press Start 2P',monospace;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+html,body{min-height:100vh}
+body{background:var(--void);color:var(--bone);font-family:var(--sans);min-height:100vh;position:relative}
+/* soft torch glow at very top, fading into the interior */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(90% 40% at 50% -5%, rgba(52,211,153,.08), transparent 55%)}
+
+.topbar{position:relative;z-index:3;background:rgba(13,19,17,.85);border-bottom:1px solid var(--border);
+  padding:12px 20px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(8px);position:sticky;top:0}
+.logo{font-family:var(--display);font-size:11px;color:var(--ember);letter-spacing:.04em;text-decoration:none;text-shadow:0 0 10px rgba(52,211,153,.5)}
+.topbar-right{display:flex;align-items:center;gap:14px}
+#greeting{font-family:var(--mono);font-size:11px;color:var(--ash);letter-spacing:.02em}
+.topbar-link{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ash);background:none;border:none;cursor:pointer;text-decoration:none;transition:color .2s;padding:4px 2px}
+.topbar-link:hover,.topbar-link:focus-visible{color:var(--bone);outline:none}
+.msg-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--moss);border:1px solid var(--border);text-decoration:none;color:var(--ash);font-size:15px;transition:border-color .2s,color .2s}
+.msg-btn:hover{border-color:var(--ember);color:var(--ember)}
+.msg-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
+
+.page{position:relative;z-index:2;max-width:680px;margin:0 auto;padding:28px 18px 60px}
+
+/* Profile + subscription card */
+.profile-card{background:linear-gradient(180deg, rgba(23,32,25,.6), rgba(13,19,17,.6));border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:30px;backdrop-filter:blur(4px)}
+.profile-top{display:flex;align-items:center;gap:16px}
+.avatar{position:relative;width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:18px;color:#0b0f0e;cursor:pointer;flex-shrink:0;overflow:hidden;box-shadow:0 0 0 1px var(--border2),0 0 18px rgba(52,211,153,.2)}
+.avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,.65);color:#fff;font-family:var(--sans);font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.3;opacity:0;transition:opacity .2s}
+.avatar:hover .avatar-overlay{opacity:1}
+.profile-info{flex:1;min-width:0}
+.profile-name{font-size:18px;font-weight:700;color:var(--bone);margin-bottom:6px;word-break:break-word}
+.profile-tier{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:6px;margin-bottom:7px}
+.profile-since{font-family:var(--mono);font-size:10px;color:var(--ash);letter-spacing:.02em}
+.edit-btn{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ash);text-decoration:none;border:1px solid var(--border2);border-radius:7px;padding:7px 11px;transition:all .2s;align-self:flex-start;white-space:nowrap}
+.edit-btn:hover{color:var(--ember);border-color:var(--ember)}
+.profile-aside{display:flex;flex-direction:column;align-items:flex-end;gap:9px;flex-shrink:0}
+.credit-pill{display:flex;align-items:baseline;gap:5px;text-decoration:none;background:var(--ember-soft);border:1px solid var(--border2);border-radius:8px;padding:6px 12px;transition:border-color .2s,box-shadow .2s}
+.credit-pill:hover{border-color:var(--ember);box-shadow:0 0 16px rgba(52,211,153,.2)}
+.credit-num{font-family:var(--display);font-size:15px;color:var(--ember);line-height:1}
+.credit-lbl{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--ash)}
+
+.section-more{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:none;color:var(--ash);text-decoration:none;transition:color .2s}
+.section-more::after{display:none}
+.section-more:hover{color:var(--ember)}
+
+.forum-strip{display:flex;flex-direction:column;gap:8px;margin-bottom:36px}
+.forum-item{display:flex;align-items:center;gap:14px;background:var(--moss);border:1px solid var(--border);border-radius:11px;padding:14px 16px;text-decoration:none;transition:border-color .2s,transform .15s}
+.forum-item:hover{border-color:var(--border2);transform:translateX(2px)}
+.forum-item-body{flex:1;min-width:0}
+.forum-item-title{font-size:14px;font-weight:600;color:var(--bone);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.forum-item-meta{font-family:var(--mono);font-size:10px;color:var(--ash);letter-spacing:.02em}
+.forum-item-cat{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--ember);background:var(--ember-soft);border:1px solid var(--border);border-radius:5px;padding:3px 7px;white-space:nowrap;flex-shrink:0}
+.forum-item-replies{text-align:center;flex-shrink:0;min-width:34px}
+.forum-replies-num{font-family:var(--display);font-size:13px;color:var(--ash2);line-height:1}
+.forum-replies-lbl{font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--ash);margin-top:3px}
+.forum-empty{font-family:var(--mono);font-size:12px;color:var(--ash);text-align:center;padding:18px;border:1px dashed var(--border);border-radius:11px}
+
+.sub-section{margin-top:20px;border-top:1px solid var(--border);padding-top:18px}
+.sub-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+.sub-row+.sub-row{border-top:1px solid var(--border)}
+.sub-service{font-size:14px;font-weight:600;color:var(--bone);margin-bottom:4px}
+.sub-status-text{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+.sub-dates{font-family:var(--mono);font-size:10px;color:var(--ash)}
+.sub-right{text-align:right}
+.sub-days-num{font-family:var(--display);font-size:20px;line-height:1}
+.sub-days-label{font-family:var(--mono);font-size:9px;color:var(--ash);text-transform:uppercase;letter-spacing:.08em;margin-top:5px}
+
+.staff-badge{display:flex;align-items:center;gap:12px;background:var(--ember-soft);border:1px solid var(--border2);border-radius:11px;padding:14px 16px}
+.staff-badge>span:first-child{font-size:22px}
+.staff-badge-text{font-size:14px;font-weight:700;color:var(--bone)}
+.staff-badge-sub{font-family:var(--mono);font-size:10px;color:var(--ember);text-transform:uppercase;letter-spacing:.08em;margin-left:auto}
+
+.no-sub{text-align:center;padding:8px 0}
+.no-sub-text{font-size:13px;color:var(--ash);margin-bottom:12px}
+.redeem-btn{display:inline-block;font-family:var(--sans);font-size:13px;font-weight:700;color:var(--void);background:var(--ember);padding:10px 22px;border-radius:8px;text-decoration:none;box-shadow:0 0 16px rgba(52,211,153,.3);transition:transform .15s}
+.redeem-btn:hover{transform:translateY(-1px)}
+
+.section-head{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ash);margin-bottom:14px;display:flex;align-items:center;gap:12px}
+.section-head::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:36px}
+.tile{background:var(--moss);border:1px solid var(--border);border-radius:13px;padding:22px 14px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:10px;transition:transform .15s,border-color .2s,box-shadow .2s}
+.tile:hover,.tile:focus-visible{transform:translateY(-3px);border-color:var(--border2);box-shadow:0 6px 22px rgba(0,0,0,.4),0 0 18px rgba(52,211,153,.12);outline:none}
+.tile-icon{font-size:26px;line-height:1}
+.tile-title{font-size:12px;font-weight:600;color:var(--bone);text-align:center}
+.tile-sub{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--ash);text-align:center;line-height:1.45;margin-top:-2px}
+.tile .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ember);box-shadow:0 0 6px var(--ember);margin-right:5px;vertical-align:1px}
+.tile.dash-cupio:hover,.tile.dash-cupio:focus-visible{border-color:rgba(227,185,79,.45);box-shadow:0 6px 22px rgba(0,0,0,.4),0 0 18px rgba(227,185,79,.16)}
+.tile.dash-magico:hover,.tile.dash-magico:focus-visible{border-color:rgba(79,168,227,.45);box-shadow:0 6px 22px rgba(0,0,0,.4),0 0 18px rgba(79,168,227,.16)}
+.tile.dash-csio:hover,.tile.dash-csio:focus-visible{border-color:rgba(227,154,59,.45);box-shadow:0 6px 22px rgba(0,0,0,.4),0 0 18px rgba(227,154,59,.16)}
+
+footer{text-align:center;font-family:var(--mono);font-size:11px;color:var(--ash);line-height:2}
+footer a{color:var(--ash);text-decoration:none;transition:color .2s}
+footer a:hover{color:var(--ember)}
+footer .sep{color:#2c3d36}
+
+/* Sheets / veils */
+.veil,#demoModal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center}
+.veil.open,#demoModal.open{display:flex}
+.sheet{background:var(--stone);border:1px solid var(--border2);border-top-left-radius:18px;border-top-right-radius:18px;width:100%;max-width:480px;padding:20px 22px 30px;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media(min-width:520px){.veil,#demoModal{align-items:center}.sheet{border-radius:18px}}
+.sheet-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
+.sheet-title{font-size:17px;font-weight:700;color:var(--bone);margin-bottom:5px}
+.sheet-sub{font-size:13px;color:var(--ash);margin-bottom:18px;line-height:1.6}
+
+.upload-preview{width:120px;height:120px;border-radius:50%;margin:0 auto 14px;background:var(--moss);border:1px solid var(--border2);overflow:hidden}
+.upload-err{display:none;font-size:12px;color:var(--red);text-align:center;margin-bottom:12px}
+.upload-area{border:1.5px dashed var(--border2);border-radius:12px;padding:22px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:14px}
+.upload-area:hover{border-color:var(--ember)}
+.upload-area-text{font-size:13px;font-weight:600;color:var(--bone);margin-bottom:4px}
+.upload-area-hint{font-family:var(--mono);font-size:10px;color:var(--ash)}
+#avatarFileInput{display:none}
+.upload-btn{width:100%;padding:13px;background:var(--ember);border:none;border-radius:9px;color:var(--void);font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;transition:opacity .2s}
+.upload-btn:disabled{opacity:.4;cursor:not-allowed}
+.upload-cancel{width:100%;padding:12px;background:var(--moss);border:1px solid var(--border2);border-radius:9px;color:var(--ash);font-family:var(--sans);font-size:13px;cursor:pointer}
+
+.demo-option{background:var(--moss);border:1px solid var(--border2);border-radius:12px;padding:16px 12px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.demo-option:hover{border-color:var(--ember)}
+.demo-option.selected{border-color:var(--ember);background:var(--ember-soft)}
+.demo-option-icon{font-size:26px;margin-bottom:8px}
+.demo-option-name{font-size:13px;font-weight:700;color:var(--bone);margin-bottom:3px}
+.demo-option-sub{font-family:var(--mono);font-size:10px;color:var(--ash)}
+
+@media(max-width:520px){
+  .topbar{padding:11px 16px}
+  .topbar-right{gap:10px}
+  #greeting{display:none}
+  .profile-top{flex-wrap:wrap}
+  .profile-aside{flex-direction:row;order:3;width:100%;justify-content:space-between;align-items:center;margin-top:6px}
+  .edit-btn{align-self:auto}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/dashboard.html" class="logo" id="logoLink">⬡ Dungeon</a>
+  <div class="topbar-right">
+    <span id="greeting"></span>
+    <a href="/forum.html" class="topbar-link" style="text-decoration:none">Forum</a>
+    <a href="/messages.html" class="msg-btn" id="msgBtn" title="Messages">✉<span class="msg-badge" id="msgBadge"></span></a>
+    <button class="topbar-link" onclick="logout()">Sign out</button>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- Profile + Subscription card -->
+  <div class="profile-card" id="profileCard" style="display:none">
+    <div class="profile-top">
+      <div class="avatar" id="profileAvatar" onclick="openUpload()">
+        <span id="profileInitials"></span>
+        <div class="avatar-overlay">Change<br>Photo</div>
+      </div>
+      <div class="profile-info">
+        <div class="profile-name" id="profileName"></div>
+        <div class="profile-tier" id="profileTier"></div>
+        <div class="profile-since" id="profileSince"></div>
+      </div>
+      <div class="profile-aside">
+        <a href="/redeem.html" class="credit-pill" id="creditPill" style="display:none">
+          <span class="credit-num" id="creditNum">0</span>
+          <span class="credit-lbl">credits</span>
+        </a>
+        <a href="/setup.html?edit=1" class="edit-btn">Edit Profile</a>
+      </div>
+    </div>
+    <div class="sub-section" id="subSection"></div>
+  </div>
+
+  <div class="section-head">Quick Access</div>
+
+  <div class="tiles">
+    <a class="tile" href="/guides.html">
+      <div class="tile-icon">📜</div>
+      <div class="tile-title">Guides</div>
+    </a>
+    <a class="tile" href="/dungeonstream.html">
+      <div class="tile-icon">📺</div>
+      <div class="tile-title">DungeonStream</div>
+    </a>
+    <a class="tile" href="/dungeoncast.html">
+      <div class="tile-icon">📡</div>
+      <div class="tile-title">DungeonCast</div>
+    </a>
+    <a class="tile" href="/livetv-request.html" id="tile-livetv" style="display:none">
+      <div class="tile-icon">📺</div>
+      <div class="tile-title">Live TV Requests</div>
+    </a>
+    <a class="tile" href="/redeem.html">
+      <div class="tile-icon">💳</div>
+      <div class="tile-title">Credits</div>
+    </a>
+    <a class="tile" href="#" onclick="openDemo();return false">
+      <div class="tile-icon">🎮</div>
+      <div class="tile-title">Request Demo</div>
+    </a>
+    <a class="tile" href="/support.html">
+      <div class="tile-icon">🛡️</div>
+      <div class="tile-title">Support</div>
+    </a>
+  </div>
+
+  <div class="section-head">Live Dashboards</div>
+
+  <div class="tiles">
+    <a class="tile dash-cupio" href="https://cupio.enterdungeon.cc" target="_blank" rel="noopener">
+      <div class="tile-icon">⚽</div>
+      <div class="tile-title"><span class="live-dot"></span>CUPIO</div>
+      <div class="tile-sub">World Cup 26 · live scores &amp; bracket</div>
+    </a>
+    <a class="tile dash-magico" href="https://magico.enterdungeon.cc" target="_blank" rel="noopener">
+      <div class="tile-icon">🏀</div>
+      <div class="tile-title"><span class="live-dot"></span>MAGICO</div>
+      <div class="tile-sub">Orlando Magic HQ · roster &amp; schedule</div>
+    </a>
+    <a class="tile dash-csio" href="https://csio.enterdungeon.cc" target="_blank" rel="noopener">
+      <div class="tile-icon">🎯</div>
+      <div class="tile-title"><span class="live-dot"></span>CSIO</div>
+      <div class="tile-sub">Counter-Strike tier 1 · s1mple tracker</div>
+    </a>
+  </div>
+
+  <div class="section-head">Latest from the Forum <a href="/forum.html" class="section-more">View all →</a></div>
+  <div class="forum-strip" id="forumStrip">
+    <div class="forum-empty" id="forumEmpty">Loading the latest…</div>
+  </div>
+
+  <footer id="footer">
+    <a href="/profile.html">My Profile</a><span class="sep"> · </span>
+    <a href="/forum.html">Forum</a><span class="sep"> · </span>
+    <a href="/dashboard.html">Dashboard</a>
+  </footer>
+
+</div>
+
+<!-- Avatar upload sheet -->
+<div class="veil" id="uploadVeil">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Profile Photo</div>
+    <div class="sheet-sub">Upload a new profile picture</div>
+    <div class="upload-preview" id="uploadPreview"></div>
+    <div class="upload-err" id="uploadErr"></div>
+    <div class="upload-area" onclick="document.getElementById('avatarFileInput').click()">
+      <div class="upload-area-text">Tap to choose a photo</div>
+      <div class="upload-area-hint">JPG or PNG, max 5MB</div>
+    </div>
+    <input type="file" id="avatarFileInput" accept="image/*" onchange="previewFile(this)"/>
+    <button class="upload-btn" id="uploadBtn" onclick="uploadAvatar()" disabled>Save Photo</button>
+    <button class="upload-cancel" onclick="closeUpload()">Cancel</button>
+  </div>
+</div>
+
+<!-- Demo request sheet -->
+<div id="demoModal">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Request a Demo</div>
+    <div class="sheet-sub">Try a service free for 24 hours. You'll get an email with credentials once approved.</div>
+    <div id="demoOptions" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div class="demo-option" id="demoOptStream" onclick="selectDemo('stream')">
+        <div class="demo-option-icon">📺</div>
+        <div class="demo-option-name">DungeonStream</div>
+        <div class="demo-option-sub">Movies & TV</div>
+      </div>
+      <div class="demo-option" id="demoOptCast" onclick="selectDemo('cast')">
+        <div class="demo-option-icon">📡</div>
+        <div class="demo-option-name">DungeonCast</div>
+        <div class="demo-option-sub">Live TV & Sports</div>
+      </div>
+    </div>
+    <div id="demoNotice" style="display:none;background:var(--ember-soft);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--ash2);margin-bottom:14px;line-height:1.6"></div>
+    <div id="demoSuccess" style="display:none;text-align:center;padding:8px 0 4px">
+      <div style="font-size:32px;margin-bottom:10px">✅</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">Request Submitted!</div>
+      <div style="font-size:13px;color:var(--ash2);line-height:1.6">The Dungeon Master will review and email you the demo credentials.</div>
+    </div>
+    <div id="demoBtns" style="display:flex;gap:8px;margin-top:4px">
+      <button onclick="closeDemo()" style="flex:1;padding:12px;background:var(--moss);border:1px solid var(--border2);border-radius:10px;color:var(--ash);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer">Cancel</button>
+      <button id="demoSubmitBtn" onclick="submitDemo()" disabled style="flex:1;padding:12px;background:var(--ember);border:none;border-radius:10px;color:var(--void);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;opacity:0.4">Submit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const TIER_COLORS={neut:'#e2e8e4',member:'#60a5fa',family:'#a78bfa',dealer:'#f59e0b',mod:'#34d399',admin:'#f87171',warden:'#fbbf24'};
+  const TIER_LABELS={neut:'Neut',member:'Member',family:'Family Pass',dealer:'DungeonDealer',mod:'Moderator',admin:'Admin',warden:'Dungeon Master'};
+
+  function fmtDate(dt){
+    if(!dt)return'';
+    try{if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T');const d=new Date(dt);return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}catch{return''}
+  }
+  function getDays(dt){
+    if(!dt)return 0;
+    try{if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T');const d=new Date(dt);return Math.ceil((d-new Date())/86400000);}catch{return 0}
+  }
+
+  function renderSubRow(label, icon, statusEnd, startDt, endDt){
+    const days = getDays(endDt);
+    const active = days > 0;
+    const color = days > 7 ? 'var(--ember)' : days > 0 ? 'var(--amber)' : 'var(--red)';
+    return `<div class="sub-row">
+      <div class="sub-left">
+        <div class="sub-service">${icon} ${label}</div>
+        <div class="sub-status-text" style="color:${color}">${active?'Active':'Expired'}</div>
+        <div class="sub-dates">Expires ${fmtDate(endDt)}</div>
+      </div>
+      <div class="sub-right">
+        <div class="sub-days-num" style="color:${color}">${Math.max(0,days)}</div>
+        <div class="sub-days-label">days left</div>
+      </div>
+    </div>`;
+  }
+
+  fetch('/api/member/me?t='+Date.now()).then(r=>r.json()).then(d=>{
+    if(!d.authenticated){window.location.href='/login.html';return}
+    if(!d.member?.profile?.welcome_done){window.location.href='/welcome';return}
+    if(d.member?.credit_welcome_pending){window.location.href='/credit-welcome';return}
+    if(!d.member.setup_done&&!new URLSearchParams(location.search).get('skip_setup')){
+      window.location.href='/setup.html';return
+    }
+    const m = d.member;
+    const p = m.profile;
+    const tier = p?.tier||'member';
+    const tColor = TIER_COLORS[tier]||'#60a5fa';
+    const tLabel = TIER_LABELS[tier]||'Member';
+
+    // Greeting
+    document.getElementById('greeting').textContent = 'Welcome back, '+m.first_name;
+
+    // Profile card
+    const avatar = document.getElementById('profileAvatar');
+    avatar.style.background = p?.avatar_color||'#60a5fa';
+    if(p?.avatar_url){
+      const img=document.createElement('img');img.src=p.avatar_url;
+      avatar.insertBefore(img,avatar.firstChild);
+      document.getElementById('profileInitials').style.display='none';
+    } else {
+      document.getElementById('profileInitials').textContent=(p?.screen_name||m.first_name)[0].toUpperCase();
+    }
+
+    document.getElementById('profileName').textContent = p?.screen_name ? '@'+p.screen_name : m.first_name+' '+m.last_name;
+    document.getElementById('profileTier').innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:${tColor};display:inline-block"></span><span style="color:${tColor}">${tLabel}</span>`;
+    document.getElementById('profileTier').style.background = tColor+'22';
+
+    const joined = new Date(p?.created_at||Date.now()).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    document.getElementById('profileSince').textContent = 'Member since '+joined;
+
+    // Subscriptions
+    let subHtml = '';
+    const isStaff = ['family','dealer','mod','admin','warden'].includes(tier);
+
+    if(isStaff){
+      const badgeIcon = tier==='family'?'💜':'🔑';
+      const badgeText = tier==='family'?'Family Pass':'Staff Access';
+      const badgeSub = tier==='family'?'DungeonFam':tLabel;
+      subHtml = `<div class="staff-badge"><span>${badgeIcon}</span><span class="staff-badge-text">${badgeText}</span><span class="staff-badge-sub">${badgeSub}</span></div>`;
+    } else {
+      let hasSub = false;
+      if(m.stremio_end){ hasSub=true; subHtml+=renderSubRow('DungeonStream','📺',m.stremio_end,m.stremio_start,m.stremio_end); }
+      if(m.iptv_end){ hasSub=true; subHtml+=renderSubRow('DungeonCast','📡',m.iptv_end,m.iptv_start,m.iptv_end); }
+      if(!hasSub){
+        subHtml=`<div class="no-sub"><div class="no-sub-text">No active subscriptions.</div><a href="/redeem.html" class="redeem-btn">Redeem a Credit</a></div>`;
+      }
+    }
+    // Show the Live TV Requests tile if member is family/staff (permanent) OR DungeonCast is active
+    try {
+      const ce = m.iptv_end ? new Date(String(m.iptv_end).includes('T')?m.iptv_end:m.iptv_end+'T00:00:00Z') : null;
+      if (isStaff || (ce && ce > new Date())) { const t=document.getElementById('tile-livetv'); if(t) t.style.display='flex'; }
+    } catch(e){}
+    document.getElementById('subSection').innerHTML = subHtml;
+    document.getElementById('profileCard').style.display = 'block';
+
+    // Footer links for staff
+    const footer = document.getElementById('footer');
+    if(['dealer','mod','admin','warden'].includes(tier)){
+      footer.innerHTML += '<span class="sep"> · </span><a href="/dealer.html" style="color:#f59e0b">DungeonDealer</a>';
+    }
+    if(['mod','admin','warden'].includes(tier)){
+      footer.innerHTML += '<span class="sep"> · </span><a href="/mod.html" style="color:var(--ember)">Mod Panel</a>';
+    }
+    if(['admin','warden'].includes(tier)){
+      footer.innerHTML += '<span class="sep"> · </span><a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
+    }
+  });
+
+  // ── Avatar upload ──────────────────────────────────────────────────────────
+  let pendingFile = null;
+
+  function openUpload(){
+    pendingFile=null;
+    document.getElementById('uploadBtn').disabled=true;
+    document.getElementById('uploadErr').style.display='none';
+    document.getElementById('uploadPreview').innerHTML='';
+    document.getElementById('uploadVeil').classList.add('open');
+  }
+  function closeUpload(){ document.getElementById('uploadVeil').classList.remove('open'); }
+
+  function previewFile(input){
+    const file=input.files[0];if(!file)return;
+    if(file.size>5*1024*1024){document.getElementById('uploadErr').textContent='Image must be under 5MB.';document.getElementById('uploadErr').style.display='block';return}
+    pendingFile=file;
+    const reader=new FileReader();
+    reader.onload=e=>{
+      document.getElementById('uploadPreview').innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
+      document.getElementById('uploadBtn').disabled=false;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function uploadAvatar(){
+    if(!pendingFile)return;
+    const btn=document.getElementById('uploadBtn');
+    btn.disabled=true;btn.textContent='Uploading…';
+    const reader=new FileReader();
+    reader.onload=async e=>{
+      try{
+        const res=await fetch('/api/member/profile/avatar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:e.target.result})});
+        const data=await res.json();
+        if(res.ok){
+          const avatar=document.getElementById('profileAvatar');
+          let img=avatar.querySelector('img');
+          if(!img){img=document.createElement('img');avatar.insertBefore(img,avatar.firstChild);}
+          img.src=data.avatar_url||e.target.result;
+          document.getElementById('profileInitials').style.display='none';
+          closeUpload();
+        } else {
+          document.getElementById('uploadErr').textContent=data.error||'Upload failed.';
+          document.getElementById('uploadErr').style.display='block';
+          btn.disabled=false;btn.textContent='Save Photo';
+        }
+      }catch{document.getElementById('uploadErr').textContent='Connection error.';document.getElementById('uploadErr').style.display='block';btn.disabled=false;btn.textContent='Save Photo';}
+    };
+    reader.readAsDataURL(pendingFile);
+  }
+
+  // ── Demo request ───────────────────────────────────────────────────────────
+  let selectedDemo = null;
+
+  function openDemo(){
+    selectedDemo=null;
+    document.getElementById('demoOptStream').classList.remove('selected');
+    document.getElementById('demoOptCast').classList.remove('selected');
+    document.getElementById('demoNotice').style.display='none';
+    document.getElementById('demoSuccess').style.display='none';
+    document.getElementById('demoBtns').style.display='flex';
+    document.getElementById('demoOptions').style.display='grid';
+    document.getElementById('demoSubmitBtn').disabled=true;
+    document.getElementById('demoSubmitBtn').style.opacity='0.4';
+    document.getElementById('demoModal').classList.add('open');
+  }
+  function closeDemo(){ document.getElementById('demoModal').classList.remove('open'); }
+
+  function selectDemo(type){
+    selectedDemo=type;
+    document.getElementById('demoOptStream').classList.toggle('selected',type==='stream');
+    document.getElementById('demoOptCast').classList.toggle('selected',type==='cast');
+    const name=type==='stream'?'DungeonStream':'DungeonCast';
+    const notice=document.getElementById('demoNotice');
+    notice.textContent=`You've selected ${name}. The Dungeon Master will review and email you demo credentials within a few hours.`;
+    notice.style.display='block';
+    document.getElementById('demoSubmitBtn').disabled=false;
+    document.getElementById('demoSubmitBtn').style.opacity='1';
+  }
+
+  async function submitDemo(){
+    if(!selectedDemo)return;
+    const btn=document.getElementById('demoSubmitBtn');
+    btn.textContent='Submitting…';btn.disabled=true;
+    const res=await fetch('/api/demo-request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:selectedDemo})}).then(r=>r.json()).catch(()=>({error:'Network error'}));
+    if(res.error){alert(res.error);btn.textContent='Submit';btn.disabled=false;return}
+    document.getElementById('demoOptions').style.display='none';
+    document.getElementById('demoNotice').style.display='none';
+    document.getElementById('demoBtns').style.display='none';
+    document.getElementById('demoSuccess').style.display='block';
+  }
+
+  // ── Misc ───────────────────────────────────────────────────────────────────
+  async function logout(){
+    await fetch('/api/member/logout',{method:'POST'});
+    window.location.href='/login.html';
+  }
+
+  fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
+    if(d.count>0){const b=document.getElementById('msgBadge');b.textContent=d.count;b.style.display='block';}
+  }).catch(()=>{});
+
+  // ── Credit balance pill ────────────────────────────────────────────────────
+  fetch('/api/credits').then(r=>r.json()).then(d=>{
+    const bal = d.balance||0;
+    if(bal>0){
+      document.getElementById('creditNum').textContent=bal;
+      document.getElementById('creditPill').style.display='flex';
+    }
+  }).catch(()=>{});
+
+  // ── Latest from the forum ──────────────────────────────────────────────────
+  const TIER_DOT={member:'#60a5fa',family:'#a78bfa',dealer:'#f59e0b',mod:'#34d399',admin:'#f87171',warden:'#fbbf24'};
+  function timeAgo(dt){
+    if(!dt)return'';
+    try{
+      if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T');
+      const s=Math.floor((Date.now()-new Date(dt))/1000);
+      if(s<60)return'just now';
+      if(s<3600)return Math.floor(s/60)+'m ago';
+      if(s<86400)return Math.floor(s/3600)+'h ago';
+      if(s<604800)return Math.floor(s/86400)+'d ago';
+      return Math.floor(s/604800)+'w ago';
+    }catch{return''}
+  }
+  fetch('/api/forum/recent?limit=4').then(r=>r.json()).then(rows=>{
+    const strip=document.getElementById('forumStrip');
+    if(!rows||!rows.length){
+      strip.innerHTML='<div class="forum-empty">No discussions yet. <a href="/new-thread.html" style="color:var(--ember);text-decoration:none">Start one →</a></div>';
+      return;
+    }
+    strip.innerHTML=rows.map(t=>{
+      const replies=t.reply_count||0;
+      const cat=t.category_name?`<span class="forum-item-cat">${esc(t.category_name)}</span>`:'';
+      return `<a class="forum-item" href="/thread.html?id=${t.id}">
+        <div class="forum-item-body">
+          <div class="forum-item-title">${esc(t.title||'Untitled')}</div>
+          <div class="forum-item-meta">@${esc(t.screen_name||'unknown')} · ${timeAgo(t.created_at)}</div>
+        </div>
+        ${cat}
+        <div class="forum-item-replies">
+          <div class="forum-replies-num">${replies}</div>
+          <div class="forum-replies-lbl">${replies===1?'reply':'replies'}</div>
+        </div>
+      </a>`;
+    }).join('');
+  }).catch(()=>{
+    document.getElementById('forumStrip').innerHTML='<div class="forum-empty">Could not load the forum right now.</div>';
+  });
+  function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+  // Close sheets on backdrop click
+  document.getElementById('uploadVeil').addEventListener('click',e=>{if(e.target===document.getElementById('uploadVeil'))closeUpload()});
+  document.getElementById('demoModal').addEventListener('click',e=>{if(e.target===document.getElementById('demoModal'))closeDemo()});
+</script>
+  <script src="/notif-bell.js"></script>
+</body>
+</html>
