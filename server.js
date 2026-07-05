@@ -3297,7 +3297,7 @@ app.post('/api/invite/:token/complete', async (req, res) => {
         const jfPass = mkRandPass();
         await jellyfinCreateUser(jfUser, jfPass, JELLYFIN_URL, JELLYFIN_API_KEY);
         const jfId = await jellyfinGetUserId(jfUser, JELLYFIN_URL, JELLYFIN_API_KEY);
-        if (jfId) await jellyfinGrantLibraryAccess(jfId, ['Movies', 'Shows'], JELLYFIN_URL, JELLYFIN_API_KEY);
+        if (jfId) await jellyfinGrantLibraryAccess(jfId, ['Movies', 'Shows', 'Live TV'], JELLYFIN_URL, JELLYFIN_API_KEY);
         const forever = new Date(Date.now() + 10*365*24*60*60*1000).toISOString();
         db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, cast_notified=0, credit_welcome_pending=1 WHERE id=?')
           .run(jfUser, jfPass, jfPass, jfUser, jfPass, new Date().toISOString(), forever, new Date().toISOString(), forever, memberId);
@@ -3334,7 +3334,8 @@ app.post('/api/invite/:token/complete', async (req, res) => {
     try {
       const sgUsername = screen_name.toLowerCase().replace(/[^a-z0-9_]/g, '_');
       const sgPassword = mkRandPass() + '!1'; // meets StremGate password requirements
-      const sgResult = await sgProvision(sgUsername, sgPassword, 30);
+      const sgDays = STAFF_TIERS.includes(inviteTier) ? 3650 : 30;
+      const sgResult = await sgProvision(sgUsername, sgPassword, sgDays);
       if (sgResult.ok) {
         db.prepare('UPDATE members SET stremgate_member_id=?, stremgate_username=? WHERE id=?')
           .run(sgResult.memberId, sgUsername, memberId);
