@@ -1,83 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
   <title>Dungeon · DungeonStream</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    :root{
-      --void:#060908;--stone:#0d1311;--moss:#141c19;--raise:#172019;
-      --ember:#34d399;--ember-soft:rgba(52,211,153,.14);--ember-line:rgba(52,211,153,.22);
-      --border:rgba(52,211,153,.12);--border2:rgba(52,211,153,.28);
-      --ash:#6f8f84;--ash2:#94a3a0;--bone:#dce8e3;--red:#f87171;--amber:#fbbf24;
-      --display:'Press Start 2P',monospace;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--void:#060908;--stone:#0d1311;--moss:#141c19;--raise:#172019;--ember:#34d399;--ember-soft:rgba(52,211,153,.14);--ember-line:rgba(52,211,153,.22);--border:rgba(52,211,153,.12);--border2:rgba(52,211,153,.28);--ash:#6f8f84;--ash2:#94a3a0;--bone:#dce8e3;--red:#f87171;--amber:#fbbf24;--display:'Press Start 2P',monospace;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace}
     html,body{min-height:100vh}
-    body{background:var(--void);color:var(--bone);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;position:relative}
-    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(90% 40% at 50% -5%, rgba(52,211,153,.07), transparent 55%)}
-    .topbar{position:sticky;top:0;z-index:10;background:rgba(13,19,17,.85);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(8px)}
-    .logo{font-family:var(--display);font-size:11px;color:var(--ember);text-decoration:none;letter-spacing:.04em;text-shadow:0 0 10px rgba(52,211,153,.5)}
-    .nav{display:flex;align-items:center;gap:12px}
-    .nav a,.nav button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ash);text-decoration:none;background:none;border:none;cursor:pointer;transition:color .2s;padding:4px 2px}
-    .nav a:hover,.nav button:hover,.nav a:focus-visible,.nav button:focus-visible{color:var(--bone);outline:none}
-    .msg-btn{position:relative;width:32px;height:32px;border-radius:8px;background:var(--moss);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ash);font-size:14px;transition:border-color .2s,color .2s}
+    body{background:var(--void);color:var(--bone);font-family:var(--sans);position:relative}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(90% 40% at 50% -5%, rgba(52,211,153,.08), transparent 55%)}
+    .topbar{position:sticky;top:0;z-index:3;background:rgba(13,19,17,.85);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(8px)}
+    .logo{font-family:var(--display);font-size:11px;color:var(--ember);letter-spacing:.04em;text-decoration:none;text-shadow:0 0 10px rgba(52,211,153,.5)}
+    .nav{display:flex;align-items:center;gap:14px}
+    .nav a,.nav button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ash);background:none;border:none;cursor:pointer;text-decoration:none;transition:color .2s;padding:4px 2px}
+    .nav a:hover,.nav button:hover{color:var(--bone)}
+    .msg-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--moss);border:1px solid var(--border);color:var(--ash);font-size:15px}
     .msg-btn:hover{border-color:var(--ember);color:var(--ember)}
-    .msg-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.5}
-    .page{position:relative;z-index:2;flex:1;max-width:700px;margin:0 auto;padding:30px 16px 60px;width:100%}
+    .msg-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
 
+    .page{position:relative;z-index:2;max-width:600px;margin:0 auto;padding:28px 18px 60px}
     .page-head{display:flex;align-items:center;gap:14px;margin-bottom:10px}
     .page-sigil{font-size:24px;color:var(--ember);text-shadow:0 0 14px rgba(52,211,153,.6);line-height:1}
-    .page-title{font-family:var(--display);font-size:14px;color:var(--bone);line-height:1.6;text-shadow:0 0 16px rgba(52,211,153,.3)}
-    .page-sub{font-size:14px;color:var(--ash);margin-bottom:28px;line-height:1.7}
+    .page-title{font-family:var(--display);font-size:13px;color:var(--bone);line-height:1.6;text-shadow:0 0 16px rgba(52,211,153,.3)}
+    .page-sub{font-size:14px;color:var(--ash2);margin-bottom:24px;line-height:1.6}
 
     .cred-card{background:linear-gradient(180deg, rgba(23,32,25,.55), rgba(13,19,17,.55));border:1px solid var(--border2);border-radius:14px;padding:20px;margin-bottom:24px;backdrop-filter:blur(4px)}
-    .cred-card-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:16px}
-    .badge{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
-    .cred-row{background:var(--stone);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px}
-    .cred-label{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ash);margin-bottom:6px}
-    .cred-val-row{display:flex;align-items:center;gap:8px}
-    .cred-val{flex:1;font-size:14px;color:var(--bone);word-break:break-all}
-    .cred-val.mono{font-family:var(--mono);letter-spacing:.05em}
-    .copy-btn,.show-btn{font-family:var(--mono);font-size:10px;padding:5px 10px;background:var(--moss);border:1px solid var(--border2);border-radius:6px;color:var(--ash);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:color .2s,border-color .2s}
-    .copy-btn:hover,.show-btn:hover{color:var(--ember);border-color:var(--ember)}
-    .sub-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
-    .sub-expiry{font-family:var(--mono);font-size:12px;color:var(--ash)}
-    .sub-days{font-family:var(--display);font-size:18px}
-    .cred-note{font-size:12px;color:var(--ash);line-height:1.7;margin-top:12px}
+    .cred-card-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .badge{font-family:var(--mono);font-size:9px;font-weight:600;padding:3px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:.06em}
+    .badge.active{background:var(--ember-soft);color:var(--ember);border:1px solid var(--border2)}
+    .badge.expired{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.25)}
+    .cred-card-desc{font-size:13px;color:var(--ash);line-height:1.6;margin-bottom:18px}
+
+    .addon-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px;border-radius:11px;border:none;cursor:pointer;text-decoration:none;font-family:var(--sans);font-size:15px;font-weight:700;color:var(--void);background:linear-gradient(180deg,#56e3a0,var(--ember) 58%,#1fb87e);box-shadow:0 6px 22px -8px rgba(52,211,153,.5);transition:filter .15s,transform .05s;margin-bottom:14px}
+    .addon-btn:hover{filter:brightness(1.07)}
+    .addon-btn:active{transform:translateY(1px)}
+
+    .qr-wrap{display:flex;flex-direction:column;align-items:center;gap:9px;margin:16px 0 4px}
+    .qr-box{background:#fff;padding:11px;border-radius:13px;width:168px;height:168px;display:flex;box-shadow:0 0 0 1px var(--border2),0 0 22px rgba(52,211,153,.18)}
+    .qr-box svg{width:100%;height:100%}
+    .qr-cap{font-family:var(--mono);font-size:10px;color:var(--ash)}
+
+    .or{display:flex;align-items:center;gap:11px;color:var(--ash);font-family:var(--mono);font-size:10px;margin:16px 0 12px;text-transform:uppercase;letter-spacing:.08em}
+    .or::before,.or::after{content:'';height:1px;flex:1;background:var(--border)}
+    .link-row{display:flex;gap:8px}
+    .link-row input{flex:1;background:var(--stone);border:1px solid var(--border2);border-radius:8px;color:var(--bone);font-family:var(--mono);font-size:11px;padding:10px 12px;min-width:0;outline:none}
+    .copy-btn{font-family:var(--mono);font-size:11px;font-weight:600;padding:0 14px;background:var(--moss);border:1px solid var(--border2);border-radius:8px;color:var(--ember);cursor:pointer;white-space:nowrap;transition:border-color .2s}
+    .copy-btn:hover{border-color:var(--ember)}
+    .cred-note{font-size:12px;color:var(--ash);line-height:1.6;margin-top:12px}
     .cred-note a{color:var(--ember);text-decoration:none}
-    .no-account{text-align:center;padding:8px 0 4px}
+    .field-lbl{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ash);margin:14px 0 6px}
+    .adv{margin-top:16px;border-top:1px solid var(--border);padding-top:12px}
+    .adv summary{font-family:var(--mono);font-size:11px;color:var(--ash);cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px}
+    .adv summary::before{content:'▸';color:var(--ember);transition:transform .15s}
+    .adv[open] summary::before{transform:rotate(90deg)}
+    .adv summary:hover{color:var(--bone)}
+
+    .no-account{text-align:center;padding:10px 0}
     .no-account p{font-size:13px;color:var(--ash);line-height:1.7;margin-bottom:14px}
     .redeem-btn{display:inline-block;padding:11px 22px;background:var(--ember);border-radius:8px;color:var(--void);font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 0 16px rgba(52,211,153,.3);transition:transform .15s}
     .redeem-btn:hover{transform:translateY(-1px)}
 
     .section-head{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ash);margin:28px 0 14px;display:flex;align-items:center;gap:12px}
     .section-head::after{content:'';flex:1;height:1px;background:var(--border)}
-    .app-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px}
-    .app-card{background:var(--moss);border:1px solid var(--border);border-radius:11px;padding:14px;display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;transition:border-color .2s,transform .15s}
-    .app-card:hover{border-color:var(--border2);transform:translateY(-2px)}
-    .app-icon{font-size:22px;flex-shrink:0;width:30px;text-align:center}
-    .app-name{font-size:13px;font-weight:600;color:var(--bone);margin-bottom:2px}
-    .app-platform{font-family:var(--mono);font-size:10px;color:var(--ash)}
-    .app-tag{display:inline-block;font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 6px;border-radius:10px;background:var(--ember-soft);color:var(--ember);margin-left:4px;vertical-align:middle;text-transform:uppercase;letter-spacing:.04em}
-    .features{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
-    .feat{background:var(--moss);border:1px solid var(--border);border-radius:11px;padding:16px}
-    .feat-icon{font-size:22px;margin-bottom:10px}
-    .feat-title{font-size:13px;font-weight:700;margin-bottom:4px}
-    .feat-desc{font-size:12px;color:var(--ash);line-height:1.6}
 
-    footer{text-align:center;padding:24px 0 8px;font-family:var(--mono);font-size:11px;color:var(--ash);display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
-    footer a{color:var(--ash);text-decoration:none;transition:color .2s}
-    footer a:hover{color:var(--ember)}
-    .sep{color:#2c3d36}
-    @media(max-width:480px){.page{padding:22px 12px 50px}.app-grid{grid-template-columns:1fr}.features{grid-template-columns:1fr}.page-title{font-size:12px}}
+    .opt-grid{display:flex;flex-direction:column;gap:10px}
+    .opt-card{background:var(--moss);border:1px solid var(--border);border-radius:11px;padding:15px 16px}
+    .opt-label{font-family:var(--mono);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ember);margin-bottom:5px}
+    .opt-title{font-size:14px;font-weight:600;margin-bottom:5px}
+    .opt-desc{font-size:12.5px;color:var(--ash2);line-height:1.55;margin-bottom:10px}
+    .opt-desc strong{color:var(--bone)}
+    .opt-links{display:flex;gap:8px;flex-wrap:wrap}
+    .opt-link{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ember);text-decoration:none;padding:6px 12px;border:1px solid var(--border2);border-radius:7px;background:var(--ember-soft);transition:background .15s}
+    .opt-link:hover{background:rgba(52,211,153,.2)}
+    .dl-code{font-family:var(--display);font-size:18px;color:var(--ember);letter-spacing:.08em;background:var(--stone);border:1px solid var(--border2);border-radius:8px;padding:9px 14px;text-align:center;margin:6px 0 10px;display:block}
+
+    .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--raise);border:1px solid var(--border2);border-radius:10px;padding:12px 20px;font-size:13px;z-index:200;transition:transform .3s;color:var(--ember)}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+
+    #loading{text-align:center;padding:60px 0;color:var(--ash);font-size:14px}
+    @media(max-width:480px){.page{padding:22px 12px 50px}.page-title{font-size:12px}}
+    footer{text-align:center;font-family:var(--mono);font-size:11px;color:var(--ash);line-height:2;padding:24px 0 16px;position:relative;z-index:2}
+    footer a{color:var(--ash);text-decoration:none}footer a:hover{color:var(--bone)}
   </style>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
 </head>
 <body>
 <div class="topbar">
@@ -94,172 +103,191 @@
     <span class="page-sigil" aria-hidden="true">📺</span>
     <div class="page-title">DungeonStream</div>
   </div>
-  <div class="page-sub">Movies, shows, and more — powered by Jellyfin and your Dungeon membership.</div>
+  <div class="page-sub">Movies, shows, and live catalogs — powered by Stremio and your Dungeon membership.</div>
 
-  <div class="cred-card">
-    <div class="cred-card-title">Your DungeonStream Account <span class="badge" id="statusBadge"></span></div>
-    <div id="credPlaceholder" style="font-size:13px;color:var(--ash);line-height:1.7">Your DungeonStream credentials will appear here once the Dungeon Master activates your account.</div>
-    <div id="credActive" style="display:none">
-      <div class="cred-row">
-        <div class="cred-label">Server URL</div>
-        <div class="cred-val-row">
-          <span class="cred-val" id="serverUrl">https://dungeoncast.cc</span>
-          <button class="copy-btn" onclick="copyField('serverUrl',this)">Copy</button>
+  <div id="loading">Loading your access…</div>
+
+  <!-- Active: addon link -->
+  <div id="activeCard" style="display:none">
+
+    <!-- AUTO MODE: we created their Stremio account for them -->
+    <div id="credsBlock" style="display:none">
+      <div class="cred-card">
+        <div class="cred-card-title">Your Stremio Account <span class="badge active" id="statusBadgeAuto">Active</span></div>
+        <div class="cred-card-desc">Everything's already set up — we created your Stremio account and installed the Dungeon on it. Get the app below and <strong style="color:var(--bone)">just log in</strong>.</div>
+
+        <div class="field-lbl">Email</div>
+        <div class="link-row">
+          <input id="stEmail" readonly/>
+          <button class="copy-btn" onclick="copyField('stEmail','Email copied')">Copy</button>
         </div>
-      </div>
-      <div class="cred-row">
-        <div class="cred-label">Username</div>
-        <div class="cred-val-row">
-          <span class="cred-val" id="jellyfinUser">—</span>
-          <button class="copy-btn" onclick="copyField('jellyfinUser',this)">Copy</button>
+
+        <div class="field-lbl">Password</div>
+        <div class="link-row">
+          <input id="stPass" readonly type="password"/>
+          <button class="copy-btn" id="eyeBtn" onclick="togglePass()">Show</button>
+          <button class="copy-btn" onclick="copyField('stPass','Password copied')">Copy</button>
         </div>
+
+        <div class="cred-note">These sign you into the <strong>Stremio app</strong> on any device — Fire TV, phone, tablet, computer. (Your Dungeon login for this site stays separate.)</div>
+
+        <details class="adv">
+          <summary>Advanced — your raw addon link</summary>
+          <div class="link-row" style="margin-top:10px">
+            <input id="advUrl" readonly/>
+            <button class="copy-btn" onclick="copyField('advUrl','Link copied')">Copy</button>
+          </div>
+          <div class="cred-note">Already installed on your account above — you only need this if you use a different Stremio account. It's tied to your membership, so don't share it.</div>
+        </details>
       </div>
-      <div class="cred-row">
-        <div class="cred-label">Password</div>
-        <div class="cred-val-row">
-          <span class="cred-val mono" id="jellyfinPassDisplay">••••••••</span>
-          <button class="show-btn" id="passToggle" onclick="togglePass()">Show</button>
-          <button class="copy-btn" id="copyPassBtn" onclick="copyPass()">Copy</button>
-        </div>
-      </div>
-      <div class="cred-row">
-        <div class="cred-label">Subscription</div>
-        <div class="sub-row">
-          <span class="sub-expiry" id="subExpiry">—</span>
-          <span class="sub-days" id="subDays">—</span>
-        </div>
-      </div>
-      <div class="cred-note">Use your Server URL, username and password to log into any Jellyfin app below. Check the <a href="/guides.html">Guides</a> for device-specific setup help.</div>
     </div>
-    <div id="credNone" style="display:none">
+
+    <!-- MANUAL MODE: they install the addon on their own Stremio account -->
+    <div id="linkBlock">
+    <div class="cred-card">
+      <div class="cred-card-title">Your DungeonStream Link <span class="badge active" id="statusBadge">Active</span></div>
+      <div class="cred-card-desc">This link is your key — it unlocks the Dungeon catalog inside Stremio. It's tied to your account, so <strong style="color:var(--bone)">don't share it</strong>. Install it once and it syncs to all your devices.</div>
+
+      <a id="addonBtn" class="addon-btn" href="#">＋&nbsp; Add to Stremio</a>
+
+      <div class="qr-wrap">
+        <div class="qr-box" id="qrBox"></div>
+        <span class="qr-cap">On a computer? Scan with your phone</span>
+      </div>
+
+      <div class="or">or copy the link</div>
+      <div class="link-row">
+        <input id="addonUrl" readonly placeholder="Loading…"/>
+        <button class="copy-btn" onclick="copyLink()">Copy</button>
+      </div>
+      <div class="cred-note">New to Stremio? Follow the <a href="/stream-setup.html">setup guide</a> — it walks you through installing the app and adding your link in a few minutes.</div>
+    </div>
+    </div><!-- /linkBlock -->
+
+    <div class="section-head">Get the Stremio App</div>
+    <div class="opt-grid">
+      <div class="opt-card">
+        <div class="opt-label">Option A — Easiest</div>
+        <div class="opt-title">Get it from your app store</div>
+        <div class="opt-desc">Search <strong>"Stremio"</strong> in Google Play, the Amazon App Store (Fire TV), or the Windows Store and install it like any app.</div>
+      </div>
+      <div class="opt-card">
+        <div class="opt-label">Option B — TVs without an app store</div>
+        <div class="opt-title">Use the Downloader app</div>
+        <div class="opt-desc">Install the free <strong>Downloader</strong> app on your TV, open it, and enter this code to install Stremio automatically:</div>
+        <span class="dl-code">114029</span>
+        <div class="opt-links"><a class="opt-link" href="https://www.stremio.com/downloads" target="_blank" rel="noopener">Stremio downloads →</a></div>
+      </div>
+      <div class="opt-card">
+        <div class="opt-label">Option C — No install</div>
+        <div class="opt-title">Use Stremio in your browser</div>
+        <div class="opt-desc">Works on any device. iPhone/iPad users: open in Safari and tap <strong>Share → Add to Home Screen</strong>. Full walkthrough in the setup guide.</div>
+        <div class="opt-links">
+          <a class="opt-link" href="https://web.stremio.com" target="_blank" rel="noopener">web.stremio.com →</a>
+          <a class="opt-link" href="/stream-setup.html">📱 iPhone guide →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No active sub -->
+  <div id="noneCard" style="display:none">
+    <div class="cred-card">
+      <div class="cred-card-title">DungeonStream</div>
       <div class="no-account">
-        <p>You don't have an active DungeonStream subscription yet.<br>Redeem 1 credit to get started.</p>
+        <p>You don't have an active DungeonStream subscription yet.<br>Redeem 1 credit to unlock movies, shows, and catalogs.</p>
         <a href="/redeem.html" class="redeem-btn">Redeem a Credit</a>
       </div>
     </div>
   </div>
 
-  <div class="section-head">Get the App</div>
-  <div class="app-grid">
-    <a class="app-card" href="https://play.google.com/store/apps/details?id=org.jellyfin.androidtv" target="_blank" rel="noopener">
-      <div class="app-icon">🌙</div>
-      <div><div class="app-name">Jellyfin <span class="app-tag">Android & Fire TV</span></div><div class="app-platform">Android · Fire TV · Android TV · Roku · Smart TV</div></div>
-    </a>
-    <a class="app-card" href="https://apps.apple.com/app/jellyfin/id1480192618" target="_blank" rel="noopener">
-      <div class="app-icon">🌙</div>
-      <div><div class="app-name">Jellyfin <span class="app-tag">iOS</span></div><div class="app-platform">iPhone · iPad · Apple TV</div></div>
-    </a>
-    <a class="app-card" href="https://dungeoncast.cc" target="_blank" rel="noopener">
-      <div class="app-icon">🌐</div>
-      <div><div class="app-name">Web Browser</div><div class="app-platform">Windows · Mac · Any device</div></div>
-    </a>
-  </div>
-
-  <div class="section-head">What's Included</div>
-  <div class="features">
-    <div class="feat"><div class="feat-icon">🎬</div><div class="feat-title">Movies & Shows</div><div class="feat-desc">Massive library across every genre, updated constantly.</div></div>
-    <div class="feat"><div class="feat-icon">📺</div><div class="feat-title">Any Device</div><div class="feat-desc">iPhone, Android, Windows, Mac, Smart TV, Fire Stick, Apple TV and more.</div></div>
-    <div class="feat"><div class="feat-icon">🔑</div><div class="feat-title">Your Own Account</div><div class="feat-desc">Personal Jellyfin login with dedicated credentials just for you.</div></div>
-    <div class="feat"><div class="feat-icon">💳</div><div class="feat-title">1 Credit / Month</div><div class="feat-desc">1 credit gets you a full month. Credits never expire.</div></div>
-  </div>
-
-  <footer id="pageFooter">
-    <a href="/dashboard.html">Dashboard</a><span class="sep">·</span>
-    <a href="/messages.html">Messages</a><span class="sep">·</span>
-    <a href="/profile.html">My Profile</a><span class="sep">·</span>
-    <a href="/guides.html">Guides</a><span class="sep">·</span>
-    <a href="/redeem.html">Credits</a>
+  <footer>
+    <a href="/dashboard.html">Dashboard</a> &nbsp;·&nbsp; <a href="/guides.html">Guides</a> &nbsp;·&nbsp; <a href="/stream-setup.html">Setup Guide</a>
   </footer>
 </div>
 
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script>
-  let passRaw = '';
+async function logout(){await fetch('/api/member/logout',{method:'POST'});location.href='/login.html';}
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.className='toast show';setTimeout(()=>el.className='toast',3000);}
 
-  function togglePass() {
-    const el = document.getElementById('jellyfinPassDisplay');
-    const btn = document.getElementById('passToggle');
-    if (el.textContent === '••••••••') { el.textContent = passRaw; btn.textContent = 'Hide'; }
-    else { el.textContent = '••••••••'; btn.textContent = 'Show'; }
+function copyLink(){
+  const i=document.getElementById('addonUrl');
+  if(!i.value)return;
+  navigator.clipboard.writeText(i.value).then(()=>toast('Copied! Paste it into Stremio → Add-ons → search bar')).catch(()=>{i.select();});
+}
+function copyField(id,msg){
+  const i=document.getElementById(id);
+  if(!i.value)return;
+  navigator.clipboard.writeText(i.value).then(()=>toast(msg)).catch(()=>{i.select();});
+}
+function togglePass(){
+  const i=document.getElementById('stPass'),b=document.getElementById('eyeBtn');
+  const show=i.type==='password';
+  i.type=show?'text':'password';
+  b.textContent=show?'Hide':'Show';
+}
+function setBadge(el,data){
+  if(!el)return;
+  if(data.lifetime){el.textContent='Lifetime';}
+  else if(data.expires_at){
+    const days=Math.ceil((data.expires_at-Date.now())/86400000);
+    if(days<=0){el.textContent='Expired';el.className='badge expired';}
+    else el.textContent='Active';
   }
+}
 
-  function copyField(id, btn) {
-    const text = document.getElementById(id).textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      const t = btn.textContent; btn.textContent = '✓';
-      setTimeout(() => btn.textContent = t, 2000);
-    });
+(async function init(){
+  const me=await fetch('/api/member/me').then(r=>r.json()).catch(()=>({}));
+  if(!me.authenticated){location.href='/login.html';return;}
+
+  // Fetch the member's StremGate addon link from our server-side endpoint
+  let data=null;
+  try{ data=await fetch('/api/member/stremgate').then(r=>r.ok?r.json():null); }catch(e){}
+
+  document.getElementById('loading').style.display='none';
+
+  if(data&&data.active&&data.stremio_account){
+    // AUTO MODE — we created their Stremio account. Show credentials, not the link.
+    document.getElementById('activeCard').style.display='block';
+    document.getElementById('credsBlock').style.display='block';
+    document.getElementById('linkBlock').style.display='none';
+    document.getElementById('stEmail').value=data.stremio_account.email||'';
+    document.getElementById('stPass').value=data.stremio_account.password||'';
+    const adv=document.getElementById('advUrl');
+    if(data.manifest_url){adv.value=data.manifest_url;}
+    else{adv.placeholder='Link not available right now';}
+    setBadge(document.getElementById('statusBadgeAuto'),data);
+  }else if(data&&data.active&&data.install_url){
+    // MANUAL MODE — they add the addon to their own Stremio account.
+    document.getElementById('activeCard').style.display='block';
+    document.getElementById('addonUrl').value=data.manifest_url||data.install_url;
+    document.getElementById('addonBtn').href=data.install_url;
+    // QR of the https manifest link (opens Stremio web when scanned)
+    try{
+      const qr=qrcode(0,'M');qr.addData(data.manifest_url||data.install_url);qr.make();
+      document.getElementById('qrBox').innerHTML=qr.createSvgTag({cellSize:4,margin:2,scalable:true});
+    }catch(e){}
+    setBadge(document.getElementById('statusBadge'),data);
+  }else if(data&&data.active&&!data.install_url){
+    // Entitled, but the link isn't ready (StremGate unreachable / provision retrying).
+    // Show the active card with a retry rather than the "no subscription" card.
+    document.getElementById('activeCard').style.display='block';
+    const i=document.getElementById('addonUrl');
+    i.value='';i.placeholder='Link not ready — tap Retry';
+    document.getElementById('addonBtn').style.display='none';
+    document.getElementById('qrBox').innerHTML='';
+    const row=document.querySelector('.link-row');
+    const b=document.createElement('button');
+    b.className='copy-btn';b.textContent='Retry';b.style.marginLeft='8px';
+    b.onclick=()=>location.reload();row.appendChild(b);
+  }else{
+    document.getElementById('noneCard').style.display='block';
   }
-
-  function copyPass() {
-    navigator.clipboard.writeText(passRaw).then(() => {
-      const btn = document.getElementById('copyPassBtn');
-      btn.textContent = '✓'; setTimeout(() => btn.textContent = 'Copy', 2000);
-    });
-  }
-
-  fetch('/api/member/me').then(r => r.json()).then(d => {
-    if (!d.authenticated) { window.location.href = '/login.html'; return; }
-    const m = d.member;
-    loadMsgBadge();
-    loadFooter(m?.profile?.tier);
-
-    const badge = document.getElementById('statusBadge');
-    const user = m.jellyfin_user || m.stremio_email;
-    const pass = m.jellyfin_pass || m.stremio_pass;
-
-    if (user) {
-      document.getElementById('credPlaceholder').style.display = 'none';
-      document.getElementById('credActive').style.display = 'block';
-      document.getElementById('jellyfinUser').textContent = user;
-      passRaw = pass || '';
-
-      if (m.stremio_end) {
-        let dt = m.stremio_end;
-        if (!dt.endsWith('Z') && !dt.includes('+')) dt = dt.replace(' ','T') + 'Z';
-        const expDate = new Date(dt);
-        const days = Math.ceil((expDate - new Date()) / 86400000);
-        document.getElementById('subExpiry').textContent = 'Expires ' + expDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-        const dEl = document.getElementById('subDays');
-        dEl.textContent = days > 0 ? days + 'd left' : 'Expired';
-        dEl.style.color = days > 7 ? 'var(--ember)' : days > 0 ? 'var(--amber)' : 'var(--red)';
-        badge.textContent = days > 0 ? 'Active' : 'Expired';
-        badge.style.background = days > 0 ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.1)';
-        badge.style.color = days > 0 ? 'var(--ember)' : 'var(--red)';
-      } else {
-        badge.textContent = 'Active';
-        badge.style.background = 'rgba(52,211,153,0.12)';
-        badge.style.color = 'var(--ember)';
-      }
-    } else {
-      document.getElementById('credNone').style.display = 'block';
-      badge.textContent = 'No Account';
-      badge.style.background = 'rgba(148,163,160,0.1)';
-      badge.style.color = 'var(--ash2)';
-    }
-  }).catch(() => { window.location.href = '/login.html'; });
-
-  function loadFooter(tier) {
-    const footer = document.getElementById('pageFooter');
-    if (!footer || !tier) return;
-    if (['mod','admin','warden'].includes(tier)) {
-      const span = document.createElement('span');
-      let extra = '<span class="sep">·</span><a href="/mod.html" style="color:var(--ember)">Mod Panel</a>';
-      if (['admin','warden'].includes(tier)) extra += '<span class="sep">·</span><a href="/admin.html" style="color:var(--red)">Admin</a>';
-      span.innerHTML = extra; footer.appendChild(span);
-    }
-  }
-
-  async function loadMsgBadge() {
-    const d = await fetch('/api/messages/unread').then(r => r.json()).catch(() => ({count:0}));
-    const b = document.getElementById('msgBadge');
-    if (b && d.count > 0) { b.textContent = d.count; b.style.display = 'block'; }
-  }
-
-  async function logout() {
-    await fetch('/api/member/logout', {method:'POST'});
-    window.location.href = '/login.html';
-  }
+})();
 </script>
-  <script src="/notif-bell.js"></script>
+<script src="/notif-bell.js"></script>
 </body>
 </html>

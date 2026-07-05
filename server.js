@@ -10,6 +10,7 @@ const path       = require('path');
 const fs         = require('fs');
 const crypto     = require('crypto');
 const { sgProvision, sgExtend, sgDisable, sgEnable, sgGetAddonUrl } = require('./stremgate');
+const { stremioProvision, stremioResync } = require('./stremio');
 const STAFF_TIERS = ['family','dealer','mod','admin','warden'];
 
 const app  = express();
@@ -367,6 +368,13 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE demo_requests ADD COLUMN demo_expires DATETIME').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN stremgate_member_id TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN stremgate_username TEXT').run(); } catch(e) {}
+  // Auto-provisioned Stremio account (real api.strem.io account we create for the
+  // member). Deliberately NEW columns — the legacy stremio_email/stremio_pass pair
+  // is tangled with Jellyfin creds and the portal-login fallback, so it must not
+  // be reused for this. stremio_auth_key (added earlier) stores the session key.
+  try { db.prepare('ALTER TABLE members ADD COLUMN stremio_acct_email TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN stremio_acct_pass TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN stremio_acct_attempted INTEGER DEFAULT 0').run(); } catch(e) {}
   try {
     db.prepare(`CREATE TABLE IF NOT EXISTS events (
       id          TEXT PRIMARY KEY,
@@ -3263,6 +3271,34 @@ app.post('/api/invite/:token/complete', async (req, res) => {
         db.prepare('UPDATE members SET stremgate_member_id=?, stremgate_username=? WHERE id=?')
           .run(sgResult.memberId, sgUsername, memberId);
         console.log('[stremgate] Provisioned:', sgUsername, '→', sgResult.memberId);
+
+        // --- Stremio account auto-provisioning ---
+        // Create the member's Stremio account (their email + generated 8-char
+        // password) and install their Dungeon addon, so all they do is log in.
+        // If their email already has a Stremio account, we store nothing and the
+        // DungeonStream page falls back to the manual "Add to Stremio" link.
+        try {
+          db.prepare('UPDATE members SET stremio_acct_attempted=1 WHERE id=?').run(memberId);
+          const manifestUrl = await sgGetAddonUrl(sgResult.memberId);
+          if (manifestUrl) {
+            const st = await stremioProvision({ email, manifestUrl });
+            if (st.ok) {
+              db.prepare('UPDATE members SET stremio_acct_email=?, stremio_acct_pass=?, stremio_auth_key=? WHERE id=?')
+                .run(st.email, st.password, st.authKey, memberId);
+              console.log('[stremio] Account created + addon installed for:', email);
+            } else if (st.existed) {
+              console.log('[stremio] Email already registered on Stremio — manual flow for:', email);
+            } else {
+              console.error('[stremio] Provision failed:', st.error);
+              notify('Stremio provision failed', `Could not create Stremio account for @${screen_name}: ${st.error}`, {
+                kind: 'error', tags: 'warning', priority: 4
+              });
+            }
+          } else {
+            console.error('[stremio] No manifest URL from StremGate — skipped Stremio account for:', email);
+          }
+        } catch(e) { console.error('[stremio] Provision error:', e.message); }
+        // --- end Stremio account auto-provisioning ---
       } else {
         // Non-fatal — log it, notify warden, but don't fail the whole signup
         console.error('[stremgate] Provision failed:', sgResult.error);
