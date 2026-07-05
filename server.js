@@ -1027,6 +1027,74 @@ app.post('/api/member/login', loginLimiter, (req, res) => {
 
 app.post('/api/member/logout', (req, res) => { req.session.destroy(); res.json({ ok: true }); });
 
+// GET the current member's DungeonStream access: addon link + auto-account creds.
+// SELF-HEALING: provisions StremGate (and the Stremio account) on demand if the
+// member is entitled but wasn't provisioned (comped family, pre-migration, etc).
+app.get('/api/member/stremgate', requireMember, async (req, res) => {
+  try {
+    let m = db.prepare('SELECT * FROM members WHERE id=?').get(req.session.member.id);
+    if (!m) return res.status(404).json({ error: 'Member not found' });
+
+    const now = new Date();
+    const end = m.stremio_end ? new Date(String(m.stremio_end).includes('T') ? m.stremio_end : m.stremio_end + 'T00:00:00Z') : null;
+    const prof = db.prepare('SELECT screen_name, tier FROM profiles WHERE member_id=? OR (member_id IS NULL AND LOWER(email)=LOWER(?)) LIMIT 1').get(m.id, m.email);
+    const isStaff = prof && STAFF_TIERS.includes(prof.tier);
+    const active = isStaff || (end ? end > now : false);
+
+    if (!active) return res.json({ active: false });
+
+    // Self-heal StremGate
+    if (!m.stremgate_member_id) {
+      const sgUser = (prof?.screen_name || m.first_name || 'member')
+        .toLowerCase().replace(/[^a-z0-9_]/g, '_');
+      const sgDays = isStaff ? 3650 : 30;
+      const sgRes = await sgProvision(sgUser, mkRandPass() + '!1', sgDays);
+      if (sgRes.ok) {
+        db.prepare('UPDATE members SET stremgate_member_id=?, stremgate_username=? WHERE id=?')
+          .run(sgRes.memberId, sgUser, m.id);
+        m = db.prepare('SELECT * FROM members WHERE id=?').get(m.id);
+        console.log('[member/stremgate] Self-provisioned on demand:', sgUser);
+      } else {
+        console.error('[member/stremgate] On-demand provision failed:', sgRes.error);
+        return res.json({ active: true, install_url: null, error: 'provision_failed' });
+      }
+    }
+
+    const manifest_url = await sgGetAddonUrl(m.stremgate_member_id);
+    if (!manifest_url) return res.json({ active: true, install_url: null });
+
+    // Self-heal the Stremio account — ONCE per member ever (attempted flag),
+    // so collisions don't retry-spam api.strem.io.
+    if (!m.stremio_acct_pass && !m.stremio_acct_attempted) {
+      db.prepare('UPDATE members SET stremio_acct_attempted=1 WHERE id=?').run(m.id);
+      const st = await stremioProvision({ email: m.email, manifestUrl: manifest_url });
+      if (st.ok) {
+        db.prepare('UPDATE members SET stremio_acct_email=?, stremio_acct_pass=?, stremio_auth_key=? WHERE id=?')
+          .run(st.email, st.password, st.authKey, m.id);
+        m = db.prepare('SELECT * FROM members WHERE id=?').get(m.id);
+        console.log('[stremio] Self-provisioned account for:', m.email);
+      } else if (st.existed) {
+        console.log('[stremio] Email already on Stremio — manual flow for:', m.email);
+      }
+    }
+
+    const install_url = manifest_url.replace(/^https?:\/\//, 'stremio://');
+    res.json({
+      active: true,
+      install_url,
+      manifest_url,
+      expires_at: end ? end.getTime() : null,
+      lifetime: !!isStaff,
+      stremio_account: m.stremio_acct_pass
+        ? { email: m.stremio_acct_email, password: m.stremio_acct_pass }
+        : null,
+    });
+  } catch (e) {
+    console.error('[member/stremgate]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/api/member/me', (req, res) => {
   if (!req.session?.member) return res.json({ authenticated: false });
   const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.session.member.id);
