@@ -530,8 +530,8 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
   <div class="sh-err" id="sub-err"></div>
   <input type="hidden" id="sub-mid"/>
   <input type="hidden" id="sub-svc"/>
-  <div class="field"><label>Jellyfin Username</label><input type="text" id="sub-user" style="font-family:var(--mono)"/></div>
-  <div class="field"><label>Password</label><input type="text" id="sub-pass" style="font-family:var(--mono)"/></div>
+  <div class="field"><label id="sub-user-label">Account</label><input type="text" id="sub-user" style="font-family:var(--mono)" readonly/></div>
+  <div class="field"><label id="sub-pass-label">Password</label><input type="text" id="sub-pass" style="font-family:var(--mono)" readonly/></div>
   <div class="frow">
     <div class="field"><label>Start Date</label><input type="date" id="sub-start"/></div>
     <div class="field"><label>End Date</label><input type="date" id="sub-end"/></div>
@@ -1084,8 +1084,17 @@ function openEditSub(id,svc){
   const m=_allMembers.find(x=>x.id===id);if(!m)return;
   $('sub-mid').value=id;$('sub-svc').value=svc;
   $('sh-sub-title').textContent=svc==='stream'?'🌊 DungeonStream Subscription':'📡 DungeonCast Subscription';
-  $('sub-user').value=m.jellyfin_user||m.stremio_email||'';
-  $('sub-pass').value=m.jellyfin_pass||m.stremio_pass||'';
+  if(svc==='stream'){
+    $('sub-user-label').textContent='Stremio Account (web.stremio.com login)';
+    $('sub-pass-label').textContent='Stremio API Key';
+    $('sub-user').value=m.stremio_acct_email||m.stremio_email||'';
+    $('sub-pass').value=m.stremio_auth_key||'';
+  }else{
+    $('sub-user-label').textContent='Jellyfin Username';
+    $('sub-pass-label').textContent='Jellyfin Password';
+    $('sub-user').value=m.jellyfin_user||'';
+    $('sub-pass').value=m.jellyfin_pass||'';
+  }
   const s=svc==='stream'?m.stremio_start:m.iptv_start;
   const e=svc==='stream'?m.stremio_end:m.iptv_end;
   $('sub-start').value=s?s.split('T')[0]:'';
@@ -1097,9 +1106,7 @@ function openEditSub(id,svc){
 async function saveSub(){
   const id=$('sub-mid').value;const svc=$('sub-svc').value;const err=$('sub-err');
   const route=svc==='stream'?`/api/admin/members/${id}/stream`:`/api/admin/members/${id}/cast`;
-  const body=svc==='stream'
-    ?{username:$('sub-user').value.trim(),password:$('sub-pass').value.trim(),start:$('sub-start').value||null,end:$('sub-end').value||null}
-    :{start:$('sub-start').value||null,end:$('sub-end').value||null};
+  const body={start:$('sub-start').value||null,end:$('sub-end').value||null};
   const r=await fetch(route,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({error:e.message}));
   if(r.error){err.textContent=r.error;err.style.display='block';return;}
   closeSheet('sh-sub');loadMembers();
