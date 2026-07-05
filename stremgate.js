@@ -3,7 +3,7 @@
 // at the appropriate points in server.js (see integration-patch.js).
 //
 // Environment variables needed in enterdungeon's .env / Render settings:
-//   STREMGATE_URL      = https://stream.dungeoncast.cc
+//   STREMGATE_URL      = https://stremgate.dungeoncast.cc
 //   STREMGATE_API_KEY  = (same value as ADMIN_API_KEY in StremGate's .env)
 
 const STREMGATE_URL = (process.env.STREMGATE_URL || '').replace(/\/$/, '');
