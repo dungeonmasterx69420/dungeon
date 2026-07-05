@@ -140,4 +140,20 @@ async function sgGetAddonUrl(sgMemberId) {
   }
 }
 
-module.exports = { sgProvision, sgExtend, sgDisable, sgEnable, sgFind, sgGetAddonUrl };
+// Permanently delete a StremGate member by member ID. Destroys their account
+// and addon token entirely — used by the warden purge. Returns { ok }.
+async function sgDelete(sgMemberId) {
+  if (!configured()) return { ok: false };
+  try {
+    const r = await sgFetch(`${STREMGATE_URL}/api/admin/users/${sgMemberId}`, {
+      method: 'DELETE',
+      headers: sgHeaders(),
+    });
+    return { ok: r.ok };
+  } catch (e) {
+    console.error('[stremgate] delete error:', e.message);
+    return { ok: false };
+  }
+}
+
+module.exports = { sgProvision, sgExtend, sgDisable, sgEnable, sgFind, sgGetAddonUrl, sgDelete };

@@ -9,7 +9,7 @@ const FROM_EMAIL = process.env.FROM_EMAIL || 'Dungeon Master <noreply@enterdunge
 const path       = require('path');
 const fs         = require('fs');
 const crypto     = require('crypto');
-const { sgProvision, sgExtend, sgDisable, sgEnable, sgGetAddonUrl } = require('./stremgate');
+const { sgProvision, sgExtend, sgDisable, sgEnable, sgGetAddonUrl, sgDelete } = require('./stremgate');
 const { stremioProvision, stremioResync } = require('./stremio');
 const STAFF_TIERS = ['family','dealer','mod','admin','warden'];
 
@@ -3945,6 +3945,16 @@ app.post('/api/admin/account-purge', requireMod, async (req, res) => {
 
     const members = db.prepare('SELECT * FROM members WHERE LOWER(email)=?').all(email);
     const profiles = db.prepare('SELECT * FROM profiles WHERE LOWER(email)=?').all(email);
+
+    // Permanently delete StremGate accounts (destroys their addon token too)
+    for (const m of members) {
+      if (m.stremgate_member_id) {
+        try {
+          const sgRes = await sgDelete(m.stremgate_member_id);
+          console.log('[account-purge] StremGate delete for member', m.id, '→', sgRes.ok ? 'ok' : 'failed');
+        } catch(e) { console.error('[account-purge] StremGate delete error:', e.message); }
+      }
+    }
 
     // Disable/delete Jellyfin users on both servers (best-effort)
     const jfUsernames = new Set();
