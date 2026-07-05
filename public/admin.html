@@ -1016,7 +1016,10 @@ function renderMembers(members){
           ${!['family','dealer','mod','admin','warden'].includes(tier)?`
           <div class="di full">
             <div class="dl">🌊 DungeonStream — <span style="font-family:var(--mono);text-transform:none;letter-spacing:0;font-size:10px;color:${sAct?'var(--g)':'var(--red)'}">${sAct?(sDays+'d left'):(sEnd?'Expired':'No sub')}</span></div>
-            <div class="dv mono">${esc(m.jellyfin_user||m.stremio_email||'—')}</div>
+            <div class="dv mono">${esc(m.stremio_acct_email||m.stremio_email||'—')}</div>
+            ${m.stremio_acct_pass?`<div class="dv mono" style="font-size:10px;color:var(--t2)">pw: ${esc(m.stremio_acct_pass)}</div>`:''}
+            ${m.stremio_auth_key?`<div class="dv mono" style="font-size:9px;color:var(--t2);word-break:break-all">key: ${esc(m.stremio_auth_key)}</div>`:''}
+            ${m.stremgate_username?`<div class="dv mono" style="font-size:9px;color:var(--t2)">gate: ${esc(m.stremgate_username)}</div>`:''}
             ${sEnd?`<div class="dv sub">${sEnd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>`:''}
           </div>
           ${(cEnd||cAct)?`<div class="di full">
