@@ -1145,7 +1145,7 @@ async function loadRedem(){
   if(!f.length){el.innerHTML='<div class="empty">// no redemptions</div>';return;}
   el.innerHTML=f.map(r=>{
     const bc=r.status==='pending'?'bdg-a':r.status==='fulfilled'?'bdg-g':'bdg-b';
-    const svc=r.service==='stremio'?'🌊 DungeonStream':'📡 DungeonCast';
+    const svc=r.service==='bundle'?'🎟️ Full Access (Stream + Cast)':r.service==='stremio'?'🌊 DungeonStream':'📡 DungeonCast';
     const server=r.service==='stremio'?'dungeoncast.cc':'dungeoncast.cc';
     return `<div class="rc">
       <div class="rc-top">
@@ -1172,11 +1172,11 @@ function setRedemFilter(val,el){
 
 function openFulfill(rid,svc,displayName,screenName,existingUser,existingPass,streamEnd,castEnd){
   $('f-rid').value=rid;$('f-svc').value=svc;
-  $('f-title').textContent=svc==='stremio'?'🌊 Fulfill DungeonStream':'📡 Fulfill DungeonCast';
+  $('f-title').textContent=svc==='bundle'?'🎟️ Fulfill Full Access':svc==='stremio'?'🌊 Fulfill DungeonStream':'📡 Fulfill DungeonCast';
   $('f-sub').textContent='@'+(displayName||screenName);
   $('f-err').style.display='none';
 
-  const relevantEnd = svc==='stremio' ? streamEnd : castEnd;
+  const relevantEnd = svc==='stremio' ? streamEnd : (svc==='bundle' ? (streamEnd||castEnd) : castEnd);
   const endDate = relevantEnd ? new Date(relevantEnd) : null;
   const hasExistingAccount = !!existingUser;
   const hasActiveSub = endDate && endDate > new Date();

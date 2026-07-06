@@ -2073,7 +2073,11 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
   }
   if (member) {
     const now = new Date();
-    if (redemption.service === 'stremio') {
+    // Bundle unlocks both; legacy values unlock just one.
+    const doStream = redemption.service === 'stremio' || redemption.service === 'bundle';
+    const doCast   = redemption.service === 'iptv'    || redemption.service === 'bundle';
+
+    if (doStream) {
       // Stack subscription — add 30 days to existing end date if still active
       const existingEnd = member.stremio_end ? new Date(member.stremio_end) : null;
       const startBase = (existingEnd && existingEnd > now) ? existingEnd : now;
@@ -2081,22 +2085,10 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
       const start = member.stremio_start ? new Date(member.stremio_start) : now;
       db.prepare('UPDATE members SET stremio_email=?, stremio_pass=?, jellyfin_user=?, jellyfin_pass=?, stremio_start=?, stremio_end=?, expired_notified=0, expiry_warned=0, credit_welcome_pending=1 WHERE id=?')
         .run(account_user, account_pass, account_user, account_pass, start.toISOString(), end.toISOString(), member.id);
-      // Create Jellyfin account and grant library access on VPS
-      try {
-        // Create account first
-        const createRes = await jellyfinCreateUser(account_user, account_pass, JELLYFIN_URL, JELLYFIN_API_KEY);
-        console.log('[Jellyfin VPS] Create result:', createRes?.status, JSON.stringify(createRes?.body)?.substring(0,100));
-        // Get user ID (works whether account was just created or already existed)
-        const jfUserId = await jellyfinGetUserId(account_user, JELLYFIN_URL, JELLYFIN_API_KEY);
-        if (jfUserId) {
-          await jellyfinGrantLibraryAccess(jfUserId, ['Movies', 'Shows'], JELLYFIN_URL, JELLYFIN_API_KEY);
-          console.log('[Jellyfin VPS] Granted Movies+Shows to:', account_user);
-        } else {
-          console.log('[Jellyfin VPS] Could not find user after create:', account_user);
-        }
-      } catch(e) { console.error('[Jellyfin VPS] Error:', e.message); }
-    } else {
-      // Update IPTV account
+    }
+
+    if (doCast) {
+      // Update IPTV account record
       const existing = db.prepare('SELECT * FROM iptv_accounts WHERE profile_id=?').get(profile.id);
       if (existing) {
         db.prepare('UPDATE iptv_accounts SET nodecast_user=?, xtream_url=?, xtream_user=?, xtream_pass=?, status=?, updated_at=CURRENT_TIMESTAMP WHERE profile_id=?')
@@ -2111,27 +2103,35 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
       const iptvEnd = new Date(iptvStartBase); iptvEnd.setMonth(iptvEnd.getMonth() + 1);
       db.prepare('UPDATE members SET iptv_start=?, iptv_end=?, cast_notified=0 WHERE id=?')
         .run(now.toISOString(), iptvEnd.toISOString(), member.id);
-
-      // Create Jellyfin account on TV server + grant Live TV access
-      try {
-        const createTVRes = await jellyfinCreateUser(account_user, account_pass, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
-        console.log('[Jellyfin TV] Create result:', createTVRes?.status);
-        const jfTVUserId = await jellyfinGetUserId(account_user, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
-        if (jfTVUserId) {
-          await jellyfinGrantLibraryAccess(jfTVUserId, ['Live TV'], JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
-          console.log('[Jellyfin TV] Granted Live TV to:', account_user);
-        }
-      } catch(e) { console.error('[Jellyfin TV] Error:', e.message); }
     }
+
+    // One Jellyfin account, granted every library the redemption unlocks (single instance).
+    try {
+      const libraries = [];
+      if (doStream) libraries.push('Movies', 'Shows');
+      if (doCast) libraries.push('Live TV');
+      const createRes = await jellyfinCreateUser(account_user, account_pass, JELLYFIN_URL, JELLYFIN_API_KEY);
+      console.log('[Jellyfin] Create result:', createRes?.status, JSON.stringify(createRes?.body)?.substring(0,100));
+      const jfUserId = await jellyfinGetUserId(account_user, JELLYFIN_URL, JELLYFIN_API_KEY);
+      if (jfUserId) {
+        await jellyfinGrantLibraryAccess(jfUserId, libraries, JELLYFIN_URL, JELLYFIN_API_KEY);
+        console.log('[Jellyfin] Granted', libraries.join('+'), 'to:', account_user);
+      } else {
+        console.log('[Jellyfin] Could not find user after create:', account_user);
+      }
+    } catch(e) { console.error('[Jellyfin] Error:', e.message); }
   }
 
   // Send credentials message + email to member
   const warden = db.prepare("SELECT * FROM profiles WHERE tier='warden' LIMIT 1").get();
-  const svcName = redemption.service === 'stremio' ? 'DungeonStream' : 'DungeonCast';
+  const svcName = redemption.service === 'bundle' ? 'DungeonStream + DungeonCast'
+    : (redemption.service === 'stremio' ? 'DungeonStream' : 'DungeonCast');
   const subject = `Your ${svcName} Account is Ready`;
 
   if (warden && profile) {
-    const content = redemption.service === 'stremio'
+    const content = redemption.service === 'bundle'
+      ? `Your ${svcName} access has been set up — one account unlocks both.\n\nServer: https://dungeoncast.cc\nUsername: ${account_user}\nPassword: ${account_pass}\n\nDungeonStream (movies & shows) runs on Stremio, and DungeonCast (live TV) runs on Jellyfin — both use the login above. Check the Guides on your dashboard for setup help on each.${notes ? '\n\nNotes: ' + notes : ''}`
+      : redemption.service === 'stremio'
       ? `Your DungeonStream account has been set up.\n\nServer: https://dungeoncast.cc\nUsername: ${account_user}\nPassword: ${account_pass}\n\nDownload the Jellyfin app and use these credentials to sign in. Check the Guides on your dashboard for device-specific setup help.${notes ? '\n\nNotes: ' + notes : ''}`
       : `Your DungeonCast account has been set up.\n\nServer: https://dungeoncast.cc\nUsername: ${account_user}\nPassword: ${account_pass}\n\nDownload Jellyfin and add the server to get started. Check the Guides on your dashboard for setup help.${notes ? '\n\nNotes: ' + notes : ''}`;
     db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
@@ -2140,7 +2140,20 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
 
   // Send email
   if (member) {
-    const html = emailShell(redemption.service === 'stremio' ? `
+    const html = emailShell(redemption.service === 'bundle' ? `
+      <h2>Your ${svcName} Access is Ready</h2>
+      <div class="rule"></div>
+      <p>One account unlocks both DungeonStream (movies &amp; shows) and DungeonCast (live TV).</p>
+      <div class="box">
+        <div class="row"><span class="lbl">Server URL</span><span class="val">https://dungeoncast.cc</span></div>
+        <div class="row"><span class="lbl">Username</span><span class="val">${account_user}</span></div>
+        <div class="row"><span class="lbl">Password</span><span class="val">${account_pass}</span></div>
+      </div>
+      <p>Use the credentials above to sign in. Follow our setup guide to get both apps connected in a couple of minutes.${notes ? '<br><br>Notes: ' + notes : ''}</p>
+      <a href="https://enterdungeon.cc/welcome" class="btn">Get Started →</a>
+      <div class="rule"></div>
+      <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. — The Dungeon Master</p>
+    ` : redemption.service === 'stremio' ? `
       <h2>Your DungeonStream Account is Ready</h2>
       <div class="rule"></div>
       <p>Your DungeonStream account has been set up and is ready to use.</p>
@@ -2235,8 +2248,8 @@ app.post('/api/webhook/bmac', express.raw({type:'application/json'}), (req, res)
 
     const data = payload.data || payload.response || payload;
     const message = (data.message || data.supporter_message || data.note || '').toLowerCase();
-    const amount = parseFloat(data.amount || data.total_amount || 5);
-    const creditsToAdd = Math.max(1, Math.floor(amount / 5));
+    const amount = parseFloat(data.amount || data.total_amount || 10);
+    const creditsToAdd = Math.max(1, Math.floor(amount / 10));
 
     // Extract @screenname from message
     const match = message.match(/@([a-z0-9_]+)/i);
@@ -2405,23 +2418,107 @@ app.post('/api/admin/credits/:profileId', requireAuth, (req, res) => {
 
 
 // Member redeem credit
-app.post('/api/credits/redeem', requireMember, (req, res) => {
-  const { service } = req.body;
-  if (!['stremio','iptv'].includes(service))
-    return res.status(400).json({ error: 'Invalid service' });
-
+app.post('/api/credits/redeem', requireMember, async (req, res) => {
+  // Universal Dungeon Credit: 1 credit = 1 month of EVERYTHING (DungeonStream + DungeonCast),
+  // provisioned automatically with no admin step.
   const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id)
     || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
   if (!profile) return res.status(403).json({ error: 'Profile required' });
 
-  const ok = deductCredit(profile.id, 1, 'redeemed', `Redeemed for ${service === 'stremio' ? 'DungeonStream' : 'DungeonCast'} subscription`);
+  let member = profile.member_id
+    ? db.prepare('SELECT * FROM members WHERE id=?').get(profile.member_id)
+    : db.prepare('SELECT * FROM members WHERE LOWER(email)=LOWER(?)').get(profile.email);
+  if (!member) return res.status(404).json({ error: 'Member record not found' });
+
+  const ok = deductCredit(profile.id, 1, 'redeemed', 'Redeemed Dungeon Credit — 1 month of full access');
   if (!ok) return res.status(400).json({ error: 'Insufficient credits' });
 
-  // Create redemption record
   const redemptionId = genId();
-  db.prepare('INSERT INTO redemptions (id,profile_id,service,status) VALUES (?,?,?,?)').run(redemptionId, profile.id, service, 'pending');
+  db.prepare('INSERT INTO redemptions (id,profile_id,service,status) VALUES (?,?,?,?)').run(redemptionId, profile.id, 'bundle', 'pending');
 
-  res.json({ ok: true, redemption_id: redemptionId });
+  const now = new Date();
+  // Stack each window: extend from current end if still active, else start now. +1 month.
+  const streamBase = (member.stremio_end && new Date(member.stremio_end) > now) ? new Date(member.stremio_end) : now;
+  const streamEnd = new Date(streamBase); streamEnd.setMonth(streamEnd.getMonth() + 1);
+  const castBase = (member.iptv_end && new Date(member.iptv_end) > now) ? new Date(member.iptv_end) : now;
+  const castEnd = new Date(castBase); castEnd.setMonth(castEnd.getMonth() + 1);
+  const streamStart = member.stremio_start ? new Date(member.stremio_start) : now;
+
+  const uname = (profile.screen_name || member.first_name || 'member').toLowerCase().replace(/[^a-z0-9_]/g, '_');
+
+  // ---- DungeonCast: Jellyfin account + Live TV (single instance) ----
+  let jfUser = member.jellyfin_user, jfPass = member.jellyfin_pass;
+  try {
+    if (!jfUser) { jfUser = uname; jfPass = mkRandPass(); }
+    await jellyfinCreateUser(jfUser, jfPass, JELLYFIN_URL, JELLYFIN_API_KEY);
+    const jfId = await jellyfinGetUserId(jfUser, JELLYFIN_URL, JELLYFIN_API_KEY);
+    if (jfId) await jellyfinGrantLibraryAccess(jfId, ['Movies', 'Shows', 'Live TV'], JELLYFIN_URL, JELLYFIN_API_KEY);
+    console.log('[redeem] Jellyfin provisioned (Movies/Shows/Live TV):', jfUser);
+  } catch(e) { console.error('[redeem] Jellyfin error:', e.message); }
+
+  // Write both subscription windows + Jellyfin creds
+  db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, expired_notified=0, expiry_warned=0, cast_notified=0, credit_welcome_pending=1 WHERE id=?')
+    .run(jfUser, jfPass, jfPass, streamStart.toISOString(), streamEnd.toISOString(), now.toISOString(), castEnd.toISOString(), member.id);
+
+  // ---- DungeonStream: StremGate + Stremio auto-account ----
+  try {
+    member = db.prepare('SELECT * FROM members WHERE id=?').get(member.id);
+    if (!member.stremgate_member_id) {
+      const sgRes = await sgProvision(uname, mkRandPass() + '!1', 30);
+      if (sgRes.ok) {
+        db.prepare('UPDATE members SET stremgate_member_id=?, stremgate_username=? WHERE id=?').run(sgRes.memberId, uname, member.id);
+        member = db.prepare('SELECT * FROM members WHERE id=?').get(member.id);
+        console.log('[redeem] StremGate provisioned:', uname, '→', sgRes.memberId);
+      } else {
+        console.error('[redeem] StremGate provision failed:', sgRes.error);
+      }
+    } else {
+      // Existing member — extend their StremGate access another 30 days
+      await sgExtend(member.stremgate_member_id, 30);
+      await sgEnable(member.stremgate_member_id);
+    }
+    // Stremio auto-account (once per member; manual fallback on email collision)
+    if (member.stremgate_member_id && !member.stremio_acct_pass && !member.stremio_acct_attempted) {
+      db.prepare('UPDATE members SET stremio_acct_attempted=1 WHERE id=?').run(member.id);
+      const manifestUrl = await sgGetAddonUrl(member.stremgate_member_id);
+      if (manifestUrl) {
+        const st = await stremioProvision({ email: member.email, manifestUrl });
+        if (st.ok) {
+          db.prepare('UPDATE members SET stremio_acct_email=?, stremio_acct_pass=?, stremio_auth_key=? WHERE id=?')
+            .run(st.email, st.password, st.authKey, member.id);
+          console.log('[redeem] Stremio account created for:', member.email);
+        } else if (st.existed) {
+          console.log('[redeem] Email already on Stremio — manual flow for:', member.email);
+        }
+      }
+    }
+  } catch(e) { console.error('[redeem] StremGate/Stremio error:', e.message); }
+
+  // Mark redemption fulfilled immediately — no admin step
+  db.prepare("UPDATE redemptions SET status='fulfilled', fulfilled_at=CURRENT_TIMESTAMP, account_user=?, notes=? WHERE id=?")
+    .run(jfUser, 'Auto-provisioned', redemptionId);
+
+  // Notify the member
+  try {
+    const warden = db.prepare("SELECT * FROM profiles WHERE tier='warden' LIMIT 1").get();
+    if (warden) {
+      db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
+        .run(genId(), warden.id, profile.id, 'Your Dungeon access is active 🎟️',
+          'Your Dungeon Credit has been redeemed — you now have a full month of DungeonStream (movies & shows) and DungeonCast (live TV).\n\nOpen your dashboard to find your login details and setup guides for both. Enjoy!');
+    }
+    await sendMail(member.email, 'Your Dungeon access is active', emailShell(`
+      <h2>You're all set 🎟️</h2>
+      <div class="rule"></div>
+      <p>Your Dungeon Credit has been redeemed. You've got a full month of everything:</p>
+      <p>🌊 <strong>DungeonStream</strong> — movies &amp; shows on Stremio<br/>📡 <strong>DungeonCast</strong> — live TV on Jellyfin</p>
+      <p>Head to your dashboard for your login details and quick setup guides for both apps.</p>
+      <a href="https://enterdungeon.cc/welcome" class="btn">Get Started →</a>
+      <div class="rule"></div>
+      <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. — The Dungeon Master</p>
+    `)).catch(()=>{});
+  } catch(e) { console.error('[redeem] notify error:', e.message); }
+
+  res.json({ ok: true, redemption_id: redemptionId, auto: true });
 });
 
 // Admin: redeem credit for subscription (deducts 1 credit)

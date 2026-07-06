@@ -119,32 +119,20 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
       <div class="balance-num" id="balanceNum">—</div>
       <div class="balance-sub">credits available</div>
     </div>
-    <a href="https://buymeacoffee.com/enterdungeon/extras" target="_blank" rel="noopener" class="buy-link">☕ Buy Credits — $5</a>
+    <a href="https://buymeacoffee.com/enterdungeon/extras" target="_blank" rel="noopener" class="buy-link">☕ Buy Credits — $10</a>
   </div>
 
-  <!-- Service cards -->
+  <!-- Bundle card -->
   <div class="services">
-    <!-- DungeonStream -->
     <div class="service-card">
-      <div class="service-icon">📺</div>
-      <div class="service-name">DungeonStream</div>
-      <div class="service-desc">Movies, shows, and more. Powered by Jellyfin — stream on any device with your personal account.</div>
-      <div class="service-status none" id="stremioStatus">Checking…</div>
-      <button class="redeem-btn" id="stremioRedeemBtn" onclick="requestRedeem('stremio')" disabled>Redeem 1 Credit</button>
-      <div style="margin-top:8px">
-        <a href="/dungeonstream.html" style="font-size:12px;color:var(--muted);text-decoration:none">View details →</a>
-      </div>
-    </div>
-
-    <!-- DungeonCast -->
-    <div class="service-card">
-      <div class="service-icon">📡</div>
-      <div class="service-name">DungeonCast</div>
-      <div class="service-desc">Live TV, sports, and PPV events. Stream hundreds of channels on any device.</div>
-      <div class="service-status none" id="iptvStatus">Checking…</div>
-      <button class="redeem-btn" id="iptvRedeemBtn" onclick="requestRedeem('iptv')" disabled>Redeem 1 Credit</button>
-      <div style="margin-top:8px">
-        <a href="/dungeoncast.html" style="font-size:12px;color:var(--muted);text-decoration:none">View details →</a>
+      <div class="service-icon">🎟️</div>
+      <div class="service-name">Full Access</div>
+      <div class="service-desc">One credit unlocks everything for a month — DungeonStream (movies &amp; shows) and DungeonCast (live TV), together.</div>
+      <div class="service-status none" id="bundleStatus">Checking…</div>
+      <button class="redeem-btn" id="bundleRedeemBtn" onclick="requestRedeem('bundle')" disabled>Redeem 1 Credit</button>
+      <div style="margin-top:8px;display:flex;gap:14px">
+        <a href="/dungeonstream.html" style="font-size:12px;color:var(--muted);text-decoration:none">DungeonStream →</a>
+        <a href="/dungeoncast.html" style="font-size:12px;color:var(--muted);text-decoration:none">DungeonCast →</a>
       </div>
     </div>
   </div>
@@ -175,13 +163,13 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   <!-- Buy credits -->
   <div class="buy-section">
     <div class="buy-title">Need More Credits?</div>
-    <div class="buy-sub">Buy credits for $5 each, or earn free credits by referring friends to Dungeon.</div>
+    <div class="buy-sub">Buy credits for $10 each, or earn free credits by referring friends to Dungeon.</div>
     <div class="buy-options">
       <a href="https://buymeacoffee.com/enterdungeon/extras" target="_blank" rel="noopener" class="buy-option">
         <div class="buy-option-icon">☕</div>
         <div class="buy-option-title">Buy a Credit</div>
         <div class="buy-option-desc">Pay via Buy Me a Coffee. Include your @username in the message.</div>
-        <div class="buy-option-price">$5 / credit</div>
+        <div class="buy-option-price">$10 / credit</div>
       </a>
       <a href="/credits.html" class="buy-option">
         <div class="buy-option-icon">👥</div>
@@ -221,11 +209,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 <div class="veil" id="successVeil">
   <div class="modal">
     <div class="modal-icon">✅</div>
-    <div class="modal-title">Request Sent!</div>
-    <div class="modal-sub">1 credit has been deducted. The Dungeon Master has been notified and will set up your account within 24 hours. Keep an eye on your Dungeon messages.</div>
+    <div class="modal-title">You're all set!</div>
+    <div class="modal-sub">1 credit redeemed — your DungeonStream and DungeonCast access is active right now. Head to your dashboard for your login details and setup guides.</div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-      <a href="/messages.html" class="modal-btn">Go to Messages</a>
-      <a href="/dashboard.html" class="modal-btn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border2)">Dashboard</a>
+      <a href="/dashboard.html" class="modal-btn">Go to Dashboard</a>
+      <a href="/dungeonstream.html" class="modal-btn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border2)">DungeonStream</a>
     </div>
   </div>
 </div>
@@ -242,8 +230,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     loadFooter(d.member?.profile?.tier);
     loadMsgBadge();
     loadBalance();
-    loadStremioStatus(d.member);
-    loadIptvStatus(d.member);
+    loadBundleStatus(d.member);
   }).catch(()=>{});
 
   async function loadBalance(){
@@ -253,68 +240,50 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     updateRedeemBtns();
   }
 
-  function loadStremioStatus(member){
-    const statusEl = document.getElementById('stremioStatus');
-    const btn = document.getElementById('stremioRedeemBtn');
-    if(member && member.stremio_end){
-      let dt = member.stremio_end;
-      if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';
-      const days = Math.ceil((new Date(dt)-new Date())/86400000);
-      if(days > 5){
-        statusEl.textContent = 'Active — ' + days + 'd left';
-        statusEl.className = 'service-status active';
-        btn.textContent = 'Renew (Redeem 1 Credit)';
-      } else if(days > 0){
-        statusEl.textContent = 'Expiring — ' + days + 'd left';
-        statusEl.className = 'service-status expiring';
-        btn.textContent = 'Renew Now';
-      } else {
-        statusEl.textContent = 'Expired';
-        statusEl.className = 'service-status expired';
-      }
-    } else {
-      statusEl.textContent = 'No Account';
-      statusEl.className = 'service-status none';
-    }
-    updateRedeemBtns();
+  function daysLeft(dt){
+    if(!dt) return null;
+    if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';
+    return Math.ceil((new Date(dt)-new Date())/86400000);
   }
 
-  function loadIptvStatus(member){
-    const statusEl = document.getElementById('iptvStatus');
-    const btn = document.getElementById('iptvRedeemBtn');
-    if(member && member.iptv_end){
-      let dt = member.iptv_end;
-      if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';
-      const days = Math.ceil((new Date(dt)-new Date())/86400000);
-      if(days > 5){
-        statusEl.textContent = 'Active — ' + days + 'd left';
-        statusEl.className = 'service-status active';
-        btn.textContent = 'Renew (Redeem 1 Credit)';
-      } else if(days > 0){
-        statusEl.textContent = 'Expiring — ' + days + 'd left';
-        statusEl.className = 'service-status expiring';
-        btn.textContent = 'Renew Now';
-      } else {
-        statusEl.textContent = 'Expired';
-        statusEl.className = 'service-status expired';
-      }
-    } else {
-      statusEl.textContent = 'No Account';
+  function loadBundleStatus(member){
+    const statusEl = document.getElementById('bundleStatus');
+    const btn = document.getElementById('bundleRedeemBtn');
+    // Both services move together under the bundle; show the soonest-expiring of the two.
+    const sd = member ? daysLeft(member.stremio_end) : null;
+    const id = member ? daysLeft(member.iptv_end) : null;
+    const have = [sd, id].filter(v => v !== null);
+    const days = have.length ? Math.min(...have) : null;
+
+    if(days === null){
+      statusEl.textContent = 'No Access';
       statusEl.className = 'service-status none';
+      btn.textContent = 'Redeem 1 Credit';
+    } else if(days > 5){
+      statusEl.textContent = 'Active — ' + days + 'd left';
+      statusEl.className = 'service-status active';
+      btn.textContent = 'Renew (Redeem 1 Credit)';
+    } else if(days > 0){
+      statusEl.textContent = 'Expiring — ' + days + 'd left';
+      statusEl.className = 'service-status expiring';
+      btn.textContent = 'Renew Now';
+    } else {
+      statusEl.textContent = 'Expired';
+      statusEl.className = 'service-status expired';
+      btn.textContent = 'Redeem 1 Credit';
     }
     updateRedeemBtns();
   }
 
   function updateRedeemBtns(){
     const hasCredits = myBalance >= 1;
-    document.getElementById('stremioRedeemBtn').disabled = !hasCredits;
-    document.getElementById('iptvRedeemBtn').disabled = !hasCredits;
+    document.getElementById('bundleRedeemBtn').disabled = !hasCredits;
   }
 
   function requestRedeem(service){
-    pendingService = service;
-    document.getElementById('confirmIcon').textContent = service === 'stremio' ? '📺' : '📡';
-    document.getElementById('confirmTitle').textContent = service === 'stremio' ? 'Redeem for DungeonStream?' : 'Redeem for DungeonCast?';
+    pendingService = 'bundle';
+    document.getElementById('confirmIcon').textContent = '🎟️';
+    document.getElementById('confirmTitle').textContent = 'Redeem 1 credit for full access?';
     document.getElementById('confirmVeil').classList.add('open');
   }
 
@@ -333,19 +302,26 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     const profile = myMember?.profile;
     const service = pendingService;
 
-    // First deduct the credit
+    // Redeem — provisions everything automatically
     const res = await fetch('/api/credits/redeem', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ service })
-    }).catch(()=>null);
+    }).then(r=>r.json()).catch(()=>null);
 
     closeConfirm();
+    btn.disabled = false; btn.textContent = 'Redeem 1 Credit';
+
+    if(!res || !res.ok){
+      alert(res && res.error ? res.error : 'Something went wrong. Your credit was not used — please try again.');
+      return;
+    }
+
     document.getElementById('successVeil').classList.add('open');
     myBalance--;
     document.getElementById('balanceNum').textContent = myBalance;
-    updateRedeemBtns();
-    btn.disabled = false; btn.textContent = 'Redeem 1 Credit';
+    // Reload member status so the card reflects the new active window
+    fetch('/api/member/me').then(r=>r.json()).then(d=>{ myMember=d.member; loadBundleStatus(d.member); }).catch(()=>updateRedeemBtns());
   }
 
   function loadFooter(tier){
