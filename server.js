@@ -3788,7 +3788,9 @@ app.post('/api/member/change-password', requireMember, async (req, res) => {
   try {
     const { current_password, new_password } = req.body;
     if (!current_password || !new_password) return res.status(400).json({ error: 'Both passwords required' });
-    if (new_password.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    if (new_password.length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters' });
+    if (!/[A-Z]/.test(new_password)) return res.status(400).json({ error: 'New password must include at least one uppercase letter' });
+    if (!/[^a-zA-Z0-9]/.test(new_password)) return res.status(400).json({ error: 'New password must include at least one special character' });
 
     const member = db.prepare('SELECT * FROM members WHERE id=?').get(req.session.member.id);
     if (!member) return res.status(404).json({ error: 'Member not found' });
@@ -3856,7 +3858,9 @@ app.post('/api/auth/reset-password', async (req, res) => {
   try {
     const { token, new_password } = req.body;
     if (!token || !new_password) return res.status(400).json({ error: 'Token and password required' });
-    if (new_password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (new_password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    if (!/[A-Z]/.test(new_password)) return res.status(400).json({ error: 'Password must include at least one uppercase letter' });
+    if (!/[^a-zA-Z0-9]/.test(new_password)) return res.status(400).json({ error: 'Password must include at least one special character' });
 
     const member = db.prepare('SELECT * FROM members WHERE reset_token=?').get(token);
     if (!member) return res.status(400).json({ error: 'Invalid or expired reset link' });
