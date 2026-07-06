@@ -82,8 +82,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 <body>
 <div class="topbar"><a href="#" class="logo">⬡ Dungeon</a></div>
 <div class="prog-wrap">
-  <div class="prog-lbl" id="prog-lbl">Step 1 of 3</div>
-  <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:33%"></div></div>
+  <div class="prog-lbl" id="prog-lbl">Step 1 of 4</div>
+  <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:25%"></div></div>
 </div>
 
 <div class="page">
@@ -94,48 +94,53 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
     <div class="step-title">You made it. 🏰</div>
     <div class="dm-card">
       <div class="dm-header">
-        <div id="dm-av"><div class="dm-avatar-fallback" id="dm-fallback">W</div></div>
+        <div id="dm-av"><div class="dm-avatar-fallback" id="dm-fallback">D</div></div>
         <div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             <span class="dm-badge">⚔ Dungeon Master</span>
           </div>
-          <div class="dm-handle">@one</div>
+          <div class="dm-handle">@dungeon_master</div>
         </div>
       </div>
       <div class="dm-body">
         <p>Welcome to <strong>Dungeon</strong> — a private, invite-only streaming service. You're here because someone trusted you with an invite, and that means something. We keep this small and tight-knit on purpose.</p>
-        <p>Inside you'll find <span class="hl">movies, TV shows, and live TV</span> — all running on our own <strong>Jellyfin</strong> servers. Jellyfin is open-source media software, kind of like a self-hosted Netflix. It's fast, clean, and yours to use.</p>
+        <p>You get <span class="hl">two things</span>, and they use two different apps:</p>
+        <p>🌊 <strong>DungeonStream</strong> — movies &amp; TV shows, on <strong>Stremio</strong>. We've already made your account and loaded it up. Just install the app and sign in.</p>
+        <p>📡 <strong>DungeonCast</strong> — live TV channels, on <strong>Jellyfin</strong>. Same idea: install the app, sign in with the account we made you.</p>
         <p style="color:var(--g);font-weight:600">— The Dungeon Master</p>
       </div>
     </div>
-    
+    <div class="pill-grid">
+      <div class="pill"><div class="pill-icon">🌊</div><div class="pill-title">DungeonStream</div><div class="pill-sub">Movies &amp; shows via Stremio</div></div>
+      <div class="pill"><div class="pill-icon">📡</div><div class="pill-title">DungeonCast</div><div class="pill-sub">Live TV via Jellyfin</div></div>
+    </div>
     <div class="nav-btns"><button class="btn btn-g" onclick="goStep(2)">Continue →</button></div>
   </div>
 
-  <!-- Step 2: Download -->
+  <!-- Step 2: DungeonStream (Stremio) -->
   <div class="step" id="step2">
-    <div class="step-eyebrow">Step 1 — Get the App</div>
-    <div class="step-title">Download Jellyfin</div>
-    <div class="step-sub">Jellyfin is the recommended app. Download it for your phone — you can cast from your phone to any TV.</div>
+    <div class="step-eyebrow">🌊 DungeonStream — Movies &amp; Shows</div>
+    <div class="step-title">Set up Stremio</div>
+    <div class="step-sub">DungeonStream runs on Stremio. We already created your Stremio account and installed the Dungeon on it — you just need the app and your login.</div>
 
-    <div class="app-links" id="app-links" style="margin-bottom:14px">
-      <a href="https://apps.apple.com/app/jellyfin-mobile/id1480192618" target="_blank" class="app-link">
-        <div class="app-link-icon">📱</div>
-        <div><div class="app-link-name">Jellyfin for iPhone & iPad</div><div class="app-link-sub">App Store</div></div>
-        <div class="app-link-arrow">↗</div>
-      </a>
-      <a href="https://play.google.com/store/apps/details?id=org.jellyfin.mobile" target="_blank" class="app-link">
-        <div class="app-link-icon">📱</div>
-        <div><div class="app-link-name">Jellyfin for Android</div><div class="app-link-sub">Google Play Store</div></div>
-        <div class="app-link-arrow">↗</div>
-      </a>
+    <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">1. Pick your device to get the app:</div>
+    <div class="device-grid">
+      <div class="dv-btn" data-d="st-iphone" onclick="selStream('st-iphone')"><div class="dv-icon">📱</div><div><div class="dv-name">iPhone / iPad</div><div class="dv-sub">App Store</div></div></div>
+      <div class="dv-btn" data-d="st-android" onclick="selStream('st-android')"><div class="dv-icon">🤖</div><div><div class="dv-name">Android</div><div class="dv-sub">Play Store</div></div></div>
+      <div class="dv-btn" data-d="st-tv" onclick="selStream('st-tv')"><div class="dv-icon">📺</div><div><div class="dv-name">TV / Fire Stick</div><div class="dv-sub">Downloader app</div></div></div>
+      <div class="dv-btn" data-d="st-browser" onclick="selStream('st-browser')"><div class="dv-icon">🌐</div><div><div class="dv-name">Computer / Web</div><div class="dv-sub">No download</div></div></div>
     </div>
+    <div id="st-app-links" style="display:none;margin-bottom:16px"></div>
 
+    <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">2. Sign in with your account:</div>
     <div class="notice">
-      <strong>On a TV?</strong> Download Jellyfin directly from your TV's app store — it's available on Fire TV, Android TV, Apple TV and Roku. Or cast from your phone using the cast icon inside the Jellyfin app. No setup needed.<br/><br/>
-      <strong>Quick Connect</strong> — already signed in on your phone? On your TV open Jellyfin → Quick Connect, then enter the code shown into the Jellyfin app on your phone under Settings → Quick Connect. No need to type your password on the TV.<br/><br/>
-      <strong>Other clients</strong> — Swiftfin (iOS/tvOS) and Streamyfin (iOS/Android) are alternatives if Jellyfin doesn't work for you.
+      Open the Stremio app, tap <strong>Log in</strong>, and enter the email &amp; password shown on your <strong>DungeonStream page</strong>. That's it — the Dungeon's already installed, so your movies and shows appear right away.
     </div>
+    <a href="/dungeonstream.html" class="app-link" style="margin-bottom:0">
+      <div class="app-link-icon">🔑</div>
+      <div><div class="app-link-name">Open my DungeonStream page</div><div class="app-link-sub">Get your Stremio login here</div></div>
+      <div class="app-link-arrow">→</div>
+    </a>
 
     <div class="nav-btns">
       <button class="btn btn-b" onclick="goStep(1)">← Back</button>
@@ -143,40 +148,54 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
     </div>
   </div>
 
-  <!-- Step 3: Get credentials -->
+  <!-- Step 3: DungeonCast (Jellyfin) -->
   <div class="step" id="step3">
-    <div class="step-eyebrow">Step 2 — Get Access</div>
-    <div class="step-title">Redeem your credit</div>
-    <div class="step-sub">The app is downloaded — now you need your streaming credentials. Here's how to get them.</div>
+    <div class="step-eyebrow">📡 DungeonCast — Live TV</div>
+    <div class="step-title">Set up Jellyfin</div>
+    <div class="step-sub">DungeonCast is live TV, and it runs on Jellyfin. Pick your device to get the app, then sign in with the account we made you.</div>
 
-    <div class="redeem-card">
-      <div class="redeem-step">
-        <div class="rs-num">1</div>
-        <div class="rs-text">Go to your <strong>Dashboard</strong> and find the <strong>Credits</strong> section.</div>
-      </div>
-      <div class="redeem-step">
-        <div class="rs-num">2</div>
-        <div class="rs-text">Tap <strong>Redeem</strong> and select <strong>DungeonStream</strong> for movies & shows, or <strong>DungeonCast</strong> for live TV.</div>
-      </div>
-      <div class="redeem-step">
-        <div class="rs-num">3</div>
-        <div class="rs-text">The Dungeon Master will set up your account and <strong>email you your credentials</strong>. This is usually done within a few hours.</div>
-      </div>
-      <div class="redeem-step">
-        <div class="rs-num">4</div>
-        <div class="rs-text">Once you have your credentials, <strong>open the app you downloaded</strong>, add <strong>https://dungeoncast.cc</strong> as the server, and sign in.</div>
-      </div>
+    <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">1. Pick your device:</div>
+    <div class="device-grid">
+      <div class="dv-btn" data-d="iphone" onclick="selDev('iphone')"><div class="dv-icon">📱</div><div><div class="dv-name">iPhone / iPad</div><div class="dv-sub">App Store</div></div></div>
+      <div class="dv-btn" data-d="android" onclick="selDev('android')"><div class="dv-icon">🤖</div><div><div class="dv-name">Android</div><div class="dv-sub">Play Store</div></div></div>
+      <div class="dv-btn" data-d="firetv" onclick="selDev('firetv')"><div class="dv-icon">🔥</div><div><div class="dv-name">Fire TV / Stick</div><div class="dv-sub">Amazon Appstore</div></div></div>
+      <div class="dv-btn" data-d="androidtv" onclick="selDev('androidtv')"><div class="dv-icon">📺</div><div><div class="dv-name">Android / Google TV</div><div class="dv-sub">Play Store</div></div></div>
+      <div class="dv-btn" data-d="appletv" onclick="selDev('appletv')"><div class="dv-icon">🍎</div><div><div class="dv-name">Apple TV</div><div class="dv-sub">App Store</div></div></div>
+      <div class="dv-btn" data-d="roku" onclick="selDev('roku')"><div class="dv-icon">🟣</div><div><div class="dv-name">Roku</div><div class="dv-sub">Channel Store</div></div></div>
+      <div class="dv-btn" data-d="browser" onclick="selDev('browser')"><div class="dv-icon">🌐</div><div><div class="dv-name">Computer / Web</div><div class="dv-sub">No download</div></div></div>
     </div>
+    <div id="app-links" style="display:none;margin-bottom:16px"></div>
 
+    <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">2. Sign in:</div>
     <div class="notice">
-      <strong>No credits yet?</strong> Contact support from your dashboard and the Dungeon Master will sort you out.
+      Open the app, add <strong>https://dungeoncast.cc</strong> as the server, and sign in with the <strong>DungeonCast username &amp; password</strong> shown on your dashboard.<br/><br/>
+      <strong>Quick Connect</strong> — on a TV, open Jellyfin → Quick Connect and enter the code into the app on your phone under Settings → Quick Connect. No typing passwords on the TV.
     </div>
 
     <div class="nav-btns">
       <button class="btn btn-b" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-g" onclick="goStep(4)">Next →</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Done -->
+  <div class="step" id="step4">
+    <div class="step-eyebrow">You're all set</div>
+    <div class="step-title">Welcome in. 🎉</div>
+    <div class="step-sub">Both apps installed and signed in? You're ready. Your dashboard has your credentials, credits, and everything else any time you need it.</div>
+
+    <div class="redeem-card">
+      <div class="redeem-step"><div class="rs-num">🌊</div><div class="rs-text"><strong>DungeonStream</strong> — open Stremio, your movies &amp; shows are there.</div></div>
+      <div class="redeem-step"><div class="rs-num">📡</div><div class="rs-text"><strong>DungeonCast</strong> — open Jellyfin, your live TV is there.</div></div>
+      <div class="redeem-step"><div class="rs-num">💬</div><div class="rs-text">Need help? Hit <strong>Support</strong> from your dashboard and the Dungeon Master will sort you out.</div></div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn btn-b" onclick="goStep(3)">← Back</button>
       <button class="btn btn-g" onclick="finish()">Go to Dashboard →</button>
     </div>
   </div>
+
 
 </div>
 
@@ -233,13 +252,43 @@ const APPS = {
   },
 };
 
+const TOTAL_STEPS = 4;
 function goStep(n) {
   document.getElementById('step'+currentStep).classList.remove('on');
   currentStep = n;
   document.getElementById('step'+n).classList.add('on');
-  document.getElementById('prog-fill').style.width = ((n/3)*100)+'%';
-  document.getElementById('prog-lbl').textContent = n < 3 ? 'Step '+n+' of 3' : 'Almost done';
+  document.getElementById('prog-fill').style.width = ((n/TOTAL_STEPS)*100)+'%';
+  document.getElementById('prog-lbl').textContent = n < TOTAL_STEPS ? 'Step '+n+' of '+TOTAL_STEPS : 'Almost done';
   window.scrollTo(0,0);
+}
+
+// Stremio apps for DungeonStream
+const STREMIO_APPS = {
+  'st-iphone': [
+    {icon:'📱',name:'iPhone Setup Guide',sub:'Add Stremio to your Home Screen — full walkthrough',url:'/stream-setup.html',internal:true},
+  ],
+  'st-android': [
+    {icon:'🎬',name:'Stremio for Android',sub:'Google Play Store',url:'https://play.google.com/store/apps/details?id=com.stremio.one'},
+  ],
+  'st-tv': [
+    {icon:'🎬',name:'Stremio downloads',sub:'Fire TV, Android TV — see all platforms',url:'https://www.stremio.com/downloads'},
+  ],
+  'st-browser': [
+    {icon:'🌐',name:'Open web.stremio.com',sub:'No download — any browser',url:'https://web.stremio.com'},
+  ],
+};
+function selStream(key) {
+  document.querySelectorAll('#step2 .dv-btn').forEach(b=>b.classList.toggle('on',b.dataset.d===key));
+  const apps = STREMIO_APPS[key];
+  const box = document.getElementById('st-app-links');
+  box.style.display='block';
+  box.innerHTML = apps.map(a=>
+    `<a href="${a.url}"${a.internal?'':' target="_blank"'} class="app-link">
+      <div class="app-link-icon">${a.icon}</div>
+      <div><div class="app-link-name">${a.name}</div><div class="app-link-sub">${a.sub}</div></div>
+      <div class="app-link-arrow">${a.internal?'→':'↗'}</div>
+    </a>`
+  ).join('');
 }
 
 function selDev(key) {
@@ -266,7 +315,6 @@ function selDev(key) {
     </div>`;
   }
   document.getElementById('app-links').innerHTML = html;
-  document.getElementById('s2-next').disabled = false;
 }
 
 async function finish() {
