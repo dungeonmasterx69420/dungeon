@@ -1683,35 +1683,32 @@ app.post('/api/admin/iptv-dates/:memberId', requireMod, (req, res) => {
 // ── Demo Requests ─────────────────────────────────────────────────────────────
 
 app.post('/api/demo-request', requireMember, (req, res) => {
-  const { service } = req.body;
-  if (!['stream','cast'].includes(service)) return res.status(400).json({ error: 'Invalid service' });
+  // Universal demo: 24 hours of both DungeonStream + DungeonCast. Optional note
+  // lets the member say what they'd like to try (a channel, show, or movie).
+  const note = (req.body.note || '').toString().trim().slice(0, 500) || null;
 
   const profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(req.session.member.id)
     || db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(req.session.member.email);
   if (!profile) return res.status(403).json({ error: 'Profile required' });
 
-  // Check for recent pending request
-  const recent = db.prepare("SELECT * FROM demo_requests WHERE profile_id=? AND service=? AND status='pending' AND datetime(created_at) > datetime('now','-24 hours')").get(profile.id, service);
-  if (recent) return res.status(400).json({ error: 'You already have a pending demo request for this service.' });
+  // Check for recent pending request (any demo, since it's universal now)
+  const recent = db.prepare("SELECT * FROM demo_requests WHERE profile_id=? AND status='pending' AND datetime(created_at) > datetime('now','-24 hours')").get(profile.id);
+  if (recent) return res.status(400).json({ error: 'You already have a pending demo request.' });
 
-  db.prepare('INSERT INTO demo_requests (id,profile_id,service,email,screen_name) VALUES (?,?,?,?,?)')
-    .run(genId(), profile.id, service, req.session.member.email, profile.screen_name);
+  db.prepare('INSERT INTO demo_requests (id,profile_id,service,email,screen_name,notes) VALUES (?,?,?,?,?,?)')
+    .run(genId(), profile.id, 'bundle', req.session.member.email, profile.screen_name, note);
 
   // Notify warden
   const warden = db.prepare("SELECT * FROM profiles WHERE tier='warden' LIMIT 1").get();
   if (warden) {
-    const svcName = service === 'stream' ? 'DungeonStream' : 'DungeonCast';
     db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
-      .run(genId(), profile.id, warden.id, `Demo Request — ${svcName}`,
-        `@${profile.screen_name} has requested a 24-hour ${svcName} demo.\n\nEmail: ${req.session.member.email}\n\nReview in the Admin Panel → Demos tab.`);
+      .run(genId(), profile.id, warden.id, 'Demo Request',
+        `@${profile.screen_name} has requested a 24-hour demo (DungeonStream + DungeonCast).\n\nEmail: ${req.session.member.email}${note ? '\n\nWants to try: ' + note : ''}\n\nReview in the Admin Panel → Demos tab.`);
   }
-  {
-    const svcName = service === 'stream' ? 'DungeonStream' : 'DungeonCast';
-    notify('New demo request', `@${profile.screen_name} wants a ${svcName} demo`, {
-      kind: 'demo', tags: 'movie_camera', priority: 3,
-      link: '/admin.html', click: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/admin.html'
-    });
-  }
+  notify('New demo request', `@${profile.screen_name} wants a demo${note ? ': ' + note : ''}`, {
+    kind: 'demo', tags: 'movie_camera', priority: 3,
+    link: '/admin.html', click: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/admin.html'
+  });
 
   res.json({ ok: true });
 });
@@ -4139,8 +4136,8 @@ app.post('/api/admin/demos/:id/fulfill', requireMod, async (req, res) => {
 
     const jfId = await jellyfinGetUserId(username, JELLYFIN_URL, JELLYFIN_API_KEY);
     if (jfId) {
-      await jellyfinGrantLibraryAccess(jfId, ['Movies', 'Shows'], JELLYFIN_URL, JELLYFIN_API_KEY);
-      console.log('[demo] Granted access to:', username);
+      await jellyfinGrantLibraryAccess(jfId, ['Movies', 'Shows', 'Live TV'], JELLYFIN_URL, JELLYFIN_API_KEY);
+      console.log('[demo] Granted full access (Movies/Shows/Live TV) to:', username);
     }
 
     db.prepare("UPDATE demo_requests SET status='fulfilled', fulfilled_at=CURRENT_TIMESTAMP, demo_user=?, demo_pass=?, demo_expires=? WHERE id=?")

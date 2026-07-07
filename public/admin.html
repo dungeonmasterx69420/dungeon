@@ -1349,7 +1349,7 @@ async function loadDemos() {
       <div class="rc-top">
         <div>
           <div class="rc-name">${esc(d.email||d.screen_name||'Unknown')} <span class="bdg ${bc}">${d.status}</span></div>
-          <div class="rc-meta">${d.service||'DungeonStream'} · ${fmtDate(d.created_at)}</div>
+          <div class="rc-meta">${d.service==='bundle'?'🎟️ Full Access':d.service==='cast'?'DungeonCast':d.service==='stream'?'DungeonStream':(d.service||'Demo')} · ${fmtDate(d.created_at)}</div>
           ${d.notes?`<div style="font-size:11px;color:var(--t2);margin-top:4px">${esc(d.notes)}</div>`:''}
         </div>
         ${d.status==='pending'?`<button class="btn btn-g" onclick="openDemo('${d.id}','${esc(d.email||d.screen_name||'')}')">Fulfill →</button>`:''}
