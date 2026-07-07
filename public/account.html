@@ -3,29 +3,27 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-<title>Dungeon · Setup Profile</title>
+<title>Dungeon · Account</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{--bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--s3:#1a2422;--bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);--g:#34d399;--gb:rgba(52,211,153,.08);--txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;--red:#f87171;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif}
 html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans)}
-.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center}
+.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
 .logo{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;color:var(--g);text-decoration:none;letter-spacing:.04em}
-.page{max-width:500px;margin:0 auto;padding:32px 16px 60px}
+.back{font-size:12px;color:var(--t2);text-decoration:none;font-family:var(--mono)}
+.back:hover{color:var(--g)}
+.page{max-width:500px;margin:0 auto;padding:28px 16px 60px}
+.page-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--t2);margin-bottom:26px;line-height:1.6}
 
-/* Progress */
-.progress{display:flex;gap:6px;margin-bottom:32px}
-.ps{flex:1;height:3px;border-radius:2px;background:var(--bdr);transition:background .3s}
-.ps.done{background:var(--g)}
-.ps.active{background:var(--g);opacity:.5}
-
-/* Steps */
-.step{display:none}.step.on{display:block}
-.step-title{font-size:18px;font-weight:700;margin-bottom:6px}
-.step-sub{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.7}
+/* Card sections */
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:20px;margin-bottom:16px}
+.card-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin-bottom:16px;font-family:var(--mono);display:flex;align-items:center;gap:8px}
 
 /* Fields */
 .field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
 .field label{display:block;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:5px}
 .field input{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:14px;padding:11px 13px;outline:none;transition:border-color .15s}
 .field input:focus{border-color:var(--g)}
@@ -35,7 +33,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 .hint.bad{color:var(--red)}
 
 /* Avatar */
-.avatar-wrap{text-align:center;margin-bottom:20px}
+.avatar-wrap{text-align:center;margin-bottom:4px}
 .avatar-circle{width:80px;height:80px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#000;cursor:pointer;border:2px solid var(--bdr2);position:relative;overflow:hidden;transition:border-color .2s}
 .avatar-circle:hover{border-color:var(--g)}
 .avatar-circle img{width:100%;height:100%;object-fit:cover}
@@ -48,7 +46,8 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 .cdot.on{border-color:#fff}
 
 /* Device chips */
-.device-group{margin-bottom:20px}
+.device-group{margin-bottom:18px}
+.device-group:last-child{margin-bottom:0}
 .device-group-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin-bottom:10px;display:flex;align-items:center;gap:8px;font-family:var(--mono)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{font-size:12px;font-weight:500;padding:7px 14px;border-radius:20px;border:1px solid var(--bdr2);color:var(--t2);cursor:pointer;background:var(--s2);transition:all .15s;user-select:none}
@@ -56,18 +55,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 .chip.on{background:var(--gb);border-color:var(--g);color:var(--g)}
 
 /* Buttons */
-.btn-row{display:flex;gap:10px;margin-top:24px}
-.btn{flex:1;padding:13px;border:none;border-radius:8px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.btn{width:100%;padding:13px;border:none;border-radius:8px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .btn-g{background:var(--g);color:#000}
 .btn-g:hover:not(:disabled){opacity:.85}
-.btn-b{background:var(--s2);border:1px solid var(--bdr2);color:var(--t2)}
-.btn-b:hover:not(:disabled){border-color:var(--g);color:var(--g)}
-.btn-skip{background:none;border:none;color:var(--t3);font-size:12px;text-align:center;width:100%;padding:10px;cursor:pointer;font-family:var(--sans);margin-top:8px;font-family:var(--mono)}
-.btn-skip:hover{color:var(--t2)}
+.btn-sm{width:auto;padding:10px 18px;font-size:13px}
 
 .banner{display:none;font-size:12px;padding:10px 13px;border-radius:8px;margin-bottom:14px;line-height:1.5}
 .banner-err{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red)}
+.banner-ok{background:var(--gb);border:1px solid var(--bdr2);color:var(--g)}
+
+.save-bar{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:16px 0 4px;margin-top:8px}
 
 @media(max-width:480px){.page{padding:20px 14px 50px}}
 </style>
@@ -75,37 +73,38 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 <body>
 <div class="topbar">
   <a href="/dashboard.html" class="logo">⬡ Dungeon</a>
+  <a href="/dashboard.html" class="back">← Dashboard</a>
 </div>
 
 <div class="page">
-  <div class="progress" id="progress">
-    <div class="ps active" id="ps1"></div>
-    <div class="ps" id="ps2"></div>
-    <div class="ps" id="ps3"></div>
-    <div class="ps" id="ps4"></div>
-  </div>
+  <div class="page-title">Your Account</div>
+  <div class="page-sub">Update your profile, devices, and password. Changes save when you tap the button at the bottom.</div>
 
-  <!-- Step 1: Screen Name -->
-  <div class="step on" id="step1">
-    <div class="step-title">Set Up Your Profile</div>
-    <div class="step-sub">Choose a screen name that members will see. Letters, numbers and underscores only.</div>
-    <div class="banner banner-err" id="s1err"></div>
-    <div class="field">
+  <div class="banner banner-ok" id="okBanner"></div>
+  <div class="banner banner-err" id="errBanner"></div>
+
+  <!-- Profile -->
+  <div class="card">
+    <div class="card-title">👤 Profile</div>
+    <div class="avatar-wrap">
+      <div class="avatar-circle" id="avatarCircle" onclick="document.getElementById('avatarInput').click()">
+        <span id="avatarInitials">?</span>
+        <div class="avatar-overlay">Change<br/>Photo</div>
+      </div>
+      <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="previewAvatar(this)"/>
+      <div class="avatar-hint">Tap to upload · JPG or PNG · max 5MB</div>
+      <div class="color-row" id="colorRow"></div>
+    </div>
+    <div class="field" style="margin-top:16px">
       <label>Screen Name</label>
       <input type="text" id="screen_name" placeholder="yourcoolname" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
       <div class="hint" id="sn-hint">3–20 characters. Letters, numbers and underscores only.</div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-g" onclick="goStep2()">Continue →</button>
-    </div>
   </div>
 
-  <!-- Step 2: Devices -->
-  <div class="step" id="step2">
-    <div class="step-title">Your Devices</div>
-    <div class="step-sub">Select everything you watch on. This helps us set you up correctly.</div>
-    <div class="banner banner-err" id="s2err"></div>
-
+  <!-- Devices -->
+  <div class="card">
+    <div class="card-title">📺 Your Devices</div>
     <div class="device-group">
       <div class="device-group-label">📱 Phone</div>
       <div class="chips" id="dg-phone">
@@ -154,61 +153,28 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
         <div class="chip" data-group="console" data-val="no_console" onclick="toggleExclusive(this,'console')">None</div>
       </div>
     </div>
-
-    <div class="btn-row">
-      <button class="btn btn-b" onclick="goStep(1)">← Back</button>
-      <button class="btn btn-g" onclick="goStep3()">Continue →</button>
-    </div>
   </div>
 
-  <!-- Step 3: Photo -->
-  <div class="step" id="step3">
-    <div class="step-title">Profile Photo</div>
-    <div class="step-sub">Add a photo or pick a color. Optional — you can skip and add one later.</div>
-    <div class="banner banner-err" id="s3err"></div>
-
-    <div class="avatar-wrap">
-      <div class="avatar-circle" id="avatarCircle" onclick="document.getElementById('avatarInput').click()">
-        <span id="avatarInitials">?</span>
-        <div class="avatar-overlay">Change<br/>Photo</div>
-      </div>
-      <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="previewAvatar(this)"/>
-      <div class="avatar-hint">Tap to upload · JPG or PNG · max 5MB</div>
-      <div class="color-row" id="colorRow"></div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn btn-b" onclick="goStep(2)">← Back</button>
-      <button class="btn btn-g" onclick="goStep4()">Continue →</button>
-    </div>
-    <button class="btn-skip" onclick="skipPhotoToStep4()">Skip photo →</button>
-  </div>
-
-  <!-- Step 4: Password -->
-  <div class="step" id="step4">
-    <div class="step-title">Set Your Password</div>
-    <div class="step-sub">Choose a password you'll use to sign in. Make it something only you would know.</div>
-    <div class="banner banner-err" id="s4err"></div>
-
+  <!-- Password -->
+  <div class="card">
+    <div class="card-title">🔒 Change Password</div>
     <div class="field">
       <label>Current Password</label>
-      <input type="password" id="cur_pw" placeholder="The password you signed in with" autocomplete="current-password"/>
-      <div class="hint">This is whatever you used to log in just now.</div>
+      <input type="password" id="cur_pw" placeholder="Your current password" autocomplete="current-password"/>
     </div>
     <div class="field">
       <label>New Password</label>
       <input type="password" id="new_pw" placeholder="8+ chars, 1 uppercase, 1 special" autocomplete="new-password" oninput="validatePw()"/>
-      <div class="hint" id="pw-hint">At least 8 characters, one uppercase letter, and one special character.</div>
+      <div class="hint" id="pw-hint">Leave blank to keep your current password.</div>
     </div>
     <div class="field">
       <label>Confirm New Password</label>
       <input type="password" id="new_pw2" placeholder="Re-enter new password" autocomplete="new-password" oninput="validatePw()"/>
     </div>
+  </div>
 
-    <div class="btn-row">
-      <button class="btn btn-b" onclick="goStep(3)">← Back</button>
-      <button class="btn btn-g" id="saveBtn" onclick="saveAll()">Finish Setup</button>
-    </div>
+  <div class="save-bar">
+    <button class="btn btn-g" id="saveBtn" onclick="saveAll()">Save Changes</button>
   </div>
 </div>
 
@@ -216,9 +182,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 const COLORS = ['#60a5fa','#34d399','#f87171','#fbbf24','#a78bfa','#fb7185','#38bdf8','#4ade80'];
 let selectedColor = COLORS[0];
 let avatarBase64 = null;
-let currentStep = 1;
+let _originalSn = '';
 let _snTimer = null;
-let _snValid = false;
+let _snValid = true; // valid until changed to something taken
 
 // Build color dots
 COLORS.forEach(c => {
@@ -235,25 +201,30 @@ COLORS.forEach(c => {
 });
 document.getElementById('avatarCircle').style.background = selectedColor;
 
-function updateProgress(step) {
-  for (let i = 1; i <= 4; i++) {
-    const el = document.getElementById('ps'+i);
-    el.className = 'ps' + (i < step ? ' done' : i === step ? ' active' : '');
+function validateSn(input) {
+  const val = input.value.replace(/[^a-zA-Z0-9_]/g, '');
+  input.value = val;
+  const hint = document.getElementById('sn-hint');
+  _snValid = false;
+  if (!val) { hint.textContent = '3–20 characters required.'; hint.className = 'hint bad'; return; }
+  if (val.length < 3) { hint.textContent = 'Too short — minimum 3 characters'; hint.className = 'hint bad'; return; }
+  if (_originalSn && val.toLowerCase() === _originalSn.toLowerCase()) {
+    hint.textContent = '@'+val+' — your current name'; hint.className = 'hint ok'; _snValid = true; return;
   }
+  hint.textContent = 'Checking availability…'; hint.className = 'hint';
+  clearTimeout(_snTimer);
+  _snTimer = setTimeout(async () => {
+    const r = await fetch('/api/check/screen-name/'+encodeURIComponent(val)).then(r=>r.json()).catch(()=>({available:false}));
+    if (r.available) { hint.textContent = '@'+val+' is available ✓'; hint.className = 'hint ok'; _snValid = true; }
+    else { hint.textContent = '@'+val+' is already taken — try another'; hint.className = 'hint bad'; _snValid = false; }
+  }, 500);
 }
 
-function goStep4() {
-  // Ensure a photo/color decision was made is optional; just advance.
-  goStep(4);
-}
-function skipPhotoToStep4() {
-  avatarBase64 = null;
-  goStep(4);
-}
 function validatePw() {
   const pw = document.getElementById('new_pw').value;
   const pw2 = document.getElementById('new_pw2').value;
   const hint = document.getElementById('pw-hint');
+  if (!pw && !pw2) { hint.textContent = 'Leave blank to keep your current password.'; hint.className = 'hint'; return true; }
   if (pw.length < 8) { hint.textContent = 'At least 8 characters'; hint.className = 'hint bad'; return false; }
   if (!/[A-Z]/.test(pw)) { hint.textContent = 'Needs at least one uppercase letter'; hint.className = 'hint bad'; return false; }
   if (!/[^a-zA-Z0-9]/.test(pw)) { hint.textContent = 'Needs at least one special character'; hint.className = 'hint bad'; return false; }
@@ -261,70 +232,15 @@ function validatePw() {
   hint.textContent = 'Looks good \u2713'; hint.className = 'hint ok'; return true;
 }
 
-function goStep(n) {
-  document.getElementById('step'+currentStep).classList.remove('on');
-  currentStep = n;
-  document.getElementById('step'+n).classList.add('on');
-  updateProgress(n);
-  window.scrollTo(0, 0);
-}
-
-function validateSn(input) {
-  const val = input.value.replace(/[^a-zA-Z0-9_]/g, '');
-  input.value = val;
-  const hint = document.getElementById('sn-hint');
-  _snValid = false;
-  if (!val) { hint.textContent = '3–20 characters. Letters, numbers and underscores only.'; hint.className = 'hint'; return; }
-  if (val.length < 3) { hint.textContent = 'Too short — minimum 3 characters'; hint.className = 'hint bad'; return; }
-  hint.textContent = 'Checking availability…'; hint.className = 'hint';
-  clearTimeout(_snTimer);
-  _snTimer = setTimeout(async () => {
-    // If editing and name hasn't changed, it's valid
-    if (_originalSn && val.toLowerCase() === _originalSn.toLowerCase()) {
-      hint.textContent = '@'+val+' — your current name'; hint.className = 'hint ok'; _snValid = true; return;
-    }
-    const r = await fetch('/api/check/screen-name/'+encodeURIComponent(val)).then(r=>r.json()).catch(()=>({available:false}));
-    if (r.available) { hint.textContent = '@'+val+' is available ✓'; hint.className = 'hint ok'; _snValid = true; }
-    else { hint.textContent = '@'+val+' is already taken — try another'; hint.className = 'hint bad'; _snValid = false; }
-  }, 500);
-}
-
-function goStep2() {
-  const sn = document.getElementById('screen_name').value.trim();
-  const err = document.getElementById('s1err');
-  if (sn.length < 3) { err.textContent = 'Screen name must be at least 3 characters'; err.style.display = 'block'; return; }
-  if (!_snValid) { err.textContent = 'Please choose an available screen name'; err.style.display = 'block'; return; }
-  err.style.display = 'none';
-  document.getElementById('avatarInitials').textContent = sn[0].toUpperCase();
-  goStep(2);
-}
-
-function goStep3() {
-  const groups = ['phone','tablet','computer','tv','console'];
-  const err = document.getElementById('s2err');
-  for (const g of groups) {
-    if (!document.querySelector(`.chip.on[data-group="${g}"]`)) {
-      err.textContent = `Please select at least one option for each category (use "None" if not applicable).`;
-      err.style.display = 'block';
-      document.getElementById('dg-'+g).scrollIntoView({behavior:'smooth',block:'center'});
-      return;
-    }
-  }
-  err.style.display = 'none';
-  goStep(3);
-}
-
 function toggleChip(el) {
   const g = el.dataset.group;
   document.querySelector(`.chip[data-group="${g}"][data-val="no_${g}"]`)?.classList.remove('on');
   el.classList.toggle('on');
 }
-
 function toggleExclusive(el, g) {
   document.querySelectorAll(`.chip[data-group="${g}"]`).forEach(c => c.classList.remove('on'));
   el.classList.add('on');
 }
-
 function getDevices() {
   const devices = {};
   ['phone','tablet','computer','tv','console'].forEach(g => {
@@ -350,22 +266,72 @@ function previewAvatar(input) {
   reader.readAsDataURL(file);
 }
 
+// ── Load current profile ──
+fetch('/api/member/me').then(r=>r.json()).then(d=>{
+  if(!d.authenticated){ window.location.href='/login.html'; return; }
+  const p = d.member?.profile || {};
+  if(p.screen_name){
+    _originalSn = p.screen_name;
+    document.getElementById('screen_name').value = p.screen_name;
+    document.getElementById('avatarInitials').textContent = p.screen_name[0].toUpperCase();
+  }
+  if(p.avatar_color){
+    selectedColor = p.avatar_color;
+    document.querySelectorAll('.cdot').forEach(dot => dot.classList.toggle('on', dot.style.background===hexToRgb(p.avatar_color)||dot.style.background===p.avatar_color));
+    if(!p.avatar_url) document.getElementById('avatarCircle').style.background = p.avatar_color;
+  }
+  if(p.avatar_url){
+    const circle = document.getElementById('avatarCircle');
+    const img = document.createElement('img'); img.src = p.avatar_url;
+    circle.insertBefore(img, circle.firstChild);
+    document.getElementById('avatarInitials').style.display = 'none';
+    circle.style.background = 'transparent';
+  }
+  // Preselect devices
+  let devices = p.devices;
+  try { if(typeof devices === 'string') devices = JSON.parse(devices); } catch(e){ devices = null; }
+  if(devices && typeof devices === 'object'){
+    Object.entries(devices).forEach(([g, vals]) => {
+      (vals||[]).forEach(v => {
+        const chip = document.querySelector(`.chip[data-group="${g}"][data-val="${v}"]`);
+        if(chip) chip.classList.add('on');
+      });
+    });
+  }
+}).catch(()=>{});
+
+function hexToRgb(hex){
+  const m = hex.replace('#','').match(/.{2}/g);
+  if(!m) return hex;
+  return 'rgb('+m.map(x=>parseInt(x,16)).join(', ')+')';
+}
+
 async function saveAll() {
   const btn = document.getElementById('saveBtn');
-  const err = document.getElementById('s4err');
-  err.style.display = 'none';
+  const err = document.getElementById('errBanner');
+  const ok = document.getElementById('okBanner');
+  err.style.display='none'; ok.style.display='none';
 
-  // Password is required to finish setup
+  const sn = document.getElementById('screen_name').value.trim();
+  if (sn.length < 3 || !_snValid) {
+    err.textContent = 'Please choose a valid, available screen name.'; err.style.display='block';
+    window.scrollTo(0,0); return;
+  }
+
+  // Validate password fields if either is filled
   const curPw = document.getElementById('cur_pw').value;
   const newPw = document.getElementById('new_pw').value;
   const newPw2 = document.getElementById('new_pw2').value;
-  if (!curPw) { err.textContent = 'Enter the password you signed in with.'; err.style.display='block'; return; }
-  if (!validatePw()) { err.textContent = 'Please fix your new password before finishing.'; err.style.display='block'; return; }
-  if (newPw !== newPw2) { err.textContent = 'New passwords don\u2019t match.'; err.style.display='block'; return; }
+  const wantsPwChange = newPw || newPw2;
+  if (wantsPwChange) {
+    if (!validatePw()) { err.textContent = 'Fix the password fields before saving.'; err.style.display='block'; return; }
+    if (!curPw) { err.textContent = 'Enter your current password to change it.'; err.style.display='block'; return; }
+  }
 
   btn.disabled = true; btn.textContent = 'Saving…';
 
   try {
+    // Avatar (if changed)
     if (avatarBase64) {
       await fetch('/api/member/profile/avatar', {
         method:'POST', headers:{'Content-Type':'application/json'},
@@ -373,85 +339,50 @@ async function saveAll() {
       }).catch(()=>{});
     }
 
+    // Profile (screen name + color)
     const profileRes = await fetch('/api/member/profile/setup', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ screen_name: document.getElementById('screen_name').value.trim(), avatar_color: selectedColor })
+      body: JSON.stringify({ screen_name: sn, avatar_color: selectedColor })
     });
     const profileData = await profileRes.json();
     if (!profileRes.ok) {
-      err.textContent = profileData.error || 'Failed to save profile.';
-      err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Finish Setup'; return;
+      err.textContent = profileData.error || 'Failed to save profile.'; err.style.display='block';
+      btn.disabled=false; btn.textContent='Save Changes'; return;
     }
 
+    // Devices
     await fetch('/api/member/profile/devices', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ devices: getDevices() })
-    });
+    }).catch(()=>{});
 
-    // Change password
-    const pwRes = await fetch('/api/member/change-password', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ current_password: curPw, new_password: newPw })
-    });
-    const pwData = await pwRes.json();
-    if (!pwRes.ok) {
-      err.textContent = pwData.error || 'Password change failed. Check your current password.';
-      err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Finish Setup'; return;
+    // Password (only if requested)
+    if (wantsPwChange) {
+      const pwRes = await fetch('/api/member/change-password', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ current_password: curPw, new_password: newPw })
+      });
+      const pwData = await pwRes.json();
+      if (!pwRes.ok) {
+        err.textContent = pwData.error || 'Password change failed.'; err.style.display='block';
+        btn.disabled=false; btn.textContent='Save Changes'; return;
+      }
+      document.getElementById('cur_pw').value='';
+      document.getElementById('new_pw').value='';
+      document.getElementById('new_pw2').value='';
+      document.getElementById('pw-hint').textContent='Leave blank to keep your current password.';
+      document.getElementById('pw-hint').className='hint';
     }
 
-    window.location.href = '/dashboard.html';
+    _originalSn = sn;
+    ok.textContent = 'Your changes have been saved.'; ok.style.display='block';
+    window.scrollTo(0,0);
+    btn.disabled=false; btn.textContent='Save Changes';
   } catch(e) {
-    err.textContent = 'Connection error. Please try again.';
-    err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Finish Setup';
+    err.textContent = 'Something went wrong. Please try again.'; err.style.display='block';
+    btn.disabled=false; btn.textContent='Save Changes';
   }
 }
-
-let _originalSn = null;
-
-fetch('/api/member/me').then(r=>r.json()).then(d=>{
-  if (!d.authenticated) { window.location.href = '/login.html'; return; }
-  const isEditing = new URLSearchParams(location.search).get('edit');
-  if (d.member?.profile?.setup_done && !isEditing) { window.location.href = '/dashboard.html'; return; }
-
-  const p = d.member?.profile;
-
-  // If member came through join flow, they already have a screen name
-  if (p?.screen_name) {
-    _originalSn = p.screen_name;
-    _snValid = true;
-    document.getElementById('screen_name').value = p.screen_name;
-    document.getElementById('avatarInitials').textContent = p.screen_name[0].toUpperCase();
-    const hint = document.getElementById('sn-hint');
-    hint.textContent = '@'+p.screen_name+' — your current name';
-    hint.className = 'hint ok';
-  } else if (d.member?.first_name) {
-    document.getElementById('screen_name').value = d.member.first_name;
-    document.getElementById('avatarInitials').textContent = d.member.first_name[0].toUpperCase();
-  }
-
-  if (p?.avatar_color) {
-    selectedColor = p.avatar_color;
-    document.querySelectorAll('.cdot').forEach(dot => dot.classList.toggle('on', dot.style.background === selectedColor));
-    if (!avatarBase64) document.getElementById('avatarCircle').style.background = selectedColor;
-  }
-
-  if (p?.avatar_url) {
-    const circle = document.getElementById('avatarCircle');
-    const img = document.createElement('img');
-    img.src = p.avatar_url; circle.insertBefore(img, circle.firstChild);
-    document.getElementById('avatarInitials').style.display = 'none';
-  }
-
-  if (isEditing && p?.devices) {
-    const devs = typeof p.devices === 'string' ? JSON.parse(p.devices) : p.devices;
-    Object.entries(devs).forEach(([group, vals]) => {
-      vals.forEach(val => {
-        document.querySelector(`.chip[data-group="${group}"][data-val="${val}"]`)?.classList.add('on');
-      });
-    });
-  }
-});
 </script>
-  <script src="/notif-bell.js"></script>
 </body>
 </html>

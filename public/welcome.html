@@ -88,6 +88,34 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 
 <div class="page">
 
+  <!-- Step 0: Subtle welcome for members with no active subscription -->
+  <div class="step" id="stepNoSub">
+    <div class="step-eyebrow">Welcome to the Dungeon</div>
+    <div class="step-title">You made it. 🏰</div>
+    <div class="dm-card">
+      <div class="dm-header">
+        <div id="dm-av2"><div class="dm-avatar-fallback" id="dm-fallback2">D</div></div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="dm-badge">⚔ Dungeon Master</span>
+          </div>
+          <div class="dm-handle">@dungeon_master</div>
+        </div>
+      </div>
+      <div class="dm-body">
+        <p>Welcome to <strong>Dungeon</strong> — a private, invite-only community. You're here because someone trusted you with an invite, and that means something. We keep this small and tight-knit on purpose.</p>
+        <p>Take a look around and get comfortable. When you're curious, you can <span class="hl">grab a free demo</span> to try things out before you decide anything — no commitment.</p>
+        <p>Whenever you're ready to unlock your access, everything you need is on your dashboard.</p>
+        <p style="color:var(--g);font-weight:600">— The Dungeon Master</p>
+      </div>
+    </div>
+    <div class="pill-grid">
+      <div class="pill"><div class="pill-icon">🎬</div><div class="pill-title">Try a Demo</div><div class="pill-sub">Free — see what's inside</div></div>
+      <div class="pill"><div class="pill-icon">🎟️</div><div class="pill-title">Unlock Access</div><div class="pill-sub">Whenever you're ready</div></div>
+    </div>
+    <div class="nav-btns"><button class="btn btn-g" onclick="finish()">Go to Dashboard →</button></div>
+  </div>
+
   <!-- Step 1: Welcome -->
   <div class="step on" id="step1">
     <div class="step-eyebrow">Welcome to the Dungeon</div>
@@ -329,13 +357,30 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
     fetch('/api/member/welcome-done',{method:'POST'}).then(()=>window.location.href='/dashboard.html');
     return;
   }
+  // Subscription-aware: staff/family tiers always have access; otherwise check active dates.
+  const m = d.member || {};
+  const now = new Date();
+  const parseEnd = v => v ? new Date(String(v).includes('T') ? v : v + 'T00:00:00Z') : null;
+  const streamEnd = parseEnd(m.stremio_end), castEnd = parseEnd(m.iptv_end);
+  const isPerm = ['family','dealer','mod','admin','warden'].includes(tier);
+  const hasAccess = isPerm || (streamEnd && streamEnd > now) || (castEnd && castEnd > now);
+
+  if(!hasAccess){
+    // Show the subtle welcome; hide the detailed app-setup flow entirely.
+    document.getElementById('step1').classList.remove('on');
+    document.getElementById('stepNoSub').classList.add('on');
+    const pb = document.querySelector('.prog-wrap');
+    if(pb) pb.style.display='none';
+  }
 });
 
 fetch('/api/dungeon-master').then(r=>r.json()).then(dm=>{
   if(dm?.avatar_url){
     document.getElementById('dm-av').innerHTML=`<img src="${dm.avatar_url}" class="dm-avatar" alt="@one"/>`;
+    const av2=document.getElementById('dm-av2'); if(av2) av2.innerHTML=`<img src="${dm.avatar_url}" class="dm-avatar" alt="dm"/>`;
   } else if(dm?.avatar_color){
     document.getElementById('dm-fallback').style.background=dm.avatar_color;
+    const fb2=document.getElementById('dm-fallback2'); if(fb2) fb2.style.background=dm.avatar_color;
   }
 }).catch(()=>{});
 </script>
