@@ -93,8 +93,18 @@
     <span class="page-sigil" aria-hidden="true">📱</span>
     <div class="page-title">iPhone Setup</div>
   </div>
-  <div class="page-sub">Stremio isn't on the iPhone App Store, but it works great through Safari. A few steps and you'll be watching.</div>
+  <div class="page-sub" id="pageSub">Stremio isn't on the iPhone App Store, but it works great through Safari. A few steps and you'll be watching.</div>
 
+  <!-- State panel: shown for no-subscription / link-not-ready / error cases.
+       Replaces the whole step flow with one clear message + action. -->
+  <div class="step-card" id="statePanel" style="display:none;text-align:center">
+    <div style="font-size:34px;margin-bottom:10px" id="stateIcon">⏳</div>
+    <div class="step-title" id="stateTitle" style="margin-bottom:8px">One moment…</div>
+    <p class="instr" id="stateMsg" style="margin-bottom:16px"></p>
+    <div id="stateAction"></div>
+  </div>
+
+  <div id="stepFlow">
   <!-- STEP 1 -->
   <div class="step-card">
     <div class="step-top"><div class="step-num">1</div><div class="step-title">Open Stremio in Safari</div></div>
@@ -143,9 +153,10 @@
     <p class="instr">Stremio now appears on your Home Screen like a normal app. Open it from there from now on.</p>
   </div>
 
-  <!-- MANUAL-ONLY STEPS (hidden when the account was auto-provisioned,
-       because the addon is already installed on it) -->
-  <div id="manualSteps">
+  <!-- MANUAL-ONLY STEPS — only shown as a fallback when the account was NOT
+       auto-provisioned (e.g. the member's email already had a Stremio account).
+       Hidden by default because normally the addon is installed automatically. -->
+  <div id="manualSteps" style="display:none">
   <!-- STEP 3 -->
   <div class="step-card">
     <div class="step-top"><div class="step-num">3</div><div class="step-title">Copy your Dungeon link</div></div>
@@ -177,8 +188,8 @@
   </div>
   </div><!-- /manualSteps -->
 
-  <!-- AUTO MODE step 3: nothing to install -->
-  <div class="step-card" id="autoStep3" style="display:none">
+  <!-- AUTO MODE step 3: nothing to install (default — the addon auto-installs) -->
+  <div class="step-card" id="autoStep3">
     <div class="step-top"><div class="step-num">3</div><div class="step-title">That's it — start watching</div></div>
     <p class="instr">The Dungeon is <strong>already installed</strong> on your account. Open Stremio from your Home Screen, and your Netflix, Disney+, HBO Max and Hulu rows are right there.</p>
   </div>
@@ -209,6 +220,7 @@
     <p>Open Stremio from your Home Screen any time. Pick something, tap a stream, and it plays right in the app.</p>
     <a href="#" id="doneBtn" class="dash-btn">✓ I've added it — go to dashboard</a>
   </div>
+  </div><!-- /stepFlow -->
 </div>
 
 <div class="toast" id="toast"></div>
@@ -238,7 +250,6 @@ document.getElementById('doneBtn').addEventListener('click', async (e) => {
     const d=r.ok?await r.json():null;
     if(d&&d.active&&d.stremio_account){
       // AUTO MODE — account already exists with the addon installed.
-      // Show login creds in step 1, skip the copy-link/install steps.
       document.getElementById('step1Instr').innerHTML='Open <strong>Safari</strong> and go to <strong>web.stremio.com</strong>.';
       document.getElementById('autoCreds').style.display='block';
       document.getElementById('stEmail').value=d.stremio_account.email||'';
@@ -246,43 +257,44 @@ document.getElementById('doneBtn').addEventListener('click', async (e) => {
       document.getElementById('manualSteps').style.display='none';
       document.getElementById('autoStep3').style.display='block';
     }else if(d&&(d.manifest_url||d.install_url)){
+      // Fallback: entitled but no auto-provisioned account (e.g. email already on
+      // Stremio). Show the manual add-the-link steps for this member only.
       input.value=d.manifest_url||d.install_url;
+      document.getElementById('manualSteps').style.display='block';
+      document.getElementById('autoStep3').style.display='none';
     }else if(d&&d.active===false){
-      // Not entitled at all (sub expired/never active) — retrying won't fix that.
-      input.value='';
-      input.placeholder='No active DungeonStream subscription';
-      input.disabled=true;
-      showRedeem();
+      // Not entitled — show a clean panel, hide the whole flow.
+      showState('🔒', 'No active subscription', 'You don\u2019t have DungeonStream access yet. Redeem a credit to unlock it, then come back here to finish setup.',
+        {label:'Redeem a credit', href:'/redeem.html'});
     }else{
-      // Entitled but link not ready (StremGate unreachable or provisioning hiccup).
-      input.value='';
-      input.placeholder='Link not ready — tap Retry';
-      showRetry();
+      // Entitled but link not ready (StremGate unreachable / provisioning hiccup).
+      showState('⏳', 'Almost ready', 'Your access is still being set up. Give it a moment, then tap Retry.',
+        {label:'Retry', onclick:()=>location.reload()});
     }
   }catch(e){
-    input.placeholder='Connection error — tap Retry';
-    showRetry();
+    showState('⚠️', 'Connection error', 'We couldn\u2019t reach the server. Check your connection and try again.',
+      {label:'Retry', onclick:()=>location.reload()});
   }
 })();
 
-function showRetry(){
-  const row=document.querySelector('.link-row');
-  if(document.getElementById('retryBtn')||document.getElementById('redeemBtn'))return;
-  const b=document.createElement('button');
-  b.id='retryBtn';b.className='copy-btn';b.textContent='Retry';
-  b.style.marginLeft='8px';
-  b.onclick=()=>location.reload();
-  row.appendChild(b);
-}
-
-function showRedeem(){
-  const row=document.querySelector('.link-row');
-  if(document.getElementById('redeemBtn')||document.getElementById('retryBtn'))return;
-  const b=document.createElement('button');
-  b.id='redeemBtn';b.className='copy-btn';b.textContent='Redeem a credit';
-  b.style.marginLeft='8px';
-  b.onclick=()=>location.href='/redeem.html';
-  row.appendChild(b);
+function showState(icon, title, msg, action){
+  document.getElementById('stepFlow').style.display='none';
+  document.getElementById('pageSub').style.display='none';
+  const panel=document.getElementById('statePanel');
+  panel.style.display='block';
+  document.getElementById('stateIcon').textContent=icon;
+  document.getElementById('stateTitle').textContent=title;
+  document.getElementById('stateMsg').textContent=msg;
+  const act=document.getElementById('stateAction');
+  act.innerHTML='';
+  if(action){
+    const b=document.createElement(action.href?'a':'button');
+    b.className='dash-btn';
+    b.textContent=action.label;
+    if(action.href) b.href=action.href;
+    if(action.onclick) b.onclick=action.onclick;
+    act.appendChild(b);
+  }
 }
 </script>
 <script src="/notif-bell.js"></script>
