@@ -1,4 +1,4 @@
-// stremgate.js — StremGate provisioning helper for enterdungeon.cc
+// stremgate.js - StremGate provisioning helper for enterdungeon.cc
 // Drop this file next to server.js. Require it and call the functions
 // at the appropriate points in server.js (see integration-patch.js).
 //
@@ -16,7 +16,7 @@ function sgHeaders() {
 
 function configured() {
   if (!STREMGATE_URL || !STREMGATE_KEY) {
-    console.warn('[stremgate] Not configured — set STREMGATE_URL and STREMGATE_API_KEY');
+    console.warn('[stremgate] Not configured - set STREMGATE_URL and STREMGATE_API_KEY');
     return false;
   }
   return true;
@@ -24,7 +24,7 @@ function configured() {
 
 // Wraps fetch with a short timeout so a hung StremGate doesn't hang the caller
 // (invite completion, renewal, dashboard load) for minutes. A timeout looks like
-// any other failed fetch to callers — they already handle that case.
+// any other failed fetch to callers - they already handle that case.
 function sgFetch(url, opts = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), STREMGATE_TIMEOUT_MS);
@@ -42,7 +42,7 @@ async function sgProvision(username, password, durationDays = 30) {
       body: JSON.stringify({ username, password, durationDays }),
     });
     if (!r.ok) {
-      // Body might not be JSON (e.g. a proxy error page) — don't let that mask the real status.
+      // Body might not be JSON (e.g. a proxy error page) - don't let that mask the real status.
       const errText = await r.text().catch(() => '');
       let errMsg = `HTTP ${r.status}`;
       try { errMsg = JSON.parse(errText).error || errMsg; } catch (_) {}
@@ -141,7 +141,7 @@ async function sgGetAddonUrl(sgMemberId) {
 }
 
 // Permanently delete a StremGate member by member ID. Destroys their account
-// and addon token entirely — used by the warden purge. Returns { ok }.
+// and addon token entirely - used by the warden purge. Returns { ok }.
 async function sgDelete(sgMemberId) {
   if (!configured()) return { ok: false };
   try {

@@ -296,14 +296,14 @@ const NTFY_TOPIC = process.env.NTFY_TOPIC || '';
 const NTFY_SERVER = process.env.NTFY_SERVER || 'https://ntfy.sh';
 
 async function notify(title, message, opts = {}) {
-  // 1) Record in-app (for the bell) — best effort
+  // 1) Record in-app (for the bell) - best effort
   try {
     db.prepare(`INSERT INTO admin_notifications (id, kind, title, body, link, created_at, seen)
                 VALUES (?, ?, ?, ?, ?, ?, 0)`)
       .run(genId(), opts.kind || 'info', title, message, opts.link || '', new Date().toISOString());
   } catch(e) { /* table may not exist yet on first boot; ignore */ }
 
-  // 2) Push to phone via ntfy — best effort, never blocks the request
+  // 2) Push to phone via ntfy - best effort, never blocks the request
   if (!NTFY_TOPIC) return;
   try {
     const headers = { 'Title': title, 'Content-Type': 'text/plain' };
@@ -321,25 +321,25 @@ function emailShell(body) {
 }
 
 function emailApplicationReceived(firstName, screenName) {
-  return emailShell(`<h2>Application Received</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your application has been received. A moderator will review it shortly and you'll hear back at this email address.</p><p>Your username <strong>@${screenName}</strong> has been reserved while your application is pending.</p><br><p style="font-size:12px;color:#6b8f7a">— The Dungeon Master</p>`);
+  return emailShell(`<h2>Application Received</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your application has been received. A moderator will review it shortly and you'll hear back at this email address.</p><p>Your username <strong>@${screenName}</strong> has been reserved while your application is pending.</p><br><p style="font-size:12px;color:#6b8f7a">- The Dungeon Master</p>`);
 }
 
 function emailWelcome(firstName, screenName, stremioEmail, stremioPass, subEnd) {
   const fmtDate = new Date(subEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  return emailShell(`<h2>Welcome to Dungeon</h2><div class="rule"></div><p>Welcome, <strong>${firstName}</strong>. Your application has been approved and your Dungeon account is ready.</p><div class="box"><div class="row"><span class="lbl">Screen Name</span><span class="val">@${screenName}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${stremioEmail}</span></div><div class="row"><span class="lbl">Password</span><span class="val">${stremioPass}</span></div></div><p>Use the email and password above to log into your dashboard. Keep your credentials safe — do not share them.</p><a href="${SITE_URL}/login.html" class="btn">Go to Dashboard</a><div class="rule"></div><p style="font-size:12px;color:#6b8f7a">— The Dungeon Master</p>`);
+  return emailShell(`<h2>Welcome to Dungeon</h2><div class="rule"></div><p>Welcome, <strong>${firstName}</strong>. Your application has been approved and your Dungeon account is ready.</p><div class="box"><div class="row"><span class="lbl">Screen Name</span><span class="val">@${screenName}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${stremioEmail}</span></div><div class="row"><span class="lbl">Password</span><span class="val">${stremioPass}</span></div></div><p>Use the email and password above to log into your dashboard. Keep your credentials safe - do not share them.</p><a href="${SITE_URL}/login.html" class="btn">Go to Dashboard</a><div class="rule"></div><p style="font-size:12px;color:#6b8f7a">- The Dungeon Master</p>`);
 }
 
 function emailExpiringSoon(firstName, subEnd) {
   const fmtDate = new Date(subEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  return emailShell(`<h2>Subscription Expiring Soon</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your Dungeon subscription expires on <strong>${fmtDate}</strong> — 3 days from now. Submit a renewal request from your dashboard to keep your access.</p><a href="${SITE_URL}/renew.html" class="btn">Request Renewal</a><br><p style="margin-top:20px;font-size:12px;color:#6b8f7a">— The Dungeon Master</p>`);
+  return emailShell(`<h2>Subscription Expiring Soon</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your Dungeon subscription expires on <strong>${fmtDate}</strong> - 3 days from now. Submit a renewal request from your dashboard to keep your access.</p><a href="${SITE_URL}/renew.html" class="btn">Request Renewal</a><br><p style="margin-top:20px;font-size:12px;color:#6b8f7a">- The Dungeon Master</p>`);
 }
 
 function emailExpired(firstName) {
-  return emailShell(`<h2>Subscription Expired</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your Dungeon subscription has ended. Your Stremio access is no longer active.</p><p>If you'd like to return, submit a new application and the team will get you set up again.</p><a href="${SITE_URL}/apply.html" class="btn">Apply Again</a><br><p style="margin-top:20px;font-size:12px;color:#6b8f7a">— The Dungeon Master</p>`);
+  return emailShell(`<h2>Subscription Expired</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your Dungeon subscription has ended. Your Stremio access is no longer active.</p><p>If you'd like to return, submit a new application and the team will get you set up again.</p><a href="${SITE_URL}/apply.html" class="btn">Apply Again</a><br><p style="margin-top:20px;font-size:12px;color:#6b8f7a">- The Dungeon Master</p>`);
 }
 
 function emailModApproval(applicantName, screenName, applicantEmail, applicantId) {
-  return emailShell(`<h2>Mod Approval — Action Required</h2><div class="rule"></div><p>A moderator has approved an application. You need to create their DungeonStream account and grant access.</p><div class="box"><div class="row"><span class="lbl">Name</span><span class="val">${applicantName}</span></div><div class="row"><span class="lbl">Username</span><span class="val">@${screenName}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${applicantEmail}</span></div></div><p>Log into the admin panel and grant access to complete the process.</p><a href="${SITE_URL}/admin.html" class="btn">Open Dungeon Master Panel</a>`);
+  return emailShell(`<h2>Mod Approval - Action Required</h2><div class="rule"></div><p>A moderator has approved an application. You need to create their DungeonStream account and grant access.</p><div class="box"><div class="row"><span class="lbl">Name</span><span class="val">${applicantName}</span></div><div class="row"><span class="lbl">Username</span><span class="val">@${screenName}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${applicantEmail}</span></div></div><p>Log into the admin panel and grant access to complete the process.</p><a href="${SITE_URL}/admin.html" class="btn">Open Dungeon Master Panel</a>`);
 }
 
 
@@ -369,7 +369,7 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE members ADD COLUMN stremgate_member_id TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN stremgate_username TEXT').run(); } catch(e) {}
   // Auto-provisioned Stremio account (real api.strem.io account we create for the
-  // member). Deliberately NEW columns — the legacy stremio_email/stremio_pass pair
+  // member). Deliberately NEW columns - the legacy stremio_email/stremio_pass pair
   // is tangled with Jellyfin creds and the portal-login fallback, so it must not
   // be reused for this. stremio_auth_key (added earlier) stores the session key.
   try { db.prepare('ALTER TABLE members ADD COLUMN stremio_acct_email TEXT').run(); } catch(e) {}
@@ -500,7 +500,7 @@ async function runSubscriptionCron() {
     AND datetime(stremio_end) <= datetime(?)
   `).all(nowISO);
   for (const m of streamExpired) {
-    // Skip staff — they have permanent access
+    // Skip staff - they have permanent access
     const profile = db.prepare('SELECT tier FROM profiles WHERE member_id=?').get(m.id);
     const isStaff = ['family','dealer','mod','admin','warden'].includes(profile?.tier);
     if (isStaff) continue;
@@ -510,7 +510,7 @@ async function runSubscriptionCron() {
       const jfId = await jellyfinGetUserId(m.jellyfin_user||m.stremio_email, JELLYFIN_URL, JELLYFIN_API_KEY);
       if (jfId) {
         await jellyfinRequest('POST', '/Users/'+jfId+'/Policy', { IsDisabled: true, EnableAllFolders: false, EnabledFolders: [] }, JELLYFIN_URL, JELLYFIN_API_KEY);
-        console.log('[cron] DungeonStream expired — disabled Jellyfin for:', m.stremio_email||m.jellyfin_user);
+        console.log('[cron] DungeonStream expired - disabled Jellyfin for:', m.stremio_email||m.jellyfin_user);
       }
     } catch(e) { console.error('[cron] Jellyfin disable error:', e.message); }
 
@@ -535,7 +535,7 @@ async function runSubscriptionCron() {
         const jfId = await jellyfinGetUserId(demo.demo_user, JELLYFIN_URL, JELLYFIN_API_KEY);
         if (jfId) {
           await jellyfinRequest('DELETE', '/Users/'+jfId, null, JELLYFIN_URL, JELLYFIN_API_KEY);
-          console.log('[demo] Expired — deleted Jellyfin user:', demo.demo_user);
+          console.log('[demo] Expired - deleted Jellyfin user:', demo.demo_user);
         }
       } catch(e) { console.error('[demo] Revoke error:', e.message); }
       db.prepare('UPDATE demo_requests SET demo_notified=1 WHERE id=?').run(demo.id);
@@ -558,7 +558,7 @@ async function runSubscriptionCron() {
       const jfTVId = await jellyfinGetUserId(m.jellyfin_user||m.stremio_email, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
       if (jfTVId) {
         await jellyfinRequest('POST', '/Users/'+jfTVId+'/Policy', { IsDisabled: true }, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
-        console.log('[cron] DungeonCast expired — disabled for:', m.jellyfin_user||m.stremio_email);
+        console.log('[cron] DungeonCast expired - disabled for:', m.jellyfin_user||m.stremio_email);
       }
       db.prepare('UPDATE members SET cast_notified=1 WHERE id=?').run(m.id);
     } catch(e) { console.error('[cron] Jellyfin TV disable error:', e.message); }
@@ -828,7 +828,7 @@ function requireMod(req, res, next) {
 
 // ── Events system (Patch C) ──────────────────────────────────────────────────
 
-// GET all events (admin — all; members — only approved + upcoming)
+// GET all events (admin - all; members - only approved + upcoming)
 app.get('/api/events', (req, res) => {
   try {
     if (req.session?.authenticated) {
@@ -851,7 +851,7 @@ app.get('/api/events', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// GET current month events (members only) — for the schedule page
+// GET current month events (members only) - for the schedule page
 app.get('/api/events/schedule', requireMember, (req, res) => {
   try {
     const { month, year } = req.query;
@@ -1010,7 +1010,7 @@ app.post('/api/member/login', loginLimiter, (req, res) => {
       attempt++;
       screenName = baseName + attempt;
     }
-    // Determine tier — warden if email matches
+    // Determine tier - warden if email matches
     const tier = member.email.toLowerCase() === (process.env.WARDEN_EMAIL || 'realenterdungeon@gmail.com').toLowerCase() ? 'warden' : 'member';
     const profileId = genId();
     db.prepare(`INSERT INTO profiles (id, screen_name, email, avatar_color, tier, member_id, setup_done) VALUES (?,?,?,?,?,?,0)`)
@@ -1063,7 +1063,7 @@ app.get('/api/member/stremgate', requireMember, async (req, res) => {
     const manifest_url = await sgGetAddonUrl(m.stremgate_member_id);
     if (!manifest_url) return res.json({ active: true, install_url: null });
 
-    // Self-heal the Stremio account — ONCE per member ever (attempted flag),
+    // Self-heal the Stremio account - ONCE per member ever (attempted flag),
     // so collisions don't retry-spam api.strem.io.
     if (!m.stremio_acct_pass && !m.stremio_acct_attempted) {
       db.prepare('UPDATE members SET stremio_acct_attempted=1 WHERE id=?').run(m.id);
@@ -1074,7 +1074,7 @@ app.get('/api/member/stremgate', requireMember, async (req, res) => {
         m = db.prepare('SELECT * FROM members WHERE id=?').get(m.id);
         console.log('[stremio] Self-provisioned account for:', m.email);
       } else if (st.existed) {
-        console.log('[stremio] Email already on Stremio — manual flow for:', m.email);
+        console.log('[stremio] Email already on Stremio - manual flow for:', m.email);
       }
     }
 
@@ -1100,7 +1100,7 @@ app.get('/api/member/me', (req, res) => {
   const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.session.member.id);
   if (!m) return res.json({ authenticated: false });
 
-  // Find profile — try member_id first, then email fallback for legacy accounts
+  // Find profile - try member_id first, then email fallback for legacy accounts
   let profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(m.id);
   if (!profile) {
     profile = db.prepare('SELECT * FROM profiles WHERE LOWER(email)=LOWER(?)').get(m.email);
@@ -1141,7 +1141,7 @@ app.get('/api/profiles/:id', requireMember, (req, res) => {
   res.json(profile);
 });
 
-// Directory — all profiles (members only)
+// Directory - all profiles (members only)
 app.get('/api/profiles', requireMember, (req, res) => {
   const profiles = db.prepare(`
     SELECT id, screen_name, avatar_url, avatar_color, tier, created_at
@@ -1157,7 +1157,7 @@ app.post('/api/member/profile/setup', requireMember, (req, res) => {
 
   // Validate screen name: 3-20 chars, alphanumeric + underscore only, no spaces
   if (!/^[a-zA-Z0-9_]{3,20}$/.test(screen_name))
-    return res.status(400).json({ error: 'Screen name must be 3–20 characters, letters, numbers and underscores only.' });
+    return res.status(400).json({ error: 'Screen name must be 3-20 characters, letters, numbers and underscores only.' });
 
   const existing = db.prepare('SELECT id FROM profiles WHERE LOWER(screen_name)=LOWER(?) AND member_id!=?').get(screen_name, req.session.member.id);
   if (existing) return res.status(400).json({ error: 'That username is already taken.' });
@@ -1234,8 +1234,8 @@ app.post('/api/mod/applicants/:id/approve', requireMod, async (req, res) => {
   // Email the warden
   await sendMail(
     WARDEN_EMAIL,
-    `Mod Approval: @${applicant.screen_name || applicant.first_name} — Action Required`,
-    emailModApproval(`${applicant.first_name} ${applicant.last_name}`, applicant.screen_name || '—', applicant.email, applicant.id)
+    `Mod Approval: @${applicant.screen_name || applicant.first_name} - Action Required`,
+    emailModApproval(`${applicant.first_name} ${applicant.last_name}`, applicant.screen_name || '-', applicant.email, applicant.id)
   );
 
   res.json({ ok: true });
@@ -1253,7 +1253,7 @@ app.post('/api/apply', submitLimiter, async (req, res) => {
   if (!first_name || !last_name || !email) return res.status(400).json({ error: 'Name and email are required.' });
 
   if (!screen_name) return res.status(400).json({ error: 'A username is required.' });
-  if (!/^[a-zA-Z0-9_]{3,20}$/.test(screen_name)) return res.status(400).json({ error: 'Username must be 3–20 characters, letters, numbers and underscores only.' });
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(screen_name)) return res.status(400).json({ error: 'Username must be 3-20 characters, letters, numbers and underscores only.' });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email address.' });
 
   // Check screen name not already taken
@@ -1269,7 +1269,7 @@ app.post('/api/apply', submitLimiter, async (req, res) => {
   db.prepare(`INSERT OR IGNORE INTO profiles (id, screen_name, email, avatar_color, tier, applicant_id) VALUES (?,?,?,?,'neut',?)`)
     .run(profileId, screen_name.trim(), email.trim(), avatarColors(), id);
 
-  try { await sendMail(email.trim(), 'Application Received — Dungeon', emailApplicationReceived(first_name.trim(), screen_name.trim())); } catch(e) { console.error('Apply email error:', e.message); }
+  try { await sendMail(email.trim(), 'Application Received - Dungeon', emailApplicationReceived(first_name.trim(), screen_name.trim())); } catch(e) { console.error('Apply email error:', e.message); }
   notify('New application', `${first_name.trim()} (@${screen_name.trim()}) just applied`, {
     kind: 'application', tags: 'inbox_tray', priority: 4,
     link: '/admin.html', click: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/admin.html'
@@ -1383,8 +1383,8 @@ app.patch('/api/admin/channel-requests/:id', requireMod, async (req, res) => {
       if (warden && memberProfile) {
         const subject = status === 'fulfilled' ? `Live TV request added: ${cr.title}` : `Live TV request update: ${cr.title}`;
         const body = status === 'fulfilled'
-          ? `Good news! Your ${label} request for "${cr.title}" has been added to DungeonCast. Fire up the app and check it out.${cr.event_date ? `\n\nEvent timing: ${cr.event_date}` : ''}\n\nEnjoy! — The Dungeon Master`
-          : `Thanks for your ${label} request for "${cr.title}". Unfortunately we weren't able to add this one right now. Feel free to reach out if you have questions.\n\n— The Dungeon Master`;
+          ? `Good news! Your ${label} request for "${cr.title}" has been added to DungeonCast. Fire up the app and check it out.${cr.event_date ? `\n\nEvent timing: ${cr.event_date}` : ''}\n\nEnjoy! - The Dungeon Master`
+          : `Thanks for your ${label} request for "${cr.title}". Unfortunately we weren't able to add this one right now. Feel free to reach out if you have questions.\n\n- The Dungeon Master`;
         db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
           .run(genId(), warden.id, memberProfile.id, subject, body);
       }
@@ -1397,13 +1397,13 @@ app.patch('/api/admin/channel-requests/:id', requireMod, async (req, res) => {
             <h2>Your Live TV Request is Ready</h2>
             <div class="rule"></div>
             <p>Hi ${firstName},</p>
-            <p>Good news — your ${label} request for <strong>${cr.title}</strong> has been added to DungeonCast.${cr.event_date ? ` (${cr.event_date})` : ''}</p>
+            <p>Good news - your ${label} request for <strong>${cr.title}</strong> has been added to DungeonCast.${cr.event_date ? ` (${cr.event_date})` : ''}</p>
             <p>Open the DungeonCast app and you should find it in the lineup. Enjoy!</p>
             <a href="https://dungeoncast.cc" class="btn">Open DungeonCast →</a>
             <div class="rule"></div>
-            <p style="font-size:12px;color:#6b8f7a">— The Dungeon Master</p>
+            <p style="font-size:12px;color:#6b8f7a">- The Dungeon Master</p>
           `);
-          await sendMail(cr.member_email, `Added: ${cr.title} — DungeonCast`, html).catch(e => console.error('[channel fulfill email]', e.message));
+          await sendMail(cr.member_email, `Added: ${cr.title} - DungeonCast`, html).catch(e => console.error('[channel fulfill email]', e.message));
         } else {
           const html = emailShell(`
             <h2>Update on Your Live TV Request</h2>
@@ -1412,9 +1412,9 @@ app.patch('/api/admin/channel-requests/:id', requireMod, async (req, res) => {
             <p>Thanks for requesting <strong>${cr.title}</strong>. Unfortunately we weren't able to add this one right now.</p>
             <p>Feel free to reach out if you have any questions.</p>
             <div class="rule"></div>
-            <p style="font-size:12px;color:#6b8f7a">— The Dungeon Master</p>
+            <p style="font-size:12px;color:#6b8f7a">- The Dungeon Master</p>
           `);
-          await sendMail(cr.member_email, `Update: ${cr.title} — DungeonCast`, html).catch(e => console.error('[channel decline email]', e.message));
+          await sendMail(cr.member_email, `Update: ${cr.title} - DungeonCast`, html).catch(e => console.error('[channel decline email]', e.message));
         }
       }
     } catch(e) { console.error('[channel-request notify]', e.message); }
@@ -1532,7 +1532,7 @@ app.get('/api/admin/overview', requireMod, (req, res) => {
       if (soonest && soonest <= soon) expiringSoon++;
     }
 
-    // --- Unified recent activity feed (broad — many sources) ---
+    // --- Unified recent activity feed (broad - many sources) ---
     const events = [];
     const push = (kind, icon, title, text, at) => { if (at) events.push({ kind, icon, title, text, at: iso(at) }); };
 
@@ -1752,7 +1752,7 @@ app.post('/api/admin/demo-requests/:id/fulfill', requireAuth, async (req, res) =
     <p>Enjoying the demo? Get full access through Dungeon for just 1 credit per month.</p>
     <a href="https://enterdungeon.cc/redeem.html" class="btn">Get Full Access</a>
     <div class="rule"></div>
-    <p style="font-size:12px;color:#6b8f7a">Demo expires ${fmtExpiry}. — The Dungeon Master</p>
+    <p style="font-size:12px;color:#6b8f7a">Demo expires ${fmtExpiry}. - The Dungeon Master</p>
   `);
 
   try {
@@ -2019,7 +2019,7 @@ app.post('/api/admin/dc-demo', requireAuth, async (req, res) => {
   const html = emailShell(`
     <h2>Your DungeonCast Demo</h2>
     <div class="rule"></div>
-    <p>You've been granted a <strong>24-hour demo</strong> of DungeonCast — our live TV streaming service with hundreds of channels including sports, news, entertainment, and Formula 1.</p>
+    <p>You've been granted a <strong>24-hour demo</strong> of DungeonCast - our live TV streaming service with hundreds of channels including sports, news, entertainment, and Formula 1.</p>
     <div class="box">
       <div class="row"><span class="lbl">URL</span><span class="val">https://dungeoncast.cc</span></div>
       <div class="row"><span class="lbl">Username</span><span class="val">${username}</span></div>
@@ -2027,14 +2027,14 @@ app.post('/api/admin/dc-demo', requireAuth, async (req, res) => {
       <div class="row"><span class="lbl">Expires</span><span class="val">${fmtExpiry}</span></div>
     </div>
     <p>Open <a href="https://dungeoncast.cc" style="color:#34d399">dungeoncast.cc</a> in your browser and sign in with the credentials above. On iPhone, use Safari for the best experience.</p>
-    <p>If you enjoy the service, you can get full access through Dungeon — 1 credit per month.</p>
+    <p>If you enjoy the service, you can get full access through Dungeon - 1 credit per month.</p>
     <a href="https://enterdungeon.cc" class="btn">Learn More</a>
     <div class="rule"></div>
-    <p style="font-size:12px;color:#6b8f7a">Demo access expires ${fmtExpiry}. Credentials are single-use and non-transferable. — The Dungeon Master</p>
+    <p style="font-size:12px;color:#6b8f7a">Demo access expires ${fmtExpiry}. Credentials are single-use and non-transferable. - The Dungeon Master</p>
   `);
 
   try {
-    await sendMail(email, 'Your DungeonCast Demo — 24 Hours Starting Now', html);
+    await sendMail(email, 'Your DungeonCast Demo - 24 Hours Starting Now', html);
     res.json({ ok: true });
   } catch(e) {
     res.status(500).json({ error: e.message });
@@ -2075,7 +2075,7 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
     const doCast   = redemption.service === 'iptv'    || redemption.service === 'bundle';
 
     if (doStream) {
-      // Stack subscription — add 30 days to existing end date if still active
+      // Stack subscription - add 30 days to existing end date if still active
       const existingEnd = member.stremio_end ? new Date(member.stremio_end) : null;
       const startBase = (existingEnd && existingEnd > now) ? existingEnd : now;
       const end = new Date(startBase); end.setMonth(end.getMonth() + 1);
@@ -2094,7 +2094,7 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
         db.prepare('INSERT INTO iptv_accounts (id,profile_id,nodecast_user,xtream_url,xtream_user,xtream_pass,status) VALUES (?,?,?,?,?,?,?)')
           .run(genId(), profile.id, account_user, xtream_url||'http://line.dungeoncast.cc', xtream_user||account_user, xtream_pass||account_pass, 'active');
       }
-      // Stack IPTV subscription — add 30 days onto existing end date if still active
+      // Stack IPTV subscription - add 30 days onto existing end date if still active
       const existingIptvEnd = member.iptv_end ? new Date(member.iptv_end) : null;
       const iptvStartBase = (existingIptvEnd && existingIptvEnd > now) ? existingIptvEnd : now;
       const iptvEnd = new Date(iptvStartBase); iptvEnd.setMonth(iptvEnd.getMonth() + 1);
@@ -2127,7 +2127,7 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
 
   if (warden && profile) {
     const content = redemption.service === 'bundle'
-      ? `Your ${svcName} access has been set up — one account unlocks both.\n\nServer: https://dungeoncast.cc\nUsername: ${account_user}\nPassword: ${account_pass}\n\nDungeonStream (movies & shows) runs on Stremio, and DungeonCast (live TV) runs on Jellyfin — both use the login above. Check the Guides on your dashboard for setup help on each.${notes ? '\n\nNotes: ' + notes : ''}`
+      ? `Your ${svcName} access has been set up - one account unlocks both.\n\nServer: https://dungeoncast.cc\nUsername: ${account_user}\nPassword: ${account_pass}\n\nDungeonStream (movies & shows) runs on Stremio, and DungeonCast (live TV) runs on Jellyfin - both use the login above. Check the Guides on your dashboard for setup help on each.${notes ? '\n\nNotes: ' + notes : ''}`
       : redemption.service === 'stremio'
       ? `Your DungeonStream account has been set up.\n\nServer: https://dungeoncast.cc\nUsername: ${account_user}\nPassword: ${account_pass}\n\nDownload the Jellyfin app and use these credentials to sign in. Check the Guides on your dashboard for device-specific setup help.${notes ? '\n\nNotes: ' + notes : ''}`
       : `Your DungeonCast account has been set up.\n\nServer: https://dungeoncast.cc\nUsername: ${account_user}\nPassword: ${account_pass}\n\nDownload Jellyfin and add the server to get started. Check the Guides on your dashboard for setup help.${notes ? '\n\nNotes: ' + notes : ''}`;
@@ -2149,7 +2149,7 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
       <p>Use the credentials above to sign in. Follow our setup guide to get both apps connected in a couple of minutes.${notes ? '<br><br>Notes: ' + notes : ''}</p>
       <a href="https://enterdungeon.cc/welcome" class="btn">Get Started →</a>
       <div class="rule"></div>
-      <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. — The Dungeon Master</p>
+      <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. - The Dungeon Master</p>
     ` : redemption.service === 'stremio' ? `
       <h2>Your DungeonStream Account is Ready</h2>
       <div class="rule"></div>
@@ -2163,7 +2163,7 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
       <p>Follow our <a href="https://enterdungeon.cc/welcome" style="color:#34d399">Getting Started Guide</a> to download the app and connect in under 2 minutes.</p>
       <a href="https://enterdungeon.cc/welcome" class="btn">Get Started →</a>
       <div class="rule"></div>
-      <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. — The Dungeon Master</p>
+      <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. - The Dungeon Master</p>
     ` : `
       <h2>Your DungeonCast Account is Ready</h2>
       <div class="rule"></div>
@@ -2176,7 +2176,7 @@ app.post('/api/admin/redemptions/:id/fulfill', requireMod, async (req, res) => {
       <p>Open <a href="https://dungeoncast.cc" style="color:#34d399">dungeoncast.cc</a> in your browser and sign in with the credentials above.${notes ? '<br><br>Notes: ' + notes : ''}</p>
       <a href="https://dungeoncast.cc" class="btn">Open DungeonCast</a>
       <div class="rule"></div>
-      <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. — The Dungeon Master</p>
+      <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. - The Dungeon Master</p>
     `);
     try { await sendMail(member.email, subject, html); } catch(e) { console.error('Fulfill email error:', e); }
   }
@@ -2275,7 +2275,7 @@ app.post('/api/webhook/bmac', express.raw({type:'application/json'}), (req, res)
     }
 
     // Add credits
-    addCredit(profile.id, creditsToAdd, 'purchased', `Buy Me a Coffee — $${amount}`);
+    addCredit(profile.id, creditsToAdd, 'purchased', `Buy Me a Coffee - $${amount}`);
 
     // Check referral credit
     const member = db.prepare('SELECT * FROM members WHERE id=?').get(profile.member_id);
@@ -2284,7 +2284,7 @@ app.post('/api/webhook/bmac', express.raw({type:'application/json'}), (req, res)
       if (referrerProfile) {
         const alreadyRewarded = db.prepare("SELECT * FROM credit_transactions WHERE profile_id=? AND note LIKE ?").get(referrerProfile.id, `%Referral%${profile.screen_name}%`);
         if (!alreadyRewarded) {
-          addCredit(referrerProfile.id, 1, 'referral', `Referral bonus — @${profile.screen_name} made their first purchase`);
+          addCredit(referrerProfile.id, 1, 'referral', `Referral bonus - @${profile.screen_name} made their first purchase`);
         }
       }
     }
@@ -2345,7 +2345,7 @@ app.get('/api/credits', requireMember, (req, res) => {
   res.json({ balance: row.amount, transactions, profile_id: profile.id, screen_name: profile.screen_name });
 });
 
-// Leaderboard — top referrers
+// Leaderboard - top referrers
 app.get('/api/credits/leaderboard', requireMember, (req, res) => {
   const rows = db.prepare(`
     SELECT p.id, p.screen_name, p.avatar_url, p.avatar_color, p.tier,
@@ -2372,7 +2372,7 @@ app.get('/api/admin/credits', requireAuth, (req, res) => {
   res.json(rows);
 });
 
-// Admin: add or remove credits — also fires referral credit automatically
+// Admin: add or remove credits - also fires referral credit automatically
 app.post('/api/admin/credits/:profileId', requireAuth, (req, res) => {
   const { amount, type, note } = req.body;
   const profileId = req.params.profileId;
@@ -2427,7 +2427,7 @@ app.post('/api/credits/redeem', requireMember, async (req, res) => {
     : db.prepare('SELECT * FROM members WHERE LOWER(email)=LOWER(?)').get(profile.email);
   if (!member) return res.status(404).json({ error: 'Member record not found' });
 
-  const ok = deductCredit(profile.id, 1, 'redeemed', 'Redeemed Dungeon Credit — 1 month of full access');
+  const ok = deductCredit(profile.id, 1, 'redeemed', 'Redeemed Dungeon Credit - 1 month of full access');
   if (!ok) return res.status(400).json({ error: 'Insufficient credits' });
 
   const redemptionId = genId();
@@ -2470,7 +2470,7 @@ app.post('/api/credits/redeem', requireMember, async (req, res) => {
         console.error('[redeem] StremGate provision failed:', sgRes.error);
       }
     } else {
-      // Existing member — extend their StremGate access another 30 days
+      // Existing member - extend their StremGate access another 30 days
       await sgExtend(member.stremgate_member_id, 30);
       await sgEnable(member.stremgate_member_id);
     }
@@ -2485,13 +2485,13 @@ app.post('/api/credits/redeem', requireMember, async (req, res) => {
             .run(st.email, st.password, st.authKey, member.id);
           console.log('[redeem] Stremio account created for:', member.email);
         } else if (st.existed) {
-          console.log('[redeem] Email already on Stremio — manual flow for:', member.email);
+          console.log('[redeem] Email already on Stremio - manual flow for:', member.email);
         }
       }
     }
   } catch(e) { console.error('[redeem] StremGate/Stremio error:', e.message); }
 
-  // Mark redemption fulfilled immediately — no admin step
+  // Mark redemption fulfilled immediately - no admin step
   db.prepare("UPDATE redemptions SET status='fulfilled', fulfilled_at=CURRENT_TIMESTAMP, account_user=?, notes=? WHERE id=?")
     .run(jfUser, 'Auto-provisioned', redemptionId);
 
@@ -2501,17 +2501,17 @@ app.post('/api/credits/redeem', requireMember, async (req, res) => {
     if (warden) {
       db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
         .run(genId(), warden.id, profile.id, 'Your Dungeon access is active 🎟️',
-          'Your Dungeon Credit has been redeemed — you now have a full month of DungeonStream (movies & shows) and DungeonCast (live TV).\n\nOpen your dashboard to find your login details and setup guides for both. Enjoy!');
+          'Your Dungeon Credit has been redeemed - you now have a full month of DungeonStream (movies & shows) and DungeonCast (live TV).\n\nOpen your dashboard to find your login details and setup guides for both. Enjoy!');
     }
     await sendMail(member.email, 'Your Dungeon access is active', emailShell(`
       <h2>You're all set 🎟️</h2>
       <div class="rule"></div>
       <p>Your Dungeon Credit has been redeemed. You've got a full month of everything:</p>
-      <p>🌊 <strong>DungeonStream</strong> — movies &amp; shows on Stremio<br/>📡 <strong>DungeonCast</strong> — live TV on Jellyfin</p>
+      <p>🌊 <strong>DungeonStream</strong> - movies &amp; shows on Stremio<br/>📡 <strong>DungeonCast</strong> - live TV on Jellyfin</p>
       <p>Head to your dashboard for your login details and quick setup guides for both apps.</p>
       <a href="https://enterdungeon.cc/welcome" class="btn">Get Started →</a>
       <div class="rule"></div>
-      <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. — The Dungeon Master</p>
+      <p style="font-size:12px;color:#6b8f7a">Keep your credentials private. - The Dungeon Master</p>
     `)).catch(()=>{});
   } catch(e) { console.error('[redeem] notify error:', e.message); }
 
@@ -2609,7 +2609,7 @@ app.patch('/api/messages/:id/read', requireMember, (req, res) => {
 app.delete('/api/messages/:id', requireMember, (req, res) => {
   const profile = getProfile(req);
   if (!profile) return res.status(403).json({ error: 'Forbidden' });
-  // Soft delete — mark deleted for sender or recipient
+  // Soft delete - mark deleted for sender or recipient
   const msg = db.prepare('SELECT * FROM messages WHERE id=?').get(req.params.id);
   if (!msg) return res.status(404).json({ error: 'Not found' });
   if (msg.sender_profile_id === profile.id)
@@ -2712,7 +2712,7 @@ app.post('/api/forum/threads', requireMember, submitLimiter, (req, res) => {
   // Neuts cannot post
   if (profile.tier === 'neut') return res.status(403).json({ error: 'You must be an approved member to post.' });
 
-  // Restricted categories — only warden/admin
+  // Restricted categories - only warden/admin
   const cat = db.prepare('SELECT * FROM forum_categories WHERE id=?').get(category_id);
   if (!cat) return res.status(404).json({ error: 'Category not found.' });
   if (cat.restricted && !['warden','admin'].includes(profile.tier))
@@ -2850,7 +2850,7 @@ app.post('/api/admin/resend/application/:id', requireAuth, async (req, res) => {
   try {
     const applicant = db.prepare('SELECT * FROM applicants WHERE id=?').get(req.params.id);
     if (!applicant) return res.status(404).json({ error: 'Not found' });
-    await sendMail(applicant.email, 'Application Received — Dungeon', emailApplicationReceived(applicant.first_name, applicant.screen_name||applicant.first_name));
+    await sendMail(applicant.email, 'Application Received - Dungeon', emailApplicationReceived(applicant.first_name, applicant.screen_name||applicant.first_name));
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -2981,7 +2981,7 @@ app.post('/api/admin/cleanup-db', requireAuth, (req, res) => {
 
 
 // ══════════════════════════════════════════════════════════════════════════════
-// ADMIN ROUTES — Clean rewrite
+// ADMIN ROUTES - Clean rewrite
 // ══════════════════════════════════════════════════════════════════════════════
 
 // Helper: get full member data
@@ -3021,14 +3021,14 @@ app.post('/api/admin/members/:id', requireMod, async (req, res) => {
         const wasStaff = staffTiers.includes(oldTier);
 
         if (isNowStaff && !wasStaff) {
-          // Promoted to staff — grant permanent Jellyfin access
+          // Promoted to staff - grant permanent Jellyfin access
           try {
             const username = m.jellyfin_user || m.stremio_email || profile.screen_name?.toLowerCase().replace(/[^a-z0-9_]/g,'_');
             const password = m.jellyfin_pass || m.stremio_pass || mkRandPass();
             // Create account on VPS
             const jfRes = await jellyfinCreateUser(username, password, JELLYFIN_URL, JELLYFIN_API_KEY);
             if (jfRes?.status === 200 || jfRes?.status === 201 || jfRes?.status === 400) {
-              // 400 may mean user already exists — either way get their ID
+              // 400 may mean user already exists - either way get their ID
               const jfId = await jellyfinGetUserId(username, JELLYFIN_URL, JELLYFIN_API_KEY);
               if (jfId) await jellyfinGrantLibraryAccess(jfId, ['Movies', 'Shows'], JELLYFIN_URL, JELLYFIN_API_KEY);
             }
@@ -3042,11 +3042,11 @@ app.post('/api/admin/members/:id', requireMod, async (req, res) => {
             const forever = new Date(Date.now() + 10*365*24*60*60*1000).toISOString();
             db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, cast_notified=0, credit_welcome_pending=1 WHERE id=?')
               .run(username, password, password, username, password, new Date().toISOString(), forever, new Date().toISOString(), forever, req.params.id);
-            console.log('[tier] Staff promotion — granted permanent access to:', username);
+            console.log('[tier] Staff promotion - granted permanent access to:', username);
           } catch(e) { console.error('[tier] Jellyfin grant error:', e.message); }
 
         } else if (!isNowStaff && wasStaff) {
-          // Demoted from staff — revoke Jellyfin access
+          // Demoted from staff - revoke Jellyfin access
           try {
             const username = m.jellyfin_user || m.stremio_email;
             if (username) {
@@ -3063,7 +3063,7 @@ app.post('/api/admin/members/:id', requireMod, async (req, res) => {
             }
             // Clear subscription dates
             db.prepare('UPDATE members SET stremio_end=NULL, iptv_end=NULL WHERE id=?').run(req.params.id);
-            console.log('[tier] Staff demotion — revoked access for:', username);
+            console.log('[tier] Staff demotion - revoked access for:', username);
           } catch(e) { console.error('[tier] Jellyfin revoke error:', e.message); }
         }
       }
@@ -3217,7 +3217,7 @@ app.post('/api/admin/invites/create', requireMod, async (req, res) => {
     const { email, amount, note } = req.body;
     if (!email || !isValidEmail(email)) return res.status(400).json({ error: 'Valid email required' });
     if (!amount || amount < 1) return res.status(400).json({ error: 'Amount must be at least $1' });
-    if (!STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured — contact admin' });
+    if (!STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured - contact admin' });
 
     const token = require('crypto').randomBytes(24).toString('hex');
     const inviteId = genId();
@@ -3259,12 +3259,12 @@ app.post('/api/admin/invites/create', requireMod, async (req, res) => {
     const html = emailShell(`
       <h2>You're Invited to Dungeon</h2>
       <div class="rule"></div>
-      <p>You've been personally invited to join <strong>Dungeon</strong> — a private streaming service.</p>
+      <p>You've been personally invited to join <strong>Dungeon</strong> - a private streaming service.</p>
       <p>Click below to complete your signup. Your membership fee is <strong>$${amount}</strong>.</p>
       ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
-      <a href="${session.url}" class="btn">Complete Signup — $${amount}</a>
+      <a href="${session.url}" class="btn">Complete Signup - $${amount}</a>
       <div class="rule"></div>
-      <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. It is for you only. — The Dungeon Master</p>
+      <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. It is for you only. - The Dungeon Master</p>
     `);
     await sendMail(email, "You're Invited to Dungeon", html);
 
@@ -3340,9 +3340,9 @@ app.post('/api/invite/:token/complete', async (req, res) => {
 
     // Check screen name not taken
     const snTaken = db.prepare('SELECT id FROM profiles WHERE LOWER(screen_name)=LOWER(?)').get(screen_name);
-    if (snTaken) return res.status(400).json({ error: 'Screen name already taken — try another' });
+    if (snTaken) return res.status(400).json({ error: 'Screen name already taken - try another' });
 
-    // Check email not already used (check BOTH members and profiles — profiles.email is UNIQUE)
+    // Check email not already used (check BOTH members and profiles - profiles.email is UNIQUE)
     const emailInMembers = db.prepare('SELECT id FROM members WHERE LOWER(email)=LOWER(?)').get(acctEmail);
     const emailInProfiles = db.prepare('SELECT id FROM profiles WHERE LOWER(email)=LOWER(?)').get(acctEmail);
     if (emailInMembers || emailInProfiles) return res.status(400).json({ error: 'An account with this email already exists' });
@@ -3420,7 +3420,7 @@ app.post('/api/invite/:token/complete', async (req, res) => {
 
         db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, expired_notified=0, expiry_warned=0, cast_notified=0, credit_welcome_pending=1 WHERE id=?')
           .run(jfUser, jfPass, jfPass, jfUser, jfPass, now.toISOString(), oneMonth.toISOString(), now.toISOString(), oneMonth.toISOString(), memberId);
-        console.log("[invite/complete] Father's Day promo — provisioned 1 month of both services for:", jfUser);
+        console.log("[invite/complete] Father's Day promo - provisioned 1 month of both services for:", jfUser);
       } catch(e) { console.error("[invite/complete] Father's Day provision error:", e.message); }
     }
 
@@ -3450,7 +3450,7 @@ app.post('/api/invite/:token/complete', async (req, res) => {
                 .run(st.email, st.password, st.authKey, memberId);
               console.log('[stremio] Account created + addon installed for:', email);
             } else if (st.existed) {
-              console.log('[stremio] Email already registered on Stremio — manual flow for:', email);
+              console.log('[stremio] Email already registered on Stremio - manual flow for:', email);
             } else {
               console.error('[stremio] Provision failed:', st.error);
               notify('Stremio provision failed', `Could not create Stremio account for @${screen_name}: ${st.error}`, {
@@ -3458,12 +3458,12 @@ app.post('/api/invite/:token/complete', async (req, res) => {
               });
             }
           } else {
-            console.error('[stremio] No manifest URL from StremGate — skipped Stremio account for:', email);
+            console.error('[stremio] No manifest URL from StremGate - skipped Stremio account for:', email);
           }
         } catch(e) { console.error('[stremio] Provision error:', e.message); }
         // --- end Stremio account auto-provisioning ---
       } else {
-        // Non-fatal — log it, notify warden, but don't fail the whole signup
+        // Non-fatal - log it, notify warden, but don't fail the whole signup
         console.error('[stremgate] Provision failed:', sgResult.error);
         notify('StremGate provision failed', `Could not create StremGate account for @${screen_name}: ${sgResult.error}`, {
           kind: 'error', tags: 'warning', priority: 4
@@ -3479,7 +3479,7 @@ app.post('/api/invite/:token/complete', async (req, res) => {
     if (/UNIQUE constraint failed: profiles.email|UNIQUE constraint failed: members.email/.test(e.message))
       return res.status(400).json({ error: 'An account with this email already exists' });
     if (/UNIQUE constraint failed: profiles.screen_name/.test(e.message))
-      return res.status(400).json({ error: 'Screen name already taken — try another' });
+      return res.status(400).json({ error: 'Screen name already taken - try another' });
     res.status(500).json({ error: 'Could not create your account. Please try again or contact support.' });
   }
 });
@@ -3583,11 +3583,11 @@ app.get('/api/dealer/dashboard', requireDealer, (req, res) => {
 app.post('/api/dealer/invites/create', requireDealer, async (req, res) => {
   try {
     const { email, amount, note } = req.body;
-    // Email is now OPTIONAL — if omitted, Stripe collects it on the payment page
+    // Email is now OPTIONAL - if omitted, Stripe collects it on the payment page
     const hasEmail = email && email.trim();
     if (hasEmail && !isValidEmail(email.trim())) return res.status(400).json({ error: 'That email looks invalid' });
     if (!amount || amount < 1) return res.status(400).json({ error: 'Amount must be at least $1' });
-    if (!STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured — contact admin' });
+    if (!STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured - contact admin' });
 
     const token = require('crypto').randomBytes(24).toString('hex');
     const inviteId = genId();
@@ -3631,12 +3631,12 @@ app.post('/api/dealer/invites/create', requireDealer, async (req, res) => {
       const html = emailShell(`
         <h2>You're Invited to Dungeon</h2>
         <div class="rule"></div>
-        <p>You've been personally invited to join <strong>Dungeon</strong> — a private streaming service.</p>
+        <p>You've been personally invited to join <strong>Dungeon</strong> - a private streaming service.</p>
         <p>Click below to complete your signup. Your membership fee is <strong>$${amount}</strong>.</p>
         ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
-        <a href="${session.url}" class="btn">Complete Signup — $${amount}</a>
+        <a href="${session.url}" class="btn">Complete Signup - $${amount}</a>
         <div class="rule"></div>
-        <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. It is for you only. — The Dungeon Master</p>
+        <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. It is for you only. - The Dungeon Master</p>
       `);
       await sendMail(email.trim(), "You're Invited to Dungeon", html);
     }
@@ -3665,7 +3665,7 @@ app.post('/api/promo/fathers-day/create', requireDealer, async (req, res) => {
     const { email, note } = req.body;
     const hasEmail = email && email.trim();
     if (hasEmail && !isValidEmail(email.trim())) return res.status(400).json({ error: 'That email looks invalid' });
-    if (!STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured — contact admin' });
+    if (!STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured - contact admin' });
 
     const amount = PROMO_FATHERS_DAY.amount;
     const token = require('crypto').randomBytes(24).toString('hex');
@@ -3675,7 +3675,7 @@ app.post('/api/promo/fathers-day/create', requireDealer, async (req, res) => {
     const stripeParams = new URLSearchParams({
       'payment_method_types[]': 'card',
       'line_items[0][price_data][currency]': 'usd',
-      'line_items[0][price_data][product_data][name]': "Dungeon — Father's Day Special",
+      'line_items[0][price_data][product_data][name]': "Dungeon - Father's Day Special",
       'line_items[0][price_data][product_data][description]': 'Includes your first month of DungeonStream + DungeonCast',
       'line_items[0][price_data][unit_amount]': String(amount * 100),
       'line_items[0][quantity]': '1',
@@ -3705,15 +3705,15 @@ app.post('/api/promo/fathers-day/create', requireDealer, async (req, res) => {
 
     if (hasEmail) {
       const html = emailShell(`
-        <h2>Happy Father's Day — You're Invited to Dungeon</h2>
+        <h2>Happy Father's Day - You're Invited to Dungeon</h2>
         <div class="rule"></div>
         <p>A Father's Day gift: join <strong>Dungeon</strong> for just <strong>$${amount}</strong>, and your first month of <strong>DungeonStream</strong> and <strong>DungeonCast</strong> is included.</p>
         ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
-        <a href="${session.url}" class="btn">Claim the Father's Day Special — $${amount}</a>
+        <a href="${session.url}" class="btn">Claim the Father's Day Special - $${amount}</a>
         <div class="rule"></div>
-        <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. — The Dungeon Master</p>
+        <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. - The Dungeon Master</p>
       `);
-      await sendMail(email.trim(), "Happy Father's Day — Your Dungeon Invite", html);
+      await sendMail(email.trim(), "Happy Father's Day - Your Dungeon Invite", html);
     }
 
     notify("Father's Day promo sent", `@${req.profile.screen_name} created a Father's Day invite ($${amount})${hasEmail ? ' for ' + email.trim() : ' (link to share)'}`, {
@@ -3782,11 +3782,11 @@ app.patch('/api/dealer/invites/:id', requireDealer, async (req, res) => {
       const html = emailShell(`
         <h2>You're Invited to Dungeon</h2>
         <div class="rule"></div>
-        <p>You've been personally invited to join <strong>Dungeon</strong> — a private streaming service.</p>
+        <p>You've been personally invited to join <strong>Dungeon</strong> - a private streaming service.</p>
         <p>Click below to complete your signup. Your membership fee is <strong>$${amt}</strong>.</p>
-        <a href="${inviteUrl}" class="btn">Complete Signup — $${amt}</a>
+        <a href="${inviteUrl}" class="btn">Complete Signup - $${amt}</a>
         <div class="rule"></div>
-        <p style="font-size:12px;color:#6b8f7a">This invite is for you only. — The Dungeon Master</p>
+        <p style="font-size:12px;color:#6b8f7a">This invite is for you only. - The Dungeon Master</p>
       `);
       await sendMail(sendTo, "You're Invited to Dungeon", html);
     }
@@ -3995,7 +3995,7 @@ app.post('/api/member/welcome-done', requireMember, (req, res) => {
 });
 
 
-// DELETE member (admin only — warden tier)
+// DELETE member (admin only - warden tier)
 // Clear the email off an invite (lets the buyer finish under a different email).
 // Useful when someone paid with an email that already has an account.
 app.post('/api/admin/invite-clear-email', requireMod, (req, res) => {
@@ -4011,7 +4011,7 @@ app.post('/api/admin/invite-clear-email', requireMod, (req, res) => {
 });
 
 // ── Account Lookup & Cleanup (warden tool) ────────────────────────────────────
-// Find EVERYTHING tied to an email across all tables — useful for diagnosing
+// Find EVERYTHING tied to an email across all tables - useful for diagnosing
 // "email already exists" and cleaning up leftover/orphaned records.
 app.get('/api/admin/account-lookup', requireMod, (req, res) => {
   try {
@@ -4119,7 +4119,7 @@ app.get('/api/admin/demos', requireMod, (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// POST fulfill demo — creates temp Jellyfin account with 24h access
+// POST fulfill demo - creates temp Jellyfin account with 24h access
 app.post('/api/admin/demos/:id/fulfill', requireMod, async (req, res) => {
   try {
     const demo = db.prepare('SELECT * FROM demo_requests WHERE id=?').get(req.params.id);
@@ -4186,7 +4186,7 @@ app.post('/api/dealer/demo/create', requireDealer, async (req, res) => {
 });
 
 
-// POST create free invite (admin only — no Stripe)
+// POST create free invite (admin only - no Stripe)
 app.post('/api/admin/invites/create-free', requireMod, async (req, res) => {
   try {
     const { email, note, tier } = req.body;
@@ -4210,7 +4210,7 @@ app.post('/api/admin/invites/create-free', requireMod, async (req, res) => {
       const html = emailShell(`
         <h2>You've Been Invited to Dungeon</h2>
         <div class="rule"></div>
-        <p>You've been personally invited to join Dungeon — a private streaming community.</p>
+        <p>You've been personally invited to join Dungeon - a private streaming community.</p>
         ${note ? `<p><em>"${note}"</em></p>` : ''}
         <a href="${joinUrl}" class="btn">Accept Invite →</a>
         <div class="rule"></div>
@@ -4246,14 +4246,14 @@ app.post('/api/admin/demos/create-link', requireMod, async (req, res) => {
       const html = emailShell(`
         <h2>You're Invited to Try Dungeon</h2>
         <div class="rule"></div>
-        <p>You've been invited to try out Dungeon — a private streaming service.</p>
+        <p>You've been invited to try out Dungeon - a private streaming service.</p>
         ${note ? `<p><em>"${note}"</em></p>` : ''}
         <p>Click below to claim your free 24-hour demo account:</p>
         <a href="${demoUrl}" class="btn">Claim Demo Access →</a>
         <div class="rule"></div>
         <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days.</p>
       `);
-      await sendMail(email, 'Try Dungeon Free — 24 Hour Demo', html).catch(e => console.error('Demo link email error:', e.message));
+      await sendMail(email, 'Try Dungeon Free - 24 Hour Demo', html).catch(e => console.error('Demo link email error:', e.message));
     }
 
     res.json({ ok: true, url: demoUrl, id });
@@ -4266,7 +4266,7 @@ app.get('/demo', (req, res) => {
 });
 
 
-// GET demo status by token (public — for demo landing page)
+// GET demo status by token (public - for demo landing page)
 app.get('/api/demo/status', (req, res) => {
   try {
     const { token } = req.query;
@@ -4300,13 +4300,13 @@ app.post('/api/dealer/demo/create-link', requireDealer, async (req, res) => {
       const html = emailShell(`
         <h2>You're Invited to Try Dungeon</h2>
         <div class="rule"></div>
-        <p>You've been invited to try out Dungeon — a private streaming service.</p>
+        <p>You've been invited to try out Dungeon - a private streaming service.</p>
         ${note ? `<p><em>"${note}"</em></p>` : ''}
         <a href="${demoUrl}" class="btn">Claim Demo Access →</a>
         <div class="rule"></div>
         <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days.</p>
       `);
-      await sendMail(email, 'Try Dungeon Free — 24 Hour Demo', html).catch(e => console.error('Demo link email error:', e.message));
+      await sendMail(email, 'Try Dungeon Free - 24 Hour Demo', html).catch(e => console.error('Demo link email error:', e.message));
     }
 
     res.json({ ok: true, url: demoUrl, id });

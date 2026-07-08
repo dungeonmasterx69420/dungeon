@@ -12,7 +12,7 @@
   const MODS = ['mod','admin','warden'];
 
   fetch('/api/member/me').then(r=>r.json()).then(d=>{
-    // Gate the "Guides" footer link — only active subscribers should see it,
+    // Gate the "Guides" footer link - only active subscribers should see it,
     // since the guides reveal service setup specifics.
     try {
       const m = (d && d.member) || {};

@@ -1,12 +1,12 @@
-// stremio.js — Stremio account auto-provisioning for enterdungeon.cc
+// stremio.js - Stremio account auto-provisioning for enterdungeon.cc
 // Drop this file next to server.js (same pattern as stremgate.js).
 //
 // What it does: creates a real Stremio account for a member (their email +
 // a generated 8-char password), then sets their addon collection to ONLY
 // Cinemeta + their personal Dungeon (StremGate) addon. The member never
-// touches the Add-ons screen — they just log into the Stremio app.
+// touches the Add-ons screen - they just log into the Stremio app.
 //
-// No env vars needed — api.strem.io is public and unauthenticated
+// No env vars needed - api.strem.io is public and unauthenticated
 // (the authKey returned by register/login IS the auth).
 
 const STREMIO_API = 'https://api.strem.io/api';
@@ -90,7 +90,7 @@ async function applyDungeonCollection(authKey, manifestUrl) {
 //   { ok: false, existed: true }             ← email already has a Stremio account
 //   { ok: false, error }                     ← anything else
 //
-// On `existed`, store nothing — the DungeonStream page falls back to the
+// On `existed`, store nothing - the DungeonStream page falls back to the
 // manual "Add to Stremio" link flow for that member.
 // ─────────────────────────────────────────────────────────────────────────────
 async function stremioProvision({ email, manifestUrl }) {
@@ -112,7 +112,7 @@ async function stremioProvision({ email, manifestUrl }) {
     await applyDungeonCollection(authKey, manifestUrl);
   } catch (e) {
     // Account exists but addon install failed (StremGate hiccup, manifest 404).
-    // Still return ok with creds — a resync can finish the job later, and the
+    // Still return ok with creds - a resync can finish the job later, and the
     // member can at least log in.
     console.error('[stremio] addon install error (account created):', e.message);
   }
@@ -125,7 +125,7 @@ async function stremioProvision({ email, manifestUrl }) {
 // installed junk, addon install failed during provision).
 // Tries the stored authKey first; if it was invalidated (password reset,
 // "log out all devices"), falls back to email+password login.
-// Returns { ok, authKey, newAuthKey } — persist authKey when newAuthKey=true.
+// Returns { ok, authKey, newAuthKey } - persist authKey when newAuthKey=true.
 // ─────────────────────────────────────────────────────────────────────────────
 async function stremioResync({ authKey, email, password, manifestUrl }) {
   let key = authKey;
