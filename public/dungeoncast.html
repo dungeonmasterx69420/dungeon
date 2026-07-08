@@ -94,7 +94,7 @@
     <span class="page-sigil" aria-hidden="true">📡</span>
     <div class="page-title">DungeonCast</div>
   </div>
-  <div class="page-sub">Live TV, sports, PPV events and more — powered by Jellyfin and your Dungeon membership.</div>
+  <div class="page-sub">Live TV, sports, PPV events and more — part of your Dungeon membership.</div>
 
   <div class="cred-card">
     <div class="cred-card-title">Your DungeonCast Account <span class="badge" id="statusBadge"></span></div>
@@ -139,6 +139,7 @@
     </div>
   </div>
 
+  <div id="appSection" style="display:none">
   <div class="section-head">Get the App</div>
   <div class="app-grid">
     <a class="app-card" href="https://play.google.com/store/apps/details?id=org.jellyfin.androidtv" target="_blank" rel="noopener">
@@ -153,6 +154,7 @@
       <div class="app-icon">🌐</div>
       <div><div class="app-name">Web Browser</div><div class="app-platform">Windows · Mac · Any device</div></div>
     </a>
+  </div>
   </div>
 
   <div class="section-head">What's Included</div>
@@ -218,6 +220,7 @@
     if (user) {
       document.getElementById('credPlaceholder').style.display = 'none';
       document.getElementById('credActive').style.display = 'block';
+      document.getElementById('appSection').style.display = 'block';
       document.getElementById('dcUser').textContent = user;
       passRaw = pass || '';
 

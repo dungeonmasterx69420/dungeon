@@ -163,9 +163,28 @@ footer a:hover{color:var(--t2)}
 </div>
 
 <script>
-fetch('/api/member/me').then(r=>r.json()).then(d=>{
-  if(!d.authenticated){window.location.href='/login.html';}
-});
+(async function(){
+  const d = await fetch('/api/member/me').then(r=>r.json()).catch(()=>({}));
+  if(!d.authenticated){ window.location.href='/login.html'; return; }
+  // Only active subscribers may view setup guides — they reveal service specifics.
+  const m = d.member || {};
+  const tier = m.profile?.tier;
+  const now = new Date();
+  const parseEnd = v => v ? new Date(String(v).includes('T') ? v : v + 'T00:00:00Z') : null;
+  const streamEnd = parseEnd(m.stremio_end), castEnd = parseEnd(m.iptv_end);
+  const isPerm = ['family','dealer','mod','admin','warden'].includes(tier);
+  const hasAccess = isPerm || (streamEnd && streamEnd > now) || (castEnd && castEnd > now);
+  if(!hasAccess){
+    // No subscription — show a gate instead of the guide content.
+    document.querySelector('.page').innerHTML =
+      '<h1>Setup Guide</h1>'+
+      '<div class="sub" style="margin-bottom:24px">Setup guides unlock once you have access. Redeem a credit to get started — you can also grab a free demo first to try things out.</div>'+
+      '<div style="display:flex;gap:10px;flex-wrap:wrap">'+
+      '<a href="/redeem.html" style="display:inline-block;padding:12px 22px;background:var(--ember,#34d399);border-radius:9px;color:#08110d;font-size:13px;font-weight:700;text-decoration:none">Redeem a Credit</a>'+
+      '<a href="/dashboard.html" style="display:inline-block;padding:12px 22px;background:var(--s2,#141c1a);border:1px solid var(--bdr2,rgba(52,211,153,.2));border-radius:9px;color:var(--txt,#dce8e3);font-size:13px;font-weight:700;text-decoration:none">Back to Dashboard</a>'+
+      '</div>';
+  }
+})();
 async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
 </script>
   <script src="/notif-bell.js"></script>

@@ -11,21 +11,31 @@
 
   const MODS = ['mod','admin','warden'];
 
-  // Defer until the page has fully loaded so we never race the host page's
-  // own /api/member/me auth check (which could cause a transient redirect).
-  function start(){
-    setTimeout(checkAccess, 800);
-  }
-  if (document.readyState === 'complete') start();
-  else window.addEventListener('load', start);
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    // Gate the "Guides" footer link — only active subscribers should see it,
+    // since the guides reveal service setup specifics.
+    try {
+      const m = (d && d.member) || {};
+      const tier = m.profile && m.profile.tier;
+      const now = new Date();
+      const pe = v => v ? new Date(String(v).indexOf('T')>-1 ? v : v + 'T00:00:00Z') : null;
+      const se = pe(m.stremio_end), ce = pe(m.iptv_end);
+      const perm = ['family','dealer','mod','admin','warden'].indexOf(tier) > -1;
+      const hasAccess = perm || (se && se > now) || (ce && ce > now);
+      if (!hasAccess) {
+        document.querySelectorAll('footer a[href="/guides.html"]').forEach(a => {
+          const sep = a.nextElementSibling;
+          if (sep && sep.classList && sep.classList.contains('sep')) sep.remove();
+          else { const prev = a.previousElementSibling; if (prev && prev.classList && prev.classList.contains('sep')) prev.remove(); }
+          a.remove();
+        });
+      }
+    } catch(e){}
 
-  function checkAccess(){
-    fetch('/api/member/me', { credentials: 'same-origin' }).then(r=>r.json()).then(d=>{
-      const tier = d && d.authenticated && d.member && d.member.profile && d.member.profile.tier;
-      if (!tier || !MODS.includes(tier)) return;   // only staff see the bell
-      inject();
-    }).catch(()=>{});  // fully silent — never affects the host page
-  }
+    const tier = d && d.authenticated && d.member && d.member.profile && d.member.profile.tier;
+    if (!tier || !MODS.includes(tier)) return;   // only staff see the bell
+    inject();
+  }).catch(()=>{});
 
   function inject(){
     // --- styles ---
@@ -76,7 +86,7 @@
       </div>`;
     document.body.appendChild(wrap);
 
-    const DOT = {application:'#34d399',support:'#fbbf24',demo:'#60a5fa',dealer:'#34d399',redemption:'#fbbf24',channel:'#60a5fa',test:'#4d6b62',info:'#4d6b62'};
+    const DOT = {application:'#34d399',support:'#fbbf24',demo:'#60a5fa',dealer:'#34d399',redemption:'#fbbf24',test:'#4d6b62',info:'#4d6b62'};
     let open = false;
 
     function timeAgo(dt){
