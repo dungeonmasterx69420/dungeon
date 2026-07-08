@@ -94,7 +94,7 @@
     <span class="page-sigil" aria-hidden="true">📡</span>
     <div class="page-title">DungeonCast</div>
   </div>
-  <div class="page-sub">Live TV, sports, PPV events and more — part of your Dungeon membership.</div>
+  <div class="page-sub">Live TV, sports, PPV events and more - part of your Dungeon membership.</div>
 
   <div class="cred-card">
     <div class="cred-card-title">Your DungeonCast Account <span class="badge" id="statusBadge"></span></div>
@@ -110,7 +110,7 @@
       <div class="cred-row">
         <div class="cred-label">Username</div>
         <div class="cred-val-row">
-          <span class="cred-val" id="dcUser">—</span>
+          <span class="cred-val" id="dcUser">-</span>
           <button class="copy-btn" onclick="copyField('dcUser',this)">Copy</button>
         </div>
       </div>
@@ -125,8 +125,8 @@
       <div class="cred-row">
         <div class="cred-label">Subscription</div>
         <div class="sub-row">
-          <span class="sub-expiry" id="subExpiry">—</span>
-          <span class="sub-days" id="subDays">—</span>
+          <span class="sub-expiry" id="subExpiry">-</span>
+          <span class="sub-days" id="subDays">-</span>
         </div>
       </div>
       <div class="cred-note">Use your Server URL, username and password to log into any Jellyfin app below. Check the <a href="/guides.html">Guides</a> for device-specific setup help.</div>
@@ -159,7 +159,7 @@
 
   <div class="section-head">What's Included</div>
   <div class="features">
-    <div class="feat"><div class="feat-icon">📡</div><div class="feat-title">Live TV & Sports</div><div class="feat-desc">Thousands of live channels — sports, news, entertainment and more.</div></div>
+    <div class="feat"><div class="feat-icon">📡</div><div class="feat-title">Live TV & Sports</div><div class="feat-desc">Thousands of live channels - sports, news, entertainment and more.</div></div>
     <div class="feat"><div class="feat-icon">🥊</div><div class="feat-title">PPV Events</div><div class="feat-desc">Major fights and pay-per-view events included at no extra cost.</div></div>
     <div class="feat"><div class="feat-icon">🔑</div><div class="feat-title">Your Own Account</div><div class="feat-desc">Personal login with dedicated credentials just for you.</div></div>
     <div class="feat"><div class="feat-icon">💳</div><div class="feat-title">1 Credit / Month</div><div class="feat-desc">1 credit gets you a full month. Credits never expire.</div></div>
@@ -200,7 +200,7 @@
 
   fetch('/api/member/me?t=' + Date.now(), { credentials: 'same-origin', cache: 'no-store' }).then(r => r.json()).then(d => {
     if (!d.authenticated) {
-      // Retry once before giving up — guards against a transient auth blip
+      // Retry once before giving up - guards against a transient auth blip
       return fetch('/api/member/me?t=' + Date.now(), { credentials: 'same-origin', cache: 'no-store' }).then(r => r.json()).then(d2 => {
         if (!d2.authenticated) { window.location.href = '/login.html'; return Promise.reject('noauth'); }
         return d2;
@@ -256,7 +256,7 @@
     }
   }).catch((err) => {
     // A genuine auth failure already redirected above. If we get here, it was an
-    // error while rendering the page — log it but DON'T log the user out.
+    // error while rendering the page - log it but DON'T log the user out.
     if (err === 'noauth') return;
     console.error('[dungeoncast] render error:', err);
   });

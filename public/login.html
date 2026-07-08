@@ -139,14 +139,14 @@
         btn.textContent='Unlock';
         if(data.error && data.error.includes('locked')) {
           btn.disabled=true;
-          btn.textContent='Locked — try again in 5 min';
+          btn.textContent='Locked - try again in 5 min';
           setTimeout(()=>{btn.disabled=false;btn.textContent='Unlock';err.style.display='none';},5*60*1000);
         }
       }
     }catch{err.textContent='Connection error. Please try again.';err.style.display='block';btn.disabled=false;btn.textContent='Unlock'}
   }
 
-  // Smart logo link — go to dashboard if logged in
+  // Smart logo link - go to dashboard if logged in
   fetch('/api/member/me').then(r=>r.json()).then(d=>{
     const logo=document.getElementById('logoLink');
     if(logo && d.authenticated) logo.href='/dashboard.html';

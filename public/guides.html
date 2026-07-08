@@ -68,17 +68,17 @@ footer a:hover{color:var(--t2)}
 
 <div class="page">
   <h1>Setup Guide</h1>
-  <div class="sub">Your Dungeon access has two parts — <strong>DungeonStream</strong> for movies &amp; shows, and <strong>DungeonCast</strong> for live TV. Here's how to set up each. Takes a couple of minutes.</div>
+  <div class="sub">Your Dungeon access has two parts - <strong>DungeonStream</strong> for movies &amp; shows, and <strong>DungeonCast</strong> for live TV. Here's how to set up each. Takes a couple of minutes.</div>
 
   <!-- ══════════ DUNGEONSTREAM ══════════ -->
-  <div class="section-title">🌊 DungeonStream — Movies &amp; Shows</div>
+  <div class="section-title">🌊 DungeonStream - Movies &amp; Shows</div>
   <div class="step">
     <div class="step-num">1</div>
     <div class="step-text">DungeonStream runs on the <strong>Stremio</strong> app. Download it for your device:
       <div class="app-btns">
         <a class="app-btn" href="/stream-setup.html">
           <div class="app-btn-icon">📱</div>
-          <div><div class="app-btn-name">iPhone / iPad</div><div class="app-btn-store">Setup guide — add to Home Screen</div></div>
+          <div><div class="app-btn-name">iPhone / iPad</div><div class="app-btn-store">Setup guide - add to Home Screen</div></div>
         </a>
         <a class="app-btn" href="https://play.google.com/store/apps/details?id=com.stremio.one" target="_blank">
           <div class="app-btn-icon">🤖</div>
@@ -97,20 +97,20 @@ footer a:hover{color:var(--t2)}
   </div>
   <div class="step">
     <div class="step-num">2</div>
-    <div class="step-text">Open your <strong><a href="/dungeonstream.html">DungeonStream page</a></strong> to find your <strong>Stremio account</strong> — the email and password we created for you.</div>
+    <div class="step-text">Open your <strong><a href="/dungeonstream.html">DungeonStream page</a></strong> to find your <strong>Stremio account</strong> - the email and password we created for you.</div>
   </div>
   <div class="step">
     <div class="step-num">3</div>
-    <div class="step-text">In Stremio, tap <strong>Log in</strong> and enter that email and password. Your Dungeon content is already loaded on the account — no add-ons to install. Your movies and shows appear right away.</div>
+    <div class="step-text">In Stremio, tap <strong>Log in</strong> and enter that email and password. Your Dungeon content is already loaded on the account - no add-ons to install. Your movies and shows appear right away.</div>
   </div>
 
   <div class="tip-box">
     <strong>iPhone tip</strong><br>
-    Stremio on iPhone runs from Safari as a web app — our <a href="/stream-setup.html">iPhone setup guide</a> walks you through adding it to your Home Screen. iPhone also needs a free <strong>external player</strong> to play streams: install <strong>VLC</strong>, <strong>Outplayer</strong>, or <strong>Infuse</strong> from the App Store, then in Stremio tap your <strong>profile picture</strong> (top-right) → <strong>Settings</strong> → <strong>External Player</strong> and choose it.
+    Stremio on iPhone runs from Safari as a web app - our <a href="/stream-setup.html">iPhone setup guide</a> walks you through adding it to your Home Screen. iPhone also needs a free <strong>external player</strong> to play streams: install <strong>VLC</strong>, <strong>Outplayer</strong>, or <strong>Infuse</strong> from the App Store, then in Stremio tap your <strong>profile picture</strong> (top-right) → <strong>Settings</strong> → <strong>External Player</strong> and choose it.
   </div>
 
   <!-- ══════════ DUNGEONCAST ══════════ -->
-  <div class="section-title">📡 DungeonCast — Live TV</div>
+  <div class="section-title">📡 DungeonCast - Live TV</div>
   <div class="step">
     <div class="step-num">1</div>
     <div class="step-text">DungeonCast runs on the <strong>Jellyfin</strong> app. Download it for your device:
@@ -124,7 +124,7 @@ footer a:hover{color:var(--t2)}
           <div><div class="app-btn-name">Jellyfin</div><div class="app-btn-store">Android</div></div>
         </a>
       </div>
-      Jellyfin is also on Fire TV, Android TV, Apple TV, Roku and more — search your device's app store.
+      Jellyfin is also on Fire TV, Android TV, Apple TV, Roku and more - search your device's app store.
     </div>
   </div>
   <div class="step">
@@ -138,7 +138,7 @@ footer a:hover{color:var(--t2)}
   </div>
   <div class="step">
     <div class="step-num">3</div>
-    <div class="step-text">Sign in with your <strong>DungeonCast username and password</strong> — you'll find these on your dashboard.</div>
+    <div class="step-text">Sign in with your <strong>DungeonCast username and password</strong> - you'll find these on your dashboard.</div>
   </div>
   <div class="step">
     <div class="step-num">4</div>
@@ -146,12 +146,12 @@ footer a:hover{color:var(--t2)}
   </div>
 
   <div class="tip-box">
-    <strong>Quick Connect — easy login on TV</strong><br>
+    <strong>Quick Connect - easy login on TV</strong><br>
     Already signed in on your phone? Open Jellyfin on your TV, select <strong>Quick Connect</strong>, then enter the code shown on your TV into the Jellyfin app on your phone under <strong>Settings → Quick Connect</strong>. No need to type your password on the TV.
   </div>
 
   <div class="tip-box" style="background:var(--s2);border-color:var(--bdr2)">
-    Your <strong>Dungeon login</strong> (email + password) is only for enterdungeon.cc. Your DungeonStream (Stremio) and DungeonCast (Jellyfin) logins are separate accounts — you'll find both from your dashboard.
+    Your <strong>Dungeon login</strong> (email + password) is only for enterdungeon.cc. Your DungeonStream (Stremio) and DungeonCast (Jellyfin) logins are separate accounts - you'll find both from your dashboard.
   </div>
 
   <footer id="pageFooter">
@@ -166,7 +166,7 @@ footer a:hover{color:var(--t2)}
 (async function(){
   const d = await fetch('/api/member/me').then(r=>r.json()).catch(()=>({}));
   if(!d.authenticated){ window.location.href='/login.html'; return; }
-  // Only active subscribers may view setup guides — they reveal service specifics.
+  // Only active subscribers may view setup guides - they reveal service specifics.
   const m = d.member || {};
   const tier = m.profile?.tier;
   const now = new Date();
@@ -175,10 +175,10 @@ footer a:hover{color:var(--t2)}
   const isPerm = ['family','dealer','mod','admin','warden'].includes(tier);
   const hasAccess = isPerm || (streamEnd && streamEnd > now) || (castEnd && castEnd > now);
   if(!hasAccess){
-    // No subscription — show a gate instead of the guide content.
+    // No subscription - show a gate instead of the guide content.
     document.querySelector('.page').innerHTML =
       '<h1>Setup Guide</h1>'+
-      '<div class="sub" style="margin-bottom:24px">Setup guides unlock once you have access. Redeem a credit to get started — you can also grab a free demo first to try things out.</div>'+
+      '<div class="sub" style="margin-bottom:24px">Setup guides unlock once you have access. Redeem a credit to get started - you can also grab a free demo first to try things out.</div>'+
       '<div style="display:flex;gap:10px;flex-wrap:wrap">'+
       '<a href="/redeem.html" style="display:inline-block;padding:12px 22px;background:var(--ember,#34d399);border-radius:9px;color:#08110d;font-size:13px;font-weight:700;text-decoration:none">Redeem a Credit</a>'+
       '<a href="/dashboard.html" style="display:inline-block;padding:12px 22px;background:var(--s2,#141c1a);border:1px solid var(--bdr2,rgba(52,211,153,.2));border-radius:9px;color:var(--txt,#dce8e3);font-size:13px;font-weight:700;text-decoration:none">Back to Dashboard</a>'+

@@ -189,7 +189,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     }).catch(()=>{});
   })();
 
-  // Smart logo link — go to dashboard if logged in, home if not
+  // Smart logo link - go to dashboard if logged in, home if not
   (function(){
     fetch('/api/member/me').then(r=>r.json()).then(d=>{
       const logo = document.getElementById('logoLink');

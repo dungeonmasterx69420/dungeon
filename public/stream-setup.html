@@ -116,9 +116,9 @@
       </div>
       <div class="safari-content"><div class="st-logo">🎬</div><div class="st-name">Stremio Web</div><div class="st-sub">Sign in with your free account</div></div>
     </div></div></div>
-    <p class="instr" id="step1Instr">Open <strong>Safari</strong> and go to <strong>web.stremio.com</strong>. Sign in with a free Stremio account (or create one — it's free).</p>
+    <p class="instr" id="step1Instr">Open <strong>Safari</strong> and go to <strong>web.stremio.com</strong>. Sign in with a free Stremio account (or create one - it's free).</p>
 
-    <!-- AUTO MODE: the account already exists — show login creds right here -->
+    <!-- AUTO MODE: the account already exists - show login creds right here -->
     <div id="autoCreds" style="display:none">
       <p class="instr" style="margin-top:12px"><strong style="color:var(--ember)">Your account is already made.</strong> Log in with these:</p>
       <div class="link-row" style="margin-bottom:8px"><input id="stEmail" readonly/><button class="copy-btn" onclick="copyField('stEmail','Email copied')">Copy</button></div>
@@ -148,21 +148,21 @@
         </div>
       </div>
     </div></div></div>
-    <p class="instr">Tap the <strong>Share button</strong> at the bottom of Safari — the box with an arrow pointing up.</p>
+    <p class="instr">Tap the <strong>Share button</strong> at the bottom of Safari - the box with an arrow pointing up.</p>
     <p class="instr">Scroll down and tap <strong>"Add to Home Screen"</strong>, then tap <strong>Add</strong>.</p>
     <p class="instr">Stremio now appears on your Home Screen like a normal app. Open it from there from now on.</p>
   </div>
 
-  <!-- MANUAL-ONLY STEPS — only shown as a fallback when the account was NOT
+  <!-- MANUAL-ONLY STEPS - only shown as a fallback when the account was NOT
        auto-provisioned (e.g. the member's email already had a Stremio account).
        Hidden by default because normally the addon is installed automatically. -->
   <div id="manualSteps" style="display:none">
   <!-- STEP 3 -->
   <div class="step-card">
     <div class="step-top"><div class="step-num">3</div><div class="step-title">Copy your Dungeon link</div></div>
-    <p class="instr">Tap below to copy your personal link — you'll paste it in the next step.</p>
+    <p class="instr">Tap below to copy your personal link - you'll paste it in the next step.</p>
     <div class="link-row"><input id="addonUrl" readonly placeholder="Loading your link…"/><button class="copy-btn" onclick="copyLink()">Copy</button></div>
-    <p class="instr" style="color:var(--ash);font-size:12px;margin-top:8px">This link is yours — don't share it.</p>
+    <p class="instr" style="color:var(--ash);font-size:12px;margin-top:8px">This link is yours - don't share it.</p>
   </div>
 
   <!-- STEP 4 -->
@@ -182,15 +182,15 @@
     </div></div></div></div>
     <p class="instr">Open the <strong>Stremio app</strong> from your Home Screen (the one you just added).</p>
     <p class="instr">Tap the <strong>puzzle-piece icon</strong> (Add-ons) at the bottom.</p>
-    <p class="instr">At the top there's a <strong>search bar</strong> — tap it and <strong>paste your link</strong>.</p>
-    <p class="instr">The Dungeon appears — tap <strong>Install</strong> and you're done.</p>
+    <p class="instr">At the top there's a <strong>search bar</strong> - tap it and <strong>paste your link</strong>.</p>
+    <p class="instr">The Dungeon appears - tap <strong>Install</strong> and you're done.</p>
     <div class="callout"><p><strong>Tip:</strong> after installing, tap the home icon. Your Netflix, Disney+, HBO Max and Hulu rows will already be there.</p></div>
   </div>
   </div><!-- /manualSteps -->
 
-  <!-- AUTO MODE step 3: nothing to install (default — the addon auto-installs) -->
+  <!-- AUTO MODE step 3: nothing to install (default - the addon auto-installs) -->
   <div class="step-card" id="autoStep3">
-    <div class="step-top"><div class="step-num">3</div><div class="step-title">That's it — start watching</div></div>
+    <div class="step-top"><div class="step-num">3</div><div class="step-title">That's it - start watching</div></div>
     <p class="instr">The Dungeon is <strong>already installed</strong> on your account. Open Stremio from your Home Screen, and your Netflix, Disney+, HBO Max and Hulu rows are right there.</p>
   </div>
 
@@ -218,7 +218,7 @@
   <div class="done-card">
     <h2>You're all set 🎬</h2>
     <p>Open Stremio from your Home Screen any time. Pick something, tap a stream, and it plays right in the app.</p>
-    <a href="#" id="doneBtn" class="dash-btn">✓ I've added it — go to dashboard</a>
+    <a href="#" id="doneBtn" class="dash-btn">✓ I've added it - go to dashboard</a>
   </div>
   </div><!-- /stepFlow -->
 </div>
@@ -252,7 +252,7 @@ document.getElementById('doneBtn').addEventListener('click', async (e) => {
     const r=await fetch('/api/member/stremgate');
     const d=r.ok?await r.json():null;
     if(d&&d.active&&d.stremio_account){
-      // AUTO MODE — account already exists with the addon installed.
+      // AUTO MODE - account already exists with the addon installed.
       document.getElementById('step1Instr').innerHTML='Open <strong>Safari</strong> and go to <strong>web.stremio.com</strong>.';
       document.getElementById('autoCreds').style.display='block';
       document.getElementById('stEmail').value=d.stremio_account.email||'';
@@ -266,7 +266,7 @@ document.getElementById('doneBtn').addEventListener('click', async (e) => {
       document.getElementById('manualSteps').style.display='block';
       document.getElementById('autoStep3').style.display='none';
     }else if(d&&d.active===false){
-      // Not entitled — show a clean panel, hide the whole flow.
+      // Not entitled - show a clean panel, hide the whole flow.
       showState('🔒', 'No active subscription', 'You don\u2019t have DungeonStream access yet. Redeem a credit to unlock it, then come back here to finish setup.',
         {label:'Redeem a credit', href:'/redeem.html'});
     }else{

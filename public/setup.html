@@ -93,7 +93,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
     <div class="field">
       <label>Screen Name</label>
       <input type="text" id="screen_name" placeholder="yourcoolname" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
-      <div class="hint" id="sn-hint">3–20 characters. Letters, numbers and underscores only.</div>
+      <div class="hint" id="sn-hint">3-20 characters. Letters, numbers and underscores only.</div>
     </div>
     <div class="btn-row">
       <button class="btn btn-g" onclick="goStep2()">Continue →</button>
@@ -164,7 +164,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
   <!-- Step 3: Photo -->
   <div class="step" id="step3">
     <div class="step-title">Profile Photo</div>
-    <div class="step-sub">Add a photo or pick a color. Optional — you can skip and add one later.</div>
+    <div class="step-sub">Add a photo or pick a color. Optional - you can skip and add one later.</div>
     <div class="banner banner-err" id="s3err"></div>
 
     <div class="avatar-wrap">
@@ -274,18 +274,18 @@ function validateSn(input) {
   input.value = val;
   const hint = document.getElementById('sn-hint');
   _snValid = false;
-  if (!val) { hint.textContent = '3–20 characters. Letters, numbers and underscores only.'; hint.className = 'hint'; return; }
-  if (val.length < 3) { hint.textContent = 'Too short — minimum 3 characters'; hint.className = 'hint bad'; return; }
+  if (!val) { hint.textContent = '3-20 characters. Letters, numbers and underscores only.'; hint.className = 'hint'; return; }
+  if (val.length < 3) { hint.textContent = 'Too short - minimum 3 characters'; hint.className = 'hint bad'; return; }
   hint.textContent = 'Checking availability…'; hint.className = 'hint';
   clearTimeout(_snTimer);
   _snTimer = setTimeout(async () => {
     // If editing and name hasn't changed, it's valid
     if (_originalSn && val.toLowerCase() === _originalSn.toLowerCase()) {
-      hint.textContent = '@'+val+' — your current name'; hint.className = 'hint ok'; _snValid = true; return;
+      hint.textContent = '@'+val+' - your current name'; hint.className = 'hint ok'; _snValid = true; return;
     }
     const r = await fetch('/api/check/screen-name/'+encodeURIComponent(val)).then(r=>r.json()).catch(()=>({available:false}));
     if (r.available) { hint.textContent = '@'+val+' is available ✓'; hint.className = 'hint ok'; _snValid = true; }
-    else { hint.textContent = '@'+val+' is already taken — try another'; hint.className = 'hint bad'; _snValid = false; }
+    else { hint.textContent = '@'+val+' is already taken - try another'; hint.className = 'hint bad'; _snValid = false; }
   }, 500);
 }
 
@@ -422,7 +422,7 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
     document.getElementById('screen_name').value = p.screen_name;
     document.getElementById('avatarInitials').textContent = p.screen_name[0].toUpperCase();
     const hint = document.getElementById('sn-hint');
-    hint.textContent = '@'+p.screen_name+' — your current name';
+    hint.textContent = '@'+p.screen_name+' - your current name';
     hint.className = 'hint ok';
   } else if (d.member?.first_name) {
     document.getElementById('screen_name').value = d.member.first_name;

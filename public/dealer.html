@@ -142,30 +142,30 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 <div class="stats">
   <div class="stat hero">
     <div class="stat-label">Your Earnings</div>
-    <div class="stat-val" id="st-earned" style="color:var(--g)">—</div>
+    <div class="stat-val" id="st-earned" style="color:var(--g)">-</div>
     <div class="stat-sub">50% commission</div>
   </div>
   <div class="stat">
     <div class="stat-label">Awaiting Payout</div>
-    <div class="stat-val" id="st-awaiting" style="color:var(--amb)">—</div>
+    <div class="stat-val" id="st-awaiting" style="color:var(--amb)">-</div>
     <div class="stat-sub">not yet paid out</div>
   </div>
   <div class="stat">
     <div class="stat-label">Total Sales</div>
-    <div class="stat-val" id="st-sales" style="color:var(--txt)">—</div>
+    <div class="stat-val" id="st-sales" style="color:var(--txt)">-</div>
     <div class="stat-sub" id="st-revenue">$0.00 revenue</div>
   </div>
   <div class="stat">
     <div class="stat-label">Invites Sent</div>
-    <div class="stat-val" id="st-invites" style="color:var(--txt)">—</div>
-    <div class="stat-sub" id="st-pending-invites">— pending</div>
+    <div class="stat-val" id="st-invites" style="color:var(--txt)">-</div>
+    <div class="stat-sub" id="st-pending-invites">- pending</div>
   </div>
 </div>
 
 <div class="page">
 
   <div class="info">
-    You earn <strong>50%</strong> of every signup you close. Send an invite → your client pays → your cut shows up here. The Dungeon Master pays you out manually — track what's owed below.
+    You earn <strong>50%</strong> of every signup you close. Send an invite → your client pays → your cut shows up here. The Dungeon Master pays you out manually - track what's owed below.
   </div>
 
   <!-- Invites -->
@@ -202,7 +202,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 <div class="sheet" id="sh-invite">
   <div class="sh-handle"></div>
   <div class="sh-title">New Invite</div>
-  <div class="sh-sub">Set the signup fee — you keep 50%. Leave email blank to get a link you can text; your client enters their own email when they pay.</div>
+  <div class="sh-sub">Set the signup fee - you keep 50%. Leave email blank to get a link you can text; your client enters their own email when they pay.</div>
   <div class="sh-err" id="inv-err"></div>
   <div class="field">
     <label>Client Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label>
@@ -330,7 +330,7 @@ function renderInvites(){
 
 function buildCard(inv){
   const bc = inv.status==='used'?'bdg-g':inv.status==='paid'?'bdg-gold':inv.status==='pending'?'bdg-b':'bdg-r';
-  const label = inv.status==='used'?'Signed Up':inv.status==='paid'?'Paid — Awaiting Setup':inv.status==='pending'?'Awaiting Payment':'Expired';
+  const label = inv.status==='used'?'Signed Up':inv.status==='paid'?'Paid - Awaiting Setup':inv.status==='pending'?'Awaiting Payment':'Expired';
   const amt = '$'+(inv.amount/100).toFixed(2);
   const cut = '$'+(inv.amount/200).toFixed(2);
 
@@ -375,7 +375,7 @@ function renderEarnings(){
     const cut = '$'+(e.dealer_cut/100).toFixed(2);
     const sale = '$'+(e.amount/100).toFixed(2);
     return '<div class="earn-row">'
-      +'<span class="earn-email">'+esc(e.invite_email||'—')+'</span>'
+      +'<span class="earn-email">'+esc(e.invite_email||'-')+'</span>'
       +'<span class="earn-sale">'+sale+'</span>'
       +'<span class="earn-cut '+(isPaidOut?'paid':'awaiting')+'">'+cut+'</span>'
       +'<span><span class="bdg '+(isPaidOut?'bdg-g':'bdg-a')+'">'+(isPaidOut?'Paid Out':'Owed')+'</span></span>'
@@ -420,7 +420,7 @@ async function sendInvite(){
   const note=$('inv-note').value.trim();
   const err=$('inv-err');
   err.style.display='none';
-  // Email is optional now — only validate if provided
+  // Email is optional now - only validate if provided
   if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){err.textContent='That email looks invalid';err.style.display='block';return;}
   if(!amount||amount<1){err.textContent='Amount must be at least $1';err.style.display='block';return;}
   const btn=$('inv-btn');btn.disabled=true;btn.textContent=email?'Sending…':'Creating…';
@@ -433,10 +433,10 @@ async function sendInvite(){
   await loadDashboard();
   if(r.url){
     if(r.emailed){
-      // emailed to client — quick confirmation, link still copyable
+      // emailed to client - quick confirmation, link still copyable
       showShareLink(r.url, true);
     } else {
-      // no email — show the link prominently to text
+      // no email - show the link prominently to text
       showShareLink(r.url, false);
     }
   }
@@ -530,7 +530,7 @@ function closeAllSheets(){document.querySelectorAll('.sheet.on').forEach(s=>s.cl
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function fmtDate(d){if(!d)return'—';const dt=new Date(d);return isNaN(dt)?'—':dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function fmtDate(d){if(!d)return'-';const dt=new Date(d);return isNaN(dt)?'-':dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 </script>
 
 <!-- Demo Sheet -->
@@ -539,7 +539,7 @@ function fmtDate(d){if(!d)return'—';const dt=new Date(d);return isNaN(dt)?'—
   <div class="sh-title">Send Demo Link</div>
   <div class="sh-sub">Create a 24-hour demo link for a potential client. Enter their email to send it, or copy the link to share manually.</div>
   <div class="sh-err" id="demo-err"></div>
-  <div class="field"><label>Client Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional — or copy link to share manually</span></label><input type="email" id="demo-email" placeholder="client@email.com"/></div>
+  <div class="field"><label>Client Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional - or copy link to share manually</span></label><input type="email" id="demo-email" placeholder="client@email.com"/></div>
   <div class="field"><label>Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="text" id="demo-note" placeholder="Any info for the Dungeon Master…"/></div>
   <div class="sacts">
     <button class="btn btn-b" onclick="closeSheet('sh-demo')">Cancel</button>

@@ -151,9 +151,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 </div>
 
 <div class="stats">
-  <div class="stat-cell"><div class="stat-label">Pending</div><div class="stat-val" id="statPending" style="color:var(--amber)">—</div></div>
-  <div class="stat-cell"><div class="stat-label">Members</div><div class="stat-val" id="statMembers" style="color:var(--green)">—</div></div>
-  <div class="stat-cell"><div class="stat-label">Open Messages</div><div class="stat-val" id="statSupport" style="color:var(--red)">—</div></div>
+  <div class="stat-cell"><div class="stat-label">Pending</div><div class="stat-val" id="statPending" style="color:var(--amber)">-</div></div>
+  <div class="stat-cell"><div class="stat-label">Members</div><div class="stat-val" id="statMembers" style="color:var(--green)">-</div></div>
+  <div class="stat-cell"><div class="stat-label">Open Messages</div><div class="stat-val" id="statSupport" style="color:var(--red)">-</div></div>
 </div>
 
 <div class="tabs">
@@ -242,7 +242,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   // ── Applicants ────────────────────────────────────────────────────────────────
   async function loadApplicants(){
     const url = appFilter==='all' ? '/api/applicants' : '/api/mod/applicants';
-    // Mod endpoint only returns pending; use admin endpoint for all (admin/warden only — will 401 for mods)
+    // Mod endpoint only returns pending; use admin endpoint for all (admin/warden only - will 401 for mods)
     let rows;
     try{ rows = await fetch(url).then(r=>r.json()); }
     catch(e){ rows = await fetch('/api/mod/applicants').then(r=>r.json()); }
@@ -331,7 +331,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
             <span class="avatar-sm" style="background:${r.avatar_color||'#60a5fa'}">
               ${r.avatar_url?`<img src="${r.avatar_url}" alt=""/>`:initials}
             </span>
-            ${r.screen_name?`<a class="profile-link" href="/profile.html?id=${r.profile_id_val||''}"}>@${r.screen_name}</a> — `:''}
+            ${r.screen_name?`<a class="profile-link" href="/profile.html?id=${r.profile_id_val||''}"}>@${r.screen_name}</a> - `:''}
             ${r.first_name} ${r.last_name}${chip}
           </div>
           <div class="row-email">${r.email}</div>
@@ -417,7 +417,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     }).catch(()=>{});
   })();
 
-  // Smart logo link — go to dashboard if logged in, home if not
+  // Smart logo link - go to dashboard if logged in, home if not
   (function(){
     fetch('/api/member/me').then(r=>r.json()).then(d=>{
       const logo = document.getElementById('logoLink');

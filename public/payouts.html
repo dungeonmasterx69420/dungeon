@@ -66,15 +66,15 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 <div class="stats">
   <div class="stat">
     <div class="stat-label">Total Owed</div>
-    <div class="stat-val" id="st-owed" style="color:var(--amb)">—</div>
+    <div class="stat-val" id="st-owed" style="color:var(--amb)">-</div>
   </div>
   <div class="stat">
     <div class="stat-label">Total Paid Out</div>
-    <div class="stat-val" id="st-paid" style="color:var(--g)">—</div>
+    <div class="stat-val" id="st-paid" style="color:var(--g)">-</div>
   </div>
   <div class="stat">
     <div class="stat-label">Active Dealers</div>
-    <div class="stat-val" id="st-dealers">—</div>
+    <div class="stat-val" id="st-dealers">-</div>
   </div>
 </div>
 
@@ -116,7 +116,7 @@ function buildDealerCard(d){
   const rows = d.earnings.filter(e => e.status === 'earned' || e.status === 'paid_out').map(e => {
     const isPaid = e.status === 'paid_out';
     return `<tr>
-      <td>${esc(e.invite_email||'—')}</td>
+      <td>${esc(e.invite_email||'-')}</td>
       <td class="mono">$${(e.invite_amount/100).toFixed(2)}</td>
       <td class="mono" style="color:${isPaid?'var(--g)':'var(--amb)'}">$${(e.dealer_cut/100).toFixed(2)}</td>
       <td>${fmtDate(e.invite_paid_at||e.created_at)}</td>
@@ -142,7 +142,7 @@ function buildDealerCard(d){
     <div class="dealer-body">
       ${d.owed > 0 ? `<div class="pay-all-bar">
         <div class="pay-all-text">Mark all ${earned.length} unpaid commission${earned.length!==1?'s':''} as paid out to @${esc(d.screen_name)}</div>
-        <button class="btn btn-amber" onclick="payAll('${d.id}','${esc(d.screen_name)}',${d.owed})">Pay All — $${(d.owed/100).toFixed(2)}</button>
+        <button class="btn btn-amber" onclick="payAll('${d.id}','${esc(d.screen_name)}',${d.owed})">Pay All - $${(d.owed/100).toFixed(2)}</button>
       </div>` : ''}
       <table class="earn-table">
         <thead><tr>
@@ -171,7 +171,7 @@ async function payAll(profileId, name, amount){
 }
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function fmtDate(d){if(!d)return'—';const dt=new Date(d);return isNaN(dt)?'—':dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function fmtDate(d){if(!d)return'-';const dt=new Date(d);return isNaN(dt)?'-':dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 </script>
   <script src="/notif-bell.js"></script>
 </body>

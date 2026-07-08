@@ -466,7 +466,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
   <input type="hidden" id="f-rid"/>
   <input type="hidden" id="f-svc"/>
 
-  <!-- Existing sub — just extend -->
+  <!-- Existing sub - just extend -->
   <div id="f-extend-view" style="display:none">
     <div class="sh-info" id="f-extend-info"></div>
     <div class="sacts">
@@ -475,7 +475,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
     </div>
   </div>
 
-  <!-- New account — needs credentials -->
+  <!-- New account - needs credentials -->
   <div id="f-new-view" style="display:none">
     <div class="sh-info">Jellyfin account will be created and credentials emailed automatically.</div>
     <div class="field"><label>Jellyfin Username</label><input type="text" id="f-user" style="font-family:var(--mono)"/></div>
@@ -551,7 +551,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
   <input type="hidden" id="cr-mid"/>
   <div class="field">
     <label>Current Balance</label>
-    <div id="cr-balance" style="font-size:28px;font-weight:700;color:var(--g);font-family:var(--mono);padding:8px 0">—</div>
+    <div id="cr-balance" style="font-size:28px;font-weight:700;color:var(--g);font-family:var(--mono);padding:8px 0">-</div>
   </div>
   <div class="field">
     <label>Add Credits</label>
@@ -647,7 +647,7 @@ async function runLookup(){
 
   const total=d.summary.members+d.summary.profiles+d.summary.invites+d.summary.demos;
   if(total===0){
-    box.innerHTML='<div class="card" style="padding:20px"><div style="color:var(--g)">✓ Nothing found for '+esc(d.email)+'</div><div style="color:var(--t3);font-size:13px;margin-top:6px">This email is clean — a new invite to it should work.</div></div>';
+    box.innerHTML='<div class="card" style="padding:20px"><div style="color:var(--g)">✓ Nothing found for '+esc(d.email)+'</div><div style="color:var(--t3);font-size:13px;margin-top:6px">This email is clean - a new invite to it should work.</div></div>';
     return;
   }
 
@@ -658,7 +658,7 @@ async function runLookup(){
   d.members.forEach(m=>{
     html+=`<div class="card" style="padding:14px;margin-bottom:8px"><div style="font-weight:600">👤 Member: ${esc(m.first_name||'')} ${esc(m.last_name||'')}</div>
       <div style="font-family:var(--mono);font-size:12px;color:var(--t2);margin-top:6px;line-height:1.8">
-      id: ${esc(m.id)}<br>jellyfin: ${esc(m.jellyfin_user||'—')}<br>stream ends: ${esc(m.stremio_end||'—')}<br>cast ends: ${esc(m.iptv_end||'—')}</div></div>`;
+      id: ${esc(m.id)}<br>jellyfin: ${esc(m.jellyfin_user||'-')}<br>stream ends: ${esc(m.stremio_end||'-')}<br>cast ends: ${esc(m.iptv_end||'-')}</div></div>`;
   });
   d.profiles.forEach(p=>{
     html+=`<div class="card" style="padding:14px;margin-bottom:8px"><div style="font-weight:600">🪪 Profile: @${esc(p.screen_name||'')} <span class="bdg bdg-b">${esc(p.tier||'member')}</span></div>
@@ -668,11 +668,11 @@ async function runLookup(){
     const canFree = i.status==='paid' && i.token;
     html+=`<div class="card" style="padding:14px;margin-bottom:8px"><div style="font-weight:600">✉️ Invite ${i.promo?'('+esc(i.promo)+')':''} <span class="bdg bdg-a">${esc(i.status)}</span></div>
       <div style="font-family:var(--mono);font-size:12px;color:var(--t2);margin-top:6px">$${((i.amount||0)/100).toFixed(2)} · ${esc(i.created_at||'')}</div>
-      ${canFree?`<div style="margin-top:10px"><button class="btn btn-b" style="font-size:11px;padding:6px 12px" onclick="freeInviteEmail('${esc(i.token)}')">↻ Free this email for re-signup</button><div style="font-size:11px;color:var(--t3);margin-top:6px">Use when someone paid with an email that already has an account — clears the email so they can finish under a different one (e.g. an alias). Payment still counts.</div></div>`:''}</div>`;
+      ${canFree?`<div style="margin-top:10px"><button class="btn btn-b" style="font-size:11px;padding:6px 12px" onclick="freeInviteEmail('${esc(i.token)}')">↻ Free this email for re-signup</button><div style="font-size:11px;color:var(--t3);margin-top:6px">Use when someone paid with an email that already has an account - clears the email so they can finish under a different one (e.g. an alias). Payment still counts.</div></div>`:''}</div>`;
   });
   d.demos.forEach(dm=>{
     html+=`<div class="card" style="padding:14px;margin-bottom:8px"><div style="font-weight:600">🎬 Demo @${esc(dm.screen_name||'')} <span class="bdg bdg-b">${esc(dm.status||'')}</span></div>
-      <div style="font-family:var(--mono);font-size:12px;color:var(--t2);margin-top:6px">jellyfin: ${esc(dm.demo_user||'—')} · expires: ${esc(dm.demo_expires||'—')}</div></div>`;
+      <div style="font-family:var(--mono);font-size:12px;color:var(--t2);margin-top:6px">jellyfin: ${esc(dm.demo_user||'-')} · expires: ${esc(dm.demo_expires||'-')}</div></div>`;
   });
 
   html+=`<div class="card" style="padding:16px;margin-top:14px;border-color:rgba(248,113,113,.3)">
@@ -687,7 +687,7 @@ async function freeInviteEmail(token){
   if(!confirm('Clear the email off this paid invite so they can finish signup under a different email?\n\nTheir payment still counts. Send them the join link again afterward.'))return;
   const d=await fetch('/api/admin/invite-clear-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})}).then(r=>r.json()).catch(e=>({error:e.message}));
   if(d.error){alert('Error: '+d.error);return;}
-  prompt('Done! Send them THIS link to finish (they\'ll enter a new email — an alias like name+1@gmail.com works):', d.joinUrl);
+  prompt('Done! Send them THIS link to finish (they\'ll enter a new email - an alias like name+1@gmail.com works):', d.joinUrl);
 }
 
 async function purgeAccount(email){
@@ -789,9 +789,9 @@ async function loadOverview(){
   // --- Numbers ---
   const n=d.numbers||{};
   $('ov-numbers').innerHTML=`
-    <div class="ov-num-card"><div class="ov-num-val">${n.members??'—'}</div><div class="ov-num-label">Total Members</div></div>
-    <div class="ov-num-card"><div class="ov-num-val green">${n.activeSubs??'—'}</div><div class="ov-num-label">Active Subscribers</div></div>
-    <div class="ov-num-card"><div class="ov-num-val ${n.expiringSoon>0?'amber':''}">${n.expiringSoon??'—'}</div><div class="ov-num-label">Expiring in 7 Days</div></div>`;
+    <div class="ov-num-card"><div class="ov-num-val">${n.members??'-'}</div><div class="ov-num-label">Total Members</div></div>
+    <div class="ov-num-card"><div class="ov-num-val green">${n.activeSubs??'-'}</div><div class="ov-num-label">Active Subscribers</div></div>
+    <div class="ov-num-card"><div class="ov-num-val ${n.expiringSoon>0?'amber':''}">${n.expiringSoon??'-'}</div><div class="ov-num-label">Expiring in 7 Days</div></div>`;
 
   // --- Activity feed ---
   const feed=$('ov-activity');
@@ -1015,16 +1015,16 @@ function renderMembers(members){
           <div class="di"><div class="dl">Member Since</div><div class="dv">${fmtDate(m.created_at)}</div></div>
           ${!['family','dealer','mod','admin','warden'].includes(tier)?`
           <div class="di full">
-            <div class="dl">🌊 DungeonStream — <span style="font-family:var(--mono);text-transform:none;letter-spacing:0;font-size:10px;color:${sAct?'var(--g)':'var(--red)'}">${sAct?(sDays+'d left'):(sEnd?'Expired':'No sub')}</span></div>
-            <div class="dv mono">${esc(m.stremio_acct_email||m.stremio_email||'—')}</div>
+            <div class="dl">🌊 DungeonStream - <span style="font-family:var(--mono);text-transform:none;letter-spacing:0;font-size:10px;color:${sAct?'var(--g)':'var(--red)'}">${sAct?(sDays+'d left'):(sEnd?'Expired':'No sub')}</span></div>
+            <div class="dv mono">${esc(m.stremio_acct_email||m.stremio_email||'-')}</div>
             ${m.stremio_acct_pass?`<div class="dv mono" style="font-size:10px;color:var(--t2)">pw: ${esc(m.stremio_acct_pass)}</div>`:''}
             ${m.stremio_auth_key?`<div class="dv mono" style="font-size:9px;color:var(--t2);word-break:break-all">key: ${esc(m.stremio_auth_key)}</div>`:''}
             ${m.stremgate_username?`<div class="dv mono" style="font-size:9px;color:var(--t2)">gate: ${esc(m.stremgate_username)}</div>`:''}
             ${sEnd?`<div class="dv sub">${sEnd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>`:''}
           </div>
           ${(cEnd||cAct)?`<div class="di full">
-            <div class="dl">📡 DungeonCast — <span style="font-family:var(--mono);text-transform:none;letter-spacing:0;font-size:10px;color:${cAct?'var(--g)':'var(--red)'}">${cAct?(cDays+'d left'):(cEnd?'Expired':'No sub')}</span></div>
-            <div class="dv mono">${esc(m.jellyfin_user||'—')}</div>
+            <div class="dl">📡 DungeonCast - <span style="font-family:var(--mono);text-transform:none;letter-spacing:0;font-size:10px;color:${cAct?'var(--g)':'var(--red)'}">${cAct?(cDays+'d left'):(cEnd?'Expired':'No sub')}</span></div>
+            <div class="dv mono">${esc(m.jellyfin_user||'-')}</div>
             ${cEnd?`<div class="dv sub">${cEnd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>`:''}
           </div>`:''}
           `:`<div class="di full"><div class="dl">Access</div><div class="dv" style="color:var(--g)">✓ Permanent Access</div></div>`}
@@ -1157,7 +1157,7 @@ async function loadRedem(){
       </div>
       ${r.status==='fulfilled'?`<div class="rc-rows">
         <div class="rc-row"><span class="rc-lbl">Server</span><span class="rc-val">${server}</span></div>
-        <div class="rc-row"><span class="rc-lbl">Username</span><span class="rc-val">${esc(r.account_user||'—')}</span></div>
+        <div class="rc-row"><span class="rc-lbl">Username</span><span class="rc-val">${esc(r.account_user||'-')}</span></div>
         <div class="rc-row"><span class="rc-lbl">Fulfilled</span><span class="rc-val">${fmtDate(r.fulfilled_at)}</span></div>
       </div>`:''}
     </div>`;
@@ -1183,7 +1183,7 @@ function openFulfill(rid,svc,displayName,screenName,existingUser,existingPass,st
   const daysLeft = hasActiveSub ? Math.ceil((endDate-new Date())/86400000) : 0;
 
   if(hasExistingAccount){
-    // Already has account — just show extension confirmation
+    // Already has account - just show extension confirmation
     $('f-extend-view').style.display='block';
     $('f-new-view').style.display='none';
     const newEnd = hasActiveSub
@@ -1196,7 +1196,7 @@ function openFulfill(rid,svc,displayName,screenName,existingUser,existingPass,st
     $('f-pass').value=existingPass;
     $('f-notes').value='';
   } else {
-    // New account — show full form
+    // New account - show full form
     $('f-extend-view').style.display='none';
     $('f-new-view').style.display='block';
     $('f-user').value=(screenName||displayName||'').toLowerCase().replace(/[^a-z0-9_]/g,'_').replace(/@/g,'').substring(0,20);
@@ -1226,7 +1226,7 @@ function closeAllSheets(){document.querySelectorAll('.sheet.on').forEach(s=>s.cl
 // ── Utils ─────────────────────────────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function mkPass(){const c='abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#';return Array.from({length:12},()=>c[Math.floor(Math.random()*c.length)]).join('');}
-function fmtDate(d){if(!d)return'—';const dt=new Date(d);return isNaN(dt)?'—':dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function fmtDate(d){if(!d)return'-';const dt=new Date(d);return isNaN(dt)?'-':dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 function strToColor(s){const colors=['#34d399','#60a5fa','#f87171','#fbbf24','#a78bfa','#fb7185','#38bdf8','#4ade80'];let h=0;for(let i=0;i<(s||'').length;i++)h=(h*31+s.charCodeAt(i))%colors.length;return colors[h];}
 function fmtDevices(devStr){
   try{
@@ -1355,8 +1355,8 @@ async function loadDemos() {
         ${d.status==='pending'?`<button class="btn btn-g" onclick="openDemo('${d.id}','${esc(d.email||d.screen_name||'')}')">Fulfill →</button>`:''}
       </div>
       ${d.status==='fulfilled'?`<div class="rc-rows">
-        <div class="rc-row"><span class="rc-lbl">Username</span><span class="rc-val">${esc(d.demo_user||'—')}</span></div>
-        <div class="rc-row"><span class="rc-lbl">Expires</span><span class="rc-val" style="color:${expired?'var(--red)':'var(--g)'}">${expires?expires.toLocaleString():'—'} ${timeLeft?'('+timeLeft+')':expired?'(expired)':''}</span></div>
+        <div class="rc-row"><span class="rc-lbl">Username</span><span class="rc-val">${esc(d.demo_user||'-')}</span></div>
+        <div class="rc-row"><span class="rc-lbl">Expires</span><span class="rc-val" style="color:${expired?'var(--red)':'var(--g)'}">${expires?expires.toLocaleString():'-'} ${timeLeft?'('+timeLeft+')':expired?'(expired)':''}</span></div>
       </div>`:''}
     </div>`;
   }).join('');
@@ -1391,15 +1391,15 @@ async function submitDemo() {
 <div class="sheet" id="sh-free-invite">
   <div class="sh-handle"></div>
   <div class="sh-title">Free Invite</div>
-  <div class="sh-sub">Send a free invite — no payment required. Great for family, friends or staff. Leave email blank to get a link you can text.</div>
+  <div class="sh-sub">Send a free invite - no payment required. Great for family, friends or staff. Leave email blank to get a link you can text.</div>
   <div class="sh-err" id="fi-err"></div>
-  <div class="field"><label>Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional — leave blank to share a link</span></label><input type="email" id="fi-email" placeholder="Leave blank to share a link instead"/></div>
+  <div class="field"><label>Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional - leave blank to share a link</span></label><input type="email" id="fi-email" placeholder="Leave blank to share a link instead"/></div>
   <div class="field">
     <label>Tier</label>
     <select id="fi-tier" style="width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:13px;padding:10px 12px;outline:none">
       <option value="member">Member</option>
-      <option value="family">Family & Friends — permanent access</option>
-      <option value="dealer">DungeonDealer — reseller + permanent access</option>
+      <option value="family">Family & Friends - permanent access</option>
+      <option value="dealer">DungeonDealer - reseller + permanent access</option>
       <option value="mod">Mod</option>
       <option value="admin">Admin</option>
     </select>
@@ -1476,7 +1476,7 @@ async function sendFreeInvite(){
   $('fshare-title').textContent = r.emailed ? 'Invite Sent ✓' : 'Invite Link Ready';
   $('fshare-sub').textContent = r.emailed
     ? 'We emailed the join link'+tierLabel+'. You can also copy it below.'
-    : 'Text or send this free join link'+tierLabel+'. They\'ll enter their own email and set up their account — no payment needed.';
+    : 'Text or send this free join link'+tierLabel+'. They\'ll enter their own email and set up their account - no payment needed.';
   openSheet('sh-free-share');
 }
 function copyFreeShareLink(){
@@ -1522,7 +1522,7 @@ function copyPromoShareLink(){
   <div class="sh-title">Send Demo Link</div>
   <div class="sh-sub">Create a demo link for someone who hasn't signed up yet. They'll get a page with their credentials once you fulfill the demo.</div>
   <div class="sh-err" id="dl-err"></div>
-  <div class="field"><label>Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional — send by email or copy link to text</span></label><input type="email" id="dl-email" placeholder="client@email.com"/></div>
+  <div class="field"><label>Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional - send by email or copy link to text</span></label><input type="email" id="dl-email" placeholder="client@email.com"/></div>
   <div class="field"><label>Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="text" id="dl-note" placeholder="Personal message…"/></div>
   <div class="sacts">
     <button class="btn btn-b" onclick="closeSheet('sh-demo-link')">Cancel</button>

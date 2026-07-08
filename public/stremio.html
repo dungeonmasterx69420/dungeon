@@ -86,7 +86,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 
 <div class="page">
   <div class="page-title">DungeonStream</div>
-  <div class="page-sub">Stream movies, shows, and more — powered by your Dungeon membership.</div>
+  <div class="page-sub">Stream movies, shows, and more - powered by your Dungeon membership.</div>
 
   <!-- Account status card -->
   <div class="account-card" id="stremioAccountCard">
@@ -99,25 +99,25 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
       <div class="cred-grid">
         <div>
           <div class="cred-label">DungeonStream Email</div>
-          <div class="cred-value" id="stremioEmail">—</div>
+          <div class="cred-value" id="stremioEmail">-</div>
         </div>
         <div>
           <div class="cred-label">Password</div>
-          <div class="cred-value" id="stremioPass">—</div>
+          <div class="cred-value" id="stremioPass">-</div>
         </div>
         <div>
           <div class="cred-label">Expires</div>
-          <div class="cred-value" id="stremioExpiry">—</div>
+          <div class="cred-value" id="stremioExpiry">-</div>
         </div>
         <div>
           <div class="cred-label">Days Remaining</div>
-          <div class="cred-value" id="stremioDays">—</div>
+          <div class="cred-value" id="stremioDays">-</div>
         </div>
       </div>
       <div class="cred-note">Use these credentials to log into <a href="https://web.stremio.com" target="_blank" style="color:var(--green)">web.stremio.com</a> or the Stremio app on any device.</div>
     </div>
     <div id="stremioAccountNone" style="display:none">
-      <div style="font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:16px">You don't have an active DungeonStream subscription yet. Redeem 1 credit to get started — the Dungeon Master will set up your account within 24 hours.</div>
+      <div style="font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:16px">You don't have an active DungeonStream subscription yet. Redeem 1 credit to get started - the Dungeon Master will set up your account within 24 hours.</div>
       <a href="/redeem.html" style="display:inline-block;padding:9px 18px;background:var(--green);border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:600;text-decoration:none">Redeem a Credit</a>
     </div>
   </div>
@@ -137,7 +137,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     <div class="feature">
       <div class="feature-icon">🔗</div>
       <div class="feature-title">Addons</div>
-      <div class="feature-desc">Powerful addons are pre-configured on your account — just log in and start watching.</div>
+      <div class="feature-desc">Powerful addons are pre-configured on your account - just log in and start watching.</div>
     </div>
     <div class="feature">
       <div class="feature-icon">💳</div>
@@ -149,10 +149,10 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   <div class="peek-label">What's Included</div>
   <ul class="peek-list">
     <li>Full access to movies and TV shows across all genres</li>
-    <li>Pre-configured addons — no setup required on your end</li>
+    <li>Pre-configured addons - no setup required on your end</li>
     <li>Works on web, mobile, desktop, and TV devices</li>
     <li>4K and 1080p streams available depending on content</li>
-    <li>Multiple device support — watch on any screen</li>
+    <li>Multiple device support - watch on any screen</li>
     <li>Your own personal DungeonStream account with dedicated credentials</li>
   </ul>
 
@@ -186,8 +186,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     const badge = document.getElementById('stremioStatusBadge');
     if(member && member.stremio_email){
       document.getElementById('stremioAccountActive').style.display='block';
-      document.getElementById('stremioEmail').textContent = member.stremio_email || '—';
-      document.getElementById('stremioPass').textContent = member.stremio_pass || '—';
+      document.getElementById('stremioEmail').textContent = member.stremio_email || '-';
+      document.getElementById('stremioPass').textContent = member.stremio_pass || '-';
       const exp = member.subscription_end;
       if(exp){
         const d = new Date(exp);

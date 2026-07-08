@@ -98,7 +98,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
     <div class="field" style="margin-top:16px">
       <label>Screen Name</label>
       <input type="text" id="screen_name" placeholder="yourcoolname" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
-      <div class="hint" id="sn-hint">3–20 characters. Letters, numbers and underscores only.</div>
+      <div class="hint" id="sn-hint">3-20 characters. Letters, numbers and underscores only.</div>
     </div>
   </div>
 
@@ -206,17 +206,17 @@ function validateSn(input) {
   input.value = val;
   const hint = document.getElementById('sn-hint');
   _snValid = false;
-  if (!val) { hint.textContent = '3–20 characters required.'; hint.className = 'hint bad'; return; }
-  if (val.length < 3) { hint.textContent = 'Too short — minimum 3 characters'; hint.className = 'hint bad'; return; }
+  if (!val) { hint.textContent = '3-20 characters required.'; hint.className = 'hint bad'; return; }
+  if (val.length < 3) { hint.textContent = 'Too short - minimum 3 characters'; hint.className = 'hint bad'; return; }
   if (_originalSn && val.toLowerCase() === _originalSn.toLowerCase()) {
-    hint.textContent = '@'+val+' — your current name'; hint.className = 'hint ok'; _snValid = true; return;
+    hint.textContent = '@'+val+' - your current name'; hint.className = 'hint ok'; _snValid = true; return;
   }
   hint.textContent = 'Checking availability…'; hint.className = 'hint';
   clearTimeout(_snTimer);
   _snTimer = setTimeout(async () => {
     const r = await fetch('/api/check/screen-name/'+encodeURIComponent(val)).then(r=>r.json()).catch(()=>({available:false}));
     if (r.available) { hint.textContent = '@'+val+' is available ✓'; hint.className = 'hint ok'; _snValid = true; }
-    else { hint.textContent = '@'+val+' is already taken — try another'; hint.className = 'hint bad'; _snValid = false; }
+    else { hint.textContent = '@'+val+' is already taken - try another'; hint.className = 'hint bad'; _snValid = false; }
   }, 500);
 }
 

@@ -69,7 +69,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
     <div class="sub" id="form-sub">Welcome to Dungeon. Set up your account below to get started.</div>
     <div class="err" id="err"></div>
     <div class="field" id="email-field" style="display:none">
-      <label>Your Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">— where we send your login</span></label>
+      <label>Your Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">- where we send your login</span></label>
       <input type="email" id="join-email" placeholder="you@email.com" autocomplete="email"/>
     </div>
     <div class="frow">
@@ -77,7 +77,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
       <div class="field"><label>Last Name</label><input type="text" id="ln" placeholder="Buttocks" autocomplete="family-name"/></div>
     </div>
     <div class="field">
-      <label>Screen Name <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">— your @username</span></label>
+      <label>Screen Name <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">- your @username</span></label>
       <input type="text" id="sn" placeholder="yourcoolname" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
       <div class="sn-hint" id="sn-hint">Letters, numbers and underscores only. 2-20 characters.</div>
     </div>
@@ -139,12 +139,12 @@ function validateSn(input) {
     return;
   }
   if (val.length < 2) {
-    hint.textContent = 'Too short — minimum 2 characters';
+    hint.textContent = 'Too short - minimum 2 characters';
     hint.className = 'sn-hint err';
     return;
   }
   if (val.length > 20) {
-    hint.textContent = 'Too long — maximum 20 characters';
+    hint.textContent = 'Too long - maximum 20 characters';
     hint.className = 'sn-hint err';
     return;
   }
@@ -160,7 +160,7 @@ function validateSn(input) {
       hint.className = 'sn-hint ok';
       _snValid = true;
     } else {
-      hint.textContent = '@' + val + ' is already taken — try another';
+      hint.textContent = '@' + val + ' is already taken - try another';
       hint.className = 'sn-hint err';
       _snValid = false;
     }
@@ -172,7 +172,7 @@ async function checkInvite() {
   const data = await r.data;
 
   if (r.status === 402) {
-    // Payment pending — poll
+    // Payment pending - poll
     _pollCount++;
     if (_pollCount >= MAX_POLLS) {
       showError('Payment confirmation is taking longer than expected. Please refresh the page in a minute, or contact support if this persists.');

@@ -103,7 +103,7 @@
     <span class="page-sigil" aria-hidden="true">📺</span>
     <div class="page-title">DungeonStream</div>
   </div>
-  <div class="page-sub">Movies, shows, and live catalogs — powered by Stremio and your Dungeon membership.</div>
+  <div class="page-sub">Movies, shows, and live catalogs - powered by Stremio and your Dungeon membership.</div>
 
   <div id="loading">Loading your access…</div>
 
@@ -114,7 +114,7 @@
     <div id="credsBlock" style="display:none">
       <div class="cred-card">
         <div class="cred-card-title">Your Stremio Account <span class="badge active" id="statusBadgeAuto">Active</span></div>
-        <div class="cred-card-desc">Everything's already set up — we created your Stremio account and installed the Dungeon on it. Get the app below and <strong style="color:var(--bone)">just log in</strong>.</div>
+        <div class="cred-card-desc">Everything's already set up - we created your Stremio account and installed the Dungeon on it. Get the app below and <strong style="color:var(--bone)">just log in</strong>.</div>
 
         <div class="field-lbl">Email</div>
         <div class="link-row">
@@ -129,15 +129,15 @@
           <button class="copy-btn" onclick="copyField('stPass','Password copied')">Copy</button>
         </div>
 
-        <div class="cred-note">These sign you into the <strong>Stremio app</strong> on any device — Fire TV, phone, tablet, computer. (Your Dungeon login for this site stays separate.)</div>
+        <div class="cred-note">These sign you into the <strong>Stremio app</strong> on any device - Fire TV, phone, tablet, computer. (Your Dungeon login for this site stays separate.)</div>
 
         <details class="adv">
-          <summary>Advanced — your raw addon link</summary>
+          <summary>Advanced - your raw addon link</summary>
           <div class="link-row" style="margin-top:10px">
             <input id="advUrl" readonly/>
             <button class="copy-btn" onclick="copyField('advUrl','Link copied')">Copy</button>
           </div>
-          <div class="cred-note">Already installed on your account above — you only need this if you use a different Stremio account. It's tied to your membership, so don't share it.</div>
+          <div class="cred-note">Already installed on your account above - you only need this if you use a different Stremio account. It's tied to your membership, so don't share it.</div>
         </details>
       </div>
     </div>
@@ -146,7 +146,7 @@
     <div id="linkBlock">
     <div class="cred-card">
       <div class="cred-card-title">Your DungeonStream Link <span class="badge active" id="statusBadge">Active</span></div>
-      <div class="cred-card-desc">This link is your key — it unlocks the Dungeon catalog inside Stremio. It's tied to your account, so <strong style="color:var(--bone)">don't share it</strong>. Install it once and it syncs to all your devices.</div>
+      <div class="cred-card-desc">This link is your key - it unlocks the Dungeon catalog inside Stremio. It's tied to your account, so <strong style="color:var(--bone)">don't share it</strong>. Install it once and it syncs to all your devices.</div>
 
       <a id="addonBtn" class="addon-btn" href="#">＋&nbsp; Add to Stremio</a>
 
@@ -160,26 +160,26 @@
         <input id="addonUrl" readonly placeholder="Loading…"/>
         <button class="copy-btn" onclick="copyLink()">Copy</button>
       </div>
-      <div class="cred-note">New to Stremio? Follow the <a href="/stream-setup.html">setup guide</a> — it walks you through installing the app and adding your link in a few minutes.</div>
+      <div class="cred-note">New to Stremio? Follow the <a href="/stream-setup.html">setup guide</a> - it walks you through installing the app and adding your link in a few minutes.</div>
     </div>
     </div><!-- /linkBlock -->
 
     <div class="section-head">Get the Stremio App</div>
     <div class="opt-grid">
       <div class="opt-card">
-        <div class="opt-label">Option A — Easiest</div>
+        <div class="opt-label">Option A - Easiest</div>
         <div class="opt-title">Get it from your app store</div>
         <div class="opt-desc">Search <strong>"Stremio"</strong> in Google Play, the Amazon App Store (Fire TV), or the Windows Store and install it like any app.</div>
       </div>
       <div class="opt-card">
-        <div class="opt-label">Option B — TVs without an app store</div>
+        <div class="opt-label">Option B - TVs without an app store</div>
         <div class="opt-title">Use the Downloader app</div>
         <div class="opt-desc">Install the free <strong>Downloader</strong> app on your TV, open it, and enter this code to install Stremio automatically:</div>
         <span class="dl-code">114029</span>
         <div class="opt-links"><a class="opt-link" href="https://www.stremio.com/downloads" target="_blank" rel="noopener">Stremio downloads →</a></div>
       </div>
       <div class="opt-card">
-        <div class="opt-label">Option C — No install</div>
+        <div class="opt-label">Option C - No install</div>
         <div class="opt-title">Use Stremio in your browser</div>
         <div class="opt-desc">Works on any device. iPhone/iPad users: open in Safari and tap <strong>Share → Add to Home Screen</strong>. Full walkthrough in the setup guide.</div>
         <div class="opt-links">
@@ -253,7 +253,7 @@ function setBadge(el,data){
   document.getElementById('loading').style.display='none';
 
   if(data&&data.active&&data.stremio_account){
-    // AUTO MODE — we created their Stremio account. Show credentials, not the link.
+    // AUTO MODE - we created their Stremio account. Show credentials, not the link.
     document.getElementById('activeCard').style.display='block';
     document.getElementById('credsBlock').style.display='block';
     document.getElementById('linkBlock').style.display='none';
@@ -264,7 +264,7 @@ function setBadge(el,data){
     else{adv.placeholder='Link not available right now';}
     setBadge(document.getElementById('statusBadgeAuto'),data);
   }else if(data&&data.active&&data.install_url){
-    // MANUAL MODE — they add the addon to their own Stremio account.
+    // MANUAL MODE - they add the addon to their own Stremio account.
     document.getElementById('activeCard').style.display='block';
     document.getElementById('addonUrl').value=data.manifest_url||data.install_url;
     document.getElementById('addonBtn').href=data.install_url;
@@ -279,7 +279,7 @@ function setBadge(el,data){
     // Show the active card with a retry rather than the "no subscription" card.
     document.getElementById('activeCard').style.display='block';
     const i=document.getElementById('addonUrl');
-    i.value='';i.placeholder='Link not ready — tap Retry';
+    i.value='';i.placeholder='Link not ready - tap Retry';
     document.getElementById('addonBtn').style.display='none';
     document.getElementById('qrBox').innerHTML='';
     const row=document.querySelector('.link-row');

@@ -110,16 +110,16 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 
 <div class="page">
   <div class="page-title">Redeem Credits</div>
-  <div class="page-sub">Use your credits for DungeonStream or DungeonCast — or earn more by referring friends.</div>
+  <div class="page-sub">Use your credits for DungeonStream or DungeonCast - or earn more by referring friends.</div>
 
   <!-- Balance bar -->
   <div class="balance-bar">
     <div>
       <div class="balance-label">Your Balance</div>
-      <div class="balance-num" id="balanceNum">—</div>
+      <div class="balance-num" id="balanceNum">-</div>
       <div class="balance-sub">credits available</div>
     </div>
-    <a href="https://buymeacoffee.com/enterdungeon/extras" target="_blank" rel="noopener" class="buy-link">☕ Buy Credits — $10</a>
+    <a href="https://buymeacoffee.com/enterdungeon/extras" target="_blank" rel="noopener" class="buy-link">☕ Buy Credits - $10</a>
   </div>
 
   <!-- Bundle card -->
@@ -127,7 +127,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     <div class="service-card">
       <div class="service-icon">🎟️</div>
       <div class="service-name">Full Access</div>
-      <div class="service-desc">One credit unlocks everything for a month — DungeonStream (movies &amp; shows) and DungeonCast (live TV), together.</div>
+      <div class="service-desc">One credit unlocks everything for a month - DungeonStream (movies &amp; shows) and DungeonCast (live TV), together.</div>
       <div class="service-status none" id="bundleStatus">Checking…</div>
       <button class="redeem-btn" id="bundleRedeemBtn" onclick="requestRedeem('bundle')" disabled>Redeem 1 Credit</button>
       <div style="margin-top:8px;display:flex;gap:14px">
@@ -147,7 +147,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
       </div>
       <div class="how-step">
         <div class="how-num">2</div>
-        <div class="how-text"><strong>The Dungeon Master sets up your account</strong> — typically within 24 hours. 1 credit is deducted from your balance.</div>
+        <div class="how-text"><strong>The Dungeon Master sets up your account</strong> - typically within 24 hours. 1 credit is deducted from your balance.</div>
       </div>
       <div class="how-step">
         <div class="how-num">3</div>
@@ -207,7 +207,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   <div class="modal">
     <div class="modal-icon">✅</div>
     <div class="modal-title">You're all set!</div>
-    <div class="modal-sub">1 credit redeemed — your DungeonStream and DungeonCast access is active right now. Head to your dashboard for your login details and setup guides.</div>
+    <div class="modal-sub">1 credit redeemed - your DungeonStream and DungeonCast access is active right now. Head to your dashboard for your login details and setup guides.</div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
       <a href="/dashboard.html" class="modal-btn">Go to Dashboard</a>
       <a href="/dungeonstream.html" class="modal-btn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border2)">DungeonStream</a>
@@ -257,11 +257,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
       statusEl.className = 'service-status none';
       btn.textContent = 'Redeem 1 Credit';
     } else if(days > 5){
-      statusEl.textContent = 'Active — ' + days + 'd left';
+      statusEl.textContent = 'Active - ' + days + 'd left';
       statusEl.className = 'service-status active';
       btn.textContent = 'Renew (Redeem 1 Credit)';
     } else if(days > 0){
-      statusEl.textContent = 'Expiring — ' + days + 'd left';
+      statusEl.textContent = 'Expiring - ' + days + 'd left';
       statusEl.className = 'service-status expiring';
       btn.textContent = 'Renew Now';
     } else {
@@ -299,7 +299,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     const profile = myMember?.profile;
     const service = pendingService;
 
-    // Redeem — provisions everything automatically
+    // Redeem - provisions everything automatically
     const res = await fetch('/api/credits/redeem', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
@@ -310,7 +310,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     btn.disabled = false; btn.textContent = 'Redeem 1 Credit';
 
     if(!res || !res.ok){
-      alert(res && res.error ? res.error : 'Something went wrong. Your credit was not used — please try again.');
+      alert(res && res.error ? res.error : 'Something went wrong. Your credit was not used - please try again.');
       return;
     }
 

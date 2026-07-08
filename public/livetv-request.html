@@ -99,7 +99,7 @@
 
     <div class="field">
       <label>Anything Else? <span class="opt">optional</span></label>
-      <textarea id="reqNote" placeholder="Any extra details — team, channel number, where it airs, etc."></textarea>
+      <textarea id="reqNote" placeholder="Any extra details - team, channel number, where it airs, etc."></textarea>
     </div>
 
     <button class="btn" id="submitBtn" onclick="submitRequest()">Send Request</button>
@@ -109,7 +109,7 @@
   <div id="successPage">
     <div class="success-icon">✓</div>
     <div class="success-title">Request Sent</div>
-    <div class="success-sub">The Dungeon Master has been notified. We'll do our best to get it added — check back soon.</div>
+    <div class="success-sub">The Dungeon Master has been notified. We'll do our best to get it added - check back soon.</div>
     <a href="/dashboard.html" class="dash-link">← Back to Dashboard</a>
   </div>
 
@@ -139,7 +139,7 @@ function setKind(k){
   document.getElementById('reqTitle').placeholder = k==='event' ? 'e.g. Knicks Championship Parade' : 'e.g. MSG Network';
   document.getElementById('dateField').style.display = k==='event' ? 'block' : 'none';
   document.getElementById('kindHint').textContent = k==='event'
-    ? 'A one-time event — a game, fight, PPV, or special broadcast.'
+    ? 'A one-time event - a game, fight, PPV, or special broadcast.'
     : "An ongoing channel you'd like added to the lineup.";
 }
 
