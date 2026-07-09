@@ -680,12 +680,13 @@ async function jellyfinRequest(method, path, body, serverUrl, apiKey) {
 
 // ────────────────────────────────────────────────────────────────────────────
 
+const RAW_BODY_PATHS = ['/api/stripe/webhook', '/api/webhook/bmac'];
 app.use((req, res, next) => {
-  if (req.path === '/api/stripe/webhook') return next();
+  if (RAW_BODY_PATHS.includes(req.path)) return next();
   express.json({ limit: '10mb' })(req, res, next);
 });
 app.use((req, res, next) => {
-  if (req.path === '/api/stripe/webhook') return next();
+  if (RAW_BODY_PATHS.includes(req.path)) return next();
   express.urlencoded({ extended: true, limit: '10mb' })(req, res, next);
 });
 
@@ -2233,9 +2234,31 @@ app.delete('/api/admin/iptv/:profileId', requireAuth, (req, res) => {
 
 // ── Buy Me a Coffee Webhook ───────────────────────────────────────────────────
 // Each "extra" purchase = 1 credit. Member must include @screenname in message.
+const BMAC_WEBHOOK_SECRET = process.env.BMAC_WEBHOOK_SECRET || '';
 app.post('/api/webhook/bmac', express.raw({type:'application/json'}), (req, res) => {
   try {
-    const payload = JSON.parse(req.body.toString());
+    // Body may arrive as a raw Buffer (expected) or pre-parsed object
+    // (if an upstream parser ever touches this path again). Handle both.
+    const rawBody = Buffer.isBuffer(req.body) ? req.body.toString() : null;
+    const payload = rawBody ? JSON.parse(rawBody)
+      : (typeof req.body === 'string' ? JSON.parse(req.body) : req.body);
+
+    // Verify BMAC signature when a secret is configured (requires raw body)
+    if (BMAC_WEBHOOK_SECRET) {
+      const sig = req.headers['x-signature-sha256'] || '';
+      if (!rawBody) {
+        console.error('[BMAC] Raw body unavailable, cannot verify signature');
+        return res.status(400).json({ error: 'Raw body required for verification' });
+      }
+      const expected = crypto.createHmac('sha256', BMAC_WEBHOOK_SECRET).update(rawBody).digest('hex');
+      const sigBuf = Buffer.from(String(sig));
+      const expBuf = Buffer.from(expected);
+      if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
+        console.error('[BMAC] Signature mismatch, rejecting');
+        return res.status(401).json({ error: 'Invalid signature' });
+      }
+    }
+
     const type = payload.type || payload.response_message_type;
 
     // Only handle successful payments
