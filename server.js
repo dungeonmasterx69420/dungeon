@@ -756,9 +756,15 @@ try {
   console.warn('[session] connect-sqlite3 not available, using in-memory store:', e.message);
   sessionStore = undefined;
 }
+// Use SESSION_SECRET from env. If unset, generate a random secret for this boot
+// (sessions reset on every restart) and warn loudly - never fall back to a known string.
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+if (!process.env.SESSION_SECRET) {
+  console.warn('[security] SESSION_SECRET not set - using a random secret for this boot. All sessions reset on restart. Set SESSION_SECRET in Render env vars.');
+}
 app.use(session({
   store: sessionStore,
-  secret: process.env.SESSION_SECRET || 'dungeon-secret-change-me',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { secure: process.env.NODE_ENV === 'production', httpOnly: true, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 },
@@ -961,10 +967,19 @@ app.get('/health', (req, res) => res.json({ ok: true }));
 // ── Admin auth ────────────────────────────────────────────────────────────────
 app.post('/api/login', loginLimiter, (req, res) => {
   const { password } = req.body;
-  const adminPassword = (process.env.ADMIN_PASSWORD || 'p00p').trim();
+  const adminPassword = (process.env.ADMIN_PASSWORD || '').trim();
+  if (!adminPassword) {
+    console.error('[security] ADMIN_PASSWORD not set - admin login is disabled until it is configured.');
+    return res.status(503).json({ error: 'Admin login is not configured.' });
+  }
   const submitted = (password || '').trim();
-  console.log(`Login attempt. Expected: "${adminPassword}" Got: "${submitted}" Match: ${submitted === adminPassword}`);
-  if (submitted !== adminPassword) return res.status(401).json({ error: 'Incorrect password' });
+  // Timing-safe comparison. Never log password material.
+  const match = crypto.timingSafeEqual(
+    crypto.createHash('sha256').update(submitted).digest(),
+    crypto.createHash('sha256').update(adminPassword).digest()
+  );
+  console.log(`[auth] Admin login ${match ? 'success' : 'failed'}`);
+  if (!match) return res.status(401).json({ error: 'Incorrect password' });
   req.session.authenticated = true;
   req.session.save(err => {
     if (err) return res.status(500).json({ error: 'Session error' });
@@ -1875,7 +1890,6 @@ app.post('/api/admin/trex/renew-line', requireAuth, async (req, res) => {
 const NODECAST_URL     = process.env.NODECAST_URL || 'http://150.136.222.167:3000';
 const NODECAST_ADMIN   = process.env.NODECAST_ADMIN || 'admin';
 const NODECAST_PASS    = process.env.NODECAST_PASS || '';
-const DUNGEON_API_KEY  = process.env.DUNGEON_API_KEY || 'dungeon-internal-key';
 
 async function nodeCastLogin() {
   const http = require('http');
@@ -4391,7 +4405,7 @@ app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 
 app.listen(PORT, () => {
   console.log(`Dungeon running on port ${PORT}`);
-  console.log(`Admin password: "${(process.env.ADMIN_PASSWORD || 'p00p').trim()}"`);
+  console.log(`Admin password: ${process.env.ADMIN_PASSWORD ? 'configured' : 'NOT SET - admin login disabled'}`);
   console.log(`Warden email: ${WARDEN_EMAIL}`);
   console.log(`Email: ${transporter ? `configured (${GMAIL_USER})` : 'not configured'}`);
 });
