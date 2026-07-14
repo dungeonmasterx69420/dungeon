@@ -96,6 +96,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .tile:hover,.tile:focus-visible{transform:translateY(-3px);border-color:var(--border2);box-shadow:0 6px 22px rgba(0,0,0,.4),0 0 18px rgba(52,211,153,.12);outline:none}
 .tile-icon{font-size:26px;line-height:1}
 .tile-title{font-size:12px;font-weight:600;color:var(--bone);text-align:center}
+.tile-sub{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--ash);text-align:center;line-height:1.45;margin-top:-2px}
+.tile .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ember);box-shadow:0 0 6px var(--ember);margin-right:5px;vertical-align:1px}
+.tile.dash-cupio:hover,.tile.dash-cupio:focus-visible{border-color:rgba(227,185,79,.45);box-shadow:0 6px 22px rgba(0,0,0,.4),0 0 18px rgba(227,185,79,.16)}
+.tile.dash-magico:hover,.tile.dash-magico:focus-visible{border-color:rgba(79,168,227,.45);box-shadow:0 6px 22px rgba(0,0,0,.4),0 0 18px rgba(79,168,227,.16)}
+.tile.dash-csio:hover,.tile.dash-csio:focus-visible{border-color:rgba(227,154,59,.45);box-shadow:0 6px 22px rgba(0,0,0,.4),0 0 18px rgba(227,154,59,.16)}
+.tile.dash-fightio:hover,.tile.dash-fightio:focus-visible{border-color:rgba(227,79,79,.45);box-shadow:0 6px 22px rgba(0,0,0,.4),0 0 18px rgba(227,79,79,.16)}
 
 footer{text-align:center;font-family:var(--mono);font-size:11px;color:var(--ash);line-height:2}
 footer a{color:var(--ash);text-decoration:none;transition:color .2s}
@@ -208,6 +214,31 @@ footer .sep{color:#2c3d36}
     <a class="tile" href="#" onclick="openDemo();return false">
       <div class="tile-icon">🎮</div>
       <div class="tile-title">Request Demo</div>
+    </a>
+  </div>
+
+  <div class="section-head">Live Dashboards</div>
+
+  <div class="tiles">
+    <a class="tile dash-cupio" href="https://cupio.enterdungeon.cc" target="_blank" rel="noopener">
+      <div class="tile-icon">⚽</div>
+      <div class="tile-title"><span class="live-dot"></span>CUPIO</div>
+      <div class="tile-sub">World Cup 26 · live scores &amp; bracket</div>
+    </a>
+    <a class="tile dash-magico" href="https://magico.enterdungeon.cc" target="_blank" rel="noopener">
+      <div class="tile-icon">🏀</div>
+      <div class="tile-title"><span class="live-dot"></span>MAGICO</div>
+      <div class="tile-sub">Orlando Magic HQ · roster &amp; schedule</div>
+    </a>
+    <a class="tile dash-csio" href="https://csio.enterdungeon.cc" target="_blank" rel="noopener">
+      <div class="tile-icon">🎯</div>
+      <div class="tile-title"><span class="live-dot"></span>CSIO</div>
+      <div class="tile-sub">Counter-Strike tier 1 · s1mple tracker</div>
+    </a>
+    <a class="tile dash-fightio" href="https://fightio.enterdungeon.cc" target="_blank" rel="noopener">
+      <div class="tile-icon">🥊</div>
+      <div class="tile-title"><span class="live-dot"></span>FIGHTIO</div>
+      <div class="tile-sub">UFC fight cards · live results</div>
     </a>
   </div>
 
