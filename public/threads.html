@@ -135,15 +135,19 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
             ${t.pinned?'<span class="badge-pin">📌 Pinned</span>':''}
             ${t.locked?'<span class="badge-lock">🔒 Locked</span>':''}
           </div>
-          <div class="thread-title">${t.title}</div>
-          <div class="thread-meta">by <a href="/profile.html?id=${t.profile_id}" onclick="event.stopPropagation()">@${t.screen_name}</a> &mdash; ${timeAgo(t.created_at)}</div>
+          <div class="thread-title">${escapeHtml(t.title)}</div>
+          <div class="thread-meta">by <a href="/profile.html?id=${encodeURIComponent(t.profile_id)}" onclick="event.stopPropagation()">@${escapeHtml(t.screen_name)}</a> &mdash; ${timeAgo(t.created_at)}</div>
         </div>
         <div class="thread-stats">
           <div class="thread-replies">${t.reply_count}</div>
           <div class="thread-replies-label">replies</div>
-          ${t.last_poster?`<div class="thread-last">Last: @${t.last_poster}</div>`:''}
+          ${t.last_poster?`<div class="thread-last">Last: @${escapeHtml(t.last_poster)}</div>`:''}
         </div>
       </div>`).join('');
+  }
+
+  function escapeHtml(s){
+    return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
   function timeAgo(dt){

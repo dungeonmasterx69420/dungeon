@@ -314,6 +314,15 @@ async function notify(title, message, opts = {}) {
   } catch(e) { console.error('[notify] ntfy error:', e.message); }
 }
 
+// Escape untrusted values before interpolating them into email HTML. Names,
+// notes, request titles etc. are free-text and would otherwise allow HTML/script
+// injection into the emails we send to members and the warden.
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function emailShell(body) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
 <style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0b0f0e;font-family:Inter,sans-serif;color:#e2e8e4;padding:32px 16px}.shell{max-width:560px;margin:0 auto;background:#111915;border:1px solid rgba(52,211,153,0.15);border-radius:12px;overflow:hidden}.top{background:#0b0f0e;padding:18px 28px;border-bottom:1px solid rgba(52,211,153,0.12)}.logo{font-size:18px;font-weight:700;color:#34d399;letter-spacing:0.1em}.body{padding:32px 28px}.rule{height:1px;background:linear-gradient(90deg,transparent,rgba(52,211,153,0.3),transparent);margin:24px 0}h2{font-size:18px;font-weight:600;color:#e2e8e4;margin-bottom:12px}p{font-size:14px;color:#94a3a0;line-height:1.8;margin-bottom:12px}p strong{color:#e2e8e4;font-weight:500}.box{background:#172118;border:1px solid rgba(52,211,153,0.15);border-radius:8px;padding:16px 18px;margin:18px 0}.row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(52,211,153,0.08);font-size:13px}.row:last-child{border-bottom:none}.lbl{color:#6b8f7a}.val{color:#e2e8e4}.btn{display:inline-block;margin-top:20px;padding:12px 24px;background:#34d399;border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:600;text-decoration:none}.foot{padding:16px 28px;border-top:1px solid rgba(52,211,153,0.08);text-align:center;font-size:11px;color:#6b8f7a}</style>
@@ -321,25 +330,25 @@ function emailShell(body) {
 }
 
 function emailApplicationReceived(firstName, screenName) {
-  return emailShell(`<h2>Application Received</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your application has been received. A moderator will review it shortly and you'll hear back at this email address.</p><p>Your username <strong>@${screenName}</strong> has been reserved while your application is pending.</p><br><p style="font-size:12px;color:#6b8f7a">- The Dungeon Master</p>`);
+  return emailShell(`<h2>Application Received</h2><div class="rule"></div><p>Hi <strong>${esc(firstName)}</strong>,</p><p>Your application has been received. A moderator will review it shortly and you'll hear back at this email address.</p><p>Your username <strong>@${esc(screenName)}</strong> has been reserved while your application is pending.</p><br><p style="font-size:12px;color:#6b8f7a">- The Dungeon Master</p>`);
 }
 
 function emailWelcome(firstName, screenName, stremioEmail, stremioPass, subEnd) {
   const fmtDate = new Date(subEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  return emailShell(`<h2>Welcome to Dungeon</h2><div class="rule"></div><p>Welcome, <strong>${firstName}</strong>. Your application has been approved and your Dungeon account is ready.</p><div class="box"><div class="row"><span class="lbl">Screen Name</span><span class="val">@${screenName}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${stremioEmail}</span></div><div class="row"><span class="lbl">Password</span><span class="val">${stremioPass}</span></div></div><p>Use the email and password above to log into your dashboard. Keep your credentials safe - do not share them.</p><a href="${SITE_URL}/login.html" class="btn">Go to Dashboard</a><div class="rule"></div><p style="font-size:12px;color:#6b8f7a">- The Dungeon Master</p>`);
+  return emailShell(`<h2>Welcome to Dungeon</h2><div class="rule"></div><p>Welcome, <strong>${esc(firstName)}</strong>. Your application has been approved and your Dungeon account is ready.</p><div class="box"><div class="row"><span class="lbl">Screen Name</span><span class="val">@${esc(screenName)}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${esc(stremioEmail)}</span></div><div class="row"><span class="lbl">Password</span><span class="val">${esc(stremioPass)}</span></div></div><p>Use the email and password above to log into your dashboard. Keep your credentials safe - do not share them.</p><a href="${SITE_URL}/login.html" class="btn">Go to Dashboard</a><div class="rule"></div><p style="font-size:12px;color:#6b8f7a">- The Dungeon Master</p>`);
 }
 
 function emailExpiringSoon(firstName, subEnd) {
   const fmtDate = new Date(subEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  return emailShell(`<h2>Subscription Expiring Soon</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your Dungeon subscription expires on <strong>${fmtDate}</strong> - 3 days from now. Submit a renewal request from your dashboard to keep your access.</p><a href="${SITE_URL}/renew.html" class="btn">Request Renewal</a><br><p style="margin-top:20px;font-size:12px;color:#6b8f7a">- The Dungeon Master</p>`);
+  return emailShell(`<h2>Subscription Expiring Soon</h2><div class="rule"></div><p>Hi <strong>${esc(firstName)}</strong>,</p><p>Your Dungeon subscription expires on <strong>${fmtDate}</strong> - 3 days from now. Submit a renewal request from your dashboard to keep your access.</p><a href="${SITE_URL}/renew.html" class="btn">Request Renewal</a><br><p style="margin-top:20px;font-size:12px;color:#6b8f7a">- The Dungeon Master</p>`);
 }
 
 function emailExpired(firstName) {
-  return emailShell(`<h2>Subscription Expired</h2><div class="rule"></div><p>Hi <strong>${firstName}</strong>,</p><p>Your Dungeon subscription has ended. Your Stremio access is no longer active.</p><p>If you'd like to return, submit a new application and the team will get you set up again.</p><a href="${SITE_URL}/apply.html" class="btn">Apply Again</a><br><p style="margin-top:20px;font-size:12px;color:#6b8f7a">- The Dungeon Master</p>`);
+  return emailShell(`<h2>Subscription Expired</h2><div class="rule"></div><p>Hi <strong>${esc(firstName)}</strong>,</p><p>Your Dungeon subscription has ended. Your Stremio access is no longer active.</p><p>If you'd like to return, submit a new application and the team will get you set up again.</p><a href="${SITE_URL}/apply.html" class="btn">Apply Again</a><br><p style="margin-top:20px;font-size:12px;color:#6b8f7a">- The Dungeon Master</p>`);
 }
 
 function emailModApproval(applicantName, screenName, applicantEmail, applicantId) {
-  return emailShell(`<h2>Mod Approval - Action Required</h2><div class="rule"></div><p>A moderator has approved an application. You need to create their DungeonStream account and grant access.</p><div class="box"><div class="row"><span class="lbl">Name</span><span class="val">${applicantName}</span></div><div class="row"><span class="lbl">Username</span><span class="val">@${screenName}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${applicantEmail}</span></div></div><p>Log into the admin panel and grant access to complete the process.</p><a href="${SITE_URL}/admin.html" class="btn">Open Dungeon Master Panel</a>`);
+  return emailShell(`<h2>Mod Approval - Action Required</h2><div class="rule"></div><p>A moderator has approved an application. You need to create their DungeonStream account and grant access.</p><div class="box"><div class="row"><span class="lbl">Name</span><span class="val">${esc(applicantName)}</span></div><div class="row"><span class="lbl">Username</span><span class="val">@${esc(screenName)}</span></div><div class="row"><span class="lbl">Email</span><span class="val">${esc(applicantEmail)}</span></div></div><p>Log into the admin panel and grant access to complete the process.</p><a href="${SITE_URL}/admin.html" class="btn">Open Dungeon Master Panel</a>`);
 }
 
 
@@ -429,6 +438,9 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
     )`).run();
   try { db.prepare('ALTER TABLE invites ADD COLUMN expires_at DATETIME').run(); } catch(e) {}
   try { db.prepare("ALTER TABLE invites ADD COLUMN promo TEXT").run(); } catch(e) {}
+  // Intended tier for the account created from this invite. Set server-side at
+  // invite creation - NEVER trusted from the client at redemption time.
+  try { db.prepare("ALTER TABLE invites ADD COLUMN tier TEXT DEFAULT 'member'").run(); } catch(e) {}
   } catch(e) { console.error('invites table:', e.message); }
   // Migrate stremio credentials to jellyfin fields for existing members
   try {
@@ -694,8 +706,19 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
+  // X-XSS-Protection is deprecated; the legacy auditor can itself introduce
+  // vulnerabilities, so the modern recommendation is to disable it explicitly.
+  res.setHeader('X-XSS-Protection', '0');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // Lock down clickjacking, <base> hijacking and plugin/embed vectors without
+  // restricting script/style/img sources (the pages rely on inline handlers).
+  res.setHeader('Content-Security-Policy', "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'");
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  // Force HTTPS for a year once we're running behind TLS in production.
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
   next();
 });
 
@@ -1412,8 +1435,8 @@ app.patch('/api/admin/channel-requests/:id', requireMod, async (req, res) => {
           const html = emailShell(`
             <h2>Your Live TV Request is Ready</h2>
             <div class="rule"></div>
-            <p>Hi ${firstName},</p>
-            <p>Good news - your ${label} request for <strong>${cr.title}</strong> has been added to DungeonCast.${cr.event_date ? ` (${cr.event_date})` : ''}</p>
+            <p>Hi ${esc(firstName)},</p>
+            <p>Good news - your ${label} request for <strong>${esc(cr.title)}</strong> has been added to DungeonCast.${cr.event_date ? ` (${esc(cr.event_date)})` : ''}</p>
             <p>Open the DungeonCast app and you should find it in the lineup. Enjoy!</p>
             <a href="https://dungeoncast.cc" class="btn">Open DungeonCast →</a>
             <div class="rule"></div>
@@ -1424,8 +1447,8 @@ app.patch('/api/admin/channel-requests/:id', requireMod, async (req, res) => {
           const html = emailShell(`
             <h2>Update on Your Live TV Request</h2>
             <div class="rule"></div>
-            <p>Hi ${firstName},</p>
-            <p>Thanks for requesting <strong>${cr.title}</strong>. Unfortunately we weren't able to add this one right now.</p>
+            <p>Hi ${esc(firstName)},</p>
+            <p>Thanks for requesting <strong>${esc(cr.title)}</strong>. Unfortunately we weren't able to add this one right now.</p>
             <p>Feel free to reach out if you have any questions.</p>
             <div class="rule"></div>
             <p style="font-size:12px;color:#6b8f7a">- The Dungeon Master</p>
@@ -3298,7 +3321,7 @@ app.post('/api/admin/invites/create', requireMod, async (req, res) => {
       <div class="rule"></div>
       <p>You've been personally invited to join <strong>Dungeon</strong> - a private streaming service.</p>
       <p>Click below to complete your signup. Your membership fee is <strong>$${amount}</strong>.</p>
-      ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
+      ${note ? `<p style="color:#94a3a0;font-size:13px">${esc(note)}</p>` : ''}
       <a href="${session.url}" class="btn">Complete Signup - $${amount}</a>
       <div class="rule"></div>
       <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. It is for you only. - The Dungeon Master</p>
@@ -3394,7 +3417,12 @@ app.post('/api/invite/:token/complete', async (req, res) => {
     const colors = ['#34d399','#60a5fa','#f87171','#fbbf24','#a78bfa'];
     const color = colors[Math.floor(Math.random()*colors.length)];
 
-    const inviteTier = ['family','dealer','mod','admin'].includes(req.body.tier) ? req.body.tier : 'member';
+    // SECURITY: the tier is decided server-side when the invite is created and
+    // stored on the invite row. The client-supplied req.body.tier is IGNORED -
+    // otherwise anyone with a normal membership invite could self-assign an
+    // elevated tier (dealer/mod/admin) just by editing the join URL.
+    const allowedInviteTiers = ['member','family','dealer','mod','admin'];
+    const inviteTier = allowedInviteTiers.includes(invite.tier) ? invite.tier : 'member';
 
     // Use DB transaction to prevent race conditions
     const createAccount = db.transaction(() => {
@@ -3670,7 +3698,7 @@ app.post('/api/dealer/invites/create', requireDealer, async (req, res) => {
         <div class="rule"></div>
         <p>You've been personally invited to join <strong>Dungeon</strong> - a private streaming service.</p>
         <p>Click below to complete your signup. Your membership fee is <strong>$${amount}</strong>.</p>
-        ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
+        ${note ? `<p style="color:#94a3a0;font-size:13px">${esc(note)}</p>` : ''}
         <a href="${session.url}" class="btn">Complete Signup - $${amount}</a>
         <div class="rule"></div>
         <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. It is for you only. - The Dungeon Master</p>
@@ -3745,7 +3773,7 @@ app.post('/api/promo/fathers-day/create', requireDealer, async (req, res) => {
         <h2>Happy Father's Day - You're Invited to Dungeon</h2>
         <div class="rule"></div>
         <p>A Father's Day gift: join <strong>Dungeon</strong> for just <strong>$${amount}</strong>, and your first month of <strong>DungeonStream</strong> and <strong>DungeonCast</strong> is included.</p>
-        ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
+        ${note ? `<p style="color:#94a3a0;font-size:13px">${esc(note)}</p>` : ''}
         <a href="${session.url}" class="btn">Claim the Father's Day Special - $${amount}</a>
         <div class="rule"></div>
         <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. - The Dungeon Master</p>
@@ -3973,7 +4001,7 @@ app.post('/api/auth/forgot-password', forgotLimiter, async (req, res) => {
     const html = emailShell(`
       <h2>Reset Your Password</h2>
       <div class="rule"></div>
-      <p>Hi <strong>${member.first_name}</strong>,</p>
+      <p>Hi <strong>${esc(member.first_name)}</strong>,</p>
       <p>We received a request to reset your Dungeon password. Click below to set a new one.</p>
       <a href="${resetUrl}" class="btn">Reset Password</a>
       <div class="rule"></div>
@@ -4237,8 +4265,8 @@ app.post('/api/admin/invites/create-free', requireMod, async (req, res) => {
     const id = genId();
     const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
 
-    db.prepare('INSERT INTO invites (id, token, email, created_by, amount, note, status, expires_at) VALUES (?,?,?,?,0,?,?,?)')
-      .run(id, token, hasEmail ? email.trim() : null, req.profile.id, note||null, 'paid', expires);
+    db.prepare('INSERT INTO invites (id, token, email, created_by, amount, note, status, expires_at, tier) VALUES (?,?,?,?,0,?,?,?,?)')
+      .run(id, token, hasEmail ? email.trim() : null, req.profile.id, note||null, 'paid', expires, assignTier);
 
     const joinUrl = (process.env.SITE_URL || 'https://enterdungeon.cc') + '/join?token=' + token + (assignTier !== 'member' ? '&tier=' + assignTier : '');
 
@@ -4248,7 +4276,7 @@ app.post('/api/admin/invites/create-free', requireMod, async (req, res) => {
         <h2>You've Been Invited to Dungeon</h2>
         <div class="rule"></div>
         <p>You've been personally invited to join Dungeon - a private streaming community.</p>
-        ${note ? `<p><em>"${note}"</em></p>` : ''}
+        ${note ? `<p><em>"${esc(note)}"</em></p>` : ''}
         <a href="${joinUrl}" class="btn">Accept Invite →</a>
         <div class="rule"></div>
         <p style="font-size:12px;color:#6b8f7a">This invite expires in 30 days.</p>
@@ -4284,7 +4312,7 @@ app.post('/api/admin/demos/create-link', requireMod, async (req, res) => {
         <h2>You're Invited to Try Dungeon</h2>
         <div class="rule"></div>
         <p>You've been invited to try out Dungeon - a private streaming service.</p>
-        ${note ? `<p><em>"${note}"</em></p>` : ''}
+        ${note ? `<p><em>"${esc(note)}"</em></p>` : ''}
         <p>Click below to claim your free 24-hour demo account:</p>
         <a href="${demoUrl}" class="btn">Claim Demo Access →</a>
         <div class="rule"></div>
@@ -4338,7 +4366,7 @@ app.post('/api/dealer/demo/create-link', requireDealer, async (req, res) => {
         <h2>You're Invited to Try Dungeon</h2>
         <div class="rule"></div>
         <p>You've been invited to try out Dungeon - a private streaming service.</p>
-        ${note ? `<p><em>"${note}"</em></p>` : ''}
+        ${note ? `<p><em>"${esc(note)}"</em></p>` : ''}
         <a href="${demoUrl}" class="btn">Claim Demo Access →</a>
         <div class="rule"></div>
         <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days.</p>

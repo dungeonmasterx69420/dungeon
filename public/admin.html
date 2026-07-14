@@ -678,7 +678,7 @@ async function runLookup(){
   html+=`<div class="card" style="padding:16px;margin-top:14px;border-color:rgba(248,113,113,.3)">
     <div style="font-weight:600;color:var(--red);margin-bottom:6px">⚠️ Purge Everything</div>
     <div style="font-size:13px;color:var(--t2);margin-bottom:12px">Permanently deletes all of the above and removes the Jellyfin users on both servers. This frees the email for a fresh invite. Cannot be undone.</div>
-    <button class="btn btn-r" onclick="purgeAccount('${esc(d.email)}')">Purge ${esc(d.email)}</button>
+    <button class="btn btn-r" onclick="purgeAccount('${escJs(d.email)}')">Purge ${esc(d.email)}</button>
   </div></div>`;
   box.innerHTML=html;
 }
@@ -916,7 +916,7 @@ async function loadApps(){
           ${a.notes?`<div class="di full"><div class="dl">Notes</div><div class="dv">${esc(a.notes)}</div></div>`:''}
         </div>
         ${st==='pending'?`<div class="actions">
-          <button class="btn btn-g" onclick="openGrant('${a.id}','${esc(a.first_name)}','${esc(a.last_name)}','${esc(a.email)}')">✓ Grant Access</button>
+          <button class="btn btn-g" onclick="openGrant('${a.id}','${escJs(a.first_name)}','${escJs(a.last_name)}','${escJs(a.email)}')">✓ Grant Access</button>
           <button class="btn btn-r" onclick="denyApp('${a.id}')">✗ Deny</button>
         </div>`:''}
       </div>
@@ -1037,7 +1037,7 @@ function renderMembers(members){
           <button class="btn btn-b" onclick="openCredits('${m.id}','${m.profile_id_val||''}',${m.credit_balance||0})">Credits</button>
           <button class="btn btn-b" onclick="openEditSub('${m.id}','stream')">Stream Sub</button>
           <button class="btn btn-b" onclick="openEditSub('${m.id}','cast')">Cast Sub</button>
-          <button class="btn btn-r" style="font-size:10px;padding:5px 10px" onclick="deleteMember('${m.id}','${esc(m.screen_name||m.first_name)}')">Delete</button>
+          <button class="btn btn-r" style="font-size:10px;padding:5px 10px" onclick="deleteMember('${m.id}','${escJs(m.screen_name||m.first_name)}')">Delete</button>
         </div>
       </div>
     </div>`;
@@ -1153,7 +1153,7 @@ async function loadRedem(){
           <div class="rc-name">@${esc(r.screen_name||'unknown')} <span class="bdg ${bc}">${r.status}</span></div>
           <div class="rc-meta">${svc} · ${fmtDate(r.created_at)}</div>
         </div>
-        ${r.status==='pending'?`<button class="btn btn-g" onclick="openFulfill('${r.id}','${r.service}','${esc(r.screen_name||r.email||'')}','${esc(r.screen_name||'')}','${esc(r.jellyfin_user||'')}','${esc(r.jellyfin_pass||'')}','${r.stremio_end||''}','${r.iptv_end||''}')">Fulfill →</button>`:''}
+        ${r.status==='pending'?`<button class="btn btn-g" onclick="openFulfill('${r.id}','${r.service}','${escJs(r.screen_name||r.email||'')}','${escJs(r.screen_name||'')}','${escJs(r.jellyfin_user||'')}','${escJs(r.jellyfin_pass||'')}','${r.stremio_end||''}','${r.iptv_end||''}')">Fulfill →</button>`:''}
       </div>
       ${r.status==='fulfilled'?`<div class="rc-rows">
         <div class="rc-row"><span class="rc-lbl">Server</span><span class="rc-val">${server}</span></div>
@@ -1225,6 +1225,12 @@ function closeAllSheets(){document.querySelectorAll('.sheet.on').forEach(s=>s.cl
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// Escaper for values passed as JS-string arguments inside inline on* handlers,
+// e.g. onclick="fn('${escJs(x)}')". Entity-encoding alone is unsafe there: the
+// HTML parser decodes entities before the JS engine runs, so a raw/entity quote
+// would still break out of the string. Backslash-escape \ and ' for the JS
+// layer; entity-encode & " < > for the HTML attribute layer.
+function escJs(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/[\r\n]+/g,' ');}
 function mkPass(){const c='abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#';return Array.from({length:12},()=>c[Math.floor(Math.random()*c.length)]).join('');}
 function fmtDate(d){if(!d)return'-';const dt=new Date(d);return isNaN(dt)?'-':dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 function strToColor(s){const colors=['#34d399','#60a5fa','#f87171','#fbbf24','#a78bfa','#fb7185','#38bdf8','#4ade80'];let h=0;for(let i=0;i<(s||'').length;i++)h=(h*31+s.charCodeAt(i))%colors.length;return colors[h];}
@@ -1352,7 +1358,7 @@ async function loadDemos() {
           <div class="rc-meta">${d.service==='bundle'?'🎟️ Full Access':d.service==='cast'?'DungeonCast':d.service==='stream'?'DungeonStream':(d.service||'Demo')} · ${fmtDate(d.created_at)}</div>
           ${d.notes?`<div style="font-size:11px;color:var(--t2);margin-top:4px">${esc(d.notes)}</div>`:''}
         </div>
-        ${d.status==='pending'?`<button class="btn btn-g" onclick="openDemo('${d.id}','${esc(d.email||d.screen_name||'')}')">Fulfill →</button>`:''}
+        ${d.status==='pending'?`<button class="btn btn-g" onclick="openDemo('${d.id}','${escJs(d.email||d.screen_name||'')}')">Fulfill →</button>`:''}
       </div>
       ${d.status==='fulfilled'?`<div class="rc-rows">
         <div class="rc-row"><span class="rc-lbl">Username</span><span class="rc-val">${esc(d.demo_user||'-')}</span></div>

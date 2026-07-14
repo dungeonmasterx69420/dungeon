@@ -280,9 +280,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
           </div>
         </div>
         <div style="min-width:0">
-          <div class="msg-from">${tab==='inbox'?'From':'To'}: @${other.name}</div>
-          <div class="msg-subject">${m.subject}</div>
-          <div class="msg-preview">${m.content}</div>
+          <div class="msg-from">${tab==='inbox'?'From':'To'}: @${escHtml(other.name)}</div>
+          <div class="msg-subject">${escHtml(m.subject)}</div>
+          <div class="msg-preview">${escHtml(m.content)}</div>
         </div>
         <div class="msg-time">${timeAgo(m.created_at)}</div>
       </div>`;
@@ -310,13 +310,13 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     const initials = other.name ? other.name[0].toUpperCase() : '?';
 
     document.getElementById('detailContent').innerHTML = `
-      <div class="detail-subject">${m.subject}</div>
+      <div class="detail-subject">${escHtml(m.subject)}</div>
       <div class="detail-meta">
         <div class="detail-avatar" style="background:${other.color||'#60a5fa'}">
           ${other.avatar?`<img src="${other.avatar}" alt=""/>`:initials}
         </div>
         <div>
-          ${isSent?'To':'From'}: <a href="/profile.html?id=${other.id}">@${other.name}</a>
+          ${isSent?'To':'From'}: <a href="/profile.html?id=${encodeURIComponent(other.id)}">@${escHtml(other.name)}</a>
           &nbsp;·&nbsp; ${timeAgo(m.created_at)}
         </div>
       </div>
@@ -400,7 +400,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric'});
   }
 
-  function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  function escHtml(s){return(s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 
   async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html'}
 

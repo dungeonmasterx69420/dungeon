@@ -113,7 +113,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     el.innerHTML = cats.map(c => {
       const lastThread = c.last_thread;
       const lastText = lastThread
-        ? `Last post in <a href="/thread.html?id=${lastThread.id}">${lastThread.title}</a> by @${lastThread.screen_name} &mdash; ${timeAgo(lastThread.last_post_at)}`
+        ? `Last post in <a href="/thread.html?id=${encodeURIComponent(lastThread.id)}">${escapeHtml(lastThread.title)}</a> by @${escapeHtml(lastThread.screen_name)} &mdash; ${timeAgo(lastThread.last_post_at)}`
         : 'No posts yet';
       return `<div class="category-card">
         <a href="/threads.html?cat=${c.id}" class="category-header" style="display:block;text-decoration:none;color:inherit;padding:18px 20px">
@@ -129,6 +129,10 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
         </a>
       </div>`;
     }).join('');
+  }
+
+  function escapeHtml(s){
+    return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
   function timeAgo(dt){
