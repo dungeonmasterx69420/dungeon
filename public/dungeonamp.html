@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>Dungeon · DungeonAmp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    :root{
+      --void:#060908;--stone:#0d1311;--moss:#141c19;--raise:#172019;
+      --ember:#34d399;--ember-soft:rgba(52,211,153,.14);--ember-line:rgba(52,211,153,.22);
+      --border:rgba(52,211,153,.12);--border2:rgba(52,211,153,.28);
+      --ash:#6f8f84;--ash2:#94a3a0;--bone:#dce8e3;--red:#f87171;--amber:#fbbf24;--gold:#e3b94f;
+      --display:'Press Start 2P',monospace;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+    }
+    html,body{min-height:100vh}
+    body{background:var(--void);color:var(--bone);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;position:relative}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(90% 40% at 50% -5%, rgba(52,211,153,.07), transparent 55%)}
+    .topbar{position:sticky;top:0;z-index:10;background:rgba(13,19,17,.85);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(8px)}
+    .logo{font-family:var(--display);font-size:11px;color:var(--ember);text-decoration:none;letter-spacing:.04em;text-shadow:0 0 10px rgba(52,211,153,.5)}
+    .nav{display:flex;align-items:center;gap:12px}
+    .nav a,.nav button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ash);text-decoration:none;background:none;border:none;cursor:pointer;transition:color .2s;padding:4px 2px}
+    .nav a:hover,.nav button:hover,.nav a:focus-visible,.nav button:focus-visible{color:var(--bone);outline:none}
+    .msg-btn{position:relative;width:32px;height:32px;border-radius:8px;background:var(--moss);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ash);font-size:14px;transition:border-color .2s,color .2s}
+    .msg-btn:hover{border-color:var(--ember);color:var(--ember)}
+    .msg-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.5}
+    .page{position:relative;z-index:2;flex:1;max-width:700px;margin:0 auto;padding:30px 16px 60px;width:100%}
+
+    .page-head{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+    .page-sigil{font-size:24px;color:var(--ember);text-shadow:0 0 14px rgba(52,211,153,.6);line-height:1}
+    .page-title{font-family:var(--display);font-size:14px;color:var(--bone);line-height:1.6;text-shadow:0 0 16px rgba(52,211,153,.3)}
+    .page-sub{font-size:14px;color:var(--ash);margin-bottom:28px;line-height:1.7}
+
+    .cred-card{background:linear-gradient(180deg, rgba(23,32,25,.55), rgba(13,19,17,.55));border:1px solid var(--border2);border-radius:14px;padding:20px;margin-bottom:24px;backdrop-filter:blur(4px)}
+    .cred-card-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:16px}
+    .badge{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+    .cred-row{background:var(--stone);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px}
+    .cred-label{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ash);margin-bottom:6px}
+    .cred-val-row{display:flex;align-items:center;gap:8px}
+    .cred-val{flex:1;font-size:14px;color:var(--bone);word-break:break-all}
+    .cred-val.mono{font-family:var(--mono);letter-spacing:.05em}
+    .copy-btn,.show-btn{font-family:var(--mono);font-size:10px;padding:5px 10px;background:var(--moss);border:1px solid var(--border2);border-radius:6px;color:var(--ash);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:color .2s,border-color .2s}
+    .copy-btn:hover,.show-btn:hover{color:var(--ember);border-color:var(--ember)}
+    .cred-note{font-size:12px;color:var(--ash);line-height:1.7;margin-top:12px}
+    .cred-note a{color:var(--ember);text-decoration:none}
+    .no-account{text-align:center;padding:8px 0 4px}
+    .no-account p{font-size:13px;color:var(--ash);line-height:1.7;margin-bottom:14px}
+    .redeem-btn{display:inline-block;padding:11px 22px;background:var(--ember);border-radius:8px;color:var(--void);font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 0 16px rgba(52,211,153,.3);transition:transform .15s;border:none;cursor:pointer;font-family:var(--sans)}
+    .redeem-btn:hover{transform:translateY(-1px)}
+    .redeem-btn:disabled{opacity:.5;cursor:default;transform:none}
+    .player-btn{display:block;text-align:center;padding:14px 22px;background:linear-gradient(180deg,#f3d27a,#c99a35);border-radius:10px;color:#1a1408;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 0 18px rgba(227,185,79,.25);transition:transform .15s;margin-bottom:10px}
+    .player-btn:hover{transform:translateY(-1px)}
+
+    .pass-reveal{background:rgba(227,185,79,.08);border:1px solid rgba(227,185,79,.35);border-radius:10px;padding:13px;margin-bottom:10px;display:none}
+    .pass-reveal .cred-label{color:var(--gold)}
+    .pass-warning{font-family:var(--mono);font-size:10px;color:var(--amber);line-height:1.6;margin-top:8px}
+    .reset-error{font-family:var(--mono);font-size:11px;color:var(--red);margin-top:10px;display:none}
+
+    .section-head{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ash);margin:28px 0 14px;display:flex;align-items:center;gap:12px}
+    .section-head::after{content:'';flex:1;height:1px;background:var(--border)}
+    .app-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px}
+    .app-card{background:var(--moss);border:1px solid var(--border);border-radius:11px;padding:14px;display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;transition:border-color .2s,transform .15s}
+    .app-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+    .app-icon{font-size:22px;flex-shrink:0;width:30px;text-align:center}
+    .app-name{font-size:13px;font-weight:600;color:var(--bone);margin-bottom:2px}
+    .app-platform{font-family:var(--mono);font-size:10px;color:var(--ash)}
+    .app-tag{display:inline-block;font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 6px;border-radius:10px;background:var(--ember-soft);color:var(--ember);margin-left:4px;vertical-align:middle;text-transform:uppercase;letter-spacing:.04em}
+
+    footer{text-align:center;padding:24px 0 8px;font-family:var(--mono);font-size:11px;color:var(--ash);display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+    footer a{color:var(--ash);text-decoration:none;transition:color .2s}
+    footer a:hover{color:var(--ember)}
+    .sep{color:#2c3d36}
+    @media(max-width:480px){.page{padding:22px 12px 50px}.app-grid{grid-template-columns:1fr}.page-title{font-size:12px}}
+  </style>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+</head>
+<body>
+<div class="topbar">
+  <a href="/dashboard.html" class="logo">⬡ Dungeon</a>
+  <div class="nav">
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/messages.html" class="msg-btn">✉<span class="msg-badge" id="msgBadge"></span></a>
+    <button onclick="logout()">Sign out</button>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-head">
+    <span class="page-sigil" aria-hidden="true">🎵</span>
+    <div class="page-title">DungeonAmp</div>
+  </div>
+  <div class="page-sub">The Dungeon jukebox - your music library, streamed anywhere. Part of your Dungeon membership.</div>
+
+  <div class="cred-card">
+    <div class="cred-card-title">Your DungeonAmp Account <span class="badge" id="statusBadge"></span></div>
+    <div id="credPlaceholder" style="font-size:13px;color:var(--ash);line-height:1.7">Checking your account…</div>
+
+    <div id="credActive" style="display:none">
+      <a class="player-btn" id="playerBtn" href="#" target="_blank" rel="noopener" style="display:none">▶&nbsp; Open the Ampio Player</a>
+      <div class="cred-row">
+        <div class="cred-label">Server URL</div>
+        <div class="cred-val-row">
+          <span class="cred-val mono" id="serverUrl">-</span>
+          <button class="copy-btn" onclick="copyField('serverUrl',this)">Copy</button>
+        </div>
+      </div>
+      <div class="cred-row">
+        <div class="cred-label">Username</div>
+        <div class="cred-val-row">
+          <span class="cred-val mono" id="ndUser">-</span>
+          <button class="copy-btn" onclick="copyField('ndUser',this)">Copy</button>
+        </div>
+      </div>
+
+      <div class="pass-reveal" id="passReveal">
+        <div class="cred-label">Your new music password</div>
+        <div class="cred-val-row">
+          <span class="cred-val mono" id="ndPass"></span>
+          <button class="copy-btn" id="copyPassBtn" onclick="copyField('ndPass',this)">Copy</button>
+        </div>
+        <div class="pass-warning">⚠ Shown only once - it is not stored anywhere. Copy it into your player (or password manager) now. Lost it? Just reset again.</div>
+      </div>
+
+      <div class="cred-row">
+        <div class="cred-label">Password</div>
+        <div class="cred-val-row">
+          <span class="cred-val" id="passHint" style="color:var(--ash);font-size:12px">For your security we never store your music password. Set a fresh one whenever you need it:</span>
+          <button class="redeem-btn" id="resetBtn" onclick="resetPass()" style="padding:8px 14px;font-size:12px">Set / Reset Password</button>
+        </div>
+        <div class="reset-error" id="resetError"></div>
+      </div>
+
+      <div class="cred-note">Log into the player (or any Subsonic app below) with the Server URL, username and password above. Resetting the password signs out every device that used the old one.</div>
+    </div>
+
+    <div id="credNone" style="display:none">
+      <div class="no-account">
+        <p>You don't have an active Dungeon subscription right now.<br>Redeem 1 credit to unlock everything - including the jukebox.</p>
+        <a href="/redeem.html" class="redeem-btn">Redeem a Credit</a>
+      </div>
+    </div>
+
+    <div id="credUnavailable" style="display:none">
+      <div class="no-account"><p>DungeonAmp isn't switched on yet - check back soon.</p></div>
+    </div>
+  </div>
+
+  <div class="section-head" id="appSectionHead" style="display:none">Listen With</div>
+  <div class="app-grid" id="appSection" style="display:none">
+    <a class="app-card" id="ampioCard" href="#" target="_blank" rel="noopener">
+      <div class="app-icon">⚡</div>
+      <div><div class="app-name">Ampio <span class="app-tag">house app</span></div><div class="app-platform">Browser · installable PWA</div></div>
+    </a>
+    <a class="app-card" href="https://symfonium.app" target="_blank" rel="noopener">
+      <div class="app-icon">🤖</div>
+      <div><div class="app-name">Symfonium</div><div class="app-platform">Android</div></div>
+    </a>
+    <a class="app-card" href="https://apps.apple.com/app/play-sub-music-streamer/id955329386" target="_blank" rel="noopener">
+      <div class="app-icon">🍎</div>
+      <div><div class="app-name">play:Sub</div><div class="app-platform">iPhone · iPad</div></div>
+    </a>
+    <a class="app-card" href="https://github.com/jeffvli/feishin" target="_blank" rel="noopener">
+      <div class="app-icon">💻</div>
+      <div><div class="app-name">Feishin</div><div class="app-platform">Windows · Mac · Linux</div></div>
+    </a>
+  </div>
+
+  <footer id="pageFooter">
+    <a href="/dashboard.html">Dashboard</a><span class="sep">·</span>
+    <a href="/guides.html">Guides</a><span class="sep">·</span>
+    <a href="/forum.html">Forum</a><span class="sep">·</span>
+    <a href="/support.html">Support</a>
+  </footer>
+</div>
+
+<script>
+  function copyField(id, btn) {
+    navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+      const t = btn.textContent;
+      btn.textContent = '✓';
+      setTimeout(() => btn.textContent = t, 2000);
+    });
+  }
+
+  function setBadge(text, kind) {
+    const badge = document.getElementById('statusBadge');
+    badge.textContent = text;
+    if (kind === 'ok') { badge.style.background = 'rgba(52,211,153,0.12)'; badge.style.color = 'var(--ember)'; }
+    else if (kind === 'bad') { badge.style.background = 'rgba(248,113,113,0.1)'; badge.style.color = 'var(--red)'; }
+    else { badge.style.background = 'rgba(148,163,160,0.1)'; badge.style.color = 'var(--ash2)'; }
+  }
+
+  async function resetPass() {
+    const btn = document.getElementById('resetBtn');
+    const errEl = document.getElementById('resetError');
+    errEl.style.display = 'none';
+    btn.disabled = true; btn.textContent = 'Working…';
+    try {
+      const r = await fetch('/api/member/navidrome/reset-password', { method: 'POST', credentials: 'same-origin' });
+      const d = await r.json();
+      if (!r.ok || !d.ok) throw new Error(d.error || 'Reset failed');
+      document.getElementById('ndPass').textContent = d.password;
+      document.getElementById('passReveal').style.display = 'block';
+      btn.textContent = 'Reset Again';
+    } catch (e) {
+      errEl.textContent = String(e.message || e);
+      errEl.style.display = 'block';
+      btn.textContent = 'Set / Reset Password';
+    }
+    btn.disabled = false;
+  }
+
+  fetch('/api/member/me?t=' + Date.now(), { credentials: 'same-origin', cache: 'no-store' }).then(r => r.json()).then(d => {
+    if (!d.authenticated) {
+      return fetch('/api/member/me?t=' + Date.now(), { credentials: 'same-origin', cache: 'no-store' }).then(r => r.json()).then(d2 => {
+        if (!d2.authenticated) { window.location.href = '/login.html'; return Promise.reject('noauth'); }
+        return d2;
+      });
+    }
+    return d;
+  }).then(async d => {
+    if (!d) return;
+    loadMsgBadge();
+    loadFooter(d.member?.profile?.tier);
+
+    const r = await fetch('/api/member/navidrome', { credentials: 'same-origin', cache: 'no-store' });
+    const nd = await r.json();
+    document.getElementById('credPlaceholder').style.display = 'none';
+
+    if (!nd.configured) {
+      setBadge('Coming Soon', 'off');
+      document.getElementById('credUnavailable').style.display = 'block';
+      return;
+    }
+    if (!nd.active) {
+      setBadge('No Access', 'bad');
+      document.getElementById('credNone').style.display = 'block';
+      return;
+    }
+    if (nd.error) {
+      setBadge('Hiccup', 'bad');
+      document.getElementById('credUnavailable').style.display = 'block';
+      document.querySelector('#credUnavailable p').textContent = 'Could not reach the jukebox - try again in a minute.';
+      return;
+    }
+
+    setBadge('Active', 'ok');
+    document.getElementById('credActive').style.display = 'block';
+    document.getElementById('ndUser').textContent = nd.username || '-';
+    document.getElementById('serverUrl').textContent = nd.server_url || '-';
+
+    if (nd.player_url) {
+      const pb = document.getElementById('playerBtn');
+      pb.href = nd.player_url; pb.style.display = 'block';
+      document.getElementById('ampioCard').href = nd.player_url;
+    } else {
+      document.getElementById('ampioCard').style.display = 'none';
+    }
+    document.getElementById('appSectionHead').style.display = 'flex';
+    document.getElementById('appSection').style.display = 'grid';
+  }).catch((err) => {
+    if (err === 'noauth') return;
+    console.error('[dungeonamp] render error:', err);
+  });
+
+  function loadFooter(tier) {
+    const footer = document.getElementById('pageFooter');
+    if (!footer || !tier) return;
+    if (['mod','admin','warden'].includes(tier)) {
+      const span = document.createElement('span');
+      let extra = '<span class="sep">·</span><a href="/mod.html" style="color:var(--ember)">Mod Panel</a>';
+      if (['admin','warden'].includes(tier)) extra += '<span class="sep">·</span><a href="/admin.html" style="color:var(--red)">Admin</a>';
+      span.innerHTML = extra; footer.appendChild(span);
+    }
+  }
+
+  async function loadMsgBadge() {
+    const d = await fetch('/api/messages/unread').then(r => r.json()).catch(() => ({count:0}));
+    const b = document.getElementById('msgBadge');
+    if (b && d.count > 0) { b.textContent = d.count; b.style.display = 'block'; }
+  }
+
+  async function logout() {
+    await fetch('/api/member/logout', {method:'POST'});
+    window.location.href = '/login.html';
+  }
+</script>
+  <script src="/notif-bell.js"></script>
+</body>
+</html>

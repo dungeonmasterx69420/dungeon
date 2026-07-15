@@ -25,6 +25,7 @@ Built as a single Node.js service: one Express server, one SQLite database, stat
 - StremGate accounts created and torn down via admin API (tier-aware durations: family/staff get long-lived access, regular members get 30 days)
 - Stremio accounts registered on api.strem.io with the member's personal addon collection pre-installed (Cinemeta + their Dungeon addon), so members never touch the Add-ons screen
 - Jellyfin users enabled/disabled for both DungeonStream and DungeonCast
+- DungeonAmp (Navidrome music) accounts created per member; passwords are never stored or emailed — members set their own from the dashboard (shown once), expiry locks the account by scrambling the password (which also revokes all password-derived Subsonic tokens), purge deletes it
 - IPTV line creation and renewal (T-Rex, NodeCast)
 - Hourly expiry cron revokes access across all services when a subscription lapses; renewals re-enable everything
 
@@ -60,6 +61,7 @@ dungeon/
 ├── server.js          # Entire backend: routes, DB schema, cron, email
 ├── stremgate.js       # StremGate provisioning helper (X-Admin-Key API)
 ├── stremio.js         # Stremio account auto-provisioning (api.strem.io)
+├── navidrome.js       # DungeonAmp (Navidrome music) provisioning helper
 ├── notif-bell.js      # Shared notification bell component
 ├── public/            # All member-facing and admin pages
 │   ├── index.html         # The Gate (public landing / application)

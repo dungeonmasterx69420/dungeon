@@ -21,6 +21,18 @@ In your Render service dashboard, add these **Environment Variables**:
 | `SITE_URL`            | your Render URL e.g. `https://dungeon.onrender.com` |
 | `NODE_ENV`            | `production`                               |
 
+**Optional - DungeonAmp (Navidrome music):**
+
+| Variable                | Value                                                    |
+|-------------------------|----------------------------------------------------------|
+| `NAVIDROME_URL`         | your Navidrome server, e.g. `https://music.example.com` (used server-to-server for the admin API) |
+| `NAVIDROME_ADMIN_USER`  | an admin username on that Navidrome                      |
+| `NAVIDROME_ADMIN_PASS`  | that admin's password                                    |
+| `NAVIDROME_PUBLIC_URL`  | (optional) member-facing server URL if different from `NAVIDROME_URL` |
+| `AMPIO_URL`             | (optional) where the Ampio web player is hosted, e.g. `https://amp.enterdungeon.cc` |
+
+Leave these unset and the DungeonAmp page simply shows "coming soon" — nothing else breaks.
+
 ---
 
 ## Step 2 - Persistent disk (keeps your database across deploys)

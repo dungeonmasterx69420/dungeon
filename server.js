@@ -11,6 +11,7 @@ const fs         = require('fs');
 const crypto     = require('crypto');
 const { sgProvision, sgExtend, sgDisable, sgEnable, sgGetAddonUrl, sgDelete } = require('./stremgate');
 const { stremioProvision, stremioResync } = require('./stremio');
+const { ndConfigured, ndProvision, ndSetPassword, ndLock, ndDelete, ndRandPass } = require('./navidrome');
 const STAFF_TIERS = ['family','dealer','mod','admin','warden'];
 
 const app  = express();
@@ -353,6 +354,10 @@ function emailModApproval(applicantName, screenName, applicantEmail, applicantId
   try { db.prepare('ALTER TABLE members ADD COLUMN jellyfin_user TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN jellyfin_pass TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN jellyfin_server TEXT').run(); } catch(e) {}
+  // DungeonAmp (Navidrome). Deliberately NO password column: music passwords
+  // are never stored - the member sets one via dashboard, shown once.
+  try { db.prepare('ALTER TABLE members ADD COLUMN navidrome_user TEXT').run(); } catch(e) {}
+  try { db.prepare('ALTER TABLE members ADD COLUMN navidrome_user_id TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE profiles ADD COLUMN devices TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN phone TEXT').run(); } catch(e) {}
   try { db.prepare('ALTER TABLE members ADD COLUMN referred_by TEXT').run(); } catch(e) {}
@@ -521,6 +526,15 @@ async function runSubscriptionCron() {
         console.log('[cron] StremGate disable for', m.email, '→', sgRes.ok ? 'ok' : 'failed');
       }
     } catch(e) { console.error('[cron] StremGate disable error:', e.message); }
+
+    // Lock DungeonAmp (Navidrome) by scrambling the password - Subsonic tokens
+    // are password-derived, so this also revokes every remembered Ampio login.
+    try {
+      if (m.navidrome_user_id) {
+        const ndRes = await ndLock(m.navidrome_user_id);
+        console.log('[cron] DungeonAmp lock for', m.email, '→', ndRes.ok ? 'ok' : 'failed');
+      }
+    } catch(e) { console.error('[cron] DungeonAmp lock error:', e.message); }
 
     sendMail(m.email, 'Your Dungeon subscription has ended', emailExpired(m.first_name)).catch(()=>{});
     db.prepare('UPDATE members SET expired_notified=1 WHERE id=?').run(m.id);
@@ -1107,6 +1121,88 @@ app.get('/api/member/stremgate', requireMember, async (req, res) => {
     });
   } catch (e) {
     console.error('[member/stremgate]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── DungeonAmp (Navidrome music) ─────────────────────────────────────────────
+const NAVIDROME_PUBLIC_URL = (process.env.NAVIDROME_PUBLIC_URL || process.env.NAVIDROME_URL || '').replace(/\/$/, '');
+const AMPIO_URL = (process.env.AMPIO_URL || '').replace(/\/$/, '');
+
+// Shared "is this member's subscription live" check (mirrors the stremgate route)
+function memberMusicAccess(m) {
+  const now = new Date();
+  const end = m.stremio_end ? new Date(String(m.stremio_end).includes('T') ? m.stremio_end : m.stremio_end + 'T00:00:00Z') : null;
+  const prof = db.prepare('SELECT screen_name, tier FROM profiles WHERE member_id=? OR (member_id IS NULL AND LOWER(email)=LOWER(?)) LIMIT 1').get(m.id, m.email);
+  const isStaff = prof && STAFF_TIERS.includes(prof.tier);
+  return { active: isStaff || (end ? end > now : false), prof };
+}
+
+app.get('/api/member/navidrome', requireMember, async (req, res) => {
+  try {
+    let m = db.prepare('SELECT * FROM members WHERE id=?').get(req.session.member.id);
+    if (!m) return res.status(404).json({ error: 'Member not found' });
+    if (!ndConfigured()) return res.json({ configured: false });
+
+    const { active, prof } = memberMusicAccess(m);
+    if (!active) return res.json({ configured: true, active: false });
+
+    // Self-heal: provision on demand (throwaway password; member sets a real
+    // one with the reset button - we never store or return it here)
+    if (!m.navidrome_user_id) {
+      const ndUser = (prof?.screen_name || m.first_name || 'member').toLowerCase().replace(/[^a-z0-9_]/g, '_');
+      const nd = await ndProvision(ndUser, prof?.screen_name || m.first_name || ndUser, m.email);
+      if (nd.ok) {
+        db.prepare('UPDATE members SET navidrome_user=?, navidrome_user_id=? WHERE id=?')
+          .run(nd.userName || ndUser, nd.userId, m.id);
+        m = db.prepare('SELECT * FROM members WHERE id=?').get(m.id);
+        console.log('[member/navidrome] Self-provisioned on demand:', nd.userName || ndUser);
+      } else {
+        console.error('[member/navidrome] On-demand provision failed:', nd.error);
+        return res.json({ configured: true, active: true, error: 'provision_failed' });
+      }
+    }
+
+    res.json({
+      configured: true,
+      active: true,
+      username: m.navidrome_user,
+      server_url: NAVIDROME_PUBLIC_URL,
+      player_url: AMPIO_URL || null,
+    });
+  } catch (e) {
+    console.error('[member/navidrome]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Reset the member's music password. Generated server-side with crypto
+// randomness, set on Navidrome, returned ONCE over the authenticated session.
+// Never stored in the DB, never emailed, never logged.
+app.post('/api/member/navidrome/reset-password', requireMember, submitLimiter, async (req, res) => {
+  try {
+    const m = db.prepare('SELECT * FROM members WHERE id=?').get(req.session.member.id);
+    if (!m) return res.status(404).json({ error: 'Member not found' });
+    if (!ndConfigured()) return res.status(503).json({ error: 'DungeonAmp is not configured' });
+
+    const { active } = memberMusicAccess(m);
+    if (!active) return res.status(403).json({ error: 'No active subscription' });
+    if (!m.navidrome_user_id) return res.status(409).json({ error: 'No music account yet - reload the DungeonAmp page first' });
+
+    const password = ndRandPass(20);
+    const r = await ndSetPassword(m.navidrome_user_id, password);
+    if (!r.ok) return res.status(502).json({ error: 'Could not set the new password - try again shortly' });
+    console.log('[member/navidrome] Password reset for:', m.navidrome_user);
+
+    res.json({
+      ok: true,
+      username: m.navidrome_user,
+      password, // shown once client-side; not retained anywhere server-side
+      server_url: NAVIDROME_PUBLIC_URL,
+      player_url: AMPIO_URL || null,
+    });
+  } catch (e) {
+    console.error('[member/navidrome/reset]', e.message);
     res.status(500).json({ error: e.message });
   }
 });
@@ -2493,6 +2589,23 @@ app.post('/api/credits/redeem', requireMember, async (req, res) => {
   // Write both subscription windows + Jellyfin creds
   db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, expired_notified=0, expiry_warned=0, cast_notified=0, credit_welcome_pending=1 WHERE id=?')
     .run(jfUser, jfPass, jfPass, streamStart.toISOString(), streamEnd.toISOString(), now.toISOString(), castEnd.toISOString(), member.id);
+
+  // ---- DungeonAmp: Navidrome music account ----
+  // Created with a throwaway password; the member sets their own from the
+  // dashboard (shown once, never stored here). If they were locked at expiry,
+  // the dashboard reset is also how they get back in - nothing to email.
+  try {
+    if (ndConfigured() && !member.navidrome_user_id) {
+      const nd = await ndProvision(uname, profile.screen_name || member.first_name || uname, member.email);
+      if (nd.ok) {
+        db.prepare('UPDATE members SET navidrome_user=?, navidrome_user_id=? WHERE id=?')
+          .run(nd.userName || uname, nd.userId, member.id);
+        console.log('[redeem] DungeonAmp provisioned:', nd.userName || uname, nd.existed ? '(adopted existing)' : '');
+      } else {
+        console.error('[redeem] DungeonAmp provision failed:', nd.error);
+      }
+    }
+  } catch(e) { console.error('[redeem] DungeonAmp error:', e.message); }
 
   // ---- DungeonStream: StremGate + Stremio auto-account ----
   try {
@@ -4088,6 +4201,16 @@ app.post('/api/admin/account-purge', requireMod, async (req, res) => {
           const sgRes = await sgDelete(m.stremgate_member_id);
           console.log('[account-purge] StremGate delete for member', m.id, '→', sgRes.ok ? 'ok' : 'failed');
         } catch(e) { console.error('[account-purge] StremGate delete error:', e.message); }
+      }
+    }
+
+    // Permanently delete DungeonAmp (Navidrome) accounts
+    for (const m of members) {
+      if (m.navidrome_user_id) {
+        try {
+          const ndRes = await ndDelete(m.navidrome_user_id);
+          console.log('[account-purge] DungeonAmp delete for member', m.id, '→', ndRes.ok ? 'ok' : 'failed');
+        } catch(e) { console.error('[account-purge] DungeonAmp delete error:', e.message); }
       }
     }
 
