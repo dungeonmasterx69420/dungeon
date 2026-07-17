@@ -1,6 +1,7 @@
 {
-  "name": "dungeon",
-  "short_name": "dungeon",
+  "name": "Dungeon",
+  "short_name": "Dungeon",
+  "start_url": "/",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +16,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#000000",
-  "background_color": "#603535",
+  "theme_color": "#060908",
+  "background_color": "#060908",
   "display": "standalone"
 }
