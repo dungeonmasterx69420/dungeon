@@ -1,0 +1,61 @@
+{
+  "week": 1,
+  "note": "Offline fallback only. Confirmed 2026 week 1 games. Live slate comes from ESPN at runtime.",
+  "games": [
+    {
+      "id": "snap-ne-sea",
+      "date": "2026-09-10T00:20:00Z",
+      "shortName": "NE @ SEA",
+      "venue": "Lumen Field",
+      "broadcast": "NBC",
+      "status": { "state": "pre", "completed": false, "detail": "" },
+      "away": { "abbr": "NE", "name": "Patriots", "displayName": "New England Patriots", "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png", "record": "", "score": null, "color": "002244", "altColor": "c60c30" },
+      "home": { "abbr": "SEA", "name": "Seahawks", "displayName": "Seattle Seahawks", "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png", "record": "", "score": null, "color": "002244", "altColor": "69be28" },
+      "winner": null
+    },
+    {
+      "id": "snap-sf-lar",
+      "date": "2026-09-11T00:35:00Z",
+      "shortName": "SF @ LAR",
+      "venue": "Melbourne Cricket Ground",
+      "broadcast": "Netflix",
+      "status": { "state": "pre", "completed": false, "detail": "" },
+      "away": { "abbr": "SF", "name": "49ers", "displayName": "San Francisco 49ers", "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png", "record": "", "score": null, "color": "aa0000", "altColor": "b3995d" },
+      "home": { "abbr": "LAR", "name": "Rams", "displayName": "Los Angeles Rams", "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png", "record": "", "score": null, "color": "003594", "altColor": "ffa300" },
+      "winner": null
+    },
+    {
+      "id": "snap-cle-jax",
+      "date": "2026-09-13T17:00:00Z",
+      "shortName": "CLE @ JAX",
+      "venue": "EverBank Stadium",
+      "broadcast": "CBS",
+      "status": { "state": "pre", "completed": false, "detail": "" },
+      "away": { "abbr": "CLE", "name": "Browns", "displayName": "Cleveland Browns", "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/cle.png", "record": "", "score": null, "color": "311d00", "altColor": "ff3c00" },
+      "home": { "abbr": "JAX", "name": "Jaguars", "displayName": "Jacksonville Jaguars", "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/jax.png", "record": "", "score": null, "color": "006778", "altColor": "d7a22a" },
+      "winner": null
+    },
+    {
+      "id": "snap-tb-cin",
+      "date": "2026-09-13T17:00:00Z",
+      "shortName": "TB @ CIN",
+      "venue": "Paycor Stadium",
+      "broadcast": "FOX",
+      "status": { "state": "pre", "completed": false, "detail": "" },
+      "away": { "abbr": "TB", "name": "Buccaneers", "displayName": "Tampa Bay Buccaneers", "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/tb.png", "record": "", "score": null, "color": "d50a0a", "altColor": "34302b" },
+      "home": { "abbr": "CIN", "name": "Bengals", "displayName": "Cincinnati Bengals", "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/cin.png", "record": "", "score": null, "color": "fb4f14", "altColor": "000000" },
+      "winner": null
+    },
+    {
+      "id": "snap-den-kc",
+      "date": "2026-09-15T00:15:00Z",
+      "shortName": "DEN @ KC",
+      "venue": "GEHA Field at Arrowhead Stadium",
+      "broadcast": "ESPN",
+      "status": { "state": "pre", "completed": false, "detail": "" },
+      "away": { "abbr": "DEN", "name": "Broncos", "displayName": "Denver Broncos", "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/den.png", "record": "", "score": null, "color": "fb4f14", "altColor": "002244" },
+      "home": { "abbr": "KC", "name": "Chiefs", "displayName": "Kansas City Chiefs", "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png", "record": "", "score": null, "color": "e31837", "altColor": "ffb81c" },
+      "winner": null
+    }
+  ]
+}

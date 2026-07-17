@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GRIDIO - Leaderboard</title>
+<link rel="icon" type="image/svg+xml" href="/img/gridio.svg">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#060a0e">
+<link rel="apple-touch-icon" href="/img/icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GRIDIO">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/gridio.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/">
+    <img src="/img/gridio.svg" alt="">
+    <span>
+      <span class="word">GRIDIO</span>
+      <span class="sub">NFL PICK'EM</span>
+    </span>
+  </a>
+  <nav>
+    <a class="nav-link" href="/">Picks</a>
+    <a class="nav-link active" href="/leaderboard.html">Leaderboard</a>
+    <span class="user-chip" id="user-chip"></span>
+    <button class="btn-ghost" onclick="logout()">Out</button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <h1><em>SEASON</em> BOARD</h1>
+    <div class="hero-status" id="hero-status"></div>
+    <select id="season-sel" class="season-sel" hidden aria-label="Season"></select>
+  </div>
+
+  <div class="eyebrow">STANDINGS &middot; MOST WEEKLY WINS</div>
+  <div class="table-scroll">
+    <table class="board" id="standings"></table>
+  </div>
+
+  <div class="eyebrow">WEEKLY CROWNS</div>
+  <div class="winner-rail" id="crowns"></div>
+
+  <div class="eyebrow">SEASON GRID &middot; CORRECT PICKS BY WEEK</div>
+  <div class="table-scroll">
+    <table class="board grid-table" id="grid"></table>
+  </div>
+
+  <div class="footer">THE DUNGEON &middot; GRIDIO</div>
+</main>
+
+<nav class="tabbar">
+  <a href="/">PICKS</a>
+  <a href="/leaderboard.html" class="active">BOARD</a>
+</nav>
+
+<script src="/js/api.js"></script>
+<script src="/js/leaderboard.js"></script>
+</body>
+</html>

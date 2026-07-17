@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GRIDIO - Sign in</title>
+<link rel="icon" type="image/svg+xml" href="/img/gridio.svg">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#060a0e">
+<link rel="apple-touch-icon" href="/img/icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GRIDIO">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/gridio.css">
+</head>
+<body>
+<div class="gate">
+  <div class="gate-card">
+    <img src="/img/gridio.svg" alt="GRIDIO crest">
+    <h1>GRIDIO</h1>
+    <div class="tag">NFL PICK'EM &middot; THE DUNGEON</div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" id="tab-login" role="tab">SIGN IN</button>
+      <button class="tab" id="tab-join" role="tab">JOIN</button>
+    </div>
+
+    <form id="form-login">
+      <div class="field">
+        <label for="li-user">Username</label>
+        <input id="li-user" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="li-pass">Password</label>
+        <input id="li-pass" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn-main" type="submit">ENTER</button>
+    </form>
+
+    <form id="form-join" hidden>
+      <div class="field">
+        <label for="jo-code">Invite code</label>
+        <input id="jo-code" autocomplete="off" placeholder="From your commissioner" required>
+      </div>
+      <div class="field">
+        <label for="jo-user">Username</label>
+        <input id="jo-user" autocomplete="username" placeholder="lowercase, no spaces" required>
+      </div>
+      <div class="field">
+        <label for="jo-name">Display name</label>
+        <input id="jo-name" autocomplete="nickname" placeholder="Shown on the leaderboard" required>
+      </div>
+      <div class="field">
+        <label for="jo-pass">Password</label>
+        <input id="jo-pass" type="password" autocomplete="new-password" placeholder="8+ characters" required>
+      </div>
+      <button class="btn-main" type="submit">CREATE ACCOUNT</button>
+    </form>
+
+    <div class="form-err" id="err" role="alert"></div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+const err = document.getElementById('err');
+const tabs = { login: document.getElementById('tab-login'), join: document.getElementById('tab-join') };
+const forms = { login: document.getElementById('form-login'), join: document.getElementById('form-join') };
+
+function show(which) {
+  for (const k of ['login', 'join']) {
+    tabs[k].classList.toggle('active', k === which);
+    forms[k].hidden = k !== which;
+  }
+  err.textContent = '';
+}
+tabs.login.onclick = () => show('login');
+tabs.join.onclick = () => show('join');
+
+async function submit(path, body, btn) {
+  err.textContent = '';
+  btn.disabled = true;
+  try {
+    await api(path, { method: 'POST', body: JSON.stringify(body) });
+    location.href = '/';
+  } catch (e) {
+    err.textContent = e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+forms.login.addEventListener('submit', (e) => {
+  e.preventDefault();
+  submit('/api/login', {
+    username: document.getElementById('li-user').value,
+    password: document.getElementById('li-pass').value
+  }, e.target.querySelector('button'));
+});
+
+forms.join.addEventListener('submit', (e) => {
+  e.preventDefault();
+  submit('/api/register', {
+    inviteCode: document.getElementById('jo-code').value,
+    username: document.getElementById('jo-user').value,
+    displayName: document.getElementById('jo-name').value,
+    password: document.getElementById('jo-pass').value
+  }, e.target.querySelector('button'));
+});
+
+// Already signed in? Straight to the board.
+fetch('/api/me', { credentials: 'same-origin' }).then((r) => { if (r.ok) location.href = '/'; });
+</script>
+</body>
+</html>

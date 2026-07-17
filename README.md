@@ -143,6 +143,12 @@ A cron runs every hour inside the server process:
 
 Renewal (by credit redemption or admin action) re-enables everything and pushes new expiry dates to each service.
 
+## GRIDIO
+
+The NFL pick'em league (see the `gridio/` folder and the `gridio` repo) runs inside this same server. Any request whose hostname starts with `gridio.` — i.e. **gridio.enterdungeon.cc** — is routed to the gridio app before Dungeon middleware runs; every other hostname gets the Dungeon as usual. Gridio keeps its own database (`gridio.db` next to `dungeon.db` in `DATA_DIR`), its own session cookie, and its own frontend, so the two apps share nothing but the process and the persistent disk.
+
+Setup: add `gridio.enterdungeon.cc` as a custom domain on the Render service and set `INVITE_CODE` (plus optionally `SEASON`, `WEEK1_MONDAY`, `TOTAL_WEEKS` — see the gridio README) in the environment.
+
 ## Related projects
 
 - **StremGate**: gateway that serves each member a personal addon manifest URL
