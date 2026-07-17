@@ -37,6 +37,14 @@ CREATE TABLE IF NOT EXISTS picks (
   UNIQUE(user_id, season, week, game_id)
 );
 
+CREATE TABLE IF NOT EXISTS submissions (
+  user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  season       INTEGER NOT NULL,
+  week         INTEGER NOT NULL,
+  submitted_at TEXT NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (user_id, season, week)
+);
+
 CREATE TABLE IF NOT EXISTS games_cache (
   season     INTEGER NOT NULL,
   week       INTEGER NOT NULL,
@@ -107,6 +115,14 @@ const stmts = {
     SELECT p.user_id, p.game_id, p.pick, u.display_name
     FROM picks p JOIN users u ON u.id = p.user_id
     WHERE p.season = ? AND p.week = ?`),
+
+  // submissions (a member locking in their week until they hit edit)
+  upsertSubmission: db.prepare(`
+    INSERT INTO submissions (user_id, season, week, submitted_at)
+    VALUES (?, ?, ?, datetime('now'))
+    ON CONFLICT(user_id, season, week) DO UPDATE SET submitted_at = excluded.submitted_at`),
+  deleteSubmission: db.prepare('DELETE FROM submissions WHERE user_id = ? AND season = ? AND week = ?'),
+  submissionFor: db.prepare('SELECT submitted_at FROM submissions WHERE user_id = ? AND season = ? AND week = ?'),
 
   // games cache
   cacheGet: db.prepare('SELECT json, fetched_at FROM games_cache WHERE season = ? AND week = ?'),

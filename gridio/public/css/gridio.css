@@ -21,6 +21,9 @@
 
 * { box-sizing: border-box; }
 
+/* the hidden attribute must always win, even over display rules like .champ's flex */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0;
   min-height: 100%;
@@ -421,6 +424,43 @@ button { font-family: var(--body); }
   color: var(--dim);
 }
 .rail-note b { color: var(--chalk); }
+
+/* ---------- submit / edit bar ---------- */
+.submit-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0 8px;
+  text-align: center;
+}
+.submit-note {
+  font-family: var(--px);
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0.5px;
+}
+.submit-note.in { color: var(--turf); }
+.submit-note.amber { color: var(--amber); }
+.btn-bar {
+  font-family: var(--px);
+  font-size: 11px;
+  color: #04160a;
+  background: var(--turf);
+  border: 0;
+  border-radius: 9px;
+  padding: 14px 26px;
+  cursor: pointer;
+  box-shadow: 0 0 16px rgba(46, 230, 107, 0.35);
+}
+.btn-bar:hover { filter: brightness(1.08); }
+.btn-bar.ghost {
+  color: var(--chalk);
+  background: var(--panel-2);
+  border: 1px solid var(--edge);
+  box-shadow: none;
+}
+.btn-bar.ghost:hover { border-color: var(--turf); color: var(--turf); }
 
 /* who picked what, shown after lock */
 .reveal {

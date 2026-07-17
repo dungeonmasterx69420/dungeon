@@ -162,6 +162,7 @@ app.get('/api/week/:week', auth, async (req, res) => {
   for (const p of stmts.picksForUserWeek.all(req.user.id, season, week)) {
     myPicks[p.game_id] = p.pick;
   }
+  const submitted = !!stmts.submissionFor.get(req.user.id, season, week);
 
   // Everyone's picks are visible to all members, all week.
   const allRows = stmts.picksForWeek.all(season, week);
@@ -205,6 +206,7 @@ app.get('/api/week/:week', auth, async (req, res) => {
     lockAt,
     locked,
     myPicks,
+    submitted,
     allPicks,
     tally,
     finalized,
@@ -221,6 +223,9 @@ app.post('/api/pick', auth, async (req, res) => {
   if (espn.isWeekLocked(games)) {
     return res.status(409).json({ error: 'Picks are locked for this week.' });
   }
+  if (stmts.submissionFor.get(req.user.id, espn.SEASON, w)) {
+    return res.status(409).json({ error: 'Your picks are submitted. Hit EDIT to change them.' });
+  }
   const game = games.find((g) => g.id === String(gameId));
   if (!game) return res.status(404).json({ error: 'Game not found.' });
 
@@ -229,6 +234,34 @@ app.post('/api/pick', auth, async (req, res) => {
 
   stmts.upsertPick.run(req.user.id, espn.SEASON, w, game.id, pick);
   res.json({ ok: true, gameId: game.id, pick });
+});
+
+// Lock in the week: requires a pick on every game, allowed until the week locks.
+app.post('/api/submit', auth, async (req, res) => {
+  const w = parseInt((req.body || {}).week, 10);
+  if (!w || w < 1 || w > espn.TOTAL_WEEKS) return res.status(400).json({ error: 'Bad week.' });
+  const { games } = await espn.getRound(espn.SEASON, w);
+  if (espn.isWeekLocked(games)) {
+    return res.status(409).json({ error: 'Picks are locked for this week.' });
+  }
+  const picked = stmts.picksForUserWeek.all(req.user.id, espn.SEASON, w).length;
+  if (!games.length || picked < games.length) {
+    return res.status(400).json({ error: 'Pick every game before submitting.' });
+  }
+  stmts.upsertSubmission.run(req.user.id, espn.SEASON, w);
+  res.json({ ok: true, submitted: true });
+});
+
+// Reopen the week for edits (until the week locks).
+app.post('/api/unsubmit', auth, async (req, res) => {
+  const w = parseInt((req.body || {}).week, 10);
+  if (!w || w < 1 || w > espn.TOTAL_WEEKS) return res.status(400).json({ error: 'Bad week.' });
+  const { games } = await espn.getRound(espn.SEASON, w);
+  if (espn.isWeekLocked(games)) {
+    return res.status(409).json({ error: 'Picks are locked for this week.' });
+  }
+  stmts.deleteSubmission.run(req.user.id, espn.SEASON, w);
+  res.json({ ok: true, submitted: false });
 });
 
 app.get('/api/leaderboard', auth, (req, res) => {

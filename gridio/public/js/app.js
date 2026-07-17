@@ -5,6 +5,7 @@ let SEASONS = [];
 let SEASON = null;
 let WEEK = null;
 let DATA = null;
+let EDITING = false; // reopened picks after a submit, save pending
 
 const $ = (id) => document.getElementById(id);
 
@@ -120,7 +121,10 @@ function renderWeekStrip() {
 }
 
 async function loadWeek(w, quiet = false) {
-  if (!quiet) $('slate').innerHTML = '<div class="empty">Pulling the slate...</div>';
+  if (!quiet) {
+    EDITING = false;
+    $('slate').innerHTML = '<div class="empty">Pulling the slate...</div>';
+  }
   try {
     DATA = await api('/api/week/' + w + '?season=' + SEASON);
   } catch (e) {
@@ -212,7 +216,9 @@ function renderHero() {
       : 'Final. Nobody took the pot this week.';
   } else if (!DATA.locked && DATA.lockAt) {
     const pot = inPot
-      ? '<span class="in">you are in the pot</span>'
+      ? (DATA.submitted
+          ? '<span class="in">submitted &#10003;</span>'
+          : '<span class="in">you are in the pot</span>')
       : '<span class="amber">' + (total - picked) + ' more to enter the pot</span>';
     right = pot + ' &middot; picks lock <b class="count" data-kick="' + DATA.lockAt + '">' +
       countdownStr(new Date(DATA.lockAt) - Date.now()) + '</b>';
@@ -276,6 +282,63 @@ function renderSlate() {
   slate.querySelectorAll('.seg[data-pick]').forEach((btn) => {
     btn.addEventListener('click', () => makePick(btn.dataset.game, btn.dataset.pick));
   });
+
+  renderSubmitBar();
+}
+
+// Submit -> (Edit -> Save) flow for the week's picks.
+function renderSubmitBar() {
+  const bar = $('submit-bar');
+  const total = DATA.games.length;
+  const picked = Object.keys(DATA.myPicks).length;
+  const open = total > 0 && !DATA.archived && !weekLocked();
+  bar.hidden = !open;
+  if (!open) return;
+
+  if (DATA.submitted && !EDITING) {
+    bar.innerHTML =
+      '<div class="submit-note in">PICKS SUBMITTED &#10003;</div>' +
+      '<button class="btn-bar ghost" id="btn-editpicks">EDIT PICKS</button>';
+    $('btn-editpicks').onclick = startEdit;
+  } else if (EDITING) {
+    bar.innerHTML =
+      '<div class="submit-note amber">EDITING &mdash; save when you are done</div>' +
+      '<button class="btn-bar" id="btn-savepicks">SAVE PICKS</button>';
+    $('btn-savepicks').onclick = submitWeek;
+  } else if (picked === total) {
+    bar.innerHTML = '<button class="btn-bar" id="btn-submitpicks">SUBMIT PICKS</button>';
+    $('btn-submitpicks').onclick = submitWeek;
+  } else {
+    const left = total - picked;
+    bar.innerHTML =
+      '<div class="submit-note">' + left + ' pick' + (left === 1 ? '' : 's') +
+      ' to go before you can submit</div>';
+  }
+}
+
+async function submitWeek() {
+  try {
+    await api('/api/submit', { method: 'POST', body: JSON.stringify({ week: WEEK }) });
+    DATA.submitted = true;
+    EDITING = false;
+    toast('Week ' + WEEK + ' picks submitted.');
+  } catch (e) {
+    toast(e.message, true);
+  }
+  renderHero();
+  renderSlate();
+}
+
+async function startEdit() {
+  try {
+    await api('/api/unsubmit', { method: 'POST', body: JSON.stringify({ week: WEEK }) });
+    DATA.submitted = false;
+    EDITING = true;
+  } catch (e) {
+    toast(e.message, true);
+  }
+  renderHero();
+  renderSlate();
 }
 
 function teamRow(t, g, side) {
@@ -317,7 +380,8 @@ function segClasses(g, pickVal, myPick) {
 
 function cardHtml(g) {
   const my = DATA.myPicks[g.id] || null;
-  const locked = weekLocked() || g.status.state !== 'pre';
+  const submittedHold = DATA.submitted && !EDITING; // submitted picks stay frozen until EDIT
+  const locked = weekLocked() || g.status.state !== 'pre' || submittedHold;
   const seg = (t, val, label) =>
     '<button class="' + segClasses(g, val, my) + '" style="--tc:#' + esc(t ? t.color : '') + '"' +
       (locked ? ' disabled' : ' data-game="' + esc(g.id) + '" data-pick="' + esc(val) + '"') + '>' +
@@ -334,8 +398,11 @@ function cardHtml(g) {
   let note = '';
   if (!locked) {
     note = my
-      ? '<div class="rail-note">Your pick: <b>' + esc(my === 'TIE' ? 'Tie' : my) + '</b>. You can change it until the week locks.</div>'
+      ? '<div class="rail-note">Your pick: <b>' + esc(my === 'TIE' ? 'Tie' : my) + '</b>. ' +
+        (EDITING ? 'Hit SAVE PICKS below when you are done.' : 'Submit when you have picked every game.') + '</div>'
       : '<div class="rail-note">Tap a side. Pick every game to enter the pot.</div>';
+  } else if (submittedHold && !weekLocked()) {
+    note = '<div class="rail-note">Submitted. Hit EDIT PICKS below to change.</div>';
   } else if (!my) {
     note = '<div class="rail-note">No pick submitted for this one.</div>';
   }
