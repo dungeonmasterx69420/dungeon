@@ -11,6 +11,7 @@ COPY server.js ./
 COPY public/ ./public/
 COPY stremgate.js ./
 COPY stremio.js ./
+COPY gridio/ ./gridio/
 
 RUN mkdir -p /data
 ENV DATA_DIR=/data

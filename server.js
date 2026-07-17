@@ -16,6 +16,16 @@ const STAFF_TIERS = ['family','dealer','mod','admin','warden'];
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+// ── GRIDIO (gridio.enterdungeon.cc) ───────────────────────────────────────────
+// NFL pick'em rides along in this service: requests whose hostname starts with
+// "gridio." are handed to the gridio app before any Dungeon middleware runs.
+// It keeps its own routes, cookies, and gridio.db alongside dungeon.db in DATA_DIR.
+const gridioApp = require('./gridio/app');
+app.use((req, res, next) => {
+  if ((req.hostname || '').toLowerCase().startsWith('gridio.')) return gridioApp(req, res, next);
+  next();
+});
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 const WARDEN_EMAIL = process.env.WARDEN_EMAIL || 'realenterdungeon@gmail.com';
 
