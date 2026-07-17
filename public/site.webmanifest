@@ -1,21 +1,24 @@
 {
-  "name": "dungeon",
-  "short_name": "dungeon",
+  "name": "Dungeon",
+  "short_name": "Dungeon",
+  "description": "The Dungeon — members' gate. A Dungeon Production.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#060908",
+  "theme_color": "#060908",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     },
     {
       "src": "/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
-  ],
-  "theme_color": "#000000",
-  "background_color": "#603535",
-  "display": "standalone"
+  ]
 }
