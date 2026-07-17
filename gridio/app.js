@@ -328,7 +328,19 @@ app.get('/api/admin/users', auth, adminOnly, (req, res) => {
 });
 
 // ---------- static ----------
-app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
+// no-cache = browsers must revalidate (cheap 304s), so deploys show up on the
+// next reload instead of whenever the heuristic HTTP cache feels like it.
+// Team logos/icons rarely change and may stay cached for a day.
+app.use(express.static(path.join(__dirname, 'public'), {
+  extensions: ['html'],
+  setHeaders: (res, filePath) => {
+    if (filePath.includes(`${path.sep}img${path.sep}`)) {
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+    } else {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  }
+}));
 
 // Clean expired sessions on boot and daily.
 stmts.purgeSessions.run(Date.now());

@@ -2,15 +2,16 @@
 // Strategy: network-first for everything, so live picks and scores are never
 // stale. Successful same-origin responses are copied into a cache that only
 // serves as an offline fallback for the app shell. /api is never intercepted.
-const CACHE = 'gridio-v1';
+// Bump CACHE (and the ?v= query here and in the HTML) whenever the shell changes.
+const CACHE = 'gridio-v2';
 const SHELL = [
   '/',
   '/leaderboard.html',
   '/login.html',
-  '/css/gridio.css',
-  '/js/api.js',
-  '/js/app.js',
-  '/js/leaderboard.js',
+  '/css/gridio.css?v=2',
+  '/js/api.js?v=2',
+  '/js/app.js?v=2',
+  '/js/leaderboard.js?v=2',
   '/img/gridio.svg',
   '/img/icon-192.png'
 ];
