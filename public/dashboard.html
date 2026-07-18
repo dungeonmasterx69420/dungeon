@@ -426,7 +426,7 @@ footer .sep{color:#2c3d36}
       avatar.insertBefore(img,avatar.firstChild);
       document.getElementById('profileInitials').style.display='none';
     } else {
-      document.getElementById('profileInitials').textContent=(p?.screen_name||m.first_name)[0].toUpperCase();
+      document.getElementById('profileInitials').textContent=(p?.screen_name||m.first_name)[0].toUpperCase().replace('I','i');
     }
 
     document.getElementById('profileName').textContent = p?.screen_name ? '@'+p.screen_name : m.first_name+' '+m.last_name;

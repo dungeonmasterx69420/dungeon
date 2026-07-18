@@ -115,6 +115,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   function renderProfile(p, me) {
     const tier = TIERS[p.tier] || { label: p.tier, color: '#e2e8e4' };
     const initials = p.screen_name ? p.screen_name[0].toUpperCase() : '?';
+    // Pixel-font screen name: the dotted lowercase i reads better than the
+    // blocky capital I in Press Start 2P. Display-only swap.
+    const pxName = String(p.screen_name).replace(/I/g, 'i');
     const joinDate = new Date(p.created_at).toLocaleDateString('en-US', { month:'long', year:'numeric' });
     const isOwn = me.profile && me.profile.id === p.id;
 
@@ -124,7 +127,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
       <div class="avatar" style="background:${p.avatar_color}">
         ${p.avatar_url ? `<img src="${p.avatar_url}" alt=""/>` : initials}
       </div>
-      <div class="screen-name">@${p.screen_name}</div>
+      <div class="screen-name">@${pxName}</div>
       <div class="tier-badge" style="background:${tier.color}22;color:${tier.color}">
         <div class="tier-dot" style="background:${tier.color}"></div>
         ${tier.label}
