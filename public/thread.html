@@ -122,6 +122,10 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   const threadId = new URLSearchParams(window.location.search).get('id');
   if(!threadId) window.location.href='/forum.html';
 
+  // Pixel-font text: the dotted lowercase i reads better than the blocky
+  // capital I in Press Start 2P. Display-only swap.
+  const pxi = s => String(s ?? '').replace(/I/g, 'i');
+
   const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Dungeon Master',color:'#fbbf24'}};
 
   let myProfile = null;
@@ -160,7 +164,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
           ${t.pinned?'<span class="badge badge-pin">📌 Pinned</span>':''}
           ${t.locked?'<span class="badge badge-lock">🔒 Locked</span>':''}
         </div>
-        <div class="thread-title">${t.title}</div>
+        <div class="thread-title">${pxi(t.title)}</div>
         <div class="thread-meta">by <a href="/profile.html?id=${t.profile_id}">@${t.screen_name}</a> &mdash; ${timeAgo(t.created_at)} &mdash; ${t.post_count} posts</div>
         ${modBar}
       </div>`;
