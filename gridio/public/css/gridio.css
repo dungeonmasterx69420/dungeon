@@ -137,7 +137,6 @@ button { font-family: var(--body); }
   font-size: 9px;
   letter-spacing: 2px;
   color: var(--dim);
-  text-transform: uppercase;
   margin: 26px 0 10px;
 }
 
@@ -306,7 +305,6 @@ button { font-family: var(--body); }
   margin: 26px 0 12px;
   padding-bottom: 8px;
   border-bottom: 1px dashed var(--edge);
-  text-transform: uppercase;
 }
 
 .games { display: grid; grid-template-columns: 1fr; gap: 14px; }
@@ -507,7 +505,6 @@ button { font-family: var(--body); }
   letter-spacing: 1.5px;
   color: var(--dim);
   background: var(--panel-2);
-  text-transform: uppercase;
 }
 .board tr:last-child td { border-bottom: 0; }
 .board .rank { font-family: var(--px); font-size: 11px; color: var(--dim); width: 44px; }

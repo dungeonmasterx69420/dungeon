@@ -8,7 +8,7 @@ async function init() {
   const urlSeason = parseInt(new URLSearchParams(location.search).get('season'), 10);
   const lb = await api('/api/leaderboard' + (urlSeason ? '?season=' + urlSeason : ''));
   document.getElementById('hero-status').innerHTML =
-    '<b>' + lb.season + '</b> season' + (lb.archived ? ' <span class="tag-archive">ARCHIVE</span>' : '') +
+    '<b>' + lb.season + '</b> season' + (lb.archived ? ' <span class="tag-archive">ARCHiVE</span>' : '') +
     ' &middot; ' + lb.weeks.length + ' of ' + lb.totalWeeks + ' weeks scored';
 
   const sel = document.getElementById('season-sel');
@@ -35,7 +35,7 @@ function renderStandings(lb) {
     return;
   }
   let html =
-    '<tr><th>#</th><th>Player</th><th>Weekly wins</th><th>Correct</th><th>Pct</th></tr>';
+    '<tr><th>#</th><th>PLAYER</th><th>WEEKLY WiNS</th><th>CORRECT</th><th>PCT</th></tr>';
   html += lb.standings.map((s) =>
     '<tr class="' + (s.rank === 1 && s.weeklyWins > 0 ? 'top' : '') + '">' +
       '<td class="rank">' + s.rank + '</td>' +
@@ -75,7 +75,7 @@ function renderGrid(lb) {
       byUserWeek.set(r.userId + ':' + w.week, r);
     }
   }
-  let html = '<tr><th>Player</th>' + weeksScored.map((w) => '<th>W' + w + '</th>').join('') + '</tr>';
+  let html = '<tr><th>PLAYER</th>' + weeksScored.map((w) => '<th>W' + w + '</th>').join('') + '</tr>';
   html += lb.standings.map((s) =>
     '<tr><td class="name">' + esc(s.name) + '</td>' +
     weeksScored.map((w) => {

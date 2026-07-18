@@ -20,6 +20,12 @@ function esc(s) {
   }[c]));
 }
 
+// Pixel-font text: uppercase, but the dotted lowercase i reads better than
+// the blocky capital I in Press Start 2P.
+function px(s) {
+  return String(s ?? '').toUpperCase().replace(/I/g, 'i');
+}
+
 function fmtKick(iso) {
   const d = new Date(iso);
   return d.toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });

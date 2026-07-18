@@ -88,7 +88,7 @@ function renderSeasonSel() {
   }
   sel.hidden = false;
   sel.innerHTML = SEASONS.map((s) =>
-    '<option value="' + s.season + '">' + s.season + (s.season === STATE.season ? ' (LIVE)' : '') + '</option>'
+    '<option value="' + s.season + '">' + s.season + (s.season === STATE.season ? ' (LiVE)' : '') + '</option>'
   ).join('');
   sel.value = String(SEASON);
   sel.onchange = () => {
@@ -155,7 +155,7 @@ function renderBoard() {
   }
   head.hidden = false;
   wrap.hidden = false;
-  head.textContent = 'LEAGUE PICKS - WEEK ' + DATA.week;
+  head.textContent = 'LEAGUE PiCKS - WEEK ' + DATA.week;
 
   const pickOf = new Map();
   for (const gid in DATA.allPicks) {
@@ -241,8 +241,8 @@ function renderTally() {
   }
   box.hidden = false;
   $('tally-title').textContent = DATA.finalized
-    ? 'WEEK ' + DATA.week + ' FINAL'
-    : 'WEEK ' + DATA.week + ' SO FAR (' + DATA.completedCount + '/' + DATA.games.length + ' GAMES FINAL)';
+    ? 'WEEK ' + DATA.week + ' FiNAL'
+    : 'WEEK ' + DATA.week + ' SO FAR (' + DATA.completedCount + '/' + DATA.games.length + ' GAMES FiNAL)';
   $('tally-rows').innerHTML = DATA.tally.map((t) =>
     '<span class="tally-chip' + (t.isWinner ? ' winner' : '') + '">' +
       (t.isWinner ? '<span class="crown">&#9819;</span>' : '') +
@@ -273,7 +273,7 @@ function renderSlate() {
   }
   let html = '';
   for (const [day, games] of groups) {
-    html += '<div class="day-head">' + esc(day) + '</div><div class="games">';
+    html += '<div class="day-head">' + esc(px(day)) + '</div><div class="games">';
     html += games.map(cardHtml).join('');
     html += '</div>';
   }
@@ -297,16 +297,16 @@ function renderSubmitBar() {
 
   if (DATA.submitted && !EDITING) {
     bar.innerHTML =
-      '<div class="submit-note in">PICKS SUBMITTED &#10003;</div>' +
-      '<button class="btn-bar ghost" id="btn-editpicks">EDIT PICKS</button>';
+      '<div class="submit-note in">PiCKS SUBMiTTED &#10003;</div>' +
+      '<button class="btn-bar ghost" id="btn-editpicks">EDiT PiCKS</button>';
     $('btn-editpicks').onclick = startEdit;
   } else if (EDITING) {
     bar.innerHTML =
-      '<div class="submit-note amber">EDITING &mdash; save when you are done</div>' +
-      '<button class="btn-bar" id="btn-savepicks">SAVE PICKS</button>';
+      '<div class="submit-note amber">EDiTiNG &mdash; save when you are done</div>' +
+      '<button class="btn-bar" id="btn-savepicks">SAVE PiCKS</button>';
     $('btn-savepicks').onclick = submitWeek;
   } else if (picked === total) {
-    bar.innerHTML = '<button class="btn-bar" id="btn-submitpicks">SUBMIT PICKS</button>';
+    bar.innerHTML = '<button class="btn-bar" id="btn-submitpicks">SUBMiT PiCKS</button>';
     $('btn-submitpicks').onclick = submitWeek;
   } else {
     const left = total - picked;
@@ -357,8 +357,8 @@ function teamRow(t, g, side) {
 }
 
 function stateChip(g) {
-  if (g.status.state === 'in') return '<span class="state-chip live">LIVE ' + esc(g.status.detail) + '</span>';
-  if (g.status.completed) return '<span class="state-chip final">' + esc(g.status.detail || 'FINAL') + '</span>';
+  if (g.status.state === 'in') return '<span class="state-chip live">LiVE ' + esc(px(g.status.detail)) + '</span>';
+  if (g.status.completed) return '<span class="state-chip final">' + esc(px(g.status.detail || 'FINAL')) + '</span>';
   const ms = new Date(g.date) - Date.now();
   if (ms < 48 * 3600 * 1000) {
     return '<span class="state-chip soon count" data-kick="' + g.date + '">' + countdownStr(ms) + '</span>';
