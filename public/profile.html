@@ -79,6 +79,24 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     <div style="color:var(--muted);font-size:14px">Loading…</div>
   </div>
   <div id="subCard"></div>
+
+  <!-- Change Password (own profile only, toggled in renderProfile) -->
+  <div id="pwCard" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Change Password</div>
+    <div style="font-size:12px;color:var(--muted2);margin-bottom:16px">Update your Dungeon login password.</div>
+    <div id="pw-err" style="display:none;font-size:12px;color:var(--red);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:7px;padding:8px 12px;margin-bottom:12px"></div>
+    <div id="pw-ok" style="display:none;font-size:12px;color:var(--green);background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:7px;padding:8px 12px;margin-bottom:12px">Password updated successfully.</div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Current Password</div>
+      <input type="password" id="pw-current" placeholder="••••••••" style="width:100%;background:var(--surface2);border:1px solid rgba(52,211,153,.25);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;outline:none"/>
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">New Password</div>
+      <input type="password" id="pw-new" placeholder="Min 6 characters" style="width:100%;background:var(--surface2);border:1px solid rgba(52,211,153,.25);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;outline:none"/>
+    </div>
+
+    <button onclick="changePassword()" style="padding:10px 20px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Update Password</button>
+  </div>
 </div>
 
 <script>
@@ -120,6 +138,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     const pxName = String(p.screen_name).replace(/I/g, 'i');
     const joinDate = new Date(p.created_at).toLocaleDateString('en-US', { month:'long', year:'numeric' });
     const isOwn = me.profile && me.profile.id === p.id;
+
+    // Change Password is own-profile only. Guard against it leaking onto
+    // other members' profiles (it is display:none by default in markup).
+    const pwCard = document.getElementById('pwCard');
+    if (pwCard) pwCard.style.display = isOwn ? 'block' : 'none';
 
     document.title = `Dungeon · @${p.screen_name}`;
 
@@ -228,24 +251,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   }
 </script>
 
-
-  <!-- Change Password -->
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Change Password</div>
-    <div style="font-size:12px;color:var(--muted2);margin-bottom:16px">Update your Dungeon login password.</div>
-    <div id="pw-err" style="display:none;font-size:12px;color:var(--red);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:7px;padding:8px 12px;margin-bottom:12px"></div>
-    <div id="pw-ok" style="display:none;font-size:12px;color:var(--green);background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:7px;padding:8px 12px;margin-bottom:12px">Password updated successfully.</div>
-    <div style="margin-bottom:10px">
-      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Current Password</div>
-      <input type="password" id="pw-current" placeholder="••••••••" style="width:100%;background:var(--surface2);border:1px solid rgba(52,211,153,.25);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;outline:none"/>
-    </div>
-    <div style="margin-bottom:10px">
-      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">New Password</div>
-      <input type="password" id="pw-new" placeholder="Min 6 characters" style="width:100%;background:var(--surface2);border:1px solid rgba(52,211,153,.25);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;outline:none"/>
-    </div>
-
-    <button onclick="changePassword()" style="padding:10px 20px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Update Password</button>
-  </div>
 
   <footer id="pageFooter">
     <a href="/dashboard.html">Dashboard</a><span class="sep"> · </span>
