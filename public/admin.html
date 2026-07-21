@@ -369,6 +369,13 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
 
       <!-- Members -->
       <div id="panel-members" style="display:none">
+        <div class="panel-head">
+          <div class="panel-label">Subscribers</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-b" onclick="openBroadcastSheet()">📣 Message All</button>
+            <button class="btn btn-b" onclick="openCompSheet()">🎁 Comp Free Days</button>
+          </div>
+        </div>
         <div class="search-bar">
           <span class="search-icon">⌕</span>
           <input type="text" id="member-search" placeholder="Search by name, email or @screen_name" oninput="filterMembers()"/>
@@ -1452,8 +1459,138 @@ async function submitDemo() {
     <button class="btn btn-g" id="pshare-copy" onclick="copyPromoShareLink()">Copy Link</button>
   </div>
 </div>
+<!-- Broadcast Message Sheet -->
+<div class="sheet" id="sh-broadcast">
+  <div class="sh-handle"></div>
+  <div class="sh-title">📣 Message All Members</div>
+  <div class="sh-sub">Drops a private message into every member's inbox, sent from your account. Use Preview to see how many inboxes it lands in before sending. This cannot be unsent.</div>
+  <div class="sh-err" id="bc-err" style="display:none"></div>
+  <div class="field"><label>Audience</label>
+    <select id="bc-audience" onchange="bcAudienceChange()">
+      <option value="all">All members</option>
+      <option value="active">Active subscribers only</option>
+    </select>
+  </div>
+  <div class="field"><label>Subject</label><input type="text" id="bc-subject" maxlength="200" placeholder="e.g. Outage make-good: a free week on us"/></div>
+  <div class="field"><label>Message</label><textarea id="bc-content" rows="6" placeholder="Write your message. Line breaks are kept." style="width:100%;resize:vertical;font-family:inherit;font-size:14px;padding:10px;border-radius:8px;border:1px solid var(--bdr);background:var(--gb);color:var(--t1)"></textarea></div>
+  <div id="bc-preview" style="display:none;background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:11px 13px;font-size:13px;color:var(--t2);margin-bottom:4px"></div>
+  <div class="sacts">
+    <button class="btn btn-b" onclick="closeSheet('sh-broadcast')">Cancel</button>
+    <button class="btn btn-b" id="bc-preview-btn" onclick="runBroadcast(true)">Preview</button>
+    <button class="btn btn-g" id="bc-send-btn" onclick="runBroadcast(false)" disabled style="opacity:.5">Send</button>
+  </div>
+</div>
 <script>
-function openFreeInviteSheet(){
+function openBroadcastSheet(){
+  $('bc-audience').value='all';
+  $('bc-subject').value='';
+  $('bc-content').value='';
+  $('bc-err').style.display='none';
+  $('bc-preview').style.display='none';
+  const send=$('bc-send-btn');send.disabled=true;send.style.opacity=.5;
+  openSheet('sh-broadcast');
+}
+function bcAudienceChange(){
+  const send=$('bc-send-btn');send.disabled=true;send.style.opacity=.5; // force re-preview after audience change
+}
+async function runBroadcast(dryRun){
+  const err=$('bc-err');err.style.display='none';
+  const subject=$('bc-subject').value.trim();
+  const content=$('bc-content').value.trim();
+  const audience=$('bc-audience').value;
+  if(!subject){err.textContent='Add a subject';err.style.display='block';return;}
+  if(!content){err.textContent='Write a message';err.style.display='block';return;}
+  const btn=dryRun?$('bc-preview-btn'):$('bc-send-btn');
+  const label=btn.textContent;btn.disabled=true;btn.textContent='Working…';
+  const r=await fetch('/api/admin/broadcast',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject,content,audience,dryRun})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.disabled=false;btn.textContent=label;
+  if(r.error){err.textContent=r.error;err.style.display='block';return;}
+  const pv=$('bc-preview');
+  if(dryRun){
+    pv.innerHTML=`This will land in <strong style="color:var(--g)">${r.count}</strong> inbox(es)${r.audience==='active'?` (of ${r.total} total members)`:''}.<br><span style="color:var(--t3)">Review your message, then hit Send.</span>`;
+    pv.style.display='block';
+    const send=$('bc-send-btn');send.disabled=false;send.style.opacity=1;
+  } else {
+    pv.innerHTML=`✓ Sent to <strong style="color:var(--g)">${r.count}</strong> inbox(es).`;
+    pv.style.display='block';
+    const send=$('bc-send-btn');send.disabled=true;send.style.opacity=.5;
+  }
+}
+</script>
+<!-- Comp Free Days Sheet -->
+<div class="sheet" id="sh-comp">
+  <div class="sh-handle"></div>
+  <div class="sh-title">🎁 Comp Free Days</div>
+  <div class="sh-sub">Extends every in-scope subscriber's DungeonStream + DungeonCast expiry, resets their expiry notifications, extends StremGate, and re-enables anyone the cron cut off during the outage. Staff and never-subscribed accounts are skipped. Always Preview first.</div>
+  <div class="sh-err" id="comp-err" style="display:none"></div>
+  <div class="field"><label>Days to add</label><input type="number" id="comp-days" min="1" max="90" value="7"/></div>
+  <div class="field"><label>Who gets it</label>
+    <select id="comp-scope" onchange="compScopeChange()">
+      <option value="active">Active subscribers only</option>
+      <option value="recent">Active + anyone who lapsed during the outage</option>
+    </select>
+  </div>
+  <div class="field" id="comp-since-wrap" style="display:none"><label>Outage start <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">lapsed on/after this counts</span></label><input type="datetime-local" id="comp-since"/></div>
+  <div id="comp-preview" style="display:none;background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:11px 13px;font-size:13px;color:var(--t2);margin-bottom:4px"></div>
+  <div class="sacts">
+    <button class="btn btn-b" onclick="closeSheet('sh-comp')">Cancel</button>
+    <button class="btn btn-b" id="comp-preview-btn" onclick="runComp(true)">Preview</button>
+    <button class="btn btn-g" id="comp-apply-btn" onclick="runComp(false)" disabled style="opacity:.5">Apply</button>
+  </div>
+</div>
+<script>
+function openCompSheet(){
+  $('comp-days').value='7';
+  $('comp-scope').value='active';
+  $('comp-since').value='';
+  $('comp-err').style.display='none';
+  $('comp-preview').style.display='none';
+  $('comp-since-wrap').style.display='none';
+  const apply=$('comp-apply-btn');apply.disabled=true;apply.style.opacity=.5;
+  openSheet('sh-comp');
+}
+function compScopeChange(){
+  const recent=$('comp-scope').value==='recent';
+  $('comp-since-wrap').style.display=recent?'block':'none';
+  const apply=$('comp-apply-btn');apply.disabled=true;apply.style.opacity=.5; // force re-preview after scope change
+}
+function compBody(){
+  const days=parseInt($('comp-days').value,10);
+  const scope=$('comp-scope').value;
+  const body={days,scope};
+  if(scope==='recent'){
+    const s=$('comp-since').value;
+    if(s) body.since=new Date(s).toISOString();
+  }
+  return body;
+}
+async function runComp(dryRun){
+  const err=$('comp-err');err.style.display='none';
+  const body=compBody();
+  if(!(body.days>=1&&body.days<=90)){err.textContent='Days must be between 1 and 90';err.style.display='block';return;}
+  if(body.scope==='recent'&&!body.since){err.textContent='Pick an outage start date for the lapsed group';err.style.display='block';return;}
+  const btn=dryRun?$('comp-preview-btn'):$('comp-apply-btn');
+  const label=btn.textContent;btn.disabled=true;btn.textContent='Working…';
+  const r=await fetch('/api/admin/comp-days',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,dryRun})}).then(r=>r.json()).catch(e=>({error:e.message}));
+  btn.disabled=false;btn.textContent=label;
+  if(r.error){err.textContent=r.error;err.style.display='block';return;}
+  const pv=$('comp-preview');
+  if(dryRun){
+    pv.innerHTML=`<strong style="color:var(--g)">${r.count}</strong> subscriber(s) would get <strong>+${r.days}</strong> day(s).<br>Skipped: ${r.skippedStaff} staff, ${r.skippedNever} never-subscribed, ${r.skippedLapsed} out-of-window.<br><span style="color:var(--t3)">Review, then hit Apply to make it live.</span>`;
+    pv.style.display='block';
+    const apply=$('comp-apply-btn');apply.disabled=false;apply.style.opacity=1;
+  } else {
+    let extra='';
+    if(r.sgFail&&r.sgFail.length) extra+=`<br><span style="color:#e0a">StremGate failed for ${r.sgFail.length}, check logs.</span>`;
+    if(r.jfFail&&r.jfFail.length) extra+=`<br><span style="color:#e0a">Jellyfin re-enable failed for ${r.jfFail.length}, check logs.</span>`;
+    pv.innerHTML=`✓ Applied <strong>+${r.days}</strong> day(s) to <strong style="color:var(--g)">${r.count}</strong> subscriber(s).${extra}`;
+    pv.style.display='block';
+    const apply=$('comp-apply-btn');apply.disabled=true;apply.style.opacity=.5;
+    loadAll();
+  }
+}
+</script>
+<script>
   document.getElementById('fi-email').value='';
   document.getElementById('fi-note').value='';
   document.getElementById('fi-tier').value='member';

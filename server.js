@@ -843,6 +843,160 @@ function requireMod(req, res, next) {
 }
 
 
+// ── Admin: comp free days (outage make-good) ─────────────────────────────────
+// Extends stremio_end + iptv_end by N days for in-scope members, resets the
+// notify flags so warning/expiry emails fire off the new date, extends
+// StremGate, and re-enables anyone the cron disabled during the outage.
+//
+// Body: { days:int(1-90), scope:'active'|'recent', since?:ISO, dryRun?:bool }
+//   scope=active  -> only members whose access has not yet lapsed
+//   scope=recent  -> active PLUS anyone who lapsed on/after `since` (outage start)
+//   dryRun=true   -> compute + report, write nothing (use this first)
+//
+// Each service is re-based off max(itsEnd, now): active members keep their
+// remaining time plus N days, lapsed members get a fresh N days from today.
+app.post('/api/admin/comp-days', requireMod, async (req, res) => {
+  try {
+    const days = parseInt(req.body.days, 10);
+    if (!Number.isFinite(days) || days < 1 || days > 90) {
+      return res.status(400).json({ error: 'days must be an integer between 1 and 90' });
+    }
+    const scope = req.body.scope === 'recent' ? 'recent' : 'active';
+    const since = req.body.since ? new Date(req.body.since) : null;
+    if (scope === 'recent' && (!since || isNaN(since.getTime()))) {
+      return res.status(400).json({ error: 'scope=recent requires a valid since date (outage start)' });
+    }
+    const dryRun = !!req.body.dryRun;
+
+    const now = new Date();
+    const addMs = days * 24 * 60 * 60 * 1000;
+    const iso = d => d ? (String(d).includes('T') ? d : d + 'T00:00:00.000Z') : null;
+
+    const all = db.prepare('SELECT * FROM members').all();
+    const results = { extended: [], skippedStaff: 0, skippedNever: 0, skippedLapsed: 0, sgFail: [], jfFail: [] };
+
+    for (const m of all) {
+      const profile = db.prepare('SELECT tier FROM profiles WHERE member_id=?').get(m.id);
+      if (STAFF_TIERS.includes(profile?.tier)) { results.skippedStaff++; continue; } // permanent access
+
+      const sEnd = m.stremio_end ? new Date(iso(m.stremio_end)) : null;
+      const cEnd = m.iptv_end   ? new Date(iso(m.iptv_end))   : null;
+      const ends = [sEnd, cEnd].filter(d => d && !isNaN(d.getTime()));
+      if (!ends.length) { results.skippedNever++; continue; } // never subscribed
+
+      const latest = ends.sort((a, b) => b - a)[0];
+      const active = latest > now;
+      const recentlyLapsed = scope === 'recent' && since && latest >= since;
+      if (!active && !recentlyLapsed) { results.skippedLapsed++; continue; }
+
+      const newS = sEnd ? new Date(Math.max(sEnd.getTime(), now.getTime()) + addMs) : null;
+      const newC = cEnd ? new Date(Math.max(cEnd.getTime(), now.getTime()) + addMs) : null;
+
+      if (dryRun) {
+        results.extended.push({ id: m.id, email: m.email, lapsed: !active,
+          stremio_end: newS && newS.toISOString(), iptv_end: newC && newC.toISOString() });
+        continue;
+      }
+
+      db.prepare(`UPDATE members SET
+          stremio_end = COALESCE(?, stremio_end),
+          iptv_end    = COALESCE(?, iptv_end),
+          expiry_warned=0, expired_notified=0, cast_notified=0,
+          updated_at=CURRENT_TIMESTAMP
+        WHERE id=?`)
+        .run(newS ? newS.toISOString() : null, newC ? newC.toISOString() : null, m.id);
+
+      // StremGate: extend its own clock + make sure the account is enabled
+      if (m.stremgate_member_id) {
+        try {
+          const ext = await sgExtend(m.stremgate_member_id, days);
+          await sgEnable(m.stremgate_member_id);
+          if (!ext.ok) results.sgFail.push(m.email);
+        } catch(e) { results.sgFail.push(m.email); }
+      }
+
+      // Re-enable DungeonStream Jellyfin AND restore folders (the stremio_end cron
+      // wipes EnabledFolders to [] on disable, so a bare IsDisabled:false is not enough)
+      try {
+        const jfId = await jellyfinGetUserId(m.jellyfin_user || m.stremio_email, JELLYFIN_URL, JELLYFIN_API_KEY);
+        if (jfId) await jellyfinGrantLibraryAccess(jfId, ['Movies', 'Shows', 'Live TV'], JELLYFIN_URL, JELLYFIN_API_KEY);
+      } catch(e) { results.jfFail.push(m.email); }
+
+      // Re-enable DungeonCast (TV instance) if configured - cast cron only flips IsDisabled
+      try {
+        if (JELLYFIN_TV_URL) {
+          const jfTVId = await jellyfinGetUserId(m.jellyfin_user || m.stremio_email, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
+          if (jfTVId) await jellyfinRequest('POST', '/Users/'+jfTVId+'/Policy', { IsDisabled: false }, JELLYFIN_TV_URL, JELLYFIN_TV_API_KEY);
+        }
+      } catch(e) { /* non-fatal */ }
+
+      results.extended.push({ id: m.id, email: m.email, lapsed: !active });
+    }
+
+    console.log(`[comp-days] ${dryRun ? 'DRY RUN ' : ''}+${days}d scope=${scope} extended=${results.extended.length} skippedStaff=${results.skippedStaff} skippedNever=${results.skippedNever} skippedLapsed=${results.skippedLapsed} sgFail=${results.sgFail.length} jfFail=${results.jfFail.length}`);
+    res.json({ ok: true, dryRun, days, scope, count: results.extended.length, ...results });
+  } catch(e) {
+    console.error('[comp-days]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
+// ── Admin: broadcast a private message to every member's inbox ────────────────
+// Inserts one row into `messages` per recipient, sent from the acting admin's
+// own profile, so it shows up as a normal DM. audience 'all' = every member;
+// 'active' = only members with a live subscription (or permanent staff access).
+// Body: { subject, content, audience:'all'|'active', dryRun?:bool }
+app.post('/api/admin/broadcast', requireMod, (req, res) => {
+  try {
+    const subject = String(req.body.subject || '').trim();
+    const content = String(req.body.content || '').trim();
+    if (!subject) return res.status(400).json({ error: 'Subject is required' });
+    if (!content) return res.status(400).json({ error: 'Message body is required' });
+    if (subject.length > 200) return res.status(400).json({ error: 'Subject must be 200 characters or fewer' });
+
+    const audience = req.body.audience === 'active' ? 'active' : 'all';
+    const dryRun = !!req.body.dryRun;
+    const senderId = req.profile.id;
+
+    // Every profile tied to a real member, excluding the sender themselves.
+    const rows = db.prepare(`
+      SELECT p.id AS profile_id, p.tier, m.stremio_end, m.iptv_end
+      FROM profiles p
+      JOIN members m ON m.id = p.member_id
+      WHERE p.member_id IS NOT NULL AND p.id != ?
+    `).all(senderId);
+
+    const now = new Date();
+    const iso = d => d ? (String(d).includes('T') ? d : d + 'T00:00:00.000Z') : null;
+    const isActive = r => {
+      if (STAFF_TIERS.includes(r.tier)) return true; // permanent access
+      const s = r.stremio_end ? new Date(iso(r.stremio_end)) : null;
+      const c = r.iptv_end   ? new Date(iso(r.iptv_end))   : null;
+      return (s && s > now) || (c && c > now);
+    };
+
+    const recipients = audience === 'active' ? rows.filter(isActive) : rows;
+
+    if (dryRun) {
+      return res.json({ ok: true, dryRun: true, audience, count: recipients.length, total: rows.length });
+    }
+
+    const insert = db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)');
+    const sendAll = db.transaction(list => {
+      for (const r of list) insert.run(genId(), senderId, r.profile_id, subject, content);
+    });
+    sendAll(recipients);
+
+    console.log(`[broadcast] "${subject}" sent to ${recipients.length} member(s) (audience=${audience})`);
+    res.json({ ok: true, audience, count: recipients.length });
+  } catch(e) {
+    console.error('[broadcast]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
 // ── Events system (Patch C) ──────────────────────────────────────────────────
 
 // GET all events (admin - all; members - only approved + upcoming)
