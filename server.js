@@ -1863,7 +1863,7 @@ app.post('/api/admin/iptv-dates/:memberId', requireMod, (req, res) => {
 // ── Demo Requests ─────────────────────────────────────────────────────────────
 
 app.post('/api/demo-request', requireMember, (req, res) => {
-  // Universal demo: 24 hours of both DungeonStream + DungeonCast. Optional note
+  // Universal demo: 72 hours of both DungeonStream + DungeonCast. Optional note
   // lets the member say what they'd like to try (a channel, show, or movie).
   const note = (req.body.note || '').toString().trim().slice(0, 500) || null;
 
@@ -1883,7 +1883,7 @@ app.post('/api/demo-request', requireMember, (req, res) => {
   if (warden) {
     db.prepare('INSERT INTO messages (id,sender_profile_id,recipient_profile_id,subject,content) VALUES (?,?,?,?,?)')
       .run(genId(), profile.id, warden.id, 'Demo Request',
-        `@${profile.screen_name} has requested a 24-hour demo (DungeonStream + DungeonCast).\n\nEmail: ${req.session.member.email}${note ? '\n\nWants to try: ' + note : ''}\n\nReview in the Admin Panel → Demos tab.`);
+        `@${profile.screen_name} has requested a 72-hour demo (DungeonStream + DungeonCast).\n\nEmail: ${req.session.member.email}${note ? '\n\nWants to try: ' + note : ''}\n\nReview in the Admin Panel → Demos tab.`);
   }
   notify('New demo request', `@${profile.screen_name} wants a demo${note ? ': ' + note : ''}`, {
     kind: 'demo', tags: 'movie_camera', priority: 3,
@@ -1915,13 +1915,13 @@ app.post('/api/admin/demo-requests/:id/fulfill', requireAuth, async (req, res) =
 
   const svcName = demo.service === 'stream' ? 'DungeonStream' : 'DungeonCast';
   const now = new Date();
-  const expiry = new Date(now.getTime() + 24*60*60*1000);
+  const expiry = new Date(now.getTime() + 72*60*60*1000);
   const fmtExpiry = expiry.toLocaleString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
 
   const html = emailShell(`
     <h2>Your ${svcName} Demo</h2>
     <div class="rule"></div>
-    <p>Your 24-hour demo is ready. Here are your credentials:</p>
+    <p>Your 72-hour demo is ready. Here are your credentials:</p>
     <div class="box">
       <div class="row"><span class="lbl">Service</span><span class="val">${svcName}</span></div>
       <div class="row"><span class="lbl">URL</span><span class="val">${demo.service==='stream'?'http://dungeonstream.enterdungeon.cc':'http://dungeoncast.cc'}</span></div>
@@ -2192,13 +2192,13 @@ app.post('/api/admin/dc-demo', requireAuth, async (req, res) => {
   if (!email || !username || !password) return res.status(400).json({ error: 'All fields required' });
 
   const now = new Date();
-  const expiry = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const expiry = new Date(now.getTime() + 72 * 60 * 60 * 1000);
   const fmtExpiry = expiry.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
 
   const html = emailShell(`
     <h2>Your DungeonCast Demo</h2>
     <div class="rule"></div>
-    <p>You've been granted a <strong>24-hour demo</strong> of DungeonCast - our live TV streaming service with hundreds of channels including sports, news, entertainment, and Formula 1.</p>
+    <p>You've been granted a <strong>72-hour demo</strong> of DungeonCast - our live TV streaming service with hundreds of channels including sports, news, entertainment, and Formula 1.</p>
     <div class="box">
       <div class="row"><span class="lbl">URL</span><span class="val">https://dungeoncast.cc</span></div>
       <div class="row"><span class="lbl">Username</span><span class="val">${username}</span></div>
@@ -2213,7 +2213,7 @@ app.post('/api/admin/dc-demo', requireAuth, async (req, res) => {
   `);
 
   try {
-    await sendMail(email, 'Your DungeonCast Demo - 24 Hours Starting Now', html);
+    await sendMail(email, 'Your DungeonCast Demo - 72 Hours Starting Now', html);
     res.json({ ok: true });
   } catch(e) {
     res.status(500).json({ error: e.message });
@@ -4329,7 +4329,7 @@ app.post('/api/admin/demos/:id/fulfill', requireMod, async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
 
-    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
+    const expires = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(); // 72 hours
 
     // Create Jellyfin account on VPS
     const createRes = await jellyfinCreateUser(username, password, JELLYFIN_URL, JELLYFIN_API_KEY);
@@ -4349,12 +4349,12 @@ app.post('/api/admin/demos/:id/fulfill', requireMod, async (req, res) => {
       const html = emailShell(`
         <h2>Your Dungeon Demo is Ready</h2>
         <div class="rule"></div>
-        <p>Hi there! Your 24-hour Dungeon demo account has been set up. Try it out and see what we're all about.</p>
+        <p>Hi there! Your 72-hour Dungeon demo account has been set up. Try it out and see what we're all about.</p>
         <div class="box">
           <div class="row"><span class="lbl">Server</span><span class="val">https://dungeoncast.cc</span></div>
           <div class="row"><span class="lbl">Username</span><span class="val">${username}</span></div>
           <div class="row"><span class="lbl">Password</span><span class="val">${password}</span></div>
-          <div class="row"><span class="lbl">Expires</span><span class="val">24 hours from now</span></div>
+          <div class="row"><span class="lbl">Expires</span><span class="val">72 hours from now</span></div>
         </div>
         <p>Download <strong>Jellyfin</strong>, add the server URL, and sign in with the credentials above.</p>
         <p style="font-size:12px;color:#6b8f7a">Like what you see? Ask the person who set up your demo about getting a full membership.</p>
@@ -4449,12 +4449,12 @@ app.post('/api/admin/demos/create-link', requireMod, async (req, res) => {
         <div class="rule"></div>
         <p>You've been invited to try out Dungeon - a private streaming service.</p>
         ${note ? `<p><em>"${note}"</em></p>` : ''}
-        <p>Click below to claim your free 24-hour demo account:</p>
+        <p>Click below to claim your free 72-hour demo account:</p>
         <a href="${demoUrl}" class="btn">Claim Demo Access →</a>
         <div class="rule"></div>
         <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days.</p>
       `);
-      await sendMail(email, 'Try Dungeon Free - 24 Hour Demo', html).catch(e => console.error('Demo link email error:', e.message));
+      await sendMail(email, 'Try Dungeon Free - 72 Hour Demo', html).catch(e => console.error('Demo link email error:', e.message));
     }
 
     res.json({ ok: true, url: demoUrl, id });
@@ -4507,7 +4507,7 @@ app.post('/api/dealer/demo/create-link', requireDealer, async (req, res) => {
         <div class="rule"></div>
         <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days.</p>
       `);
-      await sendMail(email, 'Try Dungeon Free - 24 Hour Demo', html).catch(e => console.error('Demo link email error:', e.message));
+      await sendMail(email, 'Try Dungeon Free - 72 Hour Demo', html).catch(e => console.error('Demo link email error:', e.message));
     }
 
     res.json({ ok: true, url: demoUrl, id });
@@ -4520,7 +4520,7 @@ async function autoFulfillDemo(demoId) {
   try {
     const username = 'demo_' + require('crypto').randomBytes(4).toString('hex');
     const password = mkRandPass();
-    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const expires = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
 
     await jellyfinCreateUser(username, password, JELLYFIN_URL, JELLYFIN_API_KEY);
     const jfId = await jellyfinGetUserId(username, JELLYFIN_URL, JELLYFIN_API_KEY);

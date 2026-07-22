@@ -595,7 +595,7 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
 async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
 
 // ── Panels ────────────────────────────────────────────────────────────────────
-const panelTitles={overview:['Overview','What needs your attention'],support:['Support','Member support requests'],demos:['Demos','Fulfill 24-hour demo requests'],channels:['Live TV Requests','Channel & event requests from members'],lookup:['Account Lookup','Find and remove accounts by email'],invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
+const panelTitles={overview:['Overview','What needs your attention'],support:['Support','Member support requests'],demos:['Demos','Fulfill 72-hour demo requests'],channels:['Live TV Requests','Channel & event requests from members'],lookup:['Account Lookup','Find and remove accounts by email'],invites:['Invites','Send and manage invite links'],applications:['Applications','Manage member applications'],members:['Members','View and edit member profiles'],redemptions:['Redemptions','Fulfill credit redemptions']};
 
 function showPanel(name,el){
   ['overview','applications','members','redemptions','invites','demos','channels','lookup','support'].forEach(p=>{$('panel-'+p).style.display=p===name?'block':'none';});
@@ -1328,7 +1328,7 @@ async function deleteInvite(id) {
   <div class="sh-handle"></div>
   <div class="sh-title">Fulfill Demo</div>
   <div class="sh-sub" id="demo-sub"></div>
-  <div class="sh-info">A temporary Jellyfin account will be created with 24-hour access. It will be automatically disabled after 24 hours.</div>
+  <div class="sh-info">A temporary Jellyfin account will be created with 72-hour access. It will be automatically disabled after 72 hours.</div>
   <div class="sh-err" id="demo-err"></div>
   <input type="hidden" id="demo-id"/>
   <div class="field"><label>Jellyfin Username</label><input type="text" id="demo-user" style="font-family:var(--mono)"/></div>
@@ -1374,7 +1374,7 @@ async function loadDemos() {
 
 function openDemo(id, label) {
   $('demo-id').value=id;
-  $('demo-sub').textContent='Creating 24-hour demo for: '+label;
+  $('demo-sub').textContent='Creating 72-hour demo for: '+label;
   $('demo-user').value='demo_'+Math.random().toString(36).substring(2,8);
   $('demo-pass').value=mkPass();
   $('demo-err').style.display='none';
@@ -1393,7 +1393,7 @@ async function submitDemo() {
   if(r.error){err.textContent=r.error;err.style.display='block';return;}
   closeSheet('sh-demo');
   loadDemos();
-  alert('Demo created! Expires in 24 hours.');
+  alert('Demo created! Expires in 72 hours.');
 }
 </script>
 
