@@ -3415,11 +3415,13 @@ app.get('/api/admin/redemptions', requireMod, (req, res) => {
 // POST create invite + Stripe checkout session
 app.post('/api/admin/invites/create', requireMod, async (req, res) => {
   try {
-    const { email, amount, note } = req.body;
-    if (!email || !isValidEmail(email)) return res.status(400).json({ error: 'Valid email required' });
+    const { email, amount, note, firstMonth } = req.body;
+    const hasEmail = email && email.trim();
+    if (hasEmail && !isValidEmail(email.trim())) return res.status(400).json({ error: 'That email looks invalid' });
     if (!amount || amount < 1) return res.status(400).json({ error: 'Amount must be at least $1' });
     if (!STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured - contact admin' });
 
+    const withFirstMonth = !!firstMonth;
     const token = require('crypto').randomBytes(24).toString('hex');
     const inviteId = genId();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
@@ -3427,17 +3429,20 @@ app.post('/api/admin/invites/create', requireMod, async (req, res) => {
     const stripeParams = new URLSearchParams({
       'payment_method_types[]': 'card',
       'line_items[0][price_data][currency]': 'usd',
-      'line_items[0][price_data][product_data][name]': 'Dungeon Membership',
-      'line_items[0][price_data][product_data][description]': note || 'One-time signup fee for Dungeon streaming service',
+      'line_items[0][price_data][product_data][name]': withFirstMonth ? 'Dungeon Membership - First Month Included' : 'Dungeon Membership',
+      'line_items[0][price_data][product_data][description]': note || (withFirstMonth
+        ? 'Signup fee plus your first month of DungeonStream + DungeonCast'
+        : 'One-time signup fee for Dungeon streaming service'),
       'line_items[0][price_data][unit_amount]': String(Math.round(amount * 100)),
       'line_items[0][quantity]': '1',
       'mode': 'payment',
       'success_url': SITE_URL + '/join?token=' + token,
       'cancel_url': SITE_URL + '/join?token=' + token + '&cancelled=1',
-      'customer_email': email,
       'metadata[invite_token]': token,
       'metadata[invite_id]': inviteId
     });
+    if (hasEmail) stripeParams.set('customer_email', email.trim());
+    if (withFirstMonth) stripeParams.set('metadata[promo]', 'first_month');
 
     const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
@@ -3449,27 +3454,30 @@ app.post('/api/admin/invites/create', requireMod, async (req, res) => {
     if (!session.url) return res.status(500).json({ error: session.error?.message || 'Stripe error' });
 
     const profile = db.prepare('SELECT id, tier FROM profiles WHERE member_id=?').get(req.session.member?.id);
-    db.prepare('INSERT INTO invites (id, token, email, created_by, amount, note, stripe_session_id, expires_at) VALUES (?,?,?,?,?,?,?,?)')
-      .run(inviteId, token, email, profile?.id||null, Math.round(amount*100), note||null, session.id, expiresAt);
+    db.prepare('INSERT INTO invites (id, token, email, created_by, amount, note, promo, stripe_session_id, expires_at) VALUES (?,?,?,?,?,?,?,?,?)')
+      .run(inviteId, token, hasEmail ? email.trim() : null, profile?.id||null, Math.round(amount*100), note||null, withFirstMonth ? 'first_month' : null, session.id, expiresAt);
 
     if (profile && ['dealer','mod','admin','warden'].includes(profile.tier)) {
       db.prepare('INSERT INTO dealer_earnings (id, dealer_profile_id, invite_id, amount, dealer_cut) VALUES (?,?,?,?,?)')
         .run(genId(), profile.id, inviteId, Math.round(amount*100), Math.floor(Math.round(amount*100)*0.5));
     }
 
-    const html = emailShell(`
-      <h2>You're Invited to Dungeon</h2>
-      <div class="rule"></div>
-      <p>You've been personally invited to join <strong>Dungeon</strong> - a private streaming service.</p>
-      <p>Click below to complete your signup. Your membership fee is <strong>$${amount}</strong>.</p>
-      ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
-      <a href="${session.url}" class="btn">Complete Signup - $${amount}</a>
-      <div class="rule"></div>
-      <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. It is for you only. - The Dungeon Master</p>
-    `);
-    await sendMail(email, "You're Invited to Dungeon", html);
+    if (hasEmail) {
+      const html = emailShell(`
+        <h2>You're Invited to Dungeon</h2>
+        <div class="rule"></div>
+        <p>You've been personally invited to join <strong>Dungeon</strong> - a private streaming service.</p>
+        <p>Click below to complete your signup. Your membership fee is <strong>$${amount}</strong>.</p>
+        ${withFirstMonth ? `<p>Your first month of <strong>DungeonStream</strong> and <strong>DungeonCast</strong> is included.</p>` : ''}
+        ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
+        <a href="${session.url}" class="btn">Complete Signup - $${amount}</a>
+        <div class="rule"></div>
+        <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. It is for you only. - The Dungeon Master</p>
+      `);
+      await sendMail(email.trim(), "You're Invited to Dungeon", html);
+    }
 
-    res.json({ ok: true, url: session.url, token });
+    res.json({ ok: true, url: session.url, token, emailed: !!hasEmail, promo: withFirstMonth ? 'first_month' : null });
   } catch(e) {
     console.error('[invite/create]', e.message);
     res.status(500).json({ error: e.message });
@@ -3600,9 +3608,10 @@ app.post('/api/invite/:token/complete', async (req, res) => {
       } catch(e) { console.error('[invite/complete] Jellyfin error:', e.message); }
     }
 
-    // Father's Day promo: auto-provision BOTH services for 1 month.
+    // First-month-included invites: auto-provision BOTH services for 1 month.
     // The expiry cron will revoke access automatically when the month ends.
-    if (invite.promo === 'fathers_day' && !staffTiersJoin.includes(inviteTier)) {
+    // 'fathers_day' is the legacy promo id, kept so any outstanding link still works.
+    if ((invite.promo === 'first_month' || invite.promo === 'fathers_day') && !staffTiersJoin.includes(inviteTier)) {
       try {
         const jfUser = screen_name.toLowerCase().replace(/[^a-z0-9_]/g,'_');
         const jfPass = mkRandPass();
@@ -3621,8 +3630,8 @@ app.post('/api/invite/:token/complete', async (req, res) => {
 
         db.prepare('UPDATE members SET jellyfin_user=?, jellyfin_pass=?, plain_pass=?, stremio_email=?, stremio_pass=?, stremio_start=?, stremio_end=?, iptv_start=?, iptv_end=?, expired_notified=0, expiry_warned=0, cast_notified=0, credit_welcome_pending=1 WHERE id=?')
           .run(jfUser, jfPass, jfPass, jfUser, jfPass, now.toISOString(), oneMonth.toISOString(), now.toISOString(), oneMonth.toISOString(), memberId);
-        console.log("[invite/complete] Father's Day promo - provisioned 1 month of both services for:", jfUser);
-      } catch(e) { console.error("[invite/complete] Father's Day provision error:", e.message); }
+        console.log('[invite/complete] First month included - provisioned 1 month of both services for:', jfUser);
+      } catch(e) { console.error('[invite/complete] First month provision error:', e.message); }
     }
 
     // --- StremGate provisioning ---
@@ -3850,81 +3859,6 @@ app.post('/api/dealer/invites/create', requireDealer, async (req, res) => {
     res.json({ ok: true, url: session.url, token, emailed: !!hasEmail });
   } catch(e) {
     console.error('[dealer/invite]', e.message);
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// ── Father's Day Promo ────────────────────────────────────────────────────────
-// $30 entry, includes 1 month of BOTH DungeonStream + DungeonCast.
-// Available to dealers AND admins. Dealers earn their normal 50% cut.
-// Auto-provisions both services with 1-month dates; the expiry cron revokes
-// access automatically after the month if they don't renew.
-const PROMO_FATHERS_DAY = { id: 'fathers_day', amount: 30, label: "Father's Day" };
-
-app.post('/api/promo/fathers-day/create', requireDealer, async (req, res) => {
-  try {
-    const { email, note } = req.body;
-    const hasEmail = email && email.trim();
-    if (hasEmail && !isValidEmail(email.trim())) return res.status(400).json({ error: 'That email looks invalid' });
-    if (!STRIPE_SECRET_KEY) return res.status(500).json({ error: 'Stripe not configured - contact admin' });
-
-    const amount = PROMO_FATHERS_DAY.amount;
-    const token = require('crypto').randomBytes(24).toString('hex');
-    const inviteId = genId();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-
-    const stripeParams = new URLSearchParams({
-      'payment_method_types[]': 'card',
-      'line_items[0][price_data][currency]': 'usd',
-      'line_items[0][price_data][product_data][name]': "Dungeon - Father's Day Special",
-      'line_items[0][price_data][product_data][description]': 'Includes your first month of DungeonStream + DungeonCast',
-      'line_items[0][price_data][unit_amount]': String(amount * 100),
-      'line_items[0][quantity]': '1',
-      'mode': 'payment',
-      'success_url': SITE_URL + '/join?token=' + token,
-      'cancel_url': SITE_URL + '/join?token=' + token + '&cancelled=1',
-      'metadata[invite_token]': token,
-      'metadata[invite_id]': inviteId,
-      'metadata[promo]': 'fathers_day'
-    });
-    if (hasEmail) stripeParams.set('customer_email', email.trim());
-
-    const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + STRIPE_SECRET_KEY, 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: stripeParams
-    });
-    const session = await stripeRes.json();
-    if (!session.url) return res.status(500).json({ error: session.error?.message || 'Stripe error' });
-
-    db.prepare('INSERT INTO invites (id, token, email, created_by, amount, note, promo, stripe_session_id, expires_at) VALUES (?,?,?,?,?,?,?,?,?)')
-      .run(inviteId, token, hasEmail ? email.trim() : null, req.profile.id, amount * 100, note || null, 'fathers_day', session.id, expiresAt);
-
-    // Dealer earns their normal 50% cut
-    db.prepare('INSERT INTO dealer_earnings (id, dealer_profile_id, invite_id, amount, dealer_cut) VALUES (?,?,?,?,?)')
-      .run(genId(), req.profile.id, inviteId, amount * 100, Math.floor(amount * 100 * 0.5));
-
-    if (hasEmail) {
-      const html = emailShell(`
-        <h2>Happy Father's Day - You're Invited to Dungeon</h2>
-        <div class="rule"></div>
-        <p>A Father's Day gift: join <strong>Dungeon</strong> for just <strong>$${amount}</strong>, and your first month of <strong>DungeonStream</strong> and <strong>DungeonCast</strong> is included.</p>
-        ${note ? `<p style="color:#94a3a0;font-size:13px">${note}</p>` : ''}
-        <a href="${session.url}" class="btn">Claim the Father's Day Special - $${amount}</a>
-        <div class="rule"></div>
-        <p style="font-size:12px;color:#6b8f7a">This link expires in 7 days. - The Dungeon Master</p>
-      `);
-      await sendMail(email.trim(), "Happy Father's Day - Your Dungeon Invite", html);
-    }
-
-    notify("Father's Day promo sent", `@${req.profile.screen_name} created a Father's Day invite ($${amount})${hasEmail ? ' for ' + email.trim() : ' (link to share)'}`, {
-      kind: 'dealer', tags: 'gift', priority: 3,
-      link: '/admin.html', click: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/admin.html'
-    });
-
-    res.json({ ok: true, url: session.url, token, emailed: !!hasEmail });
-  } catch(e) {
-    console.error('[promo/fathers-day]', e.message);
     res.status(500).json({ error: e.message });
   }
 });
