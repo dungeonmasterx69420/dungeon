@@ -388,7 +388,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
         <div class="panel-head">
           <div class="panel-label">Invite Links</div>
           <div style="display:flex;gap:6px">
-            <button class="btn btn-b" onclick="openFreeInviteSheet()">🎁 Free Invite</button><button class="btn btn-b" onclick="openPromoSheet()">🎁 Father's Day</button><button class="btn btn-g" onclick="openInviteSheet()">+ Send Invite</button>
+            <button class="btn btn-g" onclick="openInviteSheet()">+ New Invite</button>
           </div>
         </div>
         <div id="invite-list"><div class="empty">// no invites yet</div></div>
@@ -1247,24 +1247,49 @@ function fmtDevices(devStr){
 }
 </script>
 
-<!-- Invite Sheet -->
+<!-- Invite Sheet (unified: free, family, staff, paid, paid + first month) -->
 <div class="sheet" id="sh-invite">
   <div class="sh-handle"></div>
-  <div class="sh-title">Send Invite</div>
-  <div class="sh-sub">Generate a Stripe payment link and send it to someone's email.</div>
+  <div class="sh-title">New Invite</div>
+  <div class="sh-sub">Pick the kind of invite you want. Leave the email blank to get a link you can text instead.</div>
   <div class="sh-err" id="inv-err"></div>
-  <div class="field"><label>Email Address</label><input type="email" id="inv-email" placeholder="member@email.com"/></div>
   <div class="field">
+    <label>Invite Type</label>
+    <select id="inv-type" onchange="inviteTypeChange()" style="width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:13px;padding:10px 12px;outline:none">
+      <option value="member">Member - free join link</option>
+      <option value="family">Friends &amp; Family - free, permanent access</option>
+      <option value="dealer">DungeonDealer - reseller + permanent access</option>
+      <option value="mod">Mod - free, permanent access</option>
+      <option value="admin">Admin - free, permanent access</option>
+      <option value="paid">Paid Invite - they pay the signup fee</option>
+      <option value="paid_first_month">Paid Invite + First Month Included</option>
+    </select>
+  </div>
+  <div id="inv-desc" style="background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:11px 13px;font-size:13px;color:var(--t2);margin-bottom:12px"></div>
+  <div class="field"><label>Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional - leave blank to share a link</span></label><input type="email" id="inv-email" placeholder="Leave blank to share a link instead"/></div>
+  <div class="field" id="inv-amount-field" style="display:none">
     <label>Signup Fee (USD)</label>
     <div style="display:flex;align-items:center;gap:8px">
       <span style="font-size:16px;color:var(--t2)">$</span>
       <input type="number" id="inv-amount" placeholder="15.00" min="1" step="0.01" style="flex:1"/>
     </div>
   </div>
-  <div class="field"><label>Note (optional)</label><input type="text" id="inv-note" placeholder="Personal message to include in email"/></div>
+  <div class="field"><label>Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="text" id="inv-note" placeholder="Personal message to include in the email"/></div>
   <div class="sacts">
     <button class="btn btn-b" onclick="closeSheet('sh-invite')">Cancel</button>
-    <button class="btn btn-g" id="inv-btn" onclick="sendInvite()">Send Invite</button>
+    <button class="btn btn-g" id="inv-btn" onclick="sendInvite()">Create Invite</button>
+  </div>
+</div>
+
+<!-- Invite Share Link Sheet -->
+<div class="sheet" id="sh-invite-share">
+  <div class="sh-handle"></div>
+  <div class="sh-title" id="ishare-title">Invite Link Ready</div>
+  <div class="sh-sub" id="ishare-sub">Text or send this link.</div>
+  <div class="field"><label id="ishare-label">Join Link</label><input type="text" id="ishare-url" readonly onclick="this.select()" style="font-family:var(--mono);font-size:12px"/></div>
+  <div class="sacts">
+    <button class="btn btn-b" onclick="closeSheet('sh-invite-share')">Done</button>
+    <button class="btn btn-g" id="ishare-copy" onclick="copyInviteShareLink()">Copy Link</button>
   </div>
 </div>
 
@@ -1276,12 +1301,13 @@ async function loadInvites() {
   if (!invites.length) { el.innerHTML='<div class="empty">// no invites yet</div>'; return; }
   el.innerHTML = invites.map(i => {
     const bdg = i.status==='paid'?'bdg-a':i.status==='used'?'bdg-g':i.status==='pending'?'bdg-b':'bdg-r';
-    const amt = '$' + (i.amount/100).toFixed(2);
+    const amt = i.amount > 0 ? ('$' + (i.amount/100).toFixed(2)) : 'Free';
+    const promoTag = (i.promo === 'first_month' || i.promo === 'fathers_day') ? ' · first month included' : '';
     return `<div class="rc">
       <div class="rc-top">
         <div>
           <div class="rc-name">${esc(i.email||'No email')} <span class="bdg ${bdg}">${i.status}</span></div>
-          <div class="rc-meta">${amt} · ${fmtDate(i.created_at)}</div>
+          <div class="rc-meta">${amt}${promoTag} · ${fmtDate(i.created_at)}</div>
         </div>
         ${i.status==='pending'||i.status==='paid'?`<button class="btn btn-r" style="font-size:10px;padding:5px 10px" onclick="deleteInvite('${i.id}')">Delete</button>`:''}
       </div>
@@ -1291,29 +1317,89 @@ async function loadInvites() {
   }).join('');
 }
 
+// Invite type definitions. paid=true means a Stripe checkout link is generated.
+const INVITE_TYPES = {
+  member:           { paid:false, tier:'member', label:'Member',
+    desc:'A free join link. They set up their own account, no payment required. Standard member tier, normal renewals apply.' },
+  family:           { paid:false, tier:'family', label:'Friends & Family',
+    desc:'Free and permanent. Never expires, never asked to pay. Use for family, close friends and staff.' },
+  dealer:           { paid:false, tier:'dealer', label:'DungeonDealer',
+    desc:'Free permanent access plus reseller tools. They can send their own paid invites and earn commission.' },
+  mod:              { paid:false, tier:'mod', label:'Mod',
+    desc:'Free permanent access plus moderator tools and the admin panel.' },
+  admin:            { paid:false, tier:'admin', label:'Admin',
+    desc:'Free permanent access with full admin rights. Only hand this out to people you trust completely.' },
+  paid:             { paid:true, firstMonth:false, label:'Paid Invite',
+    desc:'Generates a Stripe checkout link for the signup fee you set. Access starts once they pay and finish signup.' },
+  paid_first_month: { paid:true, firstMonth:true, label:'Paid Invite + First Month',
+    desc:'They pay the fee you set and their first month of DungeonStream + DungeonCast is included. Access auto-revokes after 1 month unless they renew.' }
+};
+
+function inviteTypeChange() {
+  const t = INVITE_TYPES[$('inv-type').value] || INVITE_TYPES.member;
+  $('inv-desc').textContent = t.desc;
+  $('inv-amount-field').style.display = t.paid ? 'block' : 'none';
+  $('inv-err').style.display = 'none';
+}
+
 function openInviteSheet() {
+  $('inv-type').value='member';
   $('inv-email').value=''; $('inv-amount').value=''; $('inv-note').value='';
   $('inv-err').style.display='none';
+  inviteTypeChange();
   openSheet('sh-invite');
 }
 
 async function sendInvite() {
+  const typeKey = $('inv-type').value;
+  const t = INVITE_TYPES[typeKey] || INVITE_TYPES.member;
   const email = $('inv-email').value.trim();
-  const amount = parseFloat($('inv-amount').value);
   const note = $('inv-note').value.trim();
   const err = $('inv-err');
-  if (!email) { err.textContent='Email required'; err.style.display='block'; return; }
-  if (!amount || amount < 1) { err.textContent='Amount must be at least $1'; err.style.display='block'; return; }
-  const btn = $('inv-btn'); btn.disabled=true; btn.textContent='Sending…';
-  const r = await fetch('/api/admin/invites/create', {
+  err.style.display='none';
+
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    err.textContent='That email looks invalid'; err.style.display='block'; return;
+  }
+
+  let url, body;
+  if (t.paid) {
+    const amount = parseFloat($('inv-amount').value);
+    if (!amount || amount < 1) { err.textContent='Amount must be at least $1'; err.style.display='block'; return; }
+    url = '/api/admin/invites/create';
+    body = { email, amount, note, firstMonth: !!t.firstMonth };
+  } else {
+    url = '/api/admin/invites/create-free';
+    body = { email, tier: t.tier, note };
+  }
+
+  const btn = $('inv-btn'); btn.disabled=true; btn.textContent = email ? 'Sending…' : 'Creating…';
+  const r = await fetch(url, {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({email, amount, note})
+    body: JSON.stringify(body)
   }).then(r=>r.json()).catch(e=>({error:e.message}));
-  btn.disabled=false; btn.textContent='Send Invite';
+  btn.disabled=false; btn.textContent='Create Invite';
   if (r.error) { err.textContent=r.error; err.style.display='block'; return; }
+
   closeSheet('sh-invite');
-  loadInvites();
-  alert('Invite sent to ' + email + '!');
+  loadAll();
+
+  $('ishare-url').value = r.url || '';
+  $('ishare-label').textContent = t.paid ? 'Payment Link' : 'Join Link';
+  $('ishare-title').textContent = r.emailed ? (t.label + ' Invite Sent ✓') : (t.label + ' Link Ready');
+  $('ishare-sub').textContent = r.emailed
+    ? 'We emailed the link to ' + email + '. You can also copy it below.'
+    : (t.paid
+        ? 'Text or send this payment link. They pay, then finish setting up their account.'
+        : 'Text or send this join link. They enter their own email and set up their account, no payment needed.');
+  openSheet('sh-invite-share');
+}
+
+function copyInviteShareLink() {
+  const url = $('ishare-url').value;
+  const btn = $('ishare-copy');
+  navigator.clipboard.writeText(url).then(()=>{btn.textContent='Copied ✓';setTimeout(()=>{btn.textContent='Copy Link';},1800);})
+    .catch(()=>{$('ishare-url').select();document.execCommand('copy');btn.textContent='Copied ✓';setTimeout(()=>{btn.textContent='Copy Link';},1800);});
 }
 
 async function deleteInvite(id) {
@@ -1397,68 +1483,6 @@ async function submitDemo() {
 }
 </script>
 
-<!-- Free Invite Sheet -->
-<div class="sheet" id="sh-free-invite">
-  <div class="sh-handle"></div>
-  <div class="sh-title">Free Invite</div>
-  <div class="sh-sub">Send a free invite - no payment required. Great for family, friends or staff. Leave email blank to get a link you can text.</div>
-  <div class="sh-err" id="fi-err"></div>
-  <div class="field"><label>Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional - leave blank to share a link</span></label><input type="email" id="fi-email" placeholder="Leave blank to share a link instead"/></div>
-  <div class="field">
-    <label>Tier</label>
-    <select id="fi-tier" style="width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:13px;padding:10px 12px;outline:none">
-      <option value="member">Member</option>
-      <option value="family">Family & Friends - permanent access</option>
-      <option value="dealer">DungeonDealer - reseller + permanent access</option>
-      <option value="mod">Mod</option>
-      <option value="admin">Admin</option>
-    </select>
-  </div>
-  <div class="field"><label>Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="text" id="fi-note" placeholder="Personal message…"/></div>
-  <div class="sacts">
-    <button class="btn btn-b" onclick="closeSheet('sh-free-invite')">Cancel</button>
-    <button class="btn btn-g" id="fi-btn" onclick="sendFreeInvite()">Create Invite</button>
-  </div>
-</div>
-
-<!-- Free Invite Share Link Sheet -->
-<div class="sheet" id="sh-free-share">
-  <div class="sh-handle"></div>
-  <div class="sh-title" id="fshare-title">Invite Link Ready</div>
-  <div class="sh-sub" id="fshare-sub">Text or send this free join link.</div>
-  <div class="field"><label>Join Link</label><input type="text" id="fshare-url" readonly onclick="this.select()" style="font-family:var(--mono);font-size:12px"/></div>
-  <div class="sacts">
-    <button class="btn btn-b" onclick="closeSheet('sh-free-share')">Done</button>
-    <button class="btn btn-g" id="fshare-copy" onclick="copyFreeShareLink()">Copy Link</button>
-  </div>
-</div>
-
-<!-- Father's Day Promo Sheet -->
-<div class="sheet" id="sh-promo">
-  <div class="sh-handle"></div>
-  <div class="sh-title">🎁 Father's Day Special</div>
-  <div class="sh-sub">$30 entry with the first month of DungeonStream + DungeonCast included. Access auto-revokes after 1 month unless they renew. Leave email blank to share a link.</div>
-  <div class="sh-err" id="promo-err" style="display:none"></div>
-  <div class="field"><label>Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="email" id="promo-email" placeholder="Leave blank to share a link instead"/></div>
-  <div class="field"><label>Personal Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="text" id="promo-note" placeholder="Appears in their invite email (if emailed)"/></div>
-  <div style="background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:11px 13px;font-size:13px;color:var(--t2);margin-bottom:4px">Fixed price: <strong style="color:var(--g)">$30.00</strong> · 1 month of both services</div>
-  <div class="sacts">
-    <button class="btn btn-b" onclick="closeSheet('sh-promo')">Cancel</button>
-    <button class="btn btn-g" id="promo-btn" onclick="sendPromo()">Create Invite</button>
-  </div>
-</div>
-
-<!-- Father's Day Share Link Sheet -->
-<div class="sheet" id="sh-promo-share">
-  <div class="sh-handle"></div>
-  <div class="sh-title" id="pshare-title">Father's Day Link Ready</div>
-  <div class="sh-sub" id="pshare-sub">Text or send this Father's Day link.</div>
-  <div class="field"><label>Payment Link</label><input type="text" id="pshare-url" readonly onclick="this.select()" style="font-family:var(--mono);font-size:12px"/></div>
-  <div class="sacts">
-    <button class="btn btn-b" onclick="closeSheet('sh-promo-share')">Done</button>
-    <button class="btn btn-g" id="pshare-copy" onclick="copyPromoShareLink()">Copy Link</button>
-  </div>
-</div>
 <!-- Broadcast Message Sheet -->
 <div class="sheet" id="sh-broadcast">
   <div class="sh-handle"></div>
@@ -1588,71 +1612,6 @@ async function runComp(dryRun){
     const apply=$('comp-apply-btn');apply.disabled=true;apply.style.opacity=.5;
     loadAll();
   }
-}
-</script>
-<script>
-  document.getElementById('fi-email').value='';
-  document.getElementById('fi-note').value='';
-  document.getElementById('fi-tier').value='member';
-  document.getElementById('fi-err').style.display='none';
-  openSheet('sh-free-invite');
-}
-async function sendFreeInvite(){
-  const email=document.getElementById('fi-email').value.trim();
-  const tier=document.getElementById('fi-tier').value;
-  const note=document.getElementById('fi-note').value.trim();
-  const err=document.getElementById('fi-err');
-  err.style.display='none';
-  if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){err.textContent='That email looks invalid';err.style.display='block';return;}
-  const btn=document.getElementById('fi-btn');btn.disabled=true;btn.textContent=email?'Sending…':'Creating…';
-  const r=await fetch('/api/admin/invites/create-free',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,tier,note})}).then(r=>r.json()).catch(e=>({error:e.message}));
-  btn.disabled=false;btn.textContent='Create Invite';
-  if(r.error){err.textContent=r.error;err.style.display='block';return;}
-  closeSheet('sh-free-invite');
-  loadAll();
-  // Show the shareable join link
-  const tierLabel = r.tier && r.tier!=='member' ? ' ('+r.tier+' tier)' : '';
-  $('fshare-url').value = r.url;
-  $('fshare-title').textContent = r.emailed ? 'Invite Sent ✓' : 'Invite Link Ready';
-  $('fshare-sub').textContent = r.emailed
-    ? 'We emailed the join link'+tierLabel+'. You can also copy it below.'
-    : 'Text or send this free join link'+tierLabel+'. They\'ll enter their own email and set up their account - no payment needed.';
-  openSheet('sh-free-share');
-}
-function copyFreeShareLink(){
-  const url=$('fshare-url').value;
-  const btn=$('fshare-copy');
-  navigator.clipboard.writeText(url).then(()=>{btn.textContent='Copied ✓';setTimeout(()=>{btn.textContent='Copy Link';},1800);})
-    .catch(()=>{$('fshare-url').select();document.execCommand('copy');btn.textContent='Copied ✓';setTimeout(()=>{btn.textContent='Copy Link';},1800);});
-}
-
-// Father's Day promo
-function openPromoSheet(){
-  $('promo-email').value='';$('promo-note').value='';$('promo-err').style.display='none';
-  openSheet('sh-promo');
-}
-async function sendPromo(){
-  const email=$('promo-email').value.trim();
-  const note=$('promo-note').value.trim();
-  const err=$('promo-err');
-  err.style.display='none';
-  if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){err.textContent='That email looks invalid';err.style.display='block';return;}
-  const btn=$('promo-btn');btn.disabled=true;btn.textContent=email?'Sending…':'Creating…';
-  const r=await fetch('/api/promo/fathers-day/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,note})}).then(r=>r.json()).catch(e=>({error:e.message}));
-  btn.disabled=false;btn.textContent='Create Invite';
-  if(r.error){err.textContent=r.error;err.style.display='block';return;}
-  closeSheet('sh-promo');
-  loadAll();
-  $('pshare-url').value=r.url;
-  $('pshare-title').textContent=r.emailed?'Father\u2019s Day Invite Sent ✓':'Father\u2019s Day Link Ready';
-  $('pshare-sub').textContent=r.emailed?'We emailed the link. You can also copy it below.':'Text or send this link. They pay $30 and get their first month of both services.';
-  openSheet('sh-promo-share');
-}
-function copyPromoShareLink(){
-  const url=$('pshare-url').value;
-  const btn=$('pshare-copy');
-  navigator.clipboard.writeText(url).then(()=>{btn.textContent='Copied ✓';setTimeout(()=>{btn.textContent='Copy Link';},1800);})
-    .catch(()=>{$('pshare-url').select();document.execCommand('copy');btn.textContent='Copied ✓';setTimeout(()=>{btn.textContent='Copy Link';},1800);});
 }
 </script>
 

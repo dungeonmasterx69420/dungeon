@@ -198,11 +198,11 @@ async function checkInvite() {
     document.getElementById('paid-badge').textContent = "✓ You're In";
     document.getElementById('amount-badge').style.display = 'none';
   }
-  // Father's Day promo theming
-  if (data.promo === 'fathers_day') {
-    document.getElementById('paid-badge').textContent = "🎁 Happy Father's Day";
-    document.getElementById('form-title').textContent = "Happy Father's Day!";
-    document.getElementById('form-sub').innerHTML = "Your first month of <strong>DungeonStream</strong> and <strong>DungeonCast</strong> is on us. Set up your account below to start watching.";
+  // First-month-included invite theming ('fathers_day' is the legacy promo id)
+  if (data.promo === 'first_month' || data.promo === 'fathers_day') {
+    document.getElementById('paid-badge').textContent = '🎁 First Month Included';
+    document.getElementById('form-title').textContent = "You're All Set";
+    document.getElementById('form-sub').innerHTML = "Your first month of <strong>DungeonStream</strong> and <strong>DungeonCast</strong> is included. Set up your account below to start watching.";
   }
   // If the invite has no email on file (shared link), collect it here
   if (data.needsEmail) {

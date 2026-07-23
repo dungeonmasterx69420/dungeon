@@ -176,7 +176,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
   <div class="section">
     <div class="section-head">
       <div class="section-title">My Invites</div>
-      <button class="btn btn-b" onclick="openDemoSheet()" style="margin-right:6px">🎬 Send Demo</button><button class="btn btn-gold" onclick="openPromoSheet()" style="margin-right:6px">🎁 Father's Day</button><button class="btn btn-gold" onclick="openInviteSheet()">+ New Invite</button>
+      <button class="btn btn-b" onclick="openDemoSheet()" style="margin-right:6px">🎬 Send Demo</button><button class="btn btn-gold" onclick="openInviteSheet()">+ New Invite</button>
     </div>
     <div id="invite-list"><div class="empty">// no invites yet</div></div>
   </div>
@@ -227,29 +227,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
   <div class="sacts">
     <button class="btn btn-b" onclick="closeSheet('sh-invite')">Cancel</button>
     <button class="btn btn-gold" id="inv-btn" onclick="sendInvite()">Create Invite</button>
-  </div>
-</div>
-
-<!-- Father's Day Promo Sheet -->
-<div class="sheet" id="sh-promo">
-  <div class="sh-handle"></div>
-  <div class="sh-title">🎁 Father's Day Special</div>
-  <div class="sh-sub">$30 entry with the first month of <strong>DungeonStream + DungeonCast</strong> included. You keep your normal 50% ($15). Leave email blank to get a link you can text.</div>
-  <div class="sh-err" id="promo-err"></div>
-  <div class="field">
-    <label>Client Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label>
-    <input type="email" id="promo-email" placeholder="Leave blank to share a link instead"/>
-  </div>
-  <div class="field">
-    <label>Personal Note <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label>
-    <input type="text" id="promo-note" placeholder="Appears in their invite email (if emailed)"/>
-  </div>
-  <div style="background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--t2);margin-bottom:4px">
-    Fixed price: <strong style="color:var(--g)">$30.00</strong> · Your cut: <strong style="color:var(--g)">$15.00</strong>
-  </div>
-  <div class="sacts">
-    <button class="btn btn-b" onclick="closeSheet('sh-promo')">Cancel</button>
-    <button class="btn btn-gold" id="promo-btn" onclick="sendPromo()">Create Father's Day Invite</button>
   </div>
 </div>
 
@@ -391,25 +368,6 @@ function renderEarnings(){
 function updateCut(){
   const amt = parseFloat($('inv-amount').value)||0;
   $('cut-preview').textContent = amt ? 'Your cut: $'+(amt*0.5).toFixed(2) : '';
-}
-
-function openPromoSheet(){
-  $('promo-email').value='';$('promo-note').value='';$('promo-err').style.display='none';
-  openSheet('sh-promo');
-}
-async function sendPromo(){
-  const email=$('promo-email').value.trim();
-  const note=$('promo-note').value.trim();
-  const err=$('promo-err');
-  err.style.display='none';
-  if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){err.textContent='That email looks invalid';err.style.display='block';return;}
-  const btn=$('promo-btn');btn.disabled=true;btn.textContent=email?'Sending…':'Creating…';
-  const r=await fetch('/api/promo/fathers-day/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,note})}).then(r=>r.json()).catch(e=>({error:e.message}));
-  btn.disabled=false;btn.textContent="Create Father's Day Invite";
-  if(r.error){err.textContent=r.error;err.style.display='block';return;}
-  closeSheet('sh-promo');
-  await loadDashboard();
-  if(r.url) showShareLink(r.url, r.emailed);
 }
 
 function openInviteSheet(){
