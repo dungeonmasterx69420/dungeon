@@ -2411,14 +2411,47 @@ app.delete('/api/admin/iptv/:profileId', requireAuth, (req, res) => {
 
 
 // ── Buy Me a Coffee Webhook ───────────────────────────────────────────────────
-// Each "extra" purchase = 1 credit. Member must include @screenname in message.
+// Each "extra" purchase = 1 credit. Member should include @screenname in the
+// message, but we fall back to supporter email and, failing that, alert the DM
+// so a purchase can never silently vanish.
 const BMAC_WEBHOOK_SECRET = process.env.BMAC_WEBHOOK_SECRET || '';
+
+// Real BMAC v2 event types that mean money came in.
+// Ref: help.buymeacoffee.com webhook docs. The shop/extras event is
+// 'extra_purchase.created' - NOT 'extra.purchased'.
+const BMAC_PAID_EVENTS = [
+  'donation.created',
+  'extra_purchase.created',
+  'commission_order.created',
+  'wishlist_payment.created',
+  'membership.started',
+  'recurring_donation.started'
+];
+
+// Delivery log so BMAC retries (up to 4 extra attempts) cannot double-credit,
+// and so unmatched purchases are recoverable instead of lost.
+try {
+  db.prepare(`CREATE TABLE IF NOT EXISTS bmac_events (
+    event_id TEXT PRIMARY KEY,
+    type TEXT,
+    supporter_email TEXT,
+    amount REAL,
+    screen_name TEXT,
+    profile_id TEXT,
+    credits INTEGER DEFAULT 0,
+    status TEXT,
+    payload TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )`).run();
+} catch(e) { console.error('[BMAC] table init:', e.message); }
+
 app.post('/api/webhook/bmac', express.raw({type:'application/json'}), (req, res) => {
+  let payload = null;
   try {
     // Body may arrive as a raw Buffer (expected) or pre-parsed object
     // (if an upstream parser ever touches this path again). Handle both.
     const rawBody = Buffer.isBuffer(req.body) ? req.body.toString() : null;
-    const payload = rawBody ? JSON.parse(rawBody)
+    payload = rawBody ? JSON.parse(rawBody)
       : (typeof req.body === 'string' ? JSON.parse(req.body) : req.body);
 
     // Verify BMAC signature when a secret is configured (requires raw body)
@@ -2437,53 +2470,107 @@ app.post('/api/webhook/bmac', express.raw({type:'application/json'}), (req, res)
       }
     }
 
-    const type = payload.type || payload.response_message_type;
+    const raw = JSON.stringify(payload);
+    const type = payload.type || payload.response_message_type || 'unknown';
+    const eventId = String(payload.event_id || payload.id || ('noid_' + Date.now()));
+    const liveMode = payload.live_mode !== false;
 
-    // Only handle successful payments
-    if (!['succeeded','payment_succeeded','extra.purchased'].some(t => JSON.stringify(payload).includes(t))) {
-      return res.json({ ok: true });
+    // Log EVERY delivery. Nothing gets dropped silently any more.
+    console.log('[BMAC] Event received:', type, '| event_id:', eventId, '| live:', liveMode);
+
+    // Ignore non-payment events (refunds, cancellations, updates)
+    if (!BMAC_PAID_EVENTS.includes(type)) {
+      console.log('[BMAC] Ignoring non-payment event:', type);
+      return res.json({ ok: true, ignored: type });
     }
 
+    // Idempotency: BMAC retries failed deliveries, so replay the same event_id safely
+    const seen = db.prepare('SELECT * FROM bmac_events WHERE event_id=?').get(eventId);
+    if (seen && seen.status === 'credited') {
+      console.log('[BMAC] Duplicate delivery for', eventId, '- already credited, skipping');
+      return res.json({ ok: true, duplicate: true });
+    }
+
+    // v2 puts the goods under data; older payloads used response
     const data = payload.data || payload.response || payload;
-    const message = (data.message || data.supporter_message || data.note || '').toLowerCase();
-    const amount = parseFloat(data.amount || data.total_amount || 10);
+    const supporterEmail = String(
+      data.supporter_email || data.email || data.buyer_email ||
+      data.payer_email || payload.supporter_email || ''
+    ).trim().toLowerCase();
+
+    const amountRaw = data.amount ?? data.total_amount ?? data.total ??
+                      data.amount_paid ?? data.price ?? 10;
+    const amount = parseFloat(amountRaw) || 10;
     const creditsToAdd = Math.max(1, Math.floor(amount / 10));
 
-    // Extract @screenname from message
-    const match = message.match(/@([a-z0-9_]+)/i);
-    if (!match) {
-      console.log('[BMAC] No @screenname in message:', message);
-      return res.json({ ok: true, note: 'No screenname found' });
+    // Look for @screenname in the known message fields first, then anywhere in
+    // the payload. Extras/shop orders put the buyer note in different keys
+    // depending on the product, so a whole-payload sweep is the safety net.
+    const messageFields = [
+      data.message, data.supporter_message, data.note, data.notes,
+      data.support_note, data.order_note, data.extra_question,
+      data.question, data.answer, data.description
+    ].filter(v => typeof v === 'string').join(' ');
+
+    let screenName = null;
+    let m = messageFields.match(/@([a-z0-9_]{2,})/i);
+    if (!m) m = raw.match(/@([a-z0-9_]{2,})(?![^"]*@[a-z0-9.-]+\.[a-z]{2,})/i);
+    if (m) screenName = m[1].toLowerCase();
+
+    let profile = null;
+    if (screenName) {
+      profile = db.prepare('SELECT * FROM profiles WHERE LOWER(screen_name)=?').get(screenName);
+      if (!profile) console.log('[BMAC] No profile for screenname:', screenName);
+    } else {
+      console.log('[BMAC] No @screenname found in payload');
     }
 
-    const screenName = match[1].toLowerCase();
-    let profile = db.prepare("SELECT * FROM profiles WHERE LOWER(screen_name)=?").get(screenName);
-
-    // Fallback: try matching by email from payload
-    if (!profile) {
-      const email = (data.supporter_email || data.email || '').toLowerCase();
-      if (email) {
-        profile = db.prepare("SELECT * FROM profiles WHERE LOWER(email)=?").get(email);
-        if (profile) console.log('[BMAC] Matched by email:', email);
+    // Email fallback - now reachable whether or not a screenname was present
+    if (!profile && supporterEmail) {
+      profile = db.prepare('SELECT * FROM profiles WHERE LOWER(email)=?').get(supporterEmail);
+      if (!profile) {
+        const mem = db.prepare('SELECT * FROM members WHERE LOWER(email)=?').get(supporterEmail);
+        if (mem) profile = db.prepare('SELECT * FROM profiles WHERE member_id=?').get(mem.id);
       }
+      if (profile) console.log('[BMAC] Matched by email:', supporterEmail);
     }
 
+    // Could not match: record it and alert the DM instead of dropping it
     if (!profile) {
-      console.log('[BMAC] Profile not found for:', screenName);
-      // Log the full payload for debugging
-      console.log('[BMAC] Full payload:', JSON.stringify(payload).substring(0, 500));
-      return res.json({ ok: true, note: 'Profile not found for: ' + screenName });
+      try {
+        db.prepare(`INSERT OR REPLACE INTO bmac_events
+          (event_id, type, supporter_email, amount, screen_name, profile_id, credits, status, payload)
+          VALUES (?,?,?,?,?,?,?,?,?)`)
+          .run(eventId, type, supporterEmail || null, amount, screenName || null, null, 0, 'unmatched', raw.substring(0, 4000));
+      } catch(e) { console.error('[BMAC] log insert:', e.message); }
+
+      console.log('[BMAC] UNMATCHED purchase - $' + amount + ' from', supporterEmail || 'unknown email');
+      console.log('[BMAC] Full payload:', raw.substring(0, 800));
+
+      notify('Unmatched credit purchase', `$${amount} came in via Buy Me a Coffee but no account matched.${supporterEmail ? ' Email: ' + supporterEmail : ''}${screenName ? ' Tagged: @' + screenName : ''} Add the credit manually in the admin panel.`, {
+        kind: 'credit', tags: 'warning', priority: 4,
+        link: '/admin.html', click: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/admin.html'
+      });
+
+      return res.json({ ok: true, note: 'Unmatched, admin alerted' });
     }
 
     // Add credits
     addCredit(profile.id, creditsToAdd, 'purchased', `Buy Me a Coffee - $${amount}`);
 
+    try {
+      db.prepare(`INSERT OR REPLACE INTO bmac_events
+        (event_id, type, supporter_email, amount, screen_name, profile_id, credits, status, payload)
+        VALUES (?,?,?,?,?,?,?,?,?)`)
+        .run(eventId, type, supporterEmail || null, amount, profile.screen_name, profile.id, creditsToAdd, 'credited', raw.substring(0, 4000));
+    } catch(e) { console.error('[BMAC] log insert:', e.message); }
+
     // Check referral credit
     const member = db.prepare('SELECT * FROM members WHERE id=?').get(profile.member_id);
     if (member && member.referral) {
-      const referrerProfile = db.prepare("SELECT * FROM profiles WHERE LOWER(screen_name)=LOWER(?)").get(member.referral);
+      const referrerProfile = db.prepare('SELECT * FROM profiles WHERE LOWER(screen_name)=LOWER(?)').get(member.referral);
       if (referrerProfile) {
-        const alreadyRewarded = db.prepare("SELECT * FROM credit_transactions WHERE profile_id=? AND note LIKE ?").get(referrerProfile.id, `%Referral%${profile.screen_name}%`);
+        const alreadyRewarded = db.prepare('SELECT * FROM credit_transactions WHERE profile_id=? AND note LIKE ?').get(referrerProfile.id, `%Referral%${profile.screen_name}%`);
         if (!alreadyRewarded) {
           addCredit(referrerProfile.id, 1, 'referral', `Referral bonus - @${profile.screen_name} made their first purchase`);
         }
@@ -2497,12 +2584,31 @@ app.post('/api/webhook/bmac', express.raw({type:'application/json'}), (req, res)
         .run(genId(), warden.id, profile.id, 'Credits Added', `${creditsToAdd} credit${creditsToAdd>1?'s':''} have been added to your account from your Buy Me a Coffee purchase. Enjoy!`);
     }
 
-    console.log('[BMAC] Added', creditsToAdd, 'credits to', screenName);
-    res.json({ ok: true, credits_added: creditsToAdd, profile: screenName });
+    notify('Credit purchased', `@${profile.screen_name} bought ${creditsToAdd} credit${creditsToAdd>1?'s':''} ($${amount})`, {
+      kind: 'credit', tags: 'moneybag', priority: 3,
+      link: '/admin.html', click: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/admin.html'
+    });
+
+    console.log('[BMAC] Added', creditsToAdd, 'credit(s) to', profile.screen_name);
+    res.json({ ok: true, credits_added: creditsToAdd, profile: profile.screen_name });
   } catch(e) {
     console.error('[BMAC] Webhook error:', e);
+    try {
+      notify('Credit webhook error', 'A Buy Me a Coffee purchase failed to process: ' + e.message + '. Check the logs and add the credit manually.', {
+        kind: 'credit', tags: 'rotating_light', priority: 5,
+        link: '/admin.html', click: (process.env.SITE_URL || 'https://enterdungeon.cc') + '/admin.html'
+      });
+    } catch(_) {}
     res.status(500).json({ error: e.message });
   }
+});
+
+// Admin: recent Buy Me a Coffee deliveries, newest first.
+// Use this to see exactly what arrived and whether it credited.
+app.get('/api/admin/bmac-events', requireMod, (req, res) => {
+  try {
+    res.json(db.prepare('SELECT event_id, type, supporter_email, amount, screen_name, profile_id, credits, status, created_at FROM bmac_events ORDER BY created_at DESC LIMIT 50').all());
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── Credits ───────────────────────────────────────────────────────────────────
@@ -3315,10 +3421,41 @@ app.post('/api/admin/members/:id/clear-sub', requireMod, (req, res) => {
 // POST add credits
 app.post('/api/admin/credits', requireMod, (req, res) => {
   try {
-    const { profile_id, amount, reason } = req.body;
+    const { profile_id, amount, reason, type } = req.body;
     if (!profile_id || !amount) return res.status(400).json({ error: 'profile_id and amount required' });
-    addCredit(profile_id, parseInt(amount), 'admin', reason || 'Admin adjustment');
-    res.json({ ok: true });
+    const profile = db.prepare('SELECT * FROM profiles WHERE id=?').get(profile_id);
+    if (!profile) return res.status(404).json({ error: 'Profile not found' });
+
+    const amt = parseInt(amount);
+    if (isNaN(amt) || amt === 0) return res.status(400).json({ error: 'Invalid amount' });
+    const kind = type || 'admin';
+
+    addCredit(profile_id, amt, kind, reason || 'Admin adjustment');
+
+    // A manually applied purchase should reward the referrer, same as the
+    // Buy Me a Coffee webhook does. Without this, credits added by hand after a
+    // failed webhook skip the referral bonus entirely.
+    let referralAwarded = null;
+    if (amt > 0 && kind === 'purchased') {
+      const member = db.prepare('SELECT * FROM members WHERE id=?').get(profile.member_id);
+      const referredBy = member?.referral
+        || db.prepare('SELECT referral FROM applicants WHERE id=?').get(member?.applicant_id)?.referral;
+      if (referredBy) {
+        const referrer = db.prepare('SELECT * FROM profiles WHERE LOWER(screen_name)=LOWER(?)').get(referredBy);
+        if (referrer && referrer.id !== profile_id) {
+          const already = db.prepare('SELECT id FROM credit_transactions WHERE profile_id=? AND type=? AND note LIKE ?')
+            .get(referrer.id, 'referral', `%${profile.screen_name}%`);
+          if (!already) {
+            addCredit(referrer.id, 1, 'referral', `Referral bonus - @${profile.screen_name} made their first purchase`);
+            referralAwarded = referrer.screen_name;
+            console.log('[credits] Referral credit awarded to @' + referrer.screen_name + ' for @' + profile.screen_name);
+          }
+        }
+      }
+    }
+
+    const balance = db.prepare('SELECT amount FROM credits WHERE profile_id=?').get(profile_id)?.amount ?? 0;
+    res.json({ ok: true, balance, referral_awarded: referralAwarded });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
