@@ -3,15 +3,16 @@
 // stale. Successful same-origin responses are copied into a cache that only
 // serves as an offline fallback for the app shell. /api is never intercepted.
 // Bump CACHE (and the ?v= query here and in the HTML) whenever the shell changes.
-const CACHE = 'gridio-v3';
+const CACHE = 'gridio-v4';
 const SHELL = [
   '/',
   '/leaderboard.html',
   '/login.html',
-  '/css/gridio.css?v=3',
-  '/js/api.js?v=3',
-  '/js/app.js?v=3',
-  '/js/leaderboard.js?v=3',
+  '/css/gridio.css?v=4',
+  '/js/api.js?v=4',
+  '/js/app.js?v=4',
+  '/js/leaderboard.js?v=4',
+  '/js/install.js?v=4',
   '/img/gridio.svg',
   '/img/icon-192.png'
 ];

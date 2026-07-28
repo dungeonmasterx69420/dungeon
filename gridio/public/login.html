@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/gridio.css?v=3">
+<link rel="stylesheet" href="/css/gridio.css?v=4">
 </head>
 <body>
 <div class="gate">
@@ -62,10 +62,24 @@
     </form>
 
     <div class="form-err" id="err" role="alert"></div>
+
+    <div class="install-row">
+      <button class="btn-install" id="get-app" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3v12"></path>
+          <path d="M7 11l5 5 5-5"></path>
+          <path d="M4 20h16"></path>
+        </svg>
+        GET APP
+      </button>
+      <div class="install-note">Puts GRIDIO on your home screen. No app store, no download.</div>
+    </div>
   </div>
 </div>
 
-<script src="/js/api.js?v=3"></script>
+<script src="/js/api.js?v=4"></script>
+<script src="/js/install.js?v=4"></script>
 <script>
 const err = document.getElementById('err');
 const tabs = { login: document.getElementById('tab-login'), join: document.getElementById('tab-join') };
