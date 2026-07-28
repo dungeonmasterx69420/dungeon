@@ -737,3 +737,101 @@ button { font-family: var(--body); }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* ---------- get app (install) ---------- */
+.install-row {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--edge);
+}
+.btn-install {
+  width: 100%;
+  font-family: var(--px);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--turf);
+  background: var(--panel);
+  border: 1px solid var(--turf-dim);
+  border-radius: 9px;
+  padding: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+.btn-install:hover { border-color: var(--turf); background: var(--panel-2); }
+.btn-install:disabled { opacity: 0.6; cursor: wait; }
+.btn-install svg { width: 14px; height: 14px; flex: none; }
+.install-note {
+  font-size: 12px;
+  color: var(--dim);
+  margin-top: 9px;
+  line-height: 1.4;
+}
+
+.install-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(3, 6, 9, 0.78);
+  display: grid;
+  place-items: end center;
+  padding: 16px;
+  overflow-y: auto;
+}
+@media (min-width: 560px) {
+  .install-sheet { place-items: center; }
+}
+.install-card {
+  width: 100%;
+  max-width: 400px;
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--edge);
+  border-radius: 16px;
+  padding: 24px 22px 20px;
+}
+.install-card h2 {
+  font-family: var(--px);
+  font-size: 12px;
+  color: var(--turf);
+  letter-spacing: 1px;
+  margin: 0 0 12px;
+}
+.install-lead {
+  font-size: 14px;
+  color: var(--dim);
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+.install-steps {
+  margin: 0 0 18px;
+  padding-left: 20px;
+  color: var(--chalk);
+  font-size: 15px;
+  line-height: 1.55;
+}
+.install-steps li { margin-bottom: 10px; }
+.install-steps li::marker { color: var(--turf); font-weight: 700; }
+.install-copy,
+.install-close {
+  width: 100%;
+  font-family: var(--px);
+  font-size: 10px;
+  border-radius: 9px;
+  padding: 13px;
+  cursor: pointer;
+}
+.install-copy {
+  color: var(--turf);
+  background: var(--panel);
+  border: 1px solid var(--turf-dim);
+  margin-bottom: 9px;
+}
+.install-copy:hover { border-color: var(--turf); }
+.install-close {
+  color: #04160a;
+  background: var(--turf);
+  border: 0;
+}
+.install-close:hover { filter: brightness(1.08); }
