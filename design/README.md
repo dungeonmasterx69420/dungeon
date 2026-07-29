@@ -26,3 +26,31 @@ All three share the same baseline fixes over the current page:
 Each file inlines its own copy of the `/dungeon.css` tokens so it can be opened
 without a server. When a direction is chosen, that block comes out and the page
 links `/dungeon.css` again, as the rest of the site does.
+
+## Art and motion
+
+Each direction gets one piece of generated art and one orchestrated moment,
+rather than effects scattered across the page.
+
+**A — guilloché engraving.** Three nested hypotrochoids, the curve family a
+rose engine cuts into a share certificate or a banknote, drawn on canvas
+behind the hero. It cuts itself over 2.4s on load and then holds still. Drawn
+incrementally — each frame strokes only the newly cut span, so the cost is the
+length of that span rather than the whole figure. Ledger rows light their rule
+from the left on hover.
+
+**B — projector.** A 140px noise tile redrawn at 12fps over the hero with the
+lamp brightness wandering on the same clock, so grain and flicker read as one
+projector rather than two effects. The headline comes up through the gate word
+by word; titles on the bill strike their rule across on hover. The loop stops
+when the hero scrolls out of view or the tab is hidden.
+
+**C — the key is issued.** The card is placed onto the page rather than
+already sitting there: it rises, a foil band crosses it, and the serial rolls
+into place. The pointer tilt now carries the hex watermark with it at a lag,
+which is what sells the card as a solid object. Faint register rails give the
+empty half of the hero structure.
+
+Everything is off under `prefers-reduced-motion`, the canvases are decorative
+and `aria-hidden`, and every reveal is applied from script so the page reads
+in full without JavaScript.

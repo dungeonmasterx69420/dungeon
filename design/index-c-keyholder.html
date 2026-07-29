@@ -42,7 +42,14 @@ a{color:inherit;text-decoration:none}
 .signin:hover{color:var(--text)}
 
 /* ── Hero ──────────────────────────────────────────────────── */
-.hero{padding-block:52px 56px}
+.hero{position:relative;overflow:clip;padding-block:52px 56px}
+/* Register rails, the guides a card gets printed against. They give the
+   empty half of the hero a structure without lighting it up. */
+.hero::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 92px);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 34%,#000 62%,transparent);
+  mask-image:linear-gradient(180deg,transparent,#000 34%,#000 62%,transparent)}
+.hero>.shell{position:relative;z-index:1}
 .hero-grid{display:grid;gap:48px;align-items:center}
 .hero .label{margin-bottom:18px}
 h1{font-size:clamp(33px,6.4vw,54px);line-height:1.06;font-weight:600;letter-spacing:-.034em;text-wrap:balance;margin-bottom:16px}
@@ -75,9 +82,36 @@ h1{font-size:clamp(33px,6.4vw,54px);line-height:1.06;font-weight:600;letter-spac
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
 .key-chip::before{content:'';position:absolute;inset:5px 8px;border:1px solid rgba(4,21,14,.3);border-radius:2px}
 .key-chip::after{content:'';position:absolute;top:3px;bottom:3px;left:50%;width:1px;background:rgba(4,21,14,.3)}
-/* The house mark, pressed into the card rather than printed on it. */
+/* The house mark, pressed into the card rather than printed on it. It
+   lags behind the tilt, which is what sells the card as a solid object. */
 .key svg.key-hex{position:absolute;right:-52px;bottom:-64px;width:216px;height:216px;
-  fill:none;stroke:rgba(255,255,255,.05);stroke-width:1.4;pointer-events:none}
+  fill:none;stroke:rgba(255,255,255,.05);stroke-width:1.4;pointer-events:none;
+  translate:calc(var(--px,0) * -16px) calc(var(--py,0) * -16px);
+  transition:translate .35s cubic-bezier(.22,.61,.36,1)}
+
+/* Foil: one band of light crossing the card. Once when it is issued,
+   again whenever someone puts a pointer on it. */
+.key .key-foil{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none}
+.key .key-foil::after{content:'';position:absolute;top:-60%;bottom:-60%;left:0;width:30%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),rgba(52,211,153,.12),transparent);
+  transform:rotate(18deg) translateX(-220%)}
+.key.sweep .key-foil::after{animation:foil 1.4s cubic-bezier(.4,0,.25,1)}
+.key-stage:hover .key .key-foil::after{animation:foil 1.1s cubic-bezier(.4,0,.25,1)}
+@keyframes foil{
+  from{transform:rotate(18deg) translateX(-220%)}
+  to{transform:rotate(18deg) translateX(560%)}
+}
+
+/* Issue: the card is placed on the page rather than already sitting there. */
+.js .key{opacity:0;transform:translateY(28px) scale(.965)}
+.js .key.issued{opacity:1;transform:none;
+  transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .95s cubic-bezier(.16,1,.3,1)}
+
+/* ── Scroll reveal ─────────────────────────────────────────── */
+.js [data-reveal]{opacity:0;transform:translateY(14px);
+  transition:opacity .75s cubic-bezier(.22,.61,.36,1),transform .75s cubic-bezier(.22,.61,.36,1);
+  transition-delay:calc(var(--i,0)*70ms)}
+.js [data-reveal].in{opacity:1;transform:none}
 .key-rate{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
 .key-rate b{display:block;font-family:var(--sans);font-size:19px;font-weight:600;letter-spacing:-.02em;
   text-transform:none;color:var(--text);margin-top:5px}
@@ -145,7 +179,9 @@ footer{border-top:1px solid var(--line)}
 }
 
 @media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .js .key,.js [data-reveal]{opacity:1;transform:none}
+  .key .key-foil{display:none}
 }
 </style>
 </head>
@@ -186,9 +222,10 @@ footer{border-top:1px solid var(--line)}
             <b>A month of everything</b>
           </div>
           <div class="key-foot">
-            <span class="key-serial"><u>DGN</u> 0000 0000</span>
+            <span class="key-serial"><u>DGN</u> <span id="serial">0117 3049</span></span>
             <span>Member</span>
           </div>
+          <span class="key-foil"></span>
         </div>
       </div>
     </div>
@@ -272,23 +309,74 @@ footer{border-top:1px solid var(--line)}
     if(d && d.authenticated){ document.getElementById('logoLink').setAttribute('href','/dashboard.html'); }
   }).catch(()=>{});
 
-  // The key tilts to the pointer. Fine pointers only, and never when
-  // the visitor has asked for reduced motion.
   (function(){
+    var still = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
     var key = document.getElementById('key');
     var stage = key && key.parentElement;
-    if(!stage) return;
+
+    /* ── Reveal on scroll ──────────────────────────────────── */
+    var targets = document.querySelectorAll('.band .label, .app, .apps-note, .steps li, .faq details');
+    if(targets.length && 'IntersectionObserver' in window){
+      document.documentElement.classList.add('js');
+      var group = null, i = 0;
+      targets.forEach(function(el){
+        var section = el.closest('section');
+        if(section !== group){ group = section; i = 0; }
+        el.setAttribute('data-reveal','');
+        el.style.setProperty('--i', i++);
+      });
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if(!e.isIntersecting) return;
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        });
+      },{rootMargin:'0px 0px -10% 0px'});
+      targets.forEach(function(el){ io.observe(el); });
+    }
+
+    if(!key || !stage) return;
+
+    /* ── Issue the card ────────────────────────────────────── */
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        key.classList.add('issued');
+        if(still) return;
+        setTimeout(function(){ key.classList.add('sweep'); }, 420);
+        // Drop the class once it has played, so the hover sweep can restart cleanly.
+        setTimeout(function(){ key.classList.remove('sweep'); }, 2000);
+      });
+    });
+
+    /* The serial settles into place while the card is being issued. */
+    (function(){
+      var out = document.getElementById('serial');
+      if(!out || still) return;
+      var target = out.textContent, end = performance.now() + 900;
+      (function roll(now){
+        if(now >= end){ out.textContent = target; return; }
+        out.textContent = target.replace(/\d/g, function(){ return (Math.random() * 10) | 0; });
+        setTimeout(function(){ requestAnimationFrame(roll); }, 55);
+      })(performance.now());
+    })();
+
+    /* ── Tilt ──────────────────────────────────────────────────
+       Fine pointers only, and never when reduced motion is asked for. */
+    if(still) return;
     if(!window.matchMedia('(hover:hover) and (pointer:fine)').matches) return;
-    if(window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
 
     stage.addEventListener('pointermove', function(e){
       var r = key.getBoundingClientRect();
       var x = (e.clientX - r.left) / r.width - .5;
       var y = (e.clientY - r.top) / r.height - .5;
+      key.style.setProperty('--px', x.toFixed(3));
+      key.style.setProperty('--py', y.toFixed(3));
       key.style.transition = 'transform .12s linear';
       key.style.transform = 'rotateY(' + (x * 9).toFixed(2) + 'deg) rotateX(' + (-y * 9).toFixed(2) + 'deg)';
     });
     stage.addEventListener('pointerleave', function(){
+      key.style.setProperty('--px', 0);
+      key.style.setProperty('--py', 0);
       key.style.transition = '';
       key.style.transform = '';
     });
