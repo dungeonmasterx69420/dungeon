@@ -3,185 +3,179 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="color-scheme" content="dark"/>
-<meta name="theme-color" content="#060908"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dungeon · Your account</title>
 <link rel="manifest" href="/site.webmanifest"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-<title>Dungeon · Account</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/dungeon.css"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{--bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--s3:#1a2422;--bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);--g:#34d399;--gb:rgba(52,211,153,.08);--txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;--red:#f87171;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif}
-html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans)}
-.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
-.logo{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;color:var(--g);text-decoration:none;letter-spacing:.04em}
-.back{font-size:12px;color:var(--t2);text-decoration:none;font-family:var(--mono)}
-.back:hover{color:var(--g)}
-.page{max-width:500px;margin:0 auto;padding:28px 16px 60px}
-.page-title{font-size:20px;font-weight:700;margin-bottom:4px}
-.page-sub{font-size:13px;color:var(--t2);margin-bottom:26px;line-height:1.6}
+/* .card, .field, .hint, .chip, .banner, .avatar-pick, .cdot, .btn and the
+   page chrome all come from /dungeon.css. */
+.avatar-wrap{text-align:center;padding-bottom:6px}
+.avatar-hint{font-family:var(--mono);font-size:11px;color:var(--faint);margin:12px 0 14px}
 
-/* Card sections */
-.card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:20px;margin-bottom:16px}
-.card-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin-bottom:16px;font-family:var(--mono);display:flex;align-items:center;gap:8px}
+.device-group+.device-group{margin-top:18px}
+.device-group-label{font-size:12.5px;font-weight:500;color:var(--text2);margin-bottom:9px}
 
-/* Fields */
-.field{margin-bottom:14px}
-.field:last-child{margin-bottom:0}
-.field label{display:block;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:5px}
-.field input{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:14px;padding:11px 13px;outline:none;transition:border-color .15s}
-.field input:focus{border-color:var(--g)}
-.field input::placeholder{color:var(--t3)}
-.hint{font-size:10px;color:var(--t3);margin-top:4px;font-family:var(--mono)}
-.hint.ok{color:var(--g)}
-.hint.bad{color:var(--red)}
+.save-bar{margin-top:24px;padding-top:22px;border-top:1px solid var(--line)}
 
-/* Avatar */
-.avatar-wrap{text-align:center;margin-bottom:4px}
-.avatar-circle{width:80px;height:80px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#000;cursor:pointer;border:2px solid var(--bdr2);position:relative;overflow:hidden;transition:border-color .2s}
-.avatar-circle:hover{border-color:var(--g)}
-.avatar-circle img{width:100%;height:100%;object-fit:cover}
-.avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;opacity:0;font-size:10px;font-weight:600;color:#fff;text-align:center;transition:opacity .2s}
-.avatar-circle:hover .avatar-overlay{opacity:1}
-.avatar-hint{font-size:11px;color:var(--t3);margin-bottom:12px;font-family:var(--mono)}
-.color-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.cdot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .15s}
-.cdot:hover{transform:scale(1.15)}
-.cdot.on{border-color:#fff}
-
-/* Device chips */
-.device-group{margin-bottom:18px}
-.device-group:last-child{margin-bottom:0}
-.device-group-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin-bottom:10px;display:flex;align-items:center;gap:8px;font-family:var(--mono)}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{font-size:12px;font-weight:500;padding:7px 14px;border-radius:20px;border:1px solid var(--bdr2);color:var(--t2);cursor:pointer;background:var(--s2);transition:all .15s;user-select:none}
-.chip:hover{border-color:var(--g);color:var(--g)}
-.chip.on{background:var(--gb);border-color:var(--g);color:var(--g)}
-
-/* Buttons */
-.btn{width:100%;padding:13px;border:none;border-radius:8px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.btn-g{background:var(--g);color:#000}
-.btn-g:hover:not(:disabled){opacity:.85}
-.btn-sm{width:auto;padding:10px 18px;font-size:13px}
-
-.banner{display:none;font-size:12px;padding:10px 13px;border-radius:8px;margin-bottom:14px;line-height:1.5}
-.banner-err{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red)}
-.banner-ok{background:var(--gb);border:1px solid var(--bdr2);color:var(--g)}
-
-.save-bar{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:16px 0 4px;margin-top:8px}
-
-@media(max-width:480px){.page{padding:20px 14px 50px}}
+@media(min-width:880px){
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+  .cols .card+.card{margin-top:16px}
+  .save-bar{display:flex;justify-content:flex-end}
+  .save-bar .btn{min-width:220px}
+}
 </style>
-<style>/* unified header logo */.logo{font-family:'Press Start 2P',monospace!important;font-size:11px!important;font-weight:400!important;letter-spacing:.04em!important;color:#34d399!important;text-decoration:none!important;text-shadow:0 0 10px rgba(52,211,153,.5)!important;line-height:1.4!important}.logo svg{width:12px;height:12px;margin-right:7px;vertical-align:-1px;fill:none;stroke:currentColor;stroke-width:2.2;filter:drop-shadow(0 0 5px rgba(52,211,153,.5))}</style>
 </head>
 <body>
-<div class="topbar">
-  <a href="/dashboard.html" class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 20.5 7.1v9.8L12 21.8 3.5 16.9V7.1Z"/></svg>DUNGEON</a>
-  <a href="/dashboard.html" class="back">← Dashboard</a>
-</div>
 
-<div class="page">
-  <div class="page-title">Your Account</div>
-  <div class="page-sub">Update your profile, devices, and password. Changes save when you tap the button at the bottom.</div>
+<header class="topbar sticky">
+  <div class="wrap wrap-lg row">
+    <a href="/dashboard.html" class="brand" id="logoLink">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </a>
+    <nav class="topnav">
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/messages.html" class="has-badge">Messages<span class="count-badge" id="msgCount">0</span></a>
+      <button type="button" onclick="signOut()">Sign out</button>
+    </nav>
+  </div>
+</header>
 
-  <div class="banner banner-ok" id="okBanner"></div>
-  <div class="banner banner-err" id="errBanner"></div>
+<main class="page" data-requires-auth>
+  <div class="wrap wrap-lg">
 
-  <!-- Profile -->
-  <div class="card">
-    <div class="card-title">👤 Profile</div>
-    <div class="avatar-wrap">
-      <div class="avatar-circle" id="avatarCircle" onclick="document.getElementById('avatarInput').click()">
-        <span id="avatarInitials">?</span>
-        <div class="avatar-overlay">Change<br/>Photo</div>
-      </div>
-      <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="previewAvatar(this)"/>
-      <div class="avatar-hint">Tap to upload · JPG or PNG · max 5MB</div>
-      <div class="color-row" id="colorRow"></div>
+    <div class="page-head">
+      <h1 class="page-title">Your account</h1>
+      <p class="page-sub">Your name, your devices, your password. Nothing saves until you say so.</p>
     </div>
-    <div class="field" style="margin-top:16px">
-      <label>Screen Name</label>
-      <input type="text" id="screen_name" placeholder="yourcoolname" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
-      <div class="hint" id="sn-hint">3-20 characters. Letters, numbers and underscores only.</div>
+
+    <div class="banner banner-ok" id="okBanner"></div>
+    <div class="banner banner-err" id="errBanner"></div>
+
+    <div class="cols">
+      <div>
+        <div class="card">
+          <div class="card-title">Profile</div>
+          <div class="avatar-wrap">
+            <button class="avatar-pick" id="avatarCircle" onclick="document.getElementById('avatarInput').click()">
+              <span id="avatarInitials">?</span>
+              <span class="avatar-overlay">Change<br/>photo</span>
+            </button>
+            <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="previewAvatar(this)"/>
+            <div class="avatar-hint">JPG or PNG, up to 5 MB</div>
+            <div class="color-row" id="colorRow"></div>
+          </div>
+          <div class="field mt-2">
+            <label for="screen_name">Username</label>
+            <input type="text" id="screen_name" placeholder="alexmercer" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
+            <div class="hint" id="sn-hint">Letters, numbers and underscores. 3–20 characters.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Password</div>
+          <div class="field">
+            <label for="cur_pw">Current password</label>
+            <input type="password" id="cur_pw" placeholder="••••••••" autocomplete="current-password"/>
+          </div>
+          <div class="field">
+            <label for="new_pw">New password</label>
+            <input type="password" id="new_pw" placeholder="••••••••" autocomplete="new-password" oninput="validatePw()"/>
+            <div class="hint" id="pw-hint">Leave these blank to keep the password you have.</div>
+          </div>
+          <div class="field">
+            <label for="new_pw2">New password again</label>
+            <input type="password" id="new_pw2" placeholder="••••••••" autocomplete="new-password" oninput="validatePw()"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Your devices</div>
+        <p class="hint" style="margin:-8px 0 16px">This is how we know which setup guides to point you at.</p>
+
+        <div class="device-group">
+          <div class="device-group-label">Phone</div>
+          <div class="chips" id="dg-phone">
+            <button type="button" class="chip" data-group="phone" data-val="iphone" onclick="toggleChip(this)">iPhone</button>
+            <button type="button" class="chip" data-group="phone" data-val="android_phone" onclick="toggleChip(this)">Android</button>
+            <button type="button" class="chip" data-group="phone" data-val="no_phone" onclick="toggleExclusive(this,'phone')">None</button>
+          </div>
+        </div>
+        <div class="device-group">
+          <div class="device-group-label">Tablet</div>
+          <div class="chips" id="dg-tablet">
+            <button type="button" class="chip" data-group="tablet" data-val="ipad" onclick="toggleChip(this)">iPad</button>
+            <button type="button" class="chip" data-group="tablet" data-val="android_tablet" onclick="toggleChip(this)">Android tablet</button>
+            <button type="button" class="chip" data-group="tablet" data-val="no_tablet" onclick="toggleExclusive(this,'tablet')">None</button>
+          </div>
+        </div>
+        <div class="device-group">
+          <div class="device-group-label">Computer</div>
+          <div class="chips" id="dg-computer">
+            <button type="button" class="chip" data-group="computer" data-val="windows" onclick="toggleChip(this)">Windows</button>
+            <button type="button" class="chip" data-group="computer" data-val="mac" onclick="toggleChip(this)">Mac</button>
+            <button type="button" class="chip" data-group="computer" data-val="linux" onclick="toggleChip(this)">Linux</button>
+            <button type="button" class="chip" data-group="computer" data-val="chromebook" onclick="toggleChip(this)">Chromebook</button>
+            <button type="button" class="chip" data-group="computer" data-val="no_computer" onclick="toggleExclusive(this,'computer')">None</button>
+          </div>
+        </div>
+        <div class="device-group">
+          <div class="device-group-label">TV</div>
+          <div class="chips" id="dg-tv">
+            <button type="button" class="chip" data-group="tv" data-val="firestick" onclick="toggleChip(this)">Fire Stick</button>
+            <button type="button" class="chip" data-group="tv" data-val="android_tv" onclick="toggleChip(this)">Android TV</button>
+            <button type="button" class="chip" data-group="tv" data-val="apple_tv" onclick="toggleChip(this)">Apple TV</button>
+            <button type="button" class="chip" data-group="tv" data-val="roku" onclick="toggleChip(this)">Roku</button>
+            <button type="button" class="chip" data-group="tv" data-val="smart_tv" onclick="toggleChip(this)">Smart TV</button>
+            <button type="button" class="chip" data-group="tv" data-val="chromecast" onclick="toggleChip(this)">Chromecast</button>
+            <button type="button" class="chip" data-group="tv" data-val="nvidia_shield" onclick="toggleChip(this)">Shield</button>
+            <button type="button" class="chip" data-group="tv" data-val="no_tv" onclick="toggleExclusive(this,'tv')">None</button>
+          </div>
+        </div>
+        <div class="device-group">
+          <div class="device-group-label">Console</div>
+          <div class="chips" id="dg-console">
+            <button type="button" class="chip" data-group="console" data-val="ps4" onclick="toggleChip(this)">PS4</button>
+            <button type="button" class="chip" data-group="console" data-val="ps5" onclick="toggleChip(this)">PS5</button>
+            <button type="button" class="chip" data-group="console" data-val="xbox" onclick="toggleChip(this)">Xbox</button>
+            <button type="button" class="chip" data-group="console" data-val="no_console" onclick="toggleExclusive(this,'console')">None</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="save-bar">
+      <button class="btn btn-primary btn-wide" id="saveBtn" onclick="saveAll()">Save changes</button>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap wrap-lg foot">
+    <div class="spread">
+      <span>© 2026 Dungeon</span>
+      <nav id="footNav">
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/guides.html">Guides</a>
+        <a href="/forum.html">Forum</a>
+        <a href="/support.html">Support</a>
+      </nav>
     </div>
   </div>
+</footer>
 
-  <!-- Devices -->
-  <div class="card">
-    <div class="card-title">📺 Your Devices</div>
-    <div class="device-group">
-      <div class="device-group-label">📱 Phone</div>
-      <div class="chips" id="dg-phone">
-        <div class="chip" data-group="phone" data-val="iphone" onclick="toggleChip(this)">iPhone</div>
-        <div class="chip" data-group="phone" data-val="android_phone" onclick="toggleChip(this)">Android</div>
-        <div class="chip" data-group="phone" data-val="no_phone" onclick="toggleExclusive(this,'phone')">None</div>
-      </div>
-    </div>
-    <div class="device-group">
-      <div class="device-group-label">📱 Tablet</div>
-      <div class="chips" id="dg-tablet">
-        <div class="chip" data-group="tablet" data-val="ipad" onclick="toggleChip(this)">iPad</div>
-        <div class="chip" data-group="tablet" data-val="android_tablet" onclick="toggleChip(this)">Android Tablet</div>
-        <div class="chip" data-group="tablet" data-val="no_tablet" onclick="toggleExclusive(this,'tablet')">None</div>
-      </div>
-    </div>
-    <div class="device-group">
-      <div class="device-group-label">💻 Computer</div>
-      <div class="chips" id="dg-computer">
-        <div class="chip" data-group="computer" data-val="windows" onclick="toggleChip(this)">Windows</div>
-        <div class="chip" data-group="computer" data-val="mac" onclick="toggleChip(this)">Mac</div>
-        <div class="chip" data-group="computer" data-val="linux" onclick="toggleChip(this)">Linux</div>
-        <div class="chip" data-group="computer" data-val="chromebook" onclick="toggleChip(this)">Chromebook</div>
-        <div class="chip" data-group="computer" data-val="no_computer" onclick="toggleExclusive(this,'computer')">None</div>
-      </div>
-    </div>
-    <div class="device-group">
-      <div class="device-group-label">📺 TV / Streaming</div>
-      <div class="chips" id="dg-tv">
-        <div class="chip" data-group="tv" data-val="firestick" onclick="toggleChip(this)">Fire Stick</div>
-        <div class="chip" data-group="tv" data-val="android_tv" onclick="toggleChip(this)">Android TV</div>
-        <div class="chip" data-group="tv" data-val="apple_tv" onclick="toggleChip(this)">Apple TV</div>
-        <div class="chip" data-group="tv" data-val="roku" onclick="toggleChip(this)">Roku</div>
-        <div class="chip" data-group="tv" data-val="smart_tv" onclick="toggleChip(this)">Smart TV</div>
-        <div class="chip" data-group="tv" data-val="chromecast" onclick="toggleChip(this)">Chromecast</div>
-        <div class="chip" data-group="tv" data-val="nvidia_shield" onclick="toggleChip(this)">Shield</div>
-        <div class="chip" data-group="tv" data-val="no_tv" onclick="toggleExclusive(this,'tv')">None</div>
-      </div>
-    </div>
-    <div class="device-group">
-      <div class="device-group-label">🎮 Gaming Console</div>
-      <div class="chips" id="dg-console">
-        <div class="chip" data-group="console" data-val="ps4" onclick="toggleChip(this)">PS4</div>
-        <div class="chip" data-group="console" data-val="ps5" onclick="toggleChip(this)">PS5</div>
-        <div class="chip" data-group="console" data-val="xbox" onclick="toggleChip(this)">Xbox</div>
-        <div class="chip" data-group="console" data-val="no_console" onclick="toggleExclusive(this,'console')">None</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Password -->
-  <div class="card">
-    <div class="card-title">🔒 Change Password</div>
-    <div class="field">
-      <label>Current Password</label>
-      <input type="password" id="cur_pw" placeholder="Your current password" autocomplete="current-password"/>
-    </div>
-    <div class="field">
-      <label>New Password</label>
-      <input type="password" id="new_pw" placeholder="8+ chars, 1 uppercase, 1 special" autocomplete="new-password" oninput="validatePw()"/>
-      <div class="hint" id="pw-hint">Leave blank to keep your current password.</div>
-    </div>
-    <div class="field">
-      <label>Confirm New Password</label>
-      <input type="password" id="new_pw2" placeholder="Re-enter new password" autocomplete="new-password" oninput="validatePw()"/>
-    </div>
-  </div>
-
-  <div class="save-bar">
-    <button class="btn btn-g" id="saveBtn" onclick="saveAll()">Save Changes</button>
-  </div>
-</div>
-
+<script src="/dungeon-nav.js" defer></script>
 <script>
 const COLORS = ['#60a5fa','#34d399','#f87171','#fbbf24','#a78bfa','#fb7185','#38bdf8','#4ade80'];
 let selectedColor = COLORS[0];
@@ -192,8 +186,9 @@ let _snValid = true; // valid until changed to something taken
 
 // Build color dots
 COLORS.forEach(c => {
-  const dot = document.createElement('div');
+  const dot = document.createElement('button');
   dot.className = 'cdot' + (c === selectedColor ? ' on' : '');
+  dot.type = 'button';
   dot.style.background = c;
   dot.onclick = () => {
     selectedColor = c;
@@ -210,17 +205,17 @@ function validateSn(input) {
   input.value = val;
   const hint = document.getElementById('sn-hint');
   _snValid = false;
-  if (!val) { hint.textContent = '3-20 characters required.'; hint.className = 'hint bad'; return; }
-  if (val.length < 3) { hint.textContent = 'Too short - minimum 3 characters'; hint.className = 'hint bad'; return; }
+  if (!val) { hint.textContent = 'Pick a username.'; hint.className = 'hint bad'; return; }
+  if (val.length < 3) { hint.textContent = 'Too short. Minimum 3 characters.'; hint.className = 'hint bad'; return; }
   if (_originalSn && val.toLowerCase() === _originalSn.toLowerCase()) {
-    hint.textContent = '@'+val+' - your current name'; hint.className = 'hint ok'; _snValid = true; return;
+    hint.textContent = '@'+val+' is yours already'; hint.className = 'hint ok'; _snValid = true; return;
   }
   hint.textContent = 'Checking availability…'; hint.className = 'hint';
   clearTimeout(_snTimer);
   _snTimer = setTimeout(async () => {
     const r = await fetch('/api/check/screen-name/'+encodeURIComponent(val)).then(r=>r.json()).catch(()=>({available:false}));
-    if (r.available) { hint.textContent = '@'+val+' is available ✓'; hint.className = 'hint ok'; _snValid = true; }
-    else { hint.textContent = '@'+val+' is already taken - try another'; hint.className = 'hint bad'; _snValid = false; }
+    if (r.available) { hint.textContent = '@'+val+' is available'; hint.className = 'hint ok'; _snValid = true; }
+    else { hint.textContent = '@'+val+' is taken. Try another.'; hint.className = 'hint bad'; _snValid = false; }
   }, 500);
 }
 
@@ -228,12 +223,12 @@ function validatePw() {
   const pw = document.getElementById('new_pw').value;
   const pw2 = document.getElementById('new_pw2').value;
   const hint = document.getElementById('pw-hint');
-  if (!pw && !pw2) { hint.textContent = 'Leave blank to keep your current password.'; hint.className = 'hint'; return true; }
-  if (pw.length < 8) { hint.textContent = 'At least 8 characters'; hint.className = 'hint bad'; return false; }
-  if (!/[A-Z]/.test(pw)) { hint.textContent = 'Needs at least one uppercase letter'; hint.className = 'hint bad'; return false; }
-  if (!/[^a-zA-Z0-9]/.test(pw)) { hint.textContent = 'Needs at least one special character'; hint.className = 'hint bad'; return false; }
-  if (pw2 && pw !== pw2) { hint.textContent = 'Passwords don\u2019t match'; hint.className = 'hint bad'; return false; }
-  hint.textContent = 'Looks good \u2713'; hint.className = 'hint ok'; return true;
+  if (!pw && !pw2) { hint.textContent = 'Leave these blank to keep the password you have.'; hint.className = 'hint'; return true; }
+  if (pw.length < 8) { hint.textContent = 'Use at least 8 characters.'; hint.className = 'hint bad'; return false; }
+  if (!/[A-Z]/.test(pw)) { hint.textContent = 'Include a capital letter.'; hint.className = 'hint bad'; return false; }
+  if (!/[^a-zA-Z0-9]/.test(pw)) { hint.textContent = 'Include a symbol.'; hint.className = 'hint bad'; return false; }
+  if (pw2 && pw !== pw2) { hint.textContent = 'Those two do not match.'; hint.className = 'hint bad'; return false; }
+  hint.textContent = 'That will do.'; hint.className = 'hint ok'; return true;
 }
 
 function toggleChip(el) {
@@ -256,7 +251,7 @@ function getDevices() {
 function previewAvatar(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 5*1024*1024) { alert('Image must be under 5MB.'); return; }
+  if (file.size > 5*1024*1024) { alert('That image is over 5 MB.'); return; }
   const reader = new FileReader();
   reader.onload = e => {
     avatarBase64 = e.target.result;
@@ -264,7 +259,7 @@ function previewAvatar(input) {
     let img = circle.querySelector('img');
     if (!img) { img = document.createElement('img'); circle.insertBefore(img, circle.firstChild); }
     img.src = avatarBase64;
-    document.getElementById('avatarInitials').style.display = 'none';
+    document.getElementById('avatarInitials').classList.add('hidden');
     circle.style.background = 'transparent';
   };
   reader.readAsDataURL(file);
@@ -288,7 +283,7 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
     const circle = document.getElementById('avatarCircle');
     const img = document.createElement('img'); img.src = p.avatar_url;
     circle.insertBefore(img, circle.firstChild);
-    document.getElementById('avatarInitials').style.display = 'none';
+    document.getElementById('avatarInitials').classList.add('hidden');
     circle.style.background = 'transparent';
   }
   // Preselect devices
@@ -318,7 +313,7 @@ async function saveAll() {
 
   const sn = document.getElementById('screen_name').value.trim();
   if (sn.length < 3 || !_snValid) {
-    err.textContent = 'Please choose a valid, available screen name.'; err.style.display='block';
+    err.textContent = 'Choose an available username first.'; err.style.display='block';
     window.scrollTo(0,0); return;
   }
 
@@ -328,7 +323,7 @@ async function saveAll() {
   const newPw2 = document.getElementById('new_pw2').value;
   const wantsPwChange = newPw || newPw2;
   if (wantsPwChange) {
-    if (!validatePw()) { err.textContent = 'Fix the password fields before saving.'; err.style.display='block'; return; }
+    if (!validatePw()) { err.textContent = 'The new password does not meet the rules yet.'; err.style.display='block'; return; }
     if (!curPw) { err.textContent = 'Enter your current password to change it.'; err.style.display='block'; return; }
   }
 
@@ -351,7 +346,7 @@ async function saveAll() {
     const profileData = await profileRes.json();
     if (!profileRes.ok) {
       err.textContent = profileData.error || 'Failed to save profile.'; err.style.display='block';
-      btn.disabled=false; btn.textContent='Save Changes'; return;
+      btn.disabled=false; btn.textContent='Save changes'; return;
     }
 
     // Devices
@@ -369,24 +364,25 @@ async function saveAll() {
       const pwData = await pwRes.json();
       if (!pwRes.ok) {
         err.textContent = pwData.error || 'Password change failed.'; err.style.display='block';
-        btn.disabled=false; btn.textContent='Save Changes'; return;
+        btn.disabled=false; btn.textContent='Save changes'; return;
       }
       document.getElementById('cur_pw').value='';
       document.getElementById('new_pw').value='';
       document.getElementById('new_pw2').value='';
-      document.getElementById('pw-hint').textContent='Leave blank to keep your current password.';
+      document.getElementById('pw-hint').textContent='Leave these blank to keep the password you have.';
       document.getElementById('pw-hint').className='hint';
     }
 
     _originalSn = sn;
-    ok.textContent = 'Your changes have been saved.'; ok.style.display='block';
+    ok.textContent = 'Saved.'; ok.style.display='block';
     window.scrollTo(0,0);
-    btn.disabled=false; btn.textContent='Save Changes';
+    btn.disabled=false; btn.textContent='Save changes';
   } catch(e) {
-    err.textContent = 'Something went wrong. Please try again.'; err.style.display='block';
-    btn.disabled=false; btn.textContent='Save Changes';
+    err.textContent = 'Something went wrong. Try again.'; err.style.display='block';
+    btn.disabled=false; btn.textContent='Save changes';
   }
 }
 </script>
+<script src="/notif-bell.js"></script>
 </body>
 </html>

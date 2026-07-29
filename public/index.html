@@ -105,8 +105,7 @@ h1{font-size:clamp(33px,6.4vw,54px);line-height:1.06;font-weight:600;letter-spac
   transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .95s cubic-bezier(.16,1,.3,1)}
 
 /* ── Quiet sections ────────────────────────────────────────── */
-.band{border-top:1px solid var(--line);padding-block:42px}
-.band .label{padding-bottom:20px}
+/* .band, .band-split and .faq come from /dungeon.css. */
 
 /* .row-item carries the layout; only the type is tuned for a landing page,
    where the second line is a description rather than metadata. */
@@ -117,20 +116,6 @@ h1{font-size:clamp(33px,6.4vw,54px);line-height:1.06;font-weight:600;letter-spac
 .rows-note{font-size:13px;line-height:1.65;color:var(--faint);max-width:56ch;padding-top:16px;text-wrap:pretty}
 
 .step-item p{max-width:46ch}
-
-.faq details{border-bottom:1px solid var(--line)}
-.faq details:last-child{border-bottom:0}
-.faq summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;
-  padding-block:16px;cursor:pointer;font-size:14.5px;font-weight:500;color:var(--text2);transition:color .18s}
-.faq summary::-webkit-details-marker{display:none}
-.faq summary:hover{color:var(--text)}
-.faq details:first-child summary{padding-top:0}
-.faq summary .pm{font-family:var(--mono);font-size:14px;color:var(--faint);flex:none}
-.faq summary .pm::before{content:'+'}
-.faq details[open] summary{color:var(--text);font-weight:600;padding-bottom:7px}
-.faq details[open] .pm{color:var(--accent)}
-.faq details[open] .pm::before{content:'\2212'}
-.faq p{font-size:13.5px;line-height:1.65;color:var(--muted);max-width:54ch;padding-bottom:18px}
 
 /* ── Scroll reveal ─────────────────────────────────────────── */
 .js [data-reveal]{opacity:0;transform:translateY(14px);
@@ -146,9 +131,6 @@ h1{font-size:clamp(33px,6.4vw,54px);line-height:1.06;font-weight:600;letter-spac
   .cta{flex-direction:row}
   .btn-lg{display:inline-block}
   .hero .lede{font-size:17px}
-  .band{padding-block:60px}
-  .band-split{display:grid;grid-template-columns:190px 1fr;gap:50px}
-  .band-split .label{padding-bottom:0}
 }
 @media(min-width:1000px){
   .key{max-width:400px}

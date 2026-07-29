@@ -1,114 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <meta charset="UTF-8"/>
-  <meta name="color-scheme" content="dark"/>
-<meta name="theme-color" content="#060908"/>
+<meta charset="UTF-8"/>
+<meta name="color-scheme" content="dark"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dungeon &middot; Stremio on iPhone</title>
 <link rel="manifest" href="/site.webmanifest"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon · DungeonStream Setup</title>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    :root{--void:#060908;--stone:#0d1311;--moss:#141c19;--raise:#172019;--ember:#34d399;--ember-soft:rgba(52,211,153,.14);--border:rgba(52,211,153,.12);--border2:rgba(52,211,153,.28);--ash:#6f8f84;--ash2:#94a3a0;--bone:#dce8e3;--red:#f87171;--amber:#fbbf24;--display:'Press Start 2P',monospace;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace}
-    html,body{min-height:100vh}
-    body{background:var(--void);color:var(--bone);font-family:var(--sans);position:relative}
-    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,transparent 1px 92px);-webkit-mask-image:linear-gradient(180deg,#000 0,#000 30%,transparent 74%);mask-image:linear-gradient(180deg,#000 0,#000 30%,transparent 74%)}
-    .topbar{position:sticky;top:0;z-index:3;background:rgba(13,19,17,.85);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(8px)}
-    .logo{font-family:var(--display);font-size:11px;color:var(--ember);letter-spacing:.04em;text-decoration:none;text-shadow:0 0 10px rgba(52,211,153,.5)}
-    .back-link{font-size:13px;color:var(--ash);text-decoration:none;font-weight:500;transition:color .2s}
-    .back-link:hover{color:var(--bone)}
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/dungeon.css"/>
+<style>
+/* .card, .steps, .code-row, .notice, .toast, .btn and the page chrome
+   come from /dungeon.css. What is left is the phone: these screens are
+   drawn rather than screenshotted, so they stay iOS-coloured on purpose
+   - a light phone against a dark page is the point. */
 
-    .page{position:relative;z-index:2;max-width:560px;margin:0 auto;padding:32px 18px 70px}
-    .page-head{display:flex;align-items:center;gap:13px;margin-bottom:9px}
-    .page-sigil{font-size:23px}
-    .page-title{font-family:var(--display);font-size:13px;color:var(--bone);line-height:1.6;text-shadow:0 0 16px rgba(52,211,153,.3)}
-    .page-sub{font-size:14px;color:var(--ash2);margin-bottom:26px;line-height:1.6}
+.step-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}
+.step-card+.step-card{margin-top:12px}
+.step-top{display:flex;align-items:center;gap:13px;margin-bottom:16px}
+.step-num{width:30px;height:30px;border-radius:50%;border:1px solid rgba(52,211,153,.35);
+  background:rgba(52,211,153,.08);display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:12px;color:var(--accent);flex:none}
+.step-title{font-size:15.5px;font-weight:600;letter-spacing:-.01em}
 
-    .step-card{background:linear-gradient(180deg, rgba(23,32,25,.55), rgba(13,19,17,.55));border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;backdrop-filter:blur(4px)}
-    .step-top{display:flex;align-items:center;gap:13px;margin-bottom:15px}
-    .step-num{width:33px;height:33px;border-radius:50%;background:var(--ember-soft);border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:12px;color:var(--ember);flex:none}
-    .step-title{font-size:15px;font-weight:700}
+.instr{font-size:13.5px;line-height:1.7;color:var(--muted);margin:0 0 10px;text-wrap:pretty}
+.instr strong{color:var(--text)}
+.instr:last-child{margin-bottom:0}
+.instr a{color:var(--accent)}
 
-    .phone{width:100%;max-width:260px;margin:0 auto 16px;display:block}
-    .phone-frame{background:#1a1a1a;border-radius:34px;padding:11px;border:2px solid #2a2a2a;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(52,211,153,.06)}
-    .phone-screen{background:#fff;border-radius:25px;overflow:hidden;aspect-ratio:9/19;display:flex;flex-direction:column;position:relative}
-    .safari-bar{background:#f2f2f7;padding:8px 11px;display:flex;align-items:center;gap:8px;flex:none;border-bottom:1px solid #d1d1d6}
-    .safari-url{flex:1;background:#e5e5ea;border-radius:7px;padding:6px 9px;font-family:var(--mono);font-size:10px;color:#3c3c43;text-align:center}
-    .safari-content{flex:1;display:flex;align-items:center;justify-content:center;background:#f2f2f7;flex-direction:column;gap:9px;padding:18px}
-    .st-logo{width:60px;height:60px;border-radius:13px;background:linear-gradient(135deg,#7b2ff7,#a855f7);display:flex;align-items:center;justify-content:center;font-size:26px}
-    .st-name{font-size:12px;font-weight:600;color:#1c1c1e}
-    .st-sub{font-size:10px;color:#8e8e93;text-align:center}
-    .share-sheet{position:absolute;bottom:0;left:0;right:0;background:#f2f2f7;border-radius:13px 13px 0 0;padding:11px;border-top:1px solid #d1d1d6}
-    .share-title{font-size:10px;color:#8e8e93;text-align:center;margin-bottom:9px}
-    .share-icons{display:flex;gap:5px;overflow-x:auto;padding-bottom:3px}
-    .share-icon{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:50px}
-    .share-ic{width:42px;height:42px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex:none;background:#e9e9eb}
-    .share-lbl{font-size:8px;color:#3c3c43;text-align:center;line-height:1.2}
-    .ring{box-shadow:0 0 0 3px #34d399,0 0 0 5px rgba(52,211,153,.3)}
-    .st-screen{background:#0d0d0d;flex:1;display:flex;flex-direction:column}
-    .st-nav{background:#1a1a1a;padding:8px 11px;flex:none}
-    .st-nav-title{color:#fff;font-size:11px;font-weight:600}
-    .st-search{background:#1a1a1a;border:1px solid #34d399;border-radius:7px;padding:6px 9px;display:flex;align-items:center;gap:6px;margin:8px 11px;flex:none}
-    .st-search-txt{font-family:var(--mono);font-size:10px;color:#34d399;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-    .st-row{display:flex;align-items:center;gap:9px;padding:8px 11px;border-bottom:1px solid #2a2a2a;flex:none}
-    .st-ic{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,#34d399,#059669);display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
-    .st-info{flex:1}
-    .st-rname{font-size:10px;font-weight:600;color:#fff}
-    .st-rsub{font-size:8px;color:#8e8e93}
-    .st-pill{background:#34d399;border-radius:6px;padding:4px 8px;font-size:8px;font-weight:700;color:#0b0f0e}
+  .phone{width:100%;max-width:260px;margin:0 auto 16px;display:block}
+  .phone-frame{background:#1a1a1a;border-radius:34px;padding:11px;border:2px solid #2a2a2a;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(52,211,153,.06)}
+  .phone-screen{background:#fff;border-radius:25px;overflow:hidden;aspect-ratio:9/19;display:flex;flex-direction:column;position:relative}
+  .safari-bar{background:#f2f2f7;padding:8px 11px;display:flex;align-items:center;gap:8px;flex:none;border-bottom:1px solid #d1d1d6}
+  .safari-url{flex:1;background:#e5e5ea;border-radius:7px;padding:6px 9px;font-family:var(--mono);font-size:10px;color:#3c3c43;text-align:center}
+  .safari-content{flex:1;display:flex;align-items:center;justify-content:center;background:#f2f2f7;flex-direction:column;gap:9px;padding:18px}
+  .st-logo{width:60px;height:60px;border-radius:13px;background:linear-gradient(135deg,#7b2ff7,#a855f7);display:flex;align-items:center;justify-content:center;font-size:26px}
+  .st-name{font-size:12px;font-weight:600;color:#1c1c1e}
+  .st-sub{font-size:10px;color:#8e8e93;text-align:center}
+  .share-sheet{position:absolute;bottom:0;left:0;right:0;background:#f2f2f7;border-radius:13px 13px 0 0;padding:11px;border-top:1px solid #d1d1d6}
+  .share-title{font-size:10px;color:#8e8e93;text-align:center;margin-bottom:9px}
+  .share-icons{display:flex;gap:5px;overflow-x:auto;padding-bottom:3px}
+  .share-icon{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:50px}
+  .share-ic{width:42px;height:42px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex:none;background:#e9e9eb}
+  .share-lbl{font-size:8px;color:#3c3c43;text-align:center;line-height:1.2}
+  .ring{box-shadow:0 0 0 3px #34d399,0 0 0 5px rgba(52,211,153,.3)}
+  .st-screen{background:#0d0d0d;flex:1;display:flex;flex-direction:column}
+  .st-nav{background:#1a1a1a;padding:8px 11px;flex:none}
+  .st-nav-title{color:#fff;font-size:11px;font-weight:600}
+  .st-search{background:#1a1a1a;border:1px solid #34d399;border-radius:7px;padding:6px 9px;display:flex;align-items:center;gap:6px;margin:8px 11px;flex:none}
+  .st-search-txt{font-family:var(--mono);font-size:10px;color:#34d399;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .st-row{display:flex;align-items:center;gap:9px;padding:8px 11px;border-bottom:1px solid #2a2a2a;flex:none}
+  .st-ic{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,#34d399,#059669);display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+  .st-info{flex:1}
+  .st-rname{font-size:10px;font-weight:600;color:#fff}
+  .st-rsub{font-size:8px;color:#8e8e93}
+  .st-pill{background:#34d399;border-radius:6px;padding:4px 8px;font-size:8px;font-weight:700;color:#0b0f0e}
 
-    .instr{font-size:13.5px;color:var(--ash2);line-height:1.65;margin:0 0 10px}
-    .instr strong{color:var(--bone)}
-    .instr:last-child{margin-bottom:0}
-    .callout{background:var(--ember-soft);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;margin:12px 0 0}
-    .callout p{font-size:12.5px;color:var(--ash2);line-height:1.6;margin:0}
-    .callout strong{color:var(--ember)}
-
-    .link-row{display:flex;gap:8px;margin:10px 0 0}
-    .link-row input{flex:1;background:var(--stone);border:1px solid var(--border2);border-radius:8px;color:var(--bone);font-family:var(--mono);font-size:11px;padding:10px 12px;min-width:0;outline:none}
-    .copy-btn{font-family:var(--mono);font-size:11px;font-weight:600;padding:0 14px;background:var(--moss);border:1px solid var(--border2);border-radius:8px;color:var(--ember);cursor:pointer;white-space:nowrap}
-    .copy-btn:hover{border-color:var(--ember)}
-
-    .done-card{background:var(--ember-soft);border:1px solid var(--border2);border-radius:14px;padding:22px 20px;text-align:center;margin-top:20px}
-    .done-card h2{font-family:var(--display);font-size:13px;color:var(--ember);margin-bottom:9px}
-    .done-card p{font-size:13.5px;color:var(--ash2);line-height:1.6;margin-bottom:16px}
-    .dash-btn{display:inline-block;padding:11px 24px;border:1px solid var(--border2);border-radius:9px;color:var(--bone);font-size:13px;font-weight:600;text-decoration:none;background:var(--raise);transition:border-color .2s}
-    .dash-btn:hover{border-color:var(--ember)}
-    .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--raise);border:1px solid var(--border2);border-radius:10px;padding:12px 20px;font-size:13px;z-index:200;transition:transform .3s;color:var(--ember)}
-    .toast.show{transform:translateX(-50%) translateY(0)}
-    @media(max-width:480px){.page{padding:24px 14px 50px}.page-title{font-size:12px}}
-    footer{text-align:center;font-family:var(--mono);font-size:11px;color:var(--ash);line-height:2;padding:24px 0 16px;position:relative;z-index:2}
-    footer a{color:var(--ash);text-decoration:none}footer a:hover{color:var(--bone)}
-  </style>
-<style>/* unified header logo */.logo{font-family:'Press Start 2P',monospace!important;font-size:11px!important;font-weight:400!important;letter-spacing:.04em!important;color:#34d399!important;text-decoration:none!important;text-shadow:0 0 10px rgba(52,211,153,.5)!important;line-height:1.4!important}.logo svg{width:12px;height:12px;margin-right:7px;vertical-align:-1px;fill:none;stroke:currentColor;stroke-width:2.2;filter:drop-shadow(0 0 5px rgba(52,211,153,.5))}</style>
+@media(min-width:900px){
+  /* Two steps abreast, so the phone drawings are not a single tall
+     column that has to be scrolled past. */
+  .flow{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  .step-card+.step-card{margin-top:0}
+  .flow>.wide{grid-column:1 / -1}
+}
+</style>
 </head>
 <body>
-<div class="topbar">
-  <a href="/dashboard.html" class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 20.5 7.1v9.8L12 21.8 3.5 16.9V7.1Z"/></svg>DUNGEON</a>
-  <a href="/dashboard.html?skip_stream=1" class="back-link">Skip for now →</a>
-</div>
 
-<div class="page">
-  <div class="page-head">
-    <span class="page-sigil" aria-hidden="true">📱</span>
-    <div class="page-title">iPhone Setup</div>
+<header class="topbar sticky">
+  <div class="wrap wrap-lg row">
+    <a href="/dashboard.html" class="brand" id="logoLink">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </a>
+    <nav class="topnav">
+      <a href="/dungeonstream.html">DungeonStream</a>
+      <a href="/dashboard.html?skip_stream=1" class="back">Skip for now</a>
+    </nav>
   </div>
-  <div class="page-sub" id="pageSub">Stremio isn't on the iPhone App Store, but it works great through Safari. A few steps and you'll be watching.</div>
+</header>
 
+<main class="page" data-requires-auth>
+  <div class="wrap wrap-lg">
+
+    <div class="page-head">
+      <h1 class="page-title">Stremio on iPhone</h1>
+      <p class="page-sub" id="pageSub">Stremio has no App Store app, so it runs from Safari — and once it is on your
+        Home Screen it behaves like one. Five minutes, most of it waiting for downloads.</p>
+    </div>
   <!-- State panel: shown for no-subscription / link-not-ready / error cases.
        Replaces the whole step flow with one clear message + action. -->
-  <div class="step-card" id="statePanel" style="display:none;text-align:center">
-    <div style="font-size:34px;margin-bottom:10px" id="stateIcon">⏳</div>
-    <div class="step-title" id="stateTitle" style="margin-bottom:8px">One moment…</div>
+  <div class="card hidden" id="statePanel" style="text-align:center">
+    
+    <h2 id="stateTitle" style="margin-bottom:8px">One moment…</h2>
     <p class="instr" id="stateMsg" style="margin-bottom:16px"></p>
     <div id="stateAction"></div>
   </div>
 
-  <div id="stepFlow">
+  <div id="stepFlow" class="flow">
   <!-- STEP 1 -->
   <div class="step-card">
     <div class="step-top"><div class="step-num">1</div><div class="step-title">Open Stremio in Safari</div></div>
@@ -125,11 +120,11 @@
     <!-- AUTO MODE: the account already exists - show login creds right here -->
     <div id="autoCreds" style="display:none">
       <p class="instr" style="margin-top:12px"><strong style="color:var(--ember)">Your account is already made.</strong> Log in with these:</p>
-      <div class="link-row" style="margin-bottom:8px"><input id="stEmail" readonly/><button class="copy-btn" onclick="copyField('stEmail','Email copied')">Copy</button></div>
-      <div class="link-row"><input id="stPass" readonly/><button class="copy-btn" onclick="copyField('stPass','Password copied')">Copy</button></div>
+      <div class="code-row" style="margin-bottom:8px"><input id="stEmail" readonly/><button class="copy-btn" onclick="copyField('stEmail','Email copied')">Copy</button></div>
+      <div class="code-row"><input id="stPass" readonly/><button class="copy-btn" onclick="copyField('stPass','Password copied')">Copy</button></div>
     </div>
 
-    <div class="callout"><p><strong>Important:</strong> use Safari, not Chrome. The next step only works in Safari.</p></div>
+    <div class="notice"><p><strong>Important:</strong> use Safari, not Chrome. The next step only works in Safari.</p></div>
   </div>
 
   <!-- STEP 2 -->
@@ -165,7 +160,7 @@
   <div class="step-card">
     <div class="step-top"><div class="step-num">3</div><div class="step-title">Copy your Dungeon link</div></div>
     <p class="instr">Tap below to copy your personal link - you'll paste it in the next step.</p>
-    <div class="link-row"><input id="addonUrl" readonly placeholder="Loading your link…"/><button class="copy-btn" onclick="copyLink()">Copy</button></div>
+    <div class="code-row"><input id="addonUrl" readonly placeholder="Loading your link…"/><button class="copy-btn" onclick="copyLink()">Copy</button></div>
     <p class="instr" style="color:var(--ash);font-size:12px;margin-top:8px">This link is yours - don't share it.</p>
   </div>
 
@@ -188,7 +183,7 @@
     <p class="instr">Tap the <strong>puzzle-piece icon</strong> (Add-ons) at the bottom.</p>
     <p class="instr">At the top there's a <strong>search bar</strong> - tap it and <strong>paste your link</strong>.</p>
     <p class="instr">The Dungeon appears - tap <strong>Install</strong> and you're done.</p>
-    <div class="callout"><p><strong>Tip:</strong> after installing, tap the home icon. Your Netflix, Disney+, HBO Max and Hulu rows will already be there.</p></div>
+    <div class="notice"><p><strong>Tip:</strong> after installing, tap the home icon. Your Netflix, Disney+, HBO Max and Hulu rows will already be there.</p></div>
   </div>
   </div><!-- /manualSteps -->
 
@@ -200,7 +195,7 @@
 
   <!-- External player (iPhone needs one to play streams) -->
   <div class="step-card" id="externalPlayerStep">
-    <div class="step-top"><div class="step-num">▶</div><div class="step-title">Install an external player</div></div>
+    <div class="step-top"><div class="step-num"></div><div class="step-title">Install an external player</div></div>
     <p class="instr">On iPhone, Stremio needs a separate video player app to actually play streams. Install one of these free apps from the App Store first:</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin:14px 0">
       <a class="app-btn" href="https://apps.apple.com/app/vlc-media-player/id650377962" target="_blank" style="display:flex;align-items:center;gap:11px;background:var(--ember-soft);border:1px solid var(--border2);border-radius:11px;padding:12px 14px;text-decoration:none">
@@ -219,10 +214,10 @@
     <p class="instr">Then in Stremio, tap your <strong>profile picture</strong> (top-right corner) → <strong>Settings</strong> → scroll to <strong>External Player</strong> → pick the app you installed. Now when you tap a stream, it opens in that player and starts.</p>
   </div>
 
-  <div class="done-card">
-    <h2>You're all set 🎬</h2>
+  <div class="card card-accent wide" style="text-align:center">
+    <h2>You're all set</h2>
     <p>Open Stremio from your Home Screen any time. Pick something, tap a stream, and it plays right in the app.</p>
-    <a href="#" id="doneBtn" class="dash-btn">✓ I've added it - go to dashboard</a>
+    <a href="#" id="doneBtn" class="btn btn-primary">✓ I've added it - go to dashboard</a>
   </div>
   </div><!-- /stepFlow -->
 </div>
@@ -230,11 +225,21 @@
 <div class="toast" id="toast"></div>
 
 <footer>
-    <a href="/dashboard.html">Dashboard</a><span class="sep"> · </span>
-    <a href="/guides.html">Guides</a><span class="sep"> · </span>
-    <a href="/forum.html">Forum</a><span class="sep"> · </span>
-    <a href="/support.html">Support</a>
-  </footer>
+  <div class="wrap wrap-lg foot">
+    <div class="spread">
+      <span>© 2026 Dungeon</span>
+      <nav id="footNav">
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/guides.html">Guides</a>
+        <a href="/forum.html">Forum</a>
+        <a href="/support.html">Support</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+  </div>
+</main>
 
 <script>
 function toast(t){const el=document.getElementById('toast');el.textContent=t;el.className='toast show';setTimeout(()=>el.className='toast',3000);}
@@ -263,12 +268,14 @@ document.getElementById('doneBtn').addEventListener('click', async (e) => {
       document.getElementById('stPass').value=d.stremio_account.password||'';
       document.getElementById('manualSteps').style.display='none';
       document.getElementById('autoStep3').style.display='block';
+      numberExternalPlayer(4);
     }else if(d&&(d.manifest_url||d.install_url)){
       // Fallback: entitled but no auto-provisioned account (e.g. email already on
       // Stremio). Show the manual add-the-link steps for this member only.
       input.value=d.manifest_url||d.install_url;
       document.getElementById('manualSteps').style.display='block';
       document.getElementById('autoStep3').style.display='none';
+      numberExternalPlayer(5);
     }else if(d&&d.active===false){
       // Not entitled - show a clean panel, hide the whole flow.
       showState('🔒', 'No active subscription', 'You don\u2019t have DungeonStream access yet. Redeem a credit to unlock it, then come back here to finish setup.',
@@ -284,19 +291,27 @@ document.getElementById('doneBtn').addEventListener('click', async (e) => {
   }
 })();
 
+/* One panel replaces the whole walkthrough when there is nothing to walk
+   through: no subscription, link not ready, or the server did not answer.
+   The icon argument is gone with the emoji it carried. */
+/* The external player is the last step either way, but the two modes get
+   there after a different number of steps, so it cannot be numbered in
+   the markup. */
+function numberExternalPlayer(n){
+  document.querySelector('#externalPlayerStep .step-num').textContent = n;
+}
+
 function showState(icon, title, msg, action){
-  document.getElementById('stepFlow').style.display='none';
-  document.getElementById('pageSub').style.display='none';
-  const panel=document.getElementById('statePanel');
-  panel.style.display='block';
-  document.getElementById('stateIcon').textContent=icon;
+  document.getElementById('stepFlow').classList.add('hidden');
+  document.getElementById('pageSub').classList.add('hidden');
+  document.getElementById('statePanel').classList.remove('hidden');
   document.getElementById('stateTitle').textContent=title;
   document.getElementById('stateMsg').textContent=msg;
   const act=document.getElementById('stateAction');
   act.innerHTML='';
   if(action){
     const b=document.createElement(action.href?'a':'button');
-    b.className='dash-btn';
+    b.className='btn btn-primary';
     b.textContent=action.label;
     if(action.href) b.href=action.href;
     if(action.onclick) b.onclick=action.onclick;
@@ -304,6 +319,7 @@ function showState(icon, title, msg, action){
   }
 }
 </script>
+<script src="/dungeon-nav.js" defer></script>
 <script src="/notif-bell.js"></script>
 </body>
 </html>

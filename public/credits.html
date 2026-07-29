@@ -1,327 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="color-scheme" content="dark"/>
-<meta name="theme-color" content="#060908"/>
+<meta charset="UTF-8"/>
+<meta name="color-scheme" content="dark"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dungeon · Credits</title>
 <link rel="manifest" href="/site.webmanifest"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon · Credits</title>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
-    *{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#060908;--surface:#141c19;--surface2:#0d1311;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.28);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);--text:#dce8e3;--muted:#6f8f84;--muted2:#8fa89e;--red:#f87171;--red-bg:rgba(248,113,113,0.1);--amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1)}
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif}
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/dungeon.css"/>
+<style>
+/* .card, .figure, .steps, .code-row, .rows, .avatar, .section-head, .btn
+   and the page chrome all come from /dungeon.css. */
+.balance{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
-    .nav{display:flex;align-items:center;gap:16px}
-    .nav a,.nav button{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color .2s}
-    .nav a:hover,.nav button:hover{color:var(--text)}
-    .msg-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:var(--muted2);font-size:15px;transition:border-color .2s,color .2s}
-    .msg-icon-btn:hover{border-color:var(--green);color:var(--green)}
-    .msg-icon-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
+.tx-row{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding-block:14px;border-bottom:1px solid var(--line)}
+.tx-row:last-child{border-bottom:none}
+.tx-row b{display:block;font-size:14px;font-weight:500}
+.tx-row em{font-style:normal;display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.tx-row .when{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:4px;display:block}
+.tx-amount{font-family:var(--mono);font-size:15px;font-weight:600;flex:none}
+.tx-amount.pos{color:var(--accent)}
+.tx-amount.neg{color:var(--muted)}
 
-    .page{max-width:860px;margin:0 auto;padding:32px 24px 80px}
+.lb-row{display:flex;align-items:center;gap:12px;padding-block:12px;border-bottom:1px solid var(--line)}
+.lb-row:last-child{border-bottom:none}
+.lb-rank{font-family:var(--mono);font-size:12px;color:var(--faint);width:26px;flex:none;text-align:center}
+.lb-rank.top{color:var(--accent)}
+.lb-row .avatar{width:32px;height:32px;font-size:12px}
+.lb-name{min-width:0;flex:1}
+.lb-name a{font-size:14px;font-weight:500}
+.lb-name a:hover{color:var(--accent)}
+.lb-name span{display:block;font-family:var(--mono);font-size:10.5px;margin-top:2px}
+.lb-count{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text2);flex:none}
 
-    .page-title{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:13px !important;font-weight:400 !important;color:var(--text);line-height:1.6;margin-bottom:28px}
-
-    /* Balance card */
-    .balance-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
-    .balance-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;position:relative;overflow:hidden}
-    .balance-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
-    .balance-card.green::before{background:var(--green)}
-    .balance-card.amber::before{background:var(--amber)}
-    .balance-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-    .balance-num{font-size:48px;font-weight:700;color:var(--text);line-height:1;margin-bottom:6px}
-    .balance-sub{font-size:13px;color:var(--muted2)}
-
-    /* How it works */
-    .how-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
-    .how-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
-    .how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .how-step{background:var(--surface2);border-radius:8px;padding:16px;text-align:center}
-    .how-step-icon{font-size:24px;margin-bottom:8px}
-    .how-step-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px}
-    .how-step-desc{font-size:11px;color:var(--muted2);line-height:1.6}
-    .how-step-price{font-size:16px;font-weight:700;color:var(--green);margin-top:6px}
-
-    /* Referral box */
-    .ref-card{background:var(--green-bg);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:24px}
-    .ref-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
-    .ref-sub{font-size:13px;color:var(--muted2);margin-bottom:16px;line-height:1.6}
-    .ref-link-row{display:flex;gap:8px;align-items:center}
-    .ref-link{flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--green);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .copy-btn{padding:10px 16px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;white-space:nowrap}
-    .copy-btn:hover{opacity:0.9}
-    .copy-btn.copied{background:var(--surface2);color:var(--green);border:1px solid var(--green)}
-
-    /* Buy credits */
-    .buy-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
-    .buy-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
-    .buy-sub{font-size:13px;color:var(--muted2);margin-bottom:16px;line-height:1.6}
-    .buy-btn{display:inline-block;padding:12px 24px;background:var(--amber);border-radius:8px;color:#0b0f0e;font-size:14px;font-weight:700;text-decoration:none;transition:opacity .2s}
-    .buy-btn:hover{opacity:0.9}
-    .buy-note{font-size:12px;color:var(--muted);margin-top:10px}
-
-    /* Section head */
-    .section-head{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;margin-top:32px;display:flex;align-items:center;gap:10px}
-    .section-head::after{content:'';flex:1;height:1px;background:var(--border)}
-
-    /* Transactions */
-    .tx-row{border-bottom:1px solid var(--border);padding:12px 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .tx-row:last-child{border-bottom:none}
-    .tx-type{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
-    .tx-note{font-size:12px;color:var(--muted)}
-    .tx-date{font-size:11px;color:var(--muted);margin-top:2px}
-    .tx-amount{font-size:16px;font-weight:700;white-space:nowrap}
-    .tx-amount.pos{color:var(--green)}
-    .tx-amount.neg{color:var(--red)}
-    .tx-icon{font-size:20px;margin-right:4px;flex-shrink:0}
-
-    /* Leaderboard */
-    .lb-row{border-bottom:1px solid var(--border);padding:14px 0;display:flex;align-items:center;gap:14px}
-    .lb-row:last-child{border-bottom:none}
-    .lb-rank{font-size:16px;font-weight:700;color:var(--muted);width:28px;text-align:center;flex-shrink:0}
-    .lb-rank.gold{color:var(--amber)}
-    .lb-rank.silver{color:#94a3b8}
-    .lb-rank.bronze{color:#cd7f32}
-    .lb-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#0b0f0e;flex-shrink:0;overflow:hidden}
-    .lb-avatar img{width:100%;height:100%;object-fit:cover}
-    .lb-name{flex:1}
-    .lb-screenname{font-size:14px;font-weight:600;color:var(--text);text-decoration:none}
-    .lb-screenname:hover{color:var(--green)}
-    .lb-tier{font-size:11px;color:var(--muted);margin-top:2px}
-    .lb-credits{font-size:18px;font-weight:700;color:var(--green)}
-    .lb-credits-label{font-size:10px;color:var(--muted);text-align:right}
-
-    .empty{text-align:center;padding:32px 0;color:var(--muted);font-size:14px}
-
-    footer{text-align:center;padding:24px 0 16px;font-size:12px;color:var(--muted)}
-    footer a{color:var(--muted);text-decoration:none}
-    footer a:hover{color:var(--text)}
-    @media(max-width:767px){
-      .topbar{padding:12px 16px}
-      .page{padding:20px 14px 60px}
-      .balance-grid{grid-template-columns:1fr 1fr}
-      .balance-num{font-size:36px}
-      .how-steps{grid-template-columns:1fr}
-      .ref-link-row{flex-direction:column}
-      .ref-link{width:100%}
-      footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}
-    }
-  
-/* torchlight ambience */
-body{position:relative}
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,transparent 1px 92px);-webkit-mask-image:linear-gradient(180deg,#000 0,#000 30%,transparent 74%);mask-image:linear-gradient(180deg,#000 0,#000 30%,transparent 74%)}
-.topbar,.page,.center,footer{position:relative;z-index:1}
-.logo{text-shadow:0 0 10px rgba(52,211,153,.5)}
-.page-title{text-shadow:0 0 16px rgba(52,211,153,.3)}
+@media(min-width:880px){
+  .cols{display:grid;grid-template-columns:1fr 340px;gap:40px;align-items:start}
+  .aside{position:sticky;top:88px}
+}
 </style>
-<style>/* unified header logo */.logo{font-family:'Press Start 2P',monospace!important;font-size:11px!important;font-weight:400!important;letter-spacing:.04em!important;color:#34d399!important;text-decoration:none!important;text-shadow:0 0 10px rgba(52,211,153,.5)!important;line-height:1.4!important}.logo svg{width:12px;height:12px;margin-right:7px;vertical-align:-1px;fill:none;stroke:currentColor;stroke-width:2.2;filter:drop-shadow(0 0 5px rgba(52,211,153,.5))}</style>
 </head>
 <body>
 
-<div class="topbar">
-  <a href="/" class="logo" id="logoLink"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 20.5 7.1v9.8L12 21.8 3.5 16.9V7.1Z"/></svg>DUNGEON</a>
-  <div class="nav">
-    <a href="/dashboard.html">Dashboard</a>
-    <a href="/messages.html" class="msg-icon-btn" id="msgIconBtn" title="Messages">✉<span class="msg-icon-badge" id="msgIconBadge"></span></a>
-    <button onclick="logout()">Sign out</button>
+<header class="topbar sticky">
+  <div class="wrap wrap-xl row">
+    <a href="/dashboard.html" class="brand" id="logoLink">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </a>
+    <nav class="topnav">
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/messages.html" class="has-badge">Messages<span class="count-badge" id="msgCount">0</span></a>
+      <button type="button" onclick="signOut()">Sign out</button>
+    </nav>
   </div>
-</div>
+</header>
 
-<div class="page">
-  <div class="page-title">Credits</div>
+<main class="page" data-requires-auth>
+  <div class="wrap wrap-xl">
 
-  <!-- Balance -->
-  <div class="balance-grid">
-    <div class="balance-card green">
-      <div class="balance-label">Your Balance</div>
-      <div class="balance-num" id="balanceNum">-</div>
-      <div class="balance-sub">credits available</div>
+    <div class="page-head">
+      <h1 class="page-title">Credits</h1>
+      <p class="page-sub">One credit is one month of everything. They don't expire.</p>
     </div>
-    <div class="balance-card amber">
-      <div class="balance-label">Referrals Earned</div>
-      <div class="balance-num" id="referralNum">-</div>
-      <div class="balance-sub">credits from referrals</div>
-    </div>
-  </div>
 
-  <!-- How it works -->
-  <div class="how-card">
-    <div class="how-title">💡 How Credits Work</div>
-    <div class="how-steps">
-      <div class="how-step">
-        <div class="how-step-icon">💳</div>
-        <div class="how-step-title">Buy a Credit</div>
-        <div class="how-step-desc">Pay $10 via Buy Me a Coffee. The Dungeon Master adds your credit manually.</div>
-        <div class="how-step-price">$10 / credit</div>
+    <div class="cols">
+      <div>
+        <div class="balance">
+          <div class="card">
+            <span class="label tight">Your balance</span>
+            <div class="figure"><b id="balanceNum">—</b><span>credits</span></div>
+          </div>
+          <div class="card">
+            <span class="label tight">Earned by referral</span>
+            <div class="figure"><b id="referralNum" style="color:var(--accent)">—</b><span>credits</span></div>
+          </div>
+        </div>
+
+        <div class="section-head">How credits work</div>
+        <div class="card">
+          <div class="steps">
+            <div class="step-item">
+              <span class="step-circle">1</span>
+              <div><h3>Buy one</h3><p>$10 through Buy Me a Coffee. The Dungeon Master adds it to your balance by hand, usually within a day.</p></div>
+            </div>
+            <div class="step-item">
+              <span class="step-circle">2</span>
+              <div><h3>Or earn one</h3><p>Share your referral link. When someone you sent buys their first credit, you get one free.</p></div>
+            </div>
+            <div class="step-item">
+              <span class="step-circle">3</span>
+              <div><h3>Redeem it</h3><p>One credit covers DungeonStream and DungeonCast together, for a month.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-head">History</div>
+        <div class="card">
+          <div id="txList"><div class="empty">Nothing yet.</div></div>
+        </div>
+
+        <div class="section-head">Referral leaderboard</div>
+        <div class="card">
+          <div id="leaderboard"><div class="empty">No referrals yet. Be the first.</div></div>
+        </div>
       </div>
-      <div class="how-step">
-        <div class="how-step-icon">👥</div>
-        <div class="how-step-title">Refer a Friend</div>
-        <div class="how-step-desc">Share your referral link. When they buy their first credit, you earn one free.</div>
-        <div class="how-step-price">Free</div>
-      </div>
-      <div class="how-step">
-        <div class="how-step-icon">🎬</div>
-        <div class="how-step-title">Redeem</div>
-        <div class="how-step-desc">1 credit = 1 month of everything - DungeonStream and DungeonCast together. Request redemption from your dashboard.</div>
-        <div class="how-step-price">1 credit / mo</div>
-      </div>
+
+      <aside class="aside">
+        <div class="card card-accent">
+          <div class="card-title">Buy a credit</div>
+          <p class="hint" style="margin:-8px 0 16px;font-size:13px;line-height:1.65;font-family:var(--sans)">
+            $10 each, through Buy Me a Coffee. Put your @username in the message so the Dungeon Master knows who to
+            credit.
+          </p>
+          <a href="https://buymeacoffee.com/enterdungeon/extras" target="_blank" rel="noopener" class="btn btn-primary btn-wide">Buy a credit — $10</a>
+        </div>
+
+        <div class="card mt-2">
+          <div class="card-title">Your referral link</div>
+          <div class="code-row">
+            <span class="code-field" id="refLink">Loading…</span>
+            <button class="copy-btn" id="copyBtn" onclick="copyRefLink()">Copy</button>
+          </div>
+          <p class="hint">They join, they buy their first credit, you get one. Nothing to claim.</p>
+        </div>
+      </aside>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap wrap-xl foot">
+    <div class="spread">
+      <span>© 2026 Dungeon</span>
+      <nav id="footNav">
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/guides.html">Guides</a>
+        <a href="/forum.html">Forum</a>
+        <a href="/support.html">Support</a>
+      </nav>
     </div>
   </div>
+</footer>
 
-  <!-- Referral link -->
-  <div class="ref-card">
-    <div class="ref-title">🔗 Your Referral Link</div>
-    <div class="ref-sub">Share this link with friends. When they join and buy their first credit, you automatically earn 1 credit - no action needed.</div>
-    <div class="ref-link-row">
-      <div class="ref-link" id="refLink">Loading…</div>
-      <button class="copy-btn" id="copyBtn" onclick="copyRefLink()">Copy Link</button>
-    </div>
-  </div>
-
-  <!-- Buy credits -->
-  <div class="buy-card">
-    <div class="buy-title">☕ Buy Credits</div>
-    <div class="buy-sub">Credits are $10 each. Pay via Buy Me a Coffee - the Dungeon Master will be notified and add your credit within 24 hours.</div>
-    <a href="https://buymeacoffee.com/enterdungeon/extras" target="_blank" rel="noopener" class="buy-btn">Buy a Credit - $10 ☕</a>
-    <div class="buy-note">Include your @username in the message when you pay so the Dungeon Master knows who to credit.</div>
-  </div>
-
-  <!-- Transaction history -->
-  <div class="section-head">Transaction History</div>
-  <div id="txList"><div class="empty">No transactions yet.</div></div>
-
-  <!-- Leaderboard -->
-  <div class="section-head">🏆 Referral Leaderboard</div>
-  <div id="leaderboard"><div class="empty">No referrals yet. Be the first!</div></div>
-
-  <footer id="pageFooter">
-    <a href="/dashboard.html">Dashboard</a><span class="sep"> · </span>
-    <a href="/guides.html">Guides</a><span class="sep"> · </span>
-    <a href="/forum.html">Forum</a><span class="sep"> · </span>
-    <a href="/support.html">Support</a>
-  </footer>
-</div>
-
+<script src="/dungeon-nav.js" defer></script>
 <script>
-  const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Dungeon Master',color:'#fbbf24'}};
+  const TIERS={neut:{label:'Neut',color:'#E2E8E4'},member:{label:'Member',color:'#60A5FA'},
+    family:{label:'Family',color:'#A78BFA'},dealer:{label:'Dealer',color:'#F59E0B'},
+    mod:{label:'Moderator',color:'#34D399'},admin:{label:'Admin',color:'#F87171'},
+    warden:{label:'Dungeon Master',color:'#FBBF24'}};
   const SITE = window.location.origin;
   let myScreenName = '';
 
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+  (async function(){
+    const d = await (window.dungeonMe || fetch('/api/member/me').then(r=>r.json()).catch(()=>({})));
     if(!d.authenticated){window.location.href='/login.html';return}
-    const logo = document.getElementById('logoLink');
-    if(logo) logo.href='/dashboard.html';
     myScreenName = d.member?.profile?.screen_name || '';
-    loadFooter(d.member?.profile?.tier);
     loadCredits();
     loadLeaderboard();
-    loadMsgBadge();
-  });
+  })();
 
-  function loadFooter(tier){
-    const footer = document.getElementById('pageFooter');
-    if(!footer||!tier) return;
-    if(['mod','admin','warden'].includes(tier)){
-      const span=document.createElement('span');span.style.whiteSpace='nowrap';
-      let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
-      if(['admin','warden'].includes(tier)) extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
-      span.innerHTML=extra;footer.appendChild(span);
-    }
-  }
+  function refUrl(){ return SITE + '/apply.html?ref=' + encodeURIComponent(myScreenName); }
 
   async function loadCredits(){
-    const d = await fetch('/api/credits').then(r=>r.json());
+    const d = await fetch('/api/credits').then(r=>r.json()).catch(()=>({}));
     myScreenName = d.screen_name || myScreenName;
-    document.getElementById('balanceNum').textContent = d.balance;
+    document.getElementById('balanceNum').textContent = d.balance ?? 0;
+    document.getElementById('refLink').textContent = refUrl();
 
-    // Count referral credits
-    const refEarned = d.transactions.filter(t=>t.type==='referral'&&t.amount>0).reduce((s,t)=>s+t.amount,0);
-    document.getElementById('referralNum').textContent = refEarned;
+    const tx = Array.isArray(d.transactions) ? d.transactions : [];
+    document.getElementById('referralNum').textContent =
+      tx.filter(t=>t.type==='referral'&&t.amount>0).reduce((s,t)=>s+t.amount,0);
 
-    // Referral link
-    const refUrl = `${SITE}/apply.html?ref=${encodeURIComponent(myScreenName)}`;
-    document.getElementById('refLink').textContent = refUrl;
-
-    // Transactions
     const el = document.getElementById('txList');
-    if(!d.transactions.length){el.innerHTML='<div class="empty">No transactions yet.</div>';return}
-    const icons = {purchased:'💳',referral:'👥',redeemed:'🎬',gifted:'🎁',deducted:'➖'};
-    const labels = {purchased:'Credit Purchased',referral:'Referral Bonus',redeemed:'Credit Redeemed',gifted:'Gift from Dungeon Master',deducted:'Credit Removed'};
-    el.innerHTML = d.transactions.map(t=>`
+    if(!tx.length){ el.innerHTML='<div class="empty">Nothing yet.</div>'; return; }
+
+    const labels = {purchased:'Credit bought',referral:'Referral bonus',redeemed:'Credit redeemed',
+      gifted:'Gift from the Dungeon Master',deducted:'Credit removed'};
+    el.innerHTML = tx.map(t=>`
       <div class="tx-row">
-        <div style="display:flex;align-items:flex-start;gap:10px">
-          <div class="tx-icon">${icons[t.type]||'💰'}</div>
-          <div>
-            <div class="tx-type">${labels[t.type]||t.type}</div>
-            ${t.note?`<div class="tx-note">${t.note}</div>`:''}
-            <div class="tx-date">${timeAgo(t.created_at)}</div>
-          </div>
+        <div class="grow">
+          <b>${esc(labels[t.type]||t.type)}</b>
+          ${t.note?`<em>${esc(t.note)}</em>`:''}
+          <span class="when">${timeAgo(t.created_at)}</span>
         </div>
-        <div class="tx-amount ${t.amount>0?'pos':'neg'}">${t.amount>0?'+':''}${t.amount}</div>
+        <span class="tx-amount ${t.amount>0?'pos':'neg'}">${t.amount>0?'+':''}${t.amount}</span>
       </div>`).join('');
   }
 
   async function loadLeaderboard(){
-    const rows = await fetch('/api/credits/leaderboard').then(r=>r.json());
+    const rows = await fetch('/api/credits/leaderboard').then(r=>r.json()).catch(()=>[]);
     const el = document.getElementById('leaderboard');
-    if(!rows.length){el.innerHTML='<div class="empty">No referrals yet. Be the first!</div>';return}
-    const rankClass = i => i===0?'gold':i===1?'silver':i===2?'bronze':'';
-    const rankLabel = i => i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
+    if(!Array.isArray(rows) || !rows.length){
+      el.innerHTML='<div class="empty">No referrals yet. Be the first.</div>';
+      return;
+    }
     el.innerHTML = rows.map((r,i)=>{
-      const tier = TIERS[r.tier]||{label:r.tier,color:'#e2e8e4'};
+      const tier = TIERS[r.tier]||{label:r.tier||'Member',color:'#E2E8E4'};
       const initials = r.screen_name?r.screen_name[0].toUpperCase():'?';
       return `<div class="lb-row">
-        <div class="lb-rank ${rankClass(i)}">${rankLabel(i)}</div>
-        <div class="lb-avatar" style="background:${r.avatar_color||'#60a5fa'}">
-          ${r.avatar_url?`<img src="${r.avatar_url}" alt=""/>`:initials}
-        </div>
-        <div class="lb-name">
-          <a href="/profile.html?id=${r.id}" class="lb-screenname">@${r.screen_name}</a>
-          <div class="lb-tier" style="color:${tier.color}">${tier.label}</div>
-        </div>
-        <div style="text-align:right">
-          <div class="lb-credits">${r.referral_credits}</div>
-          <div class="lb-credits-label">referrals</div>
-        </div>
+        <span class="lb-rank${i<3?' top':''}">${i+1}</span>
+        <span class="avatar" style="background:${esc(r.avatar_color||'#60A5FA')}">
+          ${r.avatar_url?`<img src="${esc(r.avatar_url)}" alt=""/>`:esc(initials)}
+        </span>
+        <span class="lb-name">
+          <a href="/profile.html?id=${encodeURIComponent(r.id)}">@${esc(r.screen_name)}</a>
+          <span style="color:${tier.color}">${esc(tier.label)}</span>
+        </span>
+        <span class="lb-count">${r.referral_credits}</span>
       </div>`;
     }).join('');
   }
 
   function copyRefLink(){
-    const url = `${SITE}/apply.html?ref=${encodeURIComponent(myScreenName)}`;
-    navigator.clipboard.writeText(url).then(()=>{
+    navigator.clipboard.writeText(refUrl()).then(()=>{
       const btn=document.getElementById('copyBtn');
-      btn.textContent='Copied!';btn.classList.add('copied');
-      setTimeout(()=>{btn.textContent='Copy Link';btn.classList.remove('copied')},2000);
+      btn.textContent='Copied';
+      setTimeout(()=>{btn.textContent='Copy'},2000);
     });
   }
 
-  async function loadMsgBadge(){
-    const d = await fetch('/api/messages/unread').then(r=>r.json()).catch(()=>({count:0}));
-    const badge=document.getElementById('msgIconBadge');
-    if(badge&&d.count>0){badge.textContent=d.count;badge.style.display='block';}
-  }
-
   function timeAgo(dt){
-    if(dt&&!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';
+    if(!dt) return '';
+    if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';
     const s=Math.floor((Date.now()-new Date(dt))/1000);
-    if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+'m ago';
-    if(s<86400)return Math.floor(s/3600)+'h ago';if(s<604800)return Math.floor(s/86400)+'d ago';
-    return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    if(s<60)return 'just now';
+    if(s<3600)return Math.floor(s/60)+'m ago';
+    if(s<86400)return Math.floor(s/3600)+'h ago';
+    if(s<604800)return Math.floor(s/86400)+'d ago';
+    return new Date(dt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
   }
 
-  async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html'}
+  // Notes, usernames and avatar colours are member-supplied.
+  function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 </script>
-  <script src="/notif-bell.js"></script>
+<script src="/notif-bell.js"></script>
 </body>
 </html>

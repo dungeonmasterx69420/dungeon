@@ -7,25 +7,35 @@
 <link rel="manifest" href="/site.webmanifest"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
 <title>Dungeon · DungeonDealer</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/dungeon.css"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+/* This console keeps its own variable names, pointed at the
+   design system. Nothing here defines a colour of its own. */
 :root{
-  --bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--s3:#1a2422;
-  --bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);
-  --g:#34d399;--gb:rgba(52,211,153,.08);
-  --txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;
-  --red:#f87171;--redb:rgba(248,113,113,.08);
-  --amb:#fbbf24;--ambb:rgba(251,191,36,.08);
-  --gold:#f59e0b;--goldb:rgba(245,158,11,.1);
-  --blue:#60a5fa;
-  --mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;
+  --s1:var(--surface);
+  --s2:var(--raise);
+  --s3:var(--raise);
+  --bdr:var(--line);
+  --bdr2:var(--line2);
+  --g:var(--accent);
+  --gb:rgba(52,211,153,.08);
+  --txt:var(--text);
+  --t2:var(--muted);
+  --t3:var(--faint);
+  --redb:rgba(248,113,113,.08);
+  --amb:var(--amber);
+  --ambb:rgba(251,191,36,.08);
+  --gold:#F59E0B;
+  --goldb:rgba(245,158,11,.1)
 }
 html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans)}
 
 /* Topbar */
 .topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-.logo{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;color:var(--g);text-decoration:none}
 .badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:10px;background:var(--goldb);color:var(--gold);border:1px solid rgba(245,158,11,.2);font-family:var(--mono);margin-left:8px}
 .nav{display:flex;align-items:center;gap:12px}
 .nav a,.nav button{font-size:13px;color:var(--t2);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:var(--sans)}
@@ -128,13 +138,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
   .earn-header span:nth-child(3),.earn-row span:nth-child(3){display:none}
 }
 </style>
-<style>/* unified header logo */.logo{font-family:'Press Start 2P',monospace!important;font-size:11px!important;font-weight:400!important;letter-spacing:.04em!important;color:#34d399!important;text-decoration:none!important;text-shadow:0 0 10px rgba(52,211,153,.5)!important;line-height:1.4!important}.logo svg{width:12px;height:12px;margin-right:7px;vertical-align:-1px;fill:none;stroke:currentColor;stroke-width:2.2;filter:drop-shadow(0 0 5px rgba(52,211,153,.5))}</style>
 </head>
 <body>
 
 <div class="topbar">
   <div style="display:flex;align-items:center">
-    <a href="/dashboard.html" class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 20.5 7.1v9.8L12 21.8 3.5 16.9V7.1Z"/></svg>DUNGEON</a>
+    <a href="/dashboard.html" class="brand" id="logoLink"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg><span>DUNGEON</span></a>
     <span class="badge">DungeonDealer</span>
   </div>
   <div class="nav">

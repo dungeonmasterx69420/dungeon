@@ -3,85 +3,56 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="color-scheme" content="dark"/>
-<meta name="theme-color" content="#060908"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dungeon &middot; Set up your account</title>
 <link rel="manifest" href="/site.webmanifest"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-<title>Dungeon · Setup Profile</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/dungeon.css"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{--bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--s3:#1a2422;--bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);--g:#34d399;--gb:rgba(52,211,153,.08);--txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;--red:#f87171;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif}
-html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans)}
-.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center}
-.logo{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;color:var(--g);text-decoration:none;letter-spacing:.04em}
-.page{max-width:500px;margin:0 auto;padding:32px 16px 60px}
+/* First run. .card, .field, .hint, .chips, .chip, .banner, .avatar-pick,
+   .cdot, .btn, .btn-row and .btn-skip all come from /dungeon.css. */
 
-/* Progress */
-.progress{display:flex;gap:6px;margin-bottom:32px}
-.ps{flex:1;height:3px;border-radius:2px;background:var(--bdr);transition:background .3s}
-.ps.done{background:var(--g)}
-.ps.active{background:var(--g);opacity:.5}
+/* Four segments rather than one bar: there are four steps, and which one
+   you are on matters more than a percentage. */
+.progress{display:flex;gap:6px;margin-bottom:30px}
+.ps{flex:1;height:3px;border-radius:2px;background:var(--line2);transition:background .3s,opacity .3s}
+.ps.done{background:var(--accent)}
+.ps.active{background:var(--accent);opacity:.45}
 
-/* Steps */
-.step{display:none}.step.on{display:block}
-.step-title{font-size:18px;font-weight:700;margin-bottom:6px}
-.step-sub{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.7}
+.step{display:none}
+.step.on{display:block}
+.step h1{font-size:clamp(23px,3.6vw,29px);line-height:1.14;font-weight:600;letter-spacing:-.026em;margin-bottom:10px}
+.step .lede{margin-bottom:26px}
 
-/* Fields */
-.field{margin-bottom:14px}
-.field label{display:block;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:5px}
-.field input{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:14px;padding:11px 13px;outline:none;transition:border-color .15s}
-.field input:focus{border-color:var(--g)}
-.field input::placeholder{color:var(--t3)}
-.hint{font-size:10px;color:var(--t3);margin-top:4px;font-family:var(--mono)}
-.hint.ok{color:var(--g)}
-.hint.bad{color:var(--red)}
+.avatar-wrap{text-align:center;padding-bottom:4px}
+.avatar-hint{font-family:var(--mono);font-size:11px;color:var(--faint);margin:12px 0 14px}
 
-/* Avatar */
-.avatar-wrap{text-align:center;margin-bottom:20px}
-.avatar-circle{width:80px;height:80px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#000;cursor:pointer;border:2px solid var(--bdr2);position:relative;overflow:hidden;transition:border-color .2s}
-.avatar-circle:hover{border-color:var(--g)}
-.avatar-circle img{width:100%;height:100%;object-fit:cover}
-.avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;opacity:0;font-size:10px;font-weight:600;color:#fff;text-align:center;transition:opacity .2s}
-.avatar-circle:hover .avatar-overlay{opacity:1}
-.avatar-hint{font-size:11px;color:var(--t3);margin-bottom:12px;font-family:var(--mono)}
-.color-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.cdot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .15s}
-.cdot:hover{transform:scale(1.15)}
-.cdot.on{border-color:#fff}
+.device-group+.device-group{margin-top:18px}
+.device-group-label{font-size:12.5px;font-weight:500;color:var(--text2);margin-bottom:9px}
 
-/* Device chips */
-.device-group{margin-bottom:20px}
-.device-group-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin-bottom:10px;display:flex;align-items:center;gap:8px;font-family:var(--mono)}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{font-size:12px;font-weight:500;padding:7px 14px;border-radius:20px;border:1px solid var(--bdr2);color:var(--t2);cursor:pointer;background:var(--s2);transition:all .15s;user-select:none}
-.chip:hover{border-color:var(--g);color:var(--g)}
-.chip.on{background:var(--gb);border-color:var(--g);color:var(--g)}
-
-/* Buttons */
-.btn-row{display:flex;gap:10px;margin-top:24px}
-.btn{flex:1;padding:13px;border:none;border-radius:8px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.btn-g{background:var(--g);color:#000}
-.btn-g:hover:not(:disabled){opacity:.85}
-.btn-b{background:var(--s2);border:1px solid var(--bdr2);color:var(--t2)}
-.btn-b:hover:not(:disabled){border-color:var(--g);color:var(--g)}
-.btn-skip{background:none;border:none;color:var(--t3);font-size:12px;text-align:center;width:100%;padding:10px;cursor:pointer;font-family:var(--sans);margin-top:8px;font-family:var(--mono)}
-.btn-skip:hover{color:var(--t2)}
-
-.banner{display:none;font-size:12px;padding:10px 13px;border-radius:8px;margin-bottom:14px;line-height:1.5}
-.banner-err{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red)}
-
-@media(max-width:480px){.page{padding:20px 14px 50px}}
+.col{max-width:560px;margin:0 auto}
 </style>
-<style>/* unified header logo */.logo{font-family:'Press Start 2P',monospace!important;font-size:11px!important;font-weight:400!important;letter-spacing:.04em!important;color:#34d399!important;text-decoration:none!important;text-shadow:0 0 10px rgba(52,211,153,.5)!important;line-height:1.4!important}.logo svg{width:12px;height:12px;margin-right:7px;vertical-align:-1px;fill:none;stroke:currentColor;stroke-width:2.2;filter:drop-shadow(0 0 5px rgba(52,211,153,.5))}</style>
 </head>
 <body>
-<div class="topbar">
-  <a href="/dashboard.html" class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 20.5 7.1v9.8L12 21.8 3.5 16.9V7.1Z"/></svg>DUNGEON</a>
-</div>
 
-<div class="page">
+<header class="topbar">
+  <div class="wrap wrap-lg row">
+    <span class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </span>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap wrap-lg col">
   <div class="progress" id="progress">
     <div class="ps active" id="ps1"></div>
     <div class="ps" id="ps2"></div>
@@ -91,130 +62,132 @@ html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var
 
   <!-- Step 1: Screen Name -->
   <div class="step on" id="step1">
-    <div class="step-title">Set Up Your Profile</div>
-    <div class="step-sub">Choose a screen name that members will see. Letters, numbers and underscores only.</div>
+    <h1>Pick a name</h1>
+    <p class="lede">This is what other members see. You can change it later.</p>
     <div class="banner banner-err" id="s1err"></div>
     <div class="field">
-      <label>Screen Name</label>
-      <input type="text" id="screen_name" placeholder="yourcoolname" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
-      <div class="hint" id="sn-hint">3-20 characters. Letters, numbers and underscores only.</div>
+      <label for="screen_name">Username</label>
+      <input type="text" id="screen_name" placeholder="alexmercer" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
+      <div class="hint" id="sn-hint">Letters, numbers and underscores. 3–20 characters.</div>
     </div>
     <div class="btn-row">
-      <button class="btn btn-g" onclick="goStep2()">Continue →</button>
+      <button class="btn btn-primary" onclick="goStep2()">Continue</button>
     </div>
   </div>
 
   <!-- Step 2: Devices -->
   <div class="step" id="step2">
-    <div class="step-title">Your Devices</div>
-    <div class="step-sub">Select everything you watch on. This helps us set you up correctly.</div>
+    <h1>What do you watch on?</h1>
+    <p class="lede">Everything that applies. It decides which setup guides you get pointed at.</p>
     <div class="banner banner-err" id="s2err"></div>
 
     <div class="device-group">
-      <div class="device-group-label">📱 Phone</div>
+      <div class="device-group-label">Phone</div>
       <div class="chips" id="dg-phone">
-        <div class="chip" data-group="phone" data-val="iphone" onclick="toggleChip(this)">iPhone</div>
-        <div class="chip" data-group="phone" data-val="android_phone" onclick="toggleChip(this)">Android</div>
-        <div class="chip" data-group="phone" data-val="no_phone" onclick="toggleExclusive(this,'phone')">None</div>
+        <button type="button" class="chip" data-group="phone" data-val="iphone" onclick="toggleChip(this)">iPhone</button>
+        <button type="button" class="chip" data-group="phone" data-val="android_phone" onclick="toggleChip(this)">Android</button>
+        <button type="button" class="chip" data-group="phone" data-val="no_phone" onclick="toggleExclusive(this,'phone')">None</button>
       </div>
     </div>
     <div class="device-group">
-      <div class="device-group-label">📱 Tablet</div>
+      <div class="device-group-label">Tablet</div>
       <div class="chips" id="dg-tablet">
-        <div class="chip" data-group="tablet" data-val="ipad" onclick="toggleChip(this)">iPad</div>
-        <div class="chip" data-group="tablet" data-val="android_tablet" onclick="toggleChip(this)">Android Tablet</div>
-        <div class="chip" data-group="tablet" data-val="no_tablet" onclick="toggleExclusive(this,'tablet')">None</div>
+        <button type="button" class="chip" data-group="tablet" data-val="ipad" onclick="toggleChip(this)">iPad</button>
+        <button type="button" class="chip" data-group="tablet" data-val="android_tablet" onclick="toggleChip(this)">Android Tablet</button>
+        <button type="button" class="chip" data-group="tablet" data-val="no_tablet" onclick="toggleExclusive(this,'tablet')">None</button>
       </div>
     </div>
     <div class="device-group">
-      <div class="device-group-label">💻 Computer</div>
+      <div class="device-group-label">Computer</div>
       <div class="chips" id="dg-computer">
-        <div class="chip" data-group="computer" data-val="windows" onclick="toggleChip(this)">Windows</div>
-        <div class="chip" data-group="computer" data-val="mac" onclick="toggleChip(this)">Mac</div>
-        <div class="chip" data-group="computer" data-val="linux" onclick="toggleChip(this)">Linux</div>
-        <div class="chip" data-group="computer" data-val="chromebook" onclick="toggleChip(this)">Chromebook</div>
-        <div class="chip" data-group="computer" data-val="no_computer" onclick="toggleExclusive(this,'computer')">None</div>
+        <button type="button" class="chip" data-group="computer" data-val="windows" onclick="toggleChip(this)">Windows</button>
+        <button type="button" class="chip" data-group="computer" data-val="mac" onclick="toggleChip(this)">Mac</button>
+        <button type="button" class="chip" data-group="computer" data-val="linux" onclick="toggleChip(this)">Linux</button>
+        <button type="button" class="chip" data-group="computer" data-val="chromebook" onclick="toggleChip(this)">Chromebook</button>
+        <button type="button" class="chip" data-group="computer" data-val="no_computer" onclick="toggleExclusive(this,'computer')">None</button>
       </div>
     </div>
     <div class="device-group">
-      <div class="device-group-label">📺 TV / Streaming</div>
+      <div class="device-group-label">TV</div>
       <div class="chips" id="dg-tv">
-        <div class="chip" data-group="tv" data-val="firestick" onclick="toggleChip(this)">Fire Stick</div>
-        <div class="chip" data-group="tv" data-val="android_tv" onclick="toggleChip(this)">Android TV</div>
-        <div class="chip" data-group="tv" data-val="apple_tv" onclick="toggleChip(this)">Apple TV</div>
-        <div class="chip" data-group="tv" data-val="roku" onclick="toggleChip(this)">Roku</div>
-        <div class="chip" data-group="tv" data-val="smart_tv" onclick="toggleChip(this)">Smart TV</div>
-        <div class="chip" data-group="tv" data-val="chromecast" onclick="toggleChip(this)">Chromecast</div>
-        <div class="chip" data-group="tv" data-val="nvidia_shield" onclick="toggleChip(this)">Shield</div>
-        <div class="chip" data-group="tv" data-val="no_tv" onclick="toggleExclusive(this,'tv')">None</div>
+        <button type="button" class="chip" data-group="tv" data-val="firestick" onclick="toggleChip(this)">Fire Stick</button>
+        <button type="button" class="chip" data-group="tv" data-val="android_tv" onclick="toggleChip(this)">Android TV</button>
+        <button type="button" class="chip" data-group="tv" data-val="apple_tv" onclick="toggleChip(this)">Apple TV</button>
+        <button type="button" class="chip" data-group="tv" data-val="roku" onclick="toggleChip(this)">Roku</button>
+        <button type="button" class="chip" data-group="tv" data-val="smart_tv" onclick="toggleChip(this)">Smart TV</button>
+        <button type="button" class="chip" data-group="tv" data-val="chromecast" onclick="toggleChip(this)">Chromecast</button>
+        <button type="button" class="chip" data-group="tv" data-val="nvidia_shield" onclick="toggleChip(this)">Shield</button>
+        <button type="button" class="chip" data-group="tv" data-val="no_tv" onclick="toggleExclusive(this,'tv')">None</button>
       </div>
     </div>
     <div class="device-group">
-      <div class="device-group-label">🎮 Gaming Console</div>
+      <div class="device-group-label">Console</div>
       <div class="chips" id="dg-console">
-        <div class="chip" data-group="console" data-val="ps4" onclick="toggleChip(this)">PS4</div>
-        <div class="chip" data-group="console" data-val="ps5" onclick="toggleChip(this)">PS5</div>
-        <div class="chip" data-group="console" data-val="xbox" onclick="toggleChip(this)">Xbox</div>
-        <div class="chip" data-group="console" data-val="no_console" onclick="toggleExclusive(this,'console')">None</div>
+        <button type="button" class="chip" data-group="console" data-val="ps4" onclick="toggleChip(this)">PS4</button>
+        <button type="button" class="chip" data-group="console" data-val="ps5" onclick="toggleChip(this)">PS5</button>
+        <button type="button" class="chip" data-group="console" data-val="xbox" onclick="toggleChip(this)">Xbox</button>
+        <button type="button" class="chip" data-group="console" data-val="no_console" onclick="toggleExclusive(this,'console')">None</button>
       </div>
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-b" onclick="goStep(1)">← Back</button>
-      <button class="btn btn-g" onclick="goStep3()">Continue →</button>
+      <button class="btn btn-ghost" onclick="goStep(1)">Back</button>
+      <button class="btn btn-primary" onclick="goStep3()">Continue</button>
     </div>
   </div>
 
   <!-- Step 3: Photo -->
   <div class="step" id="step3">
-    <div class="step-title">Profile Photo</div>
-    <div class="step-sub">Add a photo or pick a color. Optional - you can skip and add one later.</div>
+    <h1>A photo, if you like</h1>
+    <p class="lede">Or just a colour. Either can be changed whenever.</p>
     <div class="banner banner-err" id="s3err"></div>
 
     <div class="avatar-wrap">
-      <div class="avatar-circle" id="avatarCircle" onclick="document.getElementById('avatarInput').click()">
+      <button class="avatar-pick" id="avatarCircle" onclick="document.getElementById('avatarInput').click()">
         <span id="avatarInitials">?</span>
-        <div class="avatar-overlay">Change<br/>Photo</div>
-      </div>
-      <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="previewAvatar(this)"/>
-      <div class="avatar-hint">Tap to upload · JPG or PNG · max 5MB</div>
+        <span class="avatar-overlay">Change<br/>photo</span>
+      </button>
+      <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="previewAvatar(this)"/>
+      <div class="avatar-hint">JPG or PNG, up to 5 MB</div>
       <div class="color-row" id="colorRow"></div>
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-b" onclick="goStep(2)">← Back</button>
-      <button class="btn btn-g" onclick="goStep4()">Continue →</button>
+      <button class="btn btn-ghost" onclick="goStep(2)">Back</button>
+      <button class="btn btn-primary" onclick="goStep4()">Continue</button>
     </div>
-    <button class="btn-skip" onclick="skipPhotoToStep4()">Skip photo →</button>
+    <button class="btn-skip" onclick="skipPhotoToStep4()">Skip this</button>
   </div>
 
   <!-- Step 4: Password -->
   <div class="step" id="step4">
-    <div class="step-title">Set Your Password</div>
-    <div class="step-sub">Choose a password you'll use to sign in. Make it something only you would know.</div>
+    <h1>Set your password</h1>
+    <p class="lede">This replaces the one you were sent. Make it something only you would pick.</p>
     <div class="banner banner-err" id="s4err"></div>
 
     <div class="field">
-      <label>Current Password</label>
-      <input type="password" id="cur_pw" placeholder="The password you signed in with" autocomplete="current-password"/>
-      <div class="hint">This is whatever you used to log in just now.</div>
+      <label for="cur_pw">Current password</label>
+      <input type="password" id="cur_pw" placeholder="••••••••" autocomplete="current-password"/>
+      <div class="hint">The one you signed in with a moment ago.</div>
     </div>
     <div class="field">
-      <label>New Password</label>
-      <input type="password" id="new_pw" placeholder="8+ chars, 1 uppercase, 1 special" autocomplete="new-password" oninput="validatePw()"/>
-      <div class="hint" id="pw-hint">At least 8 characters, one uppercase letter, and one special character.</div>
+      <label for="new_pw">New password</label>
+      <input type="password" id="new_pw" placeholder="••••••••" autocomplete="new-password" oninput="validatePw()"/>
+      <div class="hint" id="pw-hint">At least 8 characters, one capital and one symbol.</div>
     </div>
     <div class="field">
-      <label>Confirm New Password</label>
-      <input type="password" id="new_pw2" placeholder="Re-enter new password" autocomplete="new-password" oninput="validatePw()"/>
+      <label for="new_pw2">New password again</label>
+      <input type="password" id="new_pw2" placeholder="••••••••" autocomplete="new-password" oninput="validatePw()"/>
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-b" onclick="goStep(3)">← Back</button>
-      <button class="btn btn-g" id="saveBtn" onclick="saveAll()">Finish Setup</button>
+      <button class="btn btn-ghost" onclick="goStep(3)">Back</button>
+      <button class="btn btn-primary" id="saveBtn" onclick="saveAll()">Finish</button>
     </div>
   </div>
-</div>
+
+  </div>
+</main>
 
 <script>
 const COLORS = ['#60a5fa','#34d399','#f87171','#fbbf24','#a78bfa','#fb7185','#38bdf8','#4ade80'];
@@ -226,8 +199,9 @@ let _snValid = false;
 
 // Build color dots
 COLORS.forEach(c => {
-  const dot = document.createElement('div');
+  const dot = document.createElement('button');
   dot.className = 'cdot' + (c === selectedColor ? ' on' : '');
+  dot.type = 'button';
   dot.style.background = c;
   dot.onclick = () => {
     selectedColor = c;
@@ -340,7 +314,7 @@ function getDevices() {
 function previewAvatar(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 5*1024*1024) { alert('Image must be under 5MB.'); return; }
+  if (file.size > 5*1024*1024) { alert('That image is over 5 MB.'); return; }
   const reader = new FileReader();
   reader.onload = e => {
     avatarBase64 = e.target.result;
@@ -348,7 +322,7 @@ function previewAvatar(input) {
     let img = circle.querySelector('img');
     if (!img) { img = document.createElement('img'); circle.insertBefore(img, circle.firstChild); }
     img.src = avatarBase64;
-    document.getElementById('avatarInitials').style.display = 'none';
+    document.getElementById('avatarInitials').classList.add('hidden');
     circle.style.background = 'transparent';
   };
   reader.readAsDataURL(file);
@@ -384,7 +358,7 @@ async function saveAll() {
     const profileData = await profileRes.json();
     if (!profileRes.ok) {
       err.textContent = profileData.error || 'Failed to save profile.';
-      err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Finish Setup'; return;
+      err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Finish'; return;
     }
 
     await fetch('/api/member/profile/devices', {
@@ -400,13 +374,13 @@ async function saveAll() {
     const pwData = await pwRes.json();
     if (!pwRes.ok) {
       err.textContent = pwData.error || 'Password change failed. Check your current password.';
-      err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Finish Setup'; return;
+      err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Finish'; return;
     }
 
     window.location.href = '/dashboard.html';
   } catch(e) {
     err.textContent = 'Connection error. Please try again.';
-    err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Finish Setup';
+    err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Finish';
   }
 }
 
@@ -443,7 +417,7 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
     const circle = document.getElementById('avatarCircle');
     const img = document.createElement('img');
     img.src = p.avatar_url; circle.insertBefore(img, circle.firstChild);
-    document.getElementById('avatarInitials').style.display = 'none';
+    document.getElementById('avatarInitials').classList.add('hidden');
   }
 
   if (isEditing && p?.devices) {

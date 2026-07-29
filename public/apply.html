@@ -34,72 +34,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="/dungeon.css"/>
 <style>
-.wrap{max-width:480px;margin:0 auto;padding-inline:22px;width:100%}
-
+/* Auth pages run narrower than the rest of the site and carry no top
+   border. .card, .field, .hint, .check, .btn, .banner, .rule, .state
+   and .foot all come from /dungeon.css. */
 .bar{display:flex;align-items:center;justify-content:space-between;padding-block:16px;position:relative;z-index:2}
-.brand{display:flex;align-items:center;gap:9px}
-.brand svg{width:15px;height:15px;fill:none;stroke:var(--accent);stroke-width:2}
-.brand span{font-family:'Press Start 2P',monospace;font-size:11px;font-weight:400;letter-spacing:.02em;line-height:1.4}
-.back{font-size:14px;font-weight:500;color:var(--muted);padding:6px 2px;transition:color .18s}
-.back:hover,.back:focus-visible{color:var(--text);outline:none}
-
 main{flex:1;position:relative;padding:34px 0 56px;overflow-x:clip}
 main>*{position:relative;z-index:1}   /* .rails comes from /dungeon.css */
 
 h1{font-size:30px;line-height:1.14;font-weight:600;letter-spacing:-.026em;margin-bottom:12px;text-wrap:pretty}
-.lede{font-size:15px;line-height:1.6;color:var(--muted);margin-bottom:28px;max-width:36ch;text-wrap:pretty}
-
-.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px}
-.banner{display:none;font-size:13px;line-height:1.5;color:var(--red);background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.24);border-radius:10px;padding:11px 13px;margin-bottom:16px}
-
-.field{margin-bottom:15px}
-.field label{display:block;font-size:12.5px;font-weight:500;color:var(--text2);margin-bottom:7px}
-.field label .opt{color:var(--faint);font-weight:400}
-.field input{width:100%;background:var(--raise);border:1px solid var(--line2);border-radius:10px;color:var(--text);font-family:var(--sans);font-size:15px;padding:12px 13px;outline:none;transition:border-color .18s,box-shadow .18s}
-.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,211,153,.12)}
-.field input::placeholder{color:var(--faint)}
-.hint{font-family:var(--mono);font-size:11px;line-height:1.45;color:var(--faint);margin-top:6px}
-.hint.ok{color:var(--accent)}
-.hint.bad{color:var(--red)}
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-.rule{height:1px;background:var(--line);margin:20px 0}
-
-.terms{display:flex;align-items:flex-start;gap:11px;margin-bottom:18px}
-.terms input{width:17px;height:17px;margin-top:2px;accent-color:var(--accent);cursor:pointer;flex:none}
-.terms label{font-size:13px;line-height:1.6;color:var(--muted);cursor:pointer}
-.terms a{color:var(--accent)}
-.terms a:hover{color:#6EE7B7}
-
-.btn{width:100%;padding:14px;background:var(--accent);border:1px solid transparent;border-radius:10px;color:var(--accent-ink);font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;transition:transform .14s,background .18s}
-.btn:hover:not(:disabled){transform:translateY(-1px);background:#4CE0A0}
-.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.lede{font-size:15px;max-width:36ch;margin-bottom:28px}
 
 .alt{text-align:center;margin-top:18px;font-size:13.5px;color:var(--muted)}
 .alt a{color:var(--accent);font-weight:500}
-.alt a:hover{color:#6EE7B7}
-
-.done{display:none;text-align:center;padding:26px 0}
-.done .mark{width:52px;height:52px;border-radius:50%;border:1px solid rgba(52,211,153,.35);background:rgba(52,211,153,.09);display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
-.done .mark svg{width:24px;height:24px;fill:none;stroke:var(--accent);stroke-width:2}
-.done h2{font-size:22px;font-weight:600;letter-spacing:-.02em;margin-bottom:10px}
-.done p{font-size:14.5px;line-height:1.65;color:var(--muted);max-width:32ch;margin:0 auto 24px}
-.done .btn{max-width:220px;margin:0 auto;background:transparent;border-color:var(--line2);color:var(--text2);font-weight:500;display:block;text-align:center}
-.done .btn:hover{background:transparent;border-color:rgba(255,255,255,.24);color:var(--text)}
-
-footer{border-top:1px solid var(--line)}
-.foot{display:flex;align-items:center;justify-content:space-between;padding-block:22px 34px;font-family:var(--mono);font-size:11px;color:var(--faint)}
-.foot nav{display:flex;gap:16px}
-.foot a:hover{color:var(--muted)}
-
-@media(max-width:420px){.frow{grid-template-columns:1fr}}
+.alt a:hover{color:var(--accent-hi)}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="wrap bar">
+  <div class="wrap wrap-md bar">
     <a href="/" class="brand" id="logoLink">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
       <span>DUNGEON</span>
@@ -110,7 +63,7 @@ footer{border-top:1px solid var(--line)}
 
 <main>
   <div class="rails" aria-hidden="true"></div>
-  <div class="wrap">
+  <div class="wrap wrap-md">
 
     <div id="introView">
       <h1>Request an invite</h1>
@@ -118,9 +71,9 @@ footer{border-top:1px solid var(--line)}
     </div>
 
     <div class="card" id="formView">
-      <div class="banner" id="errBanner"></div>
+      <div class="banner banner-err" id="errBanner"></div>
 
-      <div class="frow">
+      <div class="field-row">
         <div class="field">
           <label for="fn">First name</label>
           <input type="text" id="fn" placeholder="Alex" autocomplete="given-name"/>
@@ -154,30 +107,34 @@ footer{border-top:1px solid var(--line)}
 
       <div class="rule"></div>
 
-      <div class="terms">
+      <div class="check mb-2">
         <input type="checkbox" id="terms"/>
         <label for="terms">I agree to the <a href="/terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</label>
       </div>
 
-      <button class="btn" id="submitBtn" onclick="submitForm()">Send request</button>
+      <button class="btn btn-primary btn-wide" id="submitBtn" onclick="submitForm()">Send request</button>
 
       <div class="alt">Already a member? <a href="/login.html">Sign in</a></div>
     </div>
 
-    <div class="done" id="successView">
-      <span class="mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
-      <h2>Request received</h2>
-      <p>We'll review it and email you at the address you gave us.</p>
-      <a href="/" class="btn">Back to home</a>
+    <div class="card hidden" id="successView">
+      <div class="state">
+        <span class="mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+        <b>Request received</b>
+        <p>We'll read it and email you at the address you gave us.</p>
+      </div>
+      <a href="/" class="btn btn-ghost btn-wide mt-3">Back to home</a>
     </div>
 
   </div>
 </main>
 
 <footer>
-  <div class="wrap foot">
-    <span>© 2026 Dungeon</span>
-    <nav><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a></nav>
+  <div class="wrap wrap-md foot">
+    <div class="spread">
+      <span>© 2026 Dungeon</span>
+      <nav><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a></nav>
+    </div>
   </div>
 </footer>
 
@@ -230,9 +187,9 @@ async function submitForm(){
   btn.disabled=false;btn.textContent='Send request';
   if(!r.ok){return fail(banner,r.data.error||'Something went wrong. Try again.')}
 
-  document.getElementById('introView').style.display='none';
-  document.getElementById('formView').style.display='none';
-  document.getElementById('successView').style.display='block';
+  document.getElementById('introView').classList.add('hidden');
+  document.getElementById('formView').classList.add('hidden');
+  document.getElementById('successView').classList.remove('hidden');
   window.scrollTo(0,0);
 }
 

@@ -45,6 +45,10 @@ img{max-width:100%}
 .topnav{display:flex;align-items:center;gap:14px}
 .topnav a,.topnav button{font-family:var(--sans);font-size:13.5px;font-weight:500;color:var(--muted);background:none;border:none;cursor:pointer;padding:4px 0;white-space:nowrap;transition:color .18s}
 .topnav a:hover,.topnav button:hover{color:var(--text)}
+.topnav a[aria-current]{color:var(--text)}
+/* A nav link that carries a count. The badge is absolute, so the link
+   has to establish the containing block itself. */
+.topnav .has-badge{position:relative;padding-right:4px}
 .back{font-size:14px;font-weight:500;color:var(--muted);white-space:nowrap;transition:color .18s}
 .back:hover{color:var(--text)}
 
@@ -66,6 +70,9 @@ h2{font-size:19px;font-weight:600;letter-spacing:-.016em;text-wrap:pretty}
 .page-title+.page-sub{margin-top:8px}
 .page-head{margin-bottom:26px}
 
+.title-lg{font-size:clamp(28px,4.4vw,40px);line-height:1.08;font-weight:600;letter-spacing:-.03em;text-wrap:balance}
+.title-lg+.page-sub,.title-lg+.lede{margin-top:12px;font-size:15.5px}
+
 .label{display:block;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);padding-bottom:14px}
 .label.tight{padding-bottom:6px}
 .label-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -73,7 +80,12 @@ h2{font-size:19px;font-weight:600;letter-spacing:-.016em;text-wrap:pretty}
 .label-row a:hover{color:var(--accent)}
 .eyebrow{display:block;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
 .section-head{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin:32px 0 14px}
-.section-head::after{content:'';flex:1;height:1px;background:var(--line)}
+.section-head::after{content:'';order:1;flex:1;height:1px;background:var(--line)}
+/* A link in a section head belongs on the far side of the rule, not
+   crowded against the label. */
+.section-head .section-more{order:2;font-family:var(--sans);font-size:12.5px;font-weight:500;
+  letter-spacing:0;text-transform:none;color:var(--muted);transition:color .18s}
+.section-head .section-more:hover{color:var(--accent)}
 .rule{height:1px;background:var(--line);margin-block:20px}
 
 /* Register rails: the guides a card gets printed against. Structure
@@ -88,13 +100,54 @@ h2{font-size:19px;font-weight:600;letter-spacing:-.016em;text-wrap:pretty}
   mask-image:linear-gradient(180deg,transparent 0,#000 18%,#000 52%,transparent 100%)}
 .rails-host>.wrap,.rails-host>.inner{position:relative;z-index:1}
 
+/* Bands: the horizontal rhythm of a long page. One hairline between
+   sections, and on desktop the section label sits out in the margin so
+   the content column stays a readable measure. */
+.band{border-top:1px solid var(--line);padding-block:38px}
+.band:first-child{border-top:none}
+.band .label{padding-bottom:18px}
+
+/* ── Long-form copy ──────────────────────────────────────── */
+/* Legal pages, policies, anything that is mostly paragraphs. Sized for
+   reading rather than scanning, so it runs looser than .lede. */
+.prose{font-size:14.5px;line-height:1.8;color:var(--text2);max-width:68ch}
+.prose>*+*{margin-top:14px}
+.prose h2{font-size:16px;font-weight:600;letter-spacing:-.01em;color:var(--text);margin-top:34px}
+.prose h3{font-size:14px;font-weight:600;color:var(--text);margin-top:22px}
+.prose h2:first-child,.prose h3:first-child{margin-top:0}
+.prose ul,.prose ol{padding-left:20px}
+.prose li+li{margin-top:6px}
+.prose a{color:var(--accent)}
+.prose a:hover{color:var(--accent-hi)}
+.prose strong,.prose b{color:var(--text);font-weight:600}
+.prose code{font-family:var(--mono);font-size:.9em;color:var(--text);background:var(--raise);border-radius:5px;padding:2px 5px}
+.prose hr{border:0;height:1px;background:var(--line);margin-block:28px}
+
+/* ── Disclosure list ─────────────────────────────────────── */
+.faq details{border-bottom:1px solid var(--line)}
+.faq details:last-child{border-bottom:0}
+.faq summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding-block:16px;cursor:pointer;font-size:14.5px;font-weight:500;color:var(--text2);transition:color .18s}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{color:var(--text)}
+.faq details:first-child summary{padding-top:0}
+.faq summary .pm{font-family:var(--mono);font-size:14px;color:var(--faint);flex:none}
+.faq summary .pm::before{content:'+'}
+.faq details[open] summary{color:var(--text);font-weight:600;padding-bottom:7px}
+.faq details[open] .pm{color:var(--accent)}
+.faq details[open] .pm::before{content:'\2212'}
+.faq p{font-size:13.5px;line-height:1.65;color:var(--muted);max-width:54ch;padding-bottom:18px}
+
 /* ── Cards ───────────────────────────────────────────────── */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}
 .card+.card{margin-top:12px}
 .card-sm{border-radius:14px;padding:16px}
 .card-accent{border-color:rgba(52,211,153,.22)}
 .card-title{display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:16px}
+/* .cards owns the spacing, so the .card+.card margin must not stack on
+   top of the gap. */
 .cards{display:flex;flex-direction:column;gap:10px}
+.cards>.card+.card{margin-top:0}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .grid-auto{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px}
@@ -235,7 +288,9 @@ a.row-item:hover{padding-left:4px}
 /* ── Tiles ───────────────────────────────────────────────── */
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px 10px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:border-color .18s,transform .14s}
 .tile:hover{border-color:var(--line2);transform:translateY(-2px)}
-.tile svg{width:21px;height:21px;fill:none;stroke:var(--text2);stroke-width:1.5;color:var(--text2)}
+/* Direct child only: a tile may carry someone else's mark, and that mark
+   brings its own fill and stroke. */
+.tile>svg{width:21px;height:21px;fill:none;stroke:var(--text2);stroke-width:1.5;color:var(--text2)}
 .tile span{font-size:12px;font-weight:500;color:var(--text);text-align:center}
 
 /* Link row with leading icon and trailing arrow */
@@ -278,6 +333,14 @@ table.dt td.num{font-family:var(--mono);text-align:right;white-space:nowrap}
 .state b{display:block;font-size:16px;font-weight:600;margin-bottom:6px}
 .state p{font-size:13.5px;line-height:1.6;color:var(--muted);max-width:34ch;margin:0 auto}
 
+/* ── Waiting ─────────────────────────────────────────────── */
+.loading{display:flex;flex-direction:column;align-items:center;gap:13px;padding-block:40px;font-size:13.5px;color:var(--muted);text-align:center}
+.spin{width:20px;height:20px;flex:none;border:2px solid var(--line2);border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Placeholder blocks for content that has not arrived yet. */
+.skel{background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.08),rgba(255,255,255,.04));background-size:200% 100%;border-radius:8px;animation:skel 1.4s ease-in-out infinite}
+@keyframes skel{to{background-position:-200% 0}}
+
 /* ── Toast ───────────────────────────────────────────────── */
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:#0A100D;border:1px solid var(--line2);border-radius:10px;padding:12px 20px;font-size:13.5px;color:var(--text);z-index:200;transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:0 12px 30px rgba(0,0,0,.5);max-width:calc(100vw - 44px);text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -288,7 +351,9 @@ footer{border-top:1px solid var(--line);margin-top:36px}
 .foot a{transition:color .18s}
 .foot a:hover{color:var(--muted)}
 .foot .spread{display:flex;align-items:center;justify-content:space-between;width:100%;gap:14px}
-.foot nav{display:flex;gap:16px}
+/* Staff get extra links appended here at runtime, so the row has to be
+   able to wrap rather than run off the side of a phone. */
+.foot nav{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:flex-end}
 
 /* ── Utilities ───────────────────────────────────────────── */
 .mono{font-family:var(--mono)}
@@ -297,7 +362,9 @@ footer{border-top:1px solid var(--line);margin-top:36px}
 .accent{color:var(--accent)}
 .center{text-align:center}
 .nowrap{white-space:nowrap}
-.hidden{display:none}
+/* Page CSS loads after this file, so a page rule that sets display would
+   otherwise win over .hidden and leave the element on screen. */
+.hidden{display:none !important}
 .mt-0{margin-top:0}.mt-1{margin-top:8px}.mt-2{margin-top:16px}.mt-3{margin-top:24px}.mt-4{margin-top:32px}
 .mb-0{margin-bottom:0}.mb-1{margin-bottom:8px}.mb-2{margin-bottom:16px}.mb-3{margin-bottom:24px}.mb-4{margin-bottom:32px}
 .stack{display:flex;flex-direction:column}
@@ -310,6 +377,30 @@ footer{border-top:1px solid var(--line);margin-top:36px}
 
 @media(max-width:480px){
   .grid-2,.field-row{grid-template-columns:1fr}
+}
+/* Three nav items and the wordmark do not fit a 390px screen. Tighten
+   the rhythm, and let the nav scroll inside itself rather than pushing
+   the page sideways. */
+@media(max-width:430px){
+  .topbar .row{gap:10px}
+  .topnav{gap:12px;min-width:0;overflow-x:auto;scrollbar-width:none}
+  .topnav::-webkit-scrollbar{display:none}
+  .topnav a,.topnav button{font-size:13px}
+}
+
+/* ── Desktop ─────────────────────────────────────────────────
+   The site was laid out as a phone column and then shown on a
+   1440px screen. From here up it gets a composition: a wider
+   gutter, more air between sections, and section labels moved
+   out into the margin beside the content they name. */
+@media(min-width:880px){
+  .wrap{padding-inline:32px}
+  .page{padding-block:44px 80px}
+  .page-head{margin-bottom:34px}
+  .band{padding-block:54px}
+  .band-split{display:grid;grid-template-columns:190px 1fr;gap:50px;align-items:start}
+  .band-split .label{padding-bottom:0}
+  .head-split{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end}
 }
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}

@@ -16,51 +16,29 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="/dungeon.css"/>
 <style>
-.wrap{max-width:420px;margin:0 auto;padding-inline:22px;width:100%}
-
+/* Auth pages run narrower than the rest of the site and carry no top
+   border, so the form is the only thing on screen. Everything else —
+   .field, .btn, .banner, .foot — comes from /dungeon.css. */
 .bar{display:flex;align-items:center;justify-content:space-between;padding-block:16px;position:relative;z-index:2}
-.brand{display:flex;align-items:center;gap:9px}
-.brand svg{width:15px;height:15px;fill:none;stroke:var(--accent);stroke-width:2}
-.brand span{font-family:'Press Start 2P',monospace;font-size:11px;font-weight:400;letter-spacing:.02em;line-height:1.4}
-.back{font-size:14px;font-weight:500;color:var(--muted);padding:6px 2px;transition:color .18s}
-.back:hover,.back:focus-visible{color:var(--text);outline:none}
-
 main{flex:1;display:flex;align-items:center;justify-content:center;position:relative;padding:40px 0 60px;overflow-x:clip}
-.wrap.form{position:relative;z-index:1}   /* .rails comes from /dungeon.css */
+.form{position:relative;z-index:1}   /* .rails comes from /dungeon.css */
 
 h1{font-size:30px;line-height:1.14;font-weight:600;letter-spacing:-.026em;margin-bottom:10px}
-.lede{font-size:15px;line-height:1.6;color:var(--muted);margin-bottom:28px}
+.lede{font-size:15px;margin-bottom:28px}
 
-.field{margin-bottom:15px}
-.field label{display:block;font-size:12.5px;font-weight:500;color:var(--text2);margin-bottom:7px}
-.field input{width:100%;background:var(--raise);border:1px solid var(--line2);border-radius:10px;color:var(--text);font-family:var(--sans);font-size:15px;padding:12px 13px;outline:none;transition:border-color .18s,box-shadow .18s}
-.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,211,153,.12)}
-.field input::placeholder{color:var(--faint)}
 .forgot{text-align:right;margin-top:9px}
 .forgot a{font-size:12.5px;color:var(--muted);transition:color .18s}
 .forgot a:hover,.forgot a:focus-visible{color:var(--accent);outline:none}
 
-.btn{width:100%;margin-top:8px;padding:14px;background:var(--accent);border:1px solid transparent;border-radius:10px;color:var(--accent-ink);font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;transition:transform .14s,background .18s}
-.btn:hover:not(:disabled){transform:translateY(-1px);background:#4CE0A0}
-.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
-
-.err{display:none;margin-top:16px;font-size:13px;line-height:1.5;color:var(--red);background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.24);border-radius:10px;padding:11px 13px}
-
 .alt{text-align:center;margin-top:26px;font-size:13.5px;color:var(--muted)}
 .alt a{color:var(--accent);font-weight:500}
-.alt a:hover{color:#6EE7B7}
-
-footer{border-top:1px solid var(--line)}
-.foot{display:flex;align-items:center;justify-content:space-between;padding-block:22px 34px;font-family:var(--mono);font-size:11px;color:var(--faint)}
-.foot nav{display:flex;gap:16px}
-.foot a:hover{color:var(--muted)}
+.alt a:hover{color:var(--accent-hi)}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="wrap bar">
+  <div class="wrap wrap-sm bar">
     <a href="/" class="brand" id="logoLink">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
       <span>DUNGEON</span>
@@ -71,7 +49,7 @@ footer{border-top:1px solid var(--line)}
 
 <main>
   <div class="rails" aria-hidden="true"></div>
-  <div class="wrap form">
+  <div class="wrap wrap-sm form">
     <h1>Sign in</h1>
     <p class="lede">Welcome back.</p>
 
@@ -82,20 +60,22 @@ footer{border-top:1px solid var(--line)}
     <div class="field">
       <label for="password">Password</label>
       <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"/>
-      <div class="forgot"><a href="/reset-password">Forgot password?</a></div>
+      <div class="forgot"><a href="/reset-password.html">Forgot password?</a></div>
     </div>
 
-    <button class="btn" id="loginBtn" onclick="login()">Sign in</button>
-    <div class="err" id="errorMsg"></div>
+    <button class="btn btn-primary btn-wide mt-1" id="loginBtn" onclick="login()">Sign in</button>
+    <div class="banner banner-err mt-2" id="errorMsg"></div>
 
     <div class="alt">No account yet? <a href="/apply.html">Request an invite</a></div>
   </div>
 </main>
 
 <footer>
-  <div class="wrap foot">
-    <span>© 2026 Dungeon</span>
-    <nav><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a></nav>
+  <div class="wrap wrap-sm foot">
+    <div class="spread">
+      <span>© 2026 Dungeon</span>
+      <nav><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a></nav>
+    </div>
   </div>
 </footer>
 
