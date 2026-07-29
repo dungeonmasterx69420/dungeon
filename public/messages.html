@@ -1,235 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="color-scheme" content="dark"/>
-<meta name="theme-color" content="#060908"/>
+<meta charset="UTF-8"/>
+<meta name="color-scheme" content="dark"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dungeon · Messages</title>
 <link rel="manifest" href="/site.webmanifest"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon · Messages</title>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
-    *{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#060908;--surface:#141c19;--surface2:#0d1311;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.28);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--green-bg2:rgba(52,211,153,0.15);--text:#dce8e3;--muted:#6f8f84;--muted2:#8fa89e;--red:#f87171;--red-bg:rgba(248,113,113,0.1)}
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif}
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/dungeon.css"/>
+<style>
+/* .card, .avatar, .tabbar, .field, .btn, .veil, .sheet, .empty and the
+   page chrome come from /dungeon.css. */
 
-    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
-    .nav{display:flex;align-items:center;gap:20px}
-    .nav a,.nav button{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color .2s}
-    .nav a:hover,.nav button:hover{color:var(--text)}
+/* On a phone this is one pane that swaps; from 880 up it is a real two
+   pane inbox, because a message and the list of messages are things you
+   want at the same time. */
+.pane-detail{display:none}
+.mail.reading .pane-list{display:none}
+.mail.reading .pane-detail{display:block}
 
-    .page{max-width:720px;margin:0 auto;padding:32px 24px 80px}
-    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
-    .page-title{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:13px !important;font-weight:400 !important;color:var(--text);line-height:1.6}
+.msg-row{display:flex;gap:12px;align-items:flex-start;width:100%;padding:14px 4px;
+  border-bottom:1px solid var(--line);background:none;border-left:0;border-right:0;border-top:0;
+  text-align:left;font:inherit;color:inherit;cursor:pointer;transition:padding-left .16s}
+.msg-row:hover{padding-left:8px}
+.msg-row:last-child{border-bottom:none}
+.msg-row .avatar{width:34px;height:34px;font-size:13px}
+.msg-row .txt{min-width:0;flex:1}
+/* These are spans so the row can be a button; they need to be blocks for
+   the ellipsis to do anything. */
+.msg-row .who{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.msg-row .subject{display:block;font-size:14px;font-weight:500;color:var(--text2);margin-top:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msg-row .preview{display:block;font-size:12.5px;color:var(--faint);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msg-row .when{font-family:var(--mono);font-size:10.5px;color:var(--faint);flex:none}
+.msg-row.unread .subject{color:var(--text);font-weight:600}
+.msg-row.unread .who::after{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;
+  background:var(--accent);margin-left:7px;vertical-align:middle}
 
-    /* Compose btn */
-    .compose-btn{padding:9px 18px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;text-decoration:none;display:inline-block}
-    .compose-btn:hover{opacity:0.9}
+.detail-subject{font-size:19px;font-weight:600;letter-spacing:-.018em;text-wrap:pretty}
+.detail-meta{display:flex;align-items:center;gap:11px;margin:14px 0 20px;padding-bottom:18px;
+  border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+.detail-meta .avatar{width:32px;height:32px;font-size:12px}
+.detail-meta a{color:var(--text2)}
+.detail-meta a:hover{color:var(--accent)}
+.detail-body{font-size:14.5px;line-height:1.75;color:var(--text2);white-space:pre-wrap;word-wrap:break-word}
+.detail-actions{display:flex;gap:8px;margin-top:26px}
 
-    /* Tabs */
-    .tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:0}
-    .tab-btn{font-size:13px;font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'DM Sans',sans-serif;padding:10px 0;margin-right:24px;transition:color .2s,border-color .2s;margin-bottom:-1px;display:flex;align-items:center;gap:6px}
-    .tab-btn:hover{color:var(--text)}
-    .tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
-    .unread-dot{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center}
-
-    /* Message rows */
-    .msg-row{border-bottom:1px solid var(--border);padding:16px 0;display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:start;cursor:pointer;transition:background .15s;border-radius:6px}
-    .msg-row:last-child{border-bottom:none}
-    .msg-row:hover{background:rgba(52,211,153,0.03)}
-    .msg-row.unread .msg-subject{font-weight:700;color:var(--text)}
-    .msg-row.unread .msg-avatar-wrap::after{content:'';width:8px;height:8px;background:var(--green);border-radius:50%;position:absolute;top:0;right:0;border:2px solid var(--bg)}
-
-    .msg-avatar-wrap{position:relative;width:40px;height:40px}
-    .msg-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#0b0f0e;overflow:hidden;flex-shrink:0}
-    .msg-avatar img{width:100%;height:100%;object-fit:cover}
-    .msg-from{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
-    .msg-subject{font-size:13px;color:var(--muted2);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .msg-preview{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .msg-time{font-size:11px;color:var(--muted);white-space:nowrap;margin-top:2px}
-
-    .empty{text-align:center;padding:48px 0}
-    .empty-title{font-size:15px;font-weight:500;color:var(--muted2);margin-bottom:6px}
-    .empty-sub{font-size:13px;color:var(--muted)}
-
-    /* Message detail view */
-    .msg-detail{display:none}
-    .msg-detail.open{display:block}
-    .msg-list-view{display:block}
-    .msg-list-view.hidden{display:none}
-
-    .detail-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-    .back-btn{font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:color .2s;padding:0;display:flex;align-items:center;gap:4px}
-    .back-btn:hover{color:var(--text)}
-    .detail-subject{font-size:17px;font-weight:600;color:var(--text);margin-bottom:16px}
-    .detail-meta{display:flex;align-items:center;gap:10px;margin-bottom:20px;font-size:13px;color:var(--muted2)}
-    .detail-meta a{color:var(--green);text-decoration:none}
-    .detail-meta a:hover{text-decoration:underline}
-    .detail-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#0b0f0e;overflow:hidden;flex-shrink:0}
-    .detail-avatar img{width:100%;height:100%;object-fit:cover}
-    .detail-body{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;font-size:14px;color:var(--muted2);line-height:1.75;white-space:pre-wrap;word-break:break-word;margin-bottom:20px}
-    .detail-actions{display:flex;gap:10px}
-    .detail-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;border:1px solid var(--border2);background:transparent;color:var(--muted2)}
-    .detail-btn:hover{border-color:var(--green);color:var(--green)}
-    .detail-btn.danger:hover{border-color:var(--red);color:var(--red)}
-
-    /* Compose modal */
-    .veil{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center;padding:24px}
-    .veil.open{display:flex}
-    .modal{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;width:100%;max-width:480px}
-    .modal-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:20px}
-    .field{margin-bottom:16px}
-    label{display:block;font-size:11px;font-weight:600;color:var(--muted2);margin-bottom:7px;letter-spacing:0.04em;text-transform:uppercase}
-    input,textarea,select{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s;appearance:none}
-    input:focus,textarea:focus,select:focus{border-color:var(--green)}
-    input::placeholder,textarea::placeholder{color:var(--muted)}
-    select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b8f7a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
-    select option{background:#111915}
-    textarea{resize:vertical;min-height:120px;line-height:1.6}
-    .error-msg{display:none;font-size:12px;color:var(--red);margin-bottom:12px;padding:10px 12px;background:var(--red-bg);border:1px solid rgba(248,113,113,0.2);border-radius:6px}
-    .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
-    .modal-btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .2s;border:none}
-    .modal-btn.cancel{background:var(--surface2);color:var(--muted2)}
-    .modal-btn.cancel:hover{color:var(--text)}
-    .modal-btn.send{background:var(--green);color:#0b0f0e}
-    .modal-btn.send:hover{opacity:0.9}
-    .modal-btn:disabled{opacity:0.4;cursor:not-allowed}
-
-    footer{text-align:center;padding:24px 0 16px;font-size:12px;color:var(--muted)}
-    footer a{color:var(--muted);text-decoration:none}
-    footer a:hover{color:var(--text)}
-    @media(max-width:767px){.page{padding:20px 14px 60px}.topbar{padding:12px 16px}.msg-row{grid-template-columns:36px 1fr auto}.msg-avatar,.msg-avatar-wrap{width:36px;height:36px}.msg-preview{display:none}footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
-
-    .msg-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:var(--muted2);font-size:15px;transition:border-color .2s,color .2s;cursor:pointer}
-    .msg-icon-btn:hover{border-color:var(--green);color:var(--green)}
-    .msg-icon-badge{position:absolute;top:-5px;right:-5px;background:var(--red,#f87171);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
-  
-/* torchlight ambience */
-body{position:relative}
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,transparent 1px 92px);-webkit-mask-image:linear-gradient(180deg,#000 0,#000 30%,transparent 74%);mask-image:linear-gradient(180deg,#000 0,#000 30%,transparent 74%)}
-.topbar,.page,.center,footer{position:relative;z-index:1}
-.logo{text-shadow:0 0 10px rgba(52,211,153,.5)}
-.page-title{text-shadow:0 0 16px rgba(52,211,153,.3)}
+@media(min-width:880px){
+  .mail{display:grid;grid-template-columns:344px 1fr;gap:16px;align-items:start}
+  .mail .pane-list,.mail.reading .pane-list{display:block}
+  .pane-detail{display:block;position:sticky;top:88px}
+  .back-row{display:none}
+}
 </style>
-<style>/* unified header logo */.logo{font-family:'Press Start 2P',monospace!important;font-size:11px!important;font-weight:400!important;letter-spacing:.04em!important;color:#34d399!important;text-decoration:none!important;text-shadow:0 0 10px rgba(52,211,153,.5)!important;line-height:1.4!important}.logo svg{width:12px;height:12px;margin-right:7px;vertical-align:-1px;fill:none;stroke:currentColor;stroke-width:2.2;filter:drop-shadow(0 0 5px rgba(52,211,153,.5))}</style>
 </head>
 <body>
 
-<div class="topbar">
-  <a href="/" class="logo" id="logoLink"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 20.5 7.1v9.8L12 21.8 3.5 16.9V7.1Z"/></svg>DUNGEON</a>
-  <div class="nav">
-    <a href="/dashboard.html">Dashboard</a>
-    <a href="/forum.html">Forum</a>
-    <button onclick="logout()">Sign out</button>
+<header class="topbar sticky">
+  <div class="wrap wrap-xl row">
+    <a href="/dashboard.html" class="brand" id="logoLink">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </a>
+    <nav class="topnav">
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/forum.html">Forum</a>
+      <button type="button" onclick="signOut()">Sign out</button>
+    </nav>
   </div>
-</div>
+</header>
 
-<div class="page">
-  <div class="page-header">
-    <div class="page-title">Messages</div>
-    <button class="compose-btn" onclick="openCompose()">+ Compose</button>
-  </div>
+<main class="page" data-requires-auth>
+  <div class="wrap wrap-xl">
 
-  <div class="msg-list-view" id="msgListView">
-    <div class="tabs">
-      <button class="tab-btn active" id="inboxTab" onclick="switchTab('inbox',this)">
-        Inbox <span class="unread-dot" id="unreadBadge" style="display:none"></span>
-      </button>
-      <button class="tab-btn" id="sentTab" onclick="switchTab('sent',this)">Sent</button>
+    <div class="page-head head-split">
+      <div>
+        <h1 class="title-lg">Messages</h1>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openCompose()">Compose</button>
     </div>
-    <div id="msgList" style="margin-top:0"></div>
-  </div>
 
-  <div class="msg-detail" id="msgDetail">
-    <div class="detail-header">
-      <button class="back-btn" onclick="closeDetail()">← Back</button>
+    <div class="mail" id="mail">
+      <div class="pane-list" id="msgListView">
+        <div class="card">
+          <div class="tabbar mb-1">
+            <button class="on" id="inboxTab" onclick="switchTab('inbox',this)">Inbox</button>
+            <button id="sentTab" onclick="switchTab('sent',this)">Sent</button>
+          </div>
+          <div id="msgList"><div class="loading"><span class="spin" aria-hidden="true"></span>Loading…</div></div>
+        </div>
+      </div>
+
+      <div class="pane-detail" id="msgDetail">
+        <div class="back-row mb-1">
+          <button class="btn btn-ghost btn-sm" onclick="closeDetail()">← All messages</button>
+        </div>
+        <div class="card" id="detailContent">
+          <div class="empty">Pick a message to read it.</div>
+        </div>
+      </div>
     </div>
-    <div id="detailContent"></div>
+
   </div>
+</main>
 
-  <footer id="pageFooter">
-    <a href="/dashboard.html">Dashboard</a><span class="sep"> · </span>
-    <a href="/guides.html">Guides</a><span class="sep"> · </span>
-    <a href="/forum.html">Forum</a><span class="sep"> · </span>
-    <a href="/support.html">Support</a>
-  </footer>
-</div>
+<footer>
+  <div class="wrap wrap-xl foot">
+    <div class="spread">
+      <span>© 2026 Dungeon</span>
+      <nav id="footNav">
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/guides.html">Guides</a>
+        <a href="/forum.html">Forum</a>
+        <a href="/support.html">Support</a>
+      </nav>
+    </div>
+  </div>
+</footer>
 
-<!-- Compose modal -->
+<!-- Compose -->
 <div class="veil" id="composeVeil" onclick="if(event.target===this)closeCompose()">
-  <div class="modal">
-    <div class="modal-title">New Message</div>
-    <div class="error-msg" id="composeErr"></div>
+  <div class="sheet">
+    <span class="handle"></span>
+    <h2>New message</h2>
+    <p class="sub">Members only. It lands in their inbox here.</p>
+
+    <div class="banner banner-err" id="composeErr"></div>
+
     <div class="field">
-      <label>To</label>
-      <select id="recipientSelect">
-        <option value="">Select a member…</option>
-      </select>
+      <label for="recipientSelect">To</label>
+      <select id="recipientSelect"><option value="">Pick a member…</option></select>
     </div>
     <div class="field">
-      <label>Subject</label>
-      <input type="text" id="msgSubject" placeholder="Subject…" maxlength="200"/>
+      <label for="msgSubject">Subject</label>
+      <input type="text" id="msgSubject" placeholder="What it's about" maxlength="200"/>
     </div>
     <div class="field">
-      <label>Message</label>
-      <textarea id="msgContent" placeholder="Write your message…"></textarea>
+      <label for="msgContent">Message</label>
+      <textarea id="msgContent" rows="6" placeholder="Write it out."></textarea>
     </div>
-    <div class="modal-actions">
-      <button class="modal-btn cancel" onclick="closeCompose()">Cancel</button>
-      <button class="modal-btn send" id="sendBtn" onclick="sendMessage()">Send</button>
+
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" onclick="closeCompose()">Cancel</button>
+      <button class="btn btn-primary" id="sendBtn" onclick="sendMessage()">Send</button>
     </div>
   </div>
 </div>
 
+<script src="/dungeon-nav.js" defer></script>
 <script>
-  const TIERS={neut:{label:'Neut',color:'#e2e8e4'},member:{label:'Member',color:'#60a5fa'},mod:{label:'Moderator',color:'#34d399'},admin:{label:'Admin',color:'#f87171'},warden:{label:'Dungeon Master',color:'#fbbf24'}};
-
   let myProfile = null;
   let activeTab = 'inbox';
   let allProfiles = [];
   let currentMessages = [];
 
-  // Check for pre-selected recipient from URL
+  // A profile page can link straight into a new message.
   const preRecipient = new URLSearchParams(window.location.search).get('to');
 
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+  (async function(){
+    const d = await (window.dungeonMe || fetch('/api/member/me').then(r=>r.json()).catch(()=>({})));
     if(!d.authenticated){window.location.href='/login.html';return}
     myProfile = d.member?.profile;
-    loadFooter(d.member?.profile?.tier);
     loadProfiles();
     loadInbox();
-    loadUnread();
-  });
-
-  function loadFooter(tier){
-    const footer = document.getElementById('pageFooter');
-    if(!footer||!tier) return;
-    if(['mod','admin','warden'].includes(tier)){
-      const span=document.createElement('span');span.style.whiteSpace='nowrap';
-      let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
-      if(['admin','warden'].includes(tier)) extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
-      span.innerHTML=extra;footer.appendChild(span);
-    } else if(['admin','warden'].includes(tier)){
-      const span=document.createElement('span');
-      span.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
-      footer.appendChild(span);
-    }
-  }
+  })();
 
   async function loadProfiles(){
-    const profiles = await fetch('/api/profiles').then(r=>r.json());
+    const profiles = await fetch('/api/profiles').then(r=>r.json()).catch(()=>[]);
+    if(!Array.isArray(profiles)) return;
     allProfiles = profiles.filter(p => p.id !== myProfile?.id);
     const sel = document.getElementById('recipientSelect');
     allProfiles.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.id;
-      opt.textContent = `@${p.screen_name}`;
+      opt.textContent = '@' + p.screen_name;
       sel.appendChild(opt);
     });
     if(preRecipient){
@@ -238,126 +190,115 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     }
   }
 
-  async function loadUnread(){
-    const data = await fetch('/api/messages/unread').then(r=>r.json());
-    const badge = document.getElementById('unreadBadge');
-    if(data.count > 0){ badge.textContent=data.count; badge.style.display='inline-block'; }
-    else { badge.style.display='none'; }
-  }
-
   function switchTab(tab, el){
     activeTab = tab;
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    el.classList.add('active');
-    if(tab==='inbox') loadInbox();
-    else loadSent();
+    document.querySelectorAll('.tabbar button').forEach(b=>b.classList.remove('on'));
+    el.classList.add('on');
+    closeDetail();
+    if(tab==='inbox') loadInbox(); else loadSent();
   }
 
   async function loadInbox(){
-    const msgs = await fetch('/api/messages').then(r=>r.json());
-    currentMessages = msgs;
-    renderMessages(msgs, 'inbox');
+    currentMessages = await fetch('/api/messages').then(r=>r.json()).catch(()=>[]);
+    renderMessages(currentMessages, 'inbox');
   }
 
   async function loadSent(){
-    const msgs = await fetch('/api/messages/sent').then(r=>r.json());
-    currentMessages = msgs;
-    renderMessages(msgs, 'sent');
+    currentMessages = await fetch('/api/messages/sent').then(r=>r.json()).catch(()=>[]);
+    renderMessages(currentMessages, 'sent');
+  }
+
+  function otherParty(m, sent){
+    return sent
+      ? {name:m.recipient_name, avatar:m.recipient_avatar, color:m.recipient_color, id:m.recipient_profile_id}
+      : {name:m.sender_name,    avatar:m.sender_avatar,    color:m.sender_color,    id:m.sender_profile_id};
+  }
+
+  function avatarFor(p){
+    const initials = p.name ? p.name[0].toUpperCase() : '?';
+    return `<span class="avatar" style="background:${esc(p.color||'#60A5FA')}">${
+      p.avatar ? `<img src="${esc(p.avatar)}" alt=""/>` : esc(initials)}</span>`;
   }
 
   function renderMessages(msgs, tab){
     const el = document.getElementById('msgList');
-    if(!msgs.length){
-      el.innerHTML=`<div class="empty"><div class="empty-title">${tab==='inbox'?'No messages yet':'Nothing sent yet'}</div><div class="empty-sub">${tab==='inbox'?'When someone messages you, it will appear here.':'Messages you send will appear here.'}</div></div>`;
+    if(!Array.isArray(msgs) || !msgs.length){
+      el.innerHTML = '<div class="empty">' +
+        (tab==='inbox' ? 'Nothing in your inbox yet.' : "You haven't sent anything yet.") + '</div>';
       return;
     }
+    const sent = tab === 'sent';
     el.innerHTML = msgs.map(m => {
-      const isUnread = tab==='inbox' && !m.read;
-      const other = tab==='inbox'
-        ? {name:m.sender_name, avatar:m.sender_avatar, color:m.sender_color, tier:m.sender_tier, id:m.sender_profile_id}
-        : {name:m.recipient_name, avatar:m.recipient_avatar, color:m.recipient_color, tier:m.recipient_tier, id:m.recipient_profile_id};
-      const initials = other.name ? other.name[0].toUpperCase() : '?';
-      return `<div class="msg-row${isUnread?' unread':''}" onclick="openMsg('${m.id}')">
-        <div class="msg-avatar-wrap">
-          <div class="msg-avatar" style="background:${other.color||'#60a5fa'}">
-            ${other.avatar?`<img src="${other.avatar}" alt=""/>`:initials}
-          </div>
-        </div>
-        <div style="min-width:0">
-          <div class="msg-from">${tab==='inbox'?'From':'To'}: @${other.name}</div>
-          <div class="msg-subject">${m.subject}</div>
-          <div class="msg-preview">${m.content}</div>
-        </div>
-        <div class="msg-time">${timeAgo(m.created_at)}</div>
-      </div>`;
+      const other = otherParty(m, sent);
+      return `<button class="msg-row${(!sent && !m.read)?' unread':''}" data-id="${esc(m.id)}" onclick="openMsg('${esc(m.id)}')">
+        ${avatarFor(other)}
+        <span class="txt">
+          <span class="who">${sent?'To':'From'} @${esc(other.name)}</span>
+          <span class="subject">${esc(m.subject)}</span>
+          <span class="preview">${esc(m.content)}</span>
+        </span>
+        <span class="when">${timeAgo(m.created_at)}</span>
+      </button>`;
     }).join('');
   }
 
   async function openMsg(id){
-    const m = currentMessages.find(x=>x.id===id);
+    const m = currentMessages.find(x=>String(x.id)===String(id));
     if(!m) return;
 
-    // Mark as read
-    if(activeTab==='inbox' && !m.read){
-      await fetch(`/api/messages/${id}/read`,{method:'PATCH'});
+    const sent = activeTab === 'sent';
+
+    if(!sent && !m.read){
+      await fetch('/api/messages/'+encodeURIComponent(id)+'/read',{method:'PATCH'});
       m.read = 1;
-      loadUnread();
-      // Remove unread class
-      const row = document.querySelector(`[onclick="openMsg('${id}')"]`);
+      const row = document.querySelector('.msg-row[data-id="'+CSS.escape(String(id))+'"]');
       if(row) row.classList.remove('unread');
+      const badge = document.getElementById('msgCount');
+      if(badge){
+        const left = (parseInt(badge.textContent,10)||1) - 1;
+        if(left > 0) badge.textContent = left; else badge.style.display = 'none';
+      }
     }
 
-    const isSent = activeTab==='sent';
-    const other = isSent
-      ? {name:m.recipient_name, avatar:m.recipient_avatar, color:m.recipient_color, id:m.recipient_profile_id}
-      : {name:m.sender_name,    avatar:m.sender_avatar,    color:m.sender_color,    id:m.sender_profile_id};
-    const initials = other.name ? other.name[0].toUpperCase() : '?';
-
+    const other = otherParty(m, sent);
     document.getElementById('detailContent').innerHTML = `
-      <div class="detail-subject">${m.subject}</div>
+      <h2 class="detail-subject">${esc(m.subject)}</h2>
       <div class="detail-meta">
-        <div class="detail-avatar" style="background:${other.color||'#60a5fa'}">
-          ${other.avatar?`<img src="${other.avatar}" alt=""/>`:initials}
-        </div>
-        <div>
-          ${isSent?'To':'From'}: <a href="/profile.html?id=${other.id}">@${other.name}</a>
-          &nbsp;·&nbsp; ${timeAgo(m.created_at)}
-        </div>
+        ${avatarFor(other)}
+        <span>${sent?'To':'From'} <a href="/profile.html?id=${encodeURIComponent(other.id)}">@${esc(other.name)}</a>
+        · ${timeAgo(m.created_at)}</span>
       </div>
-      <div class="detail-body">${escHtml(m.content)}</div>
+      <div class="detail-body">${esc(m.content)}</div>
       <div class="detail-actions">
-        ${!isSent?`<button class="detail-btn" onclick="replyTo('${other.id}','${escHtml(m.subject)}')">Reply</button>`:''}
-        <button class="detail-btn danger" onclick="deleteMsg('${m.id}')">Delete</button>
+        ${sent?'':`<button class="btn btn-ghost btn-sm" onclick="replyTo('${esc(other.id)}',this.dataset.subject)" data-subject="${esc(m.subject)}">Reply</button>`}
+        <button class="btn btn-danger btn-sm" onclick="deleteMsg('${esc(m.id)}')">Delete</button>
       </div>`;
 
-    document.getElementById('msgListView').classList.add('hidden');
-    document.getElementById('msgDetail').classList.add('open');
+    document.getElementById('mail').classList.add('reading');
+    window.scrollTo(0,0);
   }
 
   function closeDetail(){
-    document.getElementById('msgDetail').classList.remove('open');
-    document.getElementById('msgListView').classList.remove('hidden');
-    document.getElementById('detailContent').innerHTML='';
+    document.getElementById('mail').classList.remove('reading');
+    document.getElementById('detailContent').innerHTML = '<div class="empty">Pick a message to read it.</div>';
   }
 
   function replyTo(recipientId, subject){
     const sel = document.getElementById('recipientSelect');
     sel.value = recipientId;
-    const prefix = subject.startsWith('Re: ') ? subject : 'Re: ' + subject;
-    document.getElementById('msgSubject').value = prefix;
+    document.getElementById('msgSubject').value = subject.startsWith('Re: ') ? subject : 'Re: ' + subject;
     closeDetail();
     openCompose();
   }
 
   async function deleteMsg(id){
     if(!confirm('Delete this message?')) return;
-    await fetch(`/api/messages/${id}`,{method:'DELETE'});
+    await fetch('/api/messages/'+encodeURIComponent(id),{method:'DELETE'});
     closeDetail();
-    if(activeTab==='inbox') loadInbox();
-    else loadSent();
+    if(activeTab==='inbox') loadInbox(); else loadSent();
   }
 
-  // ── Compose ───────────────────────────────────────────────────────────────────
+  // ── Compose ────────────────────────────────────────────────────────────────
   function openCompose(){
     document.getElementById('composeErr').style.display='none';
     document.getElementById('composeVeil').classList.add('open');
@@ -367,7 +308,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     document.getElementById('composeVeil').classList.remove('open');
     document.getElementById('msgSubject').value='';
     document.getElementById('msgContent').value='';
-    // Only reset recipient if not pre-set
     if(!preRecipient) document.getElementById('recipientSelect').value='';
   }
 
@@ -379,11 +319,14 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     const err = document.getElementById('composeErr');
 
     if(!recipient_id||!subject||!content){
-      err.textContent='All fields are required.';err.style.display='block';return;
+      err.textContent='Pick a recipient, and fill in the subject and message.';
+      err.style.display='block';
+      return;
     }
     btn.disabled=true;btn.textContent='Sending…';err.style.display='none';
 
-    const res = await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({recipient_id,subject,content})});
+    const res = await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({recipient_id,subject,content})});
     const data = await res.json();
     if(res.ok){
       closeCompose();
@@ -395,35 +338,19 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   }
 
   function timeAgo(dt){
-    if(dt&&!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';
+    if(!dt) return '';
+    if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T')+'Z';
     const s=Math.floor((Date.now()-new Date(dt))/1000);
-    if(s<60)return 'just now';
-    if(s<3600)return Math.floor(s/60)+'m ago';
-    if(s<86400)return Math.floor(s/3600)+'h ago';
-    if(s<604800)return Math.floor(s/86400)+'d ago';
-    return new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    if(s<60)return 'now';
+    if(s<3600)return Math.floor(s/60)+'m';
+    if(s<86400)return Math.floor(s/3600)+'h';
+    if(s<604800)return Math.floor(s/86400)+'d';
+    return new Date(dt).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
   }
 
-  function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-
-  async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html'}
-
-  // Message unread badge in topbar
-  (function(){
-    fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
-      const badge = document.getElementById('msgIconBadge');
-      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
-    }).catch(()=>{});
-  })();
-
-  // Smart logo link - go to dashboard if logged in, home if not
-  (function(){
-    fetch('/api/member/me').then(r=>r.json()).then(d=>{
-      const logo = document.getElementById('logoLink');
-      if(logo && d.authenticated) logo.href = '/dashboard.html';
-    }).catch(()=>{});
-  })();
+  // Subjects, bodies, usernames and avatar colours are member-supplied.
+  function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 </script>
-  <script src="/notif-bell.js"></script>
+<script src="/notif-bell.js"></script>
 </body>
 </html>
