@@ -1,263 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <meta charset="UTF-8"/>
-  <meta name="color-scheme" content="dark"/>
-<meta name="theme-color" content="#060908"/>
+<meta charset="UTF-8"/>
+<meta name="color-scheme" content="dark"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dungeon · Profile</title>
 <link rel="manifest" href="/site.webmanifest"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon · Profile</title>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block');
-    *{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#060908;--surface:#141c19;--surface2:#0d1311;--border:rgba(52,211,153,0.12);--border2:rgba(52,211,153,0.28);--green:#34d399;--green-bg:rgba(52,211,153,0.08);--text:#dce8e3;--muted:#6f8f84;--muted2:#8fa89e;--red:#f87171}
-    html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif}
-    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
-    .logo{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:11px !important;font-weight:400 !important;color:var(--green);letter-spacing:0.04em;text-decoration:none}
-    .back-link{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;transition:color .2s}
-    .back-link:hover{color:var(--text)}
-    .page{max-width:520px;margin:0 auto;padding:40px 24px 80px}
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/dungeon.css"/>
+<style>
+/* .card, .avatar, .pill, .figure, .btn and the page chrome come from
+   /dungeon.css. */
+.who{text-align:center;padding-block:10px 4px}
+.who .avatar{margin:0 auto 16px}
+.who h1{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.who .tier{display:inline-flex;align-items:center;gap:6px;margin-top:10px;border-radius:20px;padding:4px 12px;
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.06em}
+.who .tier i{display:block;width:5px;height:5px;border-radius:50%;background:currentColor;font-style:normal}
+.who .since{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:14px}
+.who .act{margin-top:22px}
 
-    /* Profile card */
-    .profile-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px;text-align:center;margin-bottom:24px;position:relative}
-    .avatar{width:96px;height:96px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#0b0f0e;overflow:hidden}
-    .avatar img{width:100%;height:100%;object-fit:cover}
-    .screen-name{font-family:'Press Start 2P','Minecraft',monospace !important;font-size:12px !important;font-weight:400 !important;color:var(--text);margin-bottom:12px;line-height:1.6}
-    .tier-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:20px}
-    .tier-dot{width:8px;height:8px;border-radius:50%}
+.sub-row{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.sub-row .days{text-align:right;flex:none}
+.sub-row .days b{display:block;font-size:26px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.sub-row .days span{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);margin-top:4px}
 
-    .meta-row{display:flex;justify-content:center;gap:32px;padding-top:20px;border-top:1px solid var(--border)}
-    .meta-item{text-align:center}
-    .meta-label{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-    .meta-val{font-size:14px;font-weight:500;color:var(--text)}
-
-    /* Sub status */
-    .sub-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
-    .sub-label{font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-    .sub-status{font-size:15px;font-weight:600}
-    .sub-status.active{color:var(--green)}
-    .sub-status.expiring{color:#fbbf24}
-    .sub-status.expired{color:var(--red)}
-    .sub-days{font-size:28px;font-weight:600;color:var(--text);text-align:right}
-    .sub-days-label{font-size:10px;color:var(--muted);text-align:right;margin-top:2px}
-
-    footer{text-align:center;padding:32px 0 0;font-size:12px;color:var(--muted)}
-    footer a{color:var(--muted);text-decoration:none}
-    footer a:hover{color:var(--text)}
-
-    footer{text-align:center;padding:24px 0 16px;font-size:12px;color:var(--muted)}
-    footer a{color:var(--muted);text-decoration:none}
-    footer a:hover{color:var(--text)}
-    @media(max-width:767px){footer{font-size:10px;padding:20px 8px 16px;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:4px}}
-
-    .msg-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:var(--muted2);font-size:15px;transition:border-color .2s,color .2s;cursor:pointer}
-    .msg-icon-btn:hover{border-color:var(--green);color:var(--green)}
-    .msg-icon-badge{position:absolute;top:-5px;right:-5px;background:var(--red,#f87171);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;display:none;line-height:1.4}
-  
-/* torchlight ambience */
-body{position:relative}
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,transparent 1px 92px);-webkit-mask-image:linear-gradient(180deg,#000 0,#000 30%,transparent 74%);mask-image:linear-gradient(180deg,#000 0,#000 30%,transparent 74%)}
-.topbar,.page,.center,footer{position:relative;z-index:1}
-.logo{text-shadow:0 0 10px rgba(52,211,153,.5)}
-.page-title{text-shadow:0 0 16px rgba(52,211,153,.3)}
+.col{max-width:440px;margin:0 auto}
 </style>
-  <link href="https://fonts.cdnfonts.com/css/minecraft-4" rel="stylesheet"/>
-<style>/* unified header logo */.logo{font-family:'Press Start 2P',monospace!important;font-size:11px!important;font-weight:400!important;letter-spacing:.04em!important;color:#34d399!important;text-decoration:none!important;text-shadow:0 0 10px rgba(52,211,153,.5)!important;line-height:1.4!important}.logo svg{width:12px;height:12px;margin-right:7px;vertical-align:-1px;fill:none;stroke:currentColor;stroke-width:2.2;filter:drop-shadow(0 0 5px rgba(52,211,153,.5))}</style>
 </head>
 <body>
-<div class="topbar">
-  <a href="/" class="logo" id="logoLink"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 20.5 7.1v9.8L12 21.8 3.5 16.9V7.1Z"/></svg>DUNGEON</a>
-  <a href="/dashboard.html" class="back-link">← Dashboard</a>
-</div>
-<div class="page">
-  <div class="profile-card" id="profileCard">
-    <div style="color:var(--muted);font-size:14px">Loading…</div>
+
+<header class="topbar sticky">
+  <div class="wrap wrap-lg row">
+    <a href="/dashboard.html" class="brand" id="logoLink">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </a>
+    <nav class="topnav">
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/messages.html" class="has-badge">Messages<span class="count-badge" id="msgCount">0</span></a>
+      <button type="button" onclick="signOut()">Sign out</button>
+    </nav>
   </div>
-  <div id="subCard"></div>
+</header>
 
-  <!-- Change Password (own profile only, toggled in renderProfile) -->
-  <div id="pwCard" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Change Password</div>
-    <div style="font-size:12px;color:var(--muted2);margin-bottom:16px">Update your Dungeon login password.</div>
-    <div id="pw-err" style="display:none;font-size:12px;color:var(--red);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:7px;padding:8px 12px;margin-bottom:12px"></div>
-    <div id="pw-ok" style="display:none;font-size:12px;color:var(--green);background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:7px;padding:8px 12px;margin-bottom:12px">Password updated successfully.</div>
-    <div style="margin-bottom:10px">
-      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Current Password</div>
-      <input type="password" id="pw-current" placeholder="••••••••" style="width:100%;background:var(--surface2);border:1px solid rgba(52,211,153,.25);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;outline:none"/>
+<main class="page" data-requires-auth>
+  <div class="wrap wrap-lg col">
+    <div class="card" id="profileCard">
+      <div class="loading"><span class="spin" aria-hidden="true"></span>Loading…</div>
     </div>
-    <div style="margin-bottom:10px">
-      <div style="font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">New Password</div>
-      <input type="password" id="pw-new" placeholder="Min 6 characters" style="width:100%;background:var(--surface2);border:1px solid rgba(52,211,153,.25);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;outline:none"/>
-    </div>
-
-    <button onclick="changePassword()" style="padding:10px 20px;background:var(--green);border:none;border-radius:8px;color:#0b0f0e;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Update Password</button>
+    <div id="subCard"></div>
   </div>
-</div>
+</main>
 
+<footer>
+  <div class="wrap wrap-lg foot">
+    <div class="spread">
+      <span>© 2026 Dungeon</span>
+      <nav id="footNav">
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/guides.html">Guides</a>
+        <a href="/forum.html">Forum</a>
+        <a href="/support.html">Support</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script src="/dungeon-nav.js" defer></script>
 <script>
   const TIERS = {
-    neut:   { label:'Neut',      color:'#e2e8e4' },
-    member: { label:'Member',    color:'#60a5fa' },
-    mod:    { label:'Moderator', color:'#34d399' },
-    admin:  { label:'Admin',     color:'#f87171' },
-    warden: { label:'Dungeon Master',    color:'#fbbf24' },
+    neut:   { label:'Neut',            color:'#E2E8E4' },
+    member: { label:'Member',          color:'#60A5FA' },
+    family: { label:'Family pass',     color:'#A78BFA' },
+    dealer: { label:'DungeonDealer',   color:'#F59E0B' },
+    mod:    { label:'Moderator',       color:'#34D399' },
+    admin:  { label:'Admin',           color:'#F87171' },
+    warden: { label:'Dungeon Master',  color:'#FBBF24' },
   };
 
   const params = new URLSearchParams(window.location.search);
   const profileId = params.get('id') || (params.get('sn') ? '@'+params.get('sn') : null);
 
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+  (async function(){
+    const d = await (window.dungeonMe || fetch('/api/member/me').then(r=>r.json()).catch(()=>({})));
     if (!d.authenticated) { window.location.href='/login.html'; return; }
     loadProfile(d.member);
-  });
+  })();
 
   async function loadProfile(me) {
     if (!profileId) {
-      // Show own profile
-      const p = me.profile;
-      if (!p) { window.location.href='/setup.html'; return; }
-      renderProfile(p, me);
-    } else {
-      const res = await fetch(`/api/profiles/${profileId}`);
-      if (!res.ok) { document.getElementById('profileCard').innerHTML='<div style="color:var(--muted)">Profile not found.</div>'; return; }
-      const p = await res.json();
-      renderProfile(p, me);
+      // No id in the URL means your own profile.
+      if (!me.profile) { window.location.href='/setup.html'; return; }
+      renderProfile(me.profile, me);
+      return;
     }
+    const res = await fetch('/api/profiles/'+encodeURIComponent(profileId));
+    if (!res.ok) {
+      document.getElementById('profileCard').innerHTML='<div class="empty">No such member.</div>';
+      return;
+    }
+    renderProfile(await res.json(), me);
   }
 
   function renderProfile(p, me) {
-    const tier = TIERS[p.tier] || { label: p.tier, color: '#e2e8e4' };
+    const tier = TIERS[p.tier] || { label: p.tier || 'Member', color: '#E2E8E4' };
     const initials = p.screen_name ? p.screen_name[0].toUpperCase() : '?';
-    // Pixel-font screen name: the dotted lowercase i reads better than the
-    // blocky capital I in Press Start 2P. Display-only swap.
-    const pxName = String(p.screen_name).replace(/I/g, 'i');
-    const joinDate = new Date(p.created_at).toLocaleDateString('en-US', { month:'long', year:'numeric' });
+    const joined = new Date(p.created_at).toLocaleDateString('en-GB', { month:'long', year:'numeric' });
     const isOwn = me.profile && me.profile.id === p.id;
 
-    // Change Password is own-profile only. Guard against it leaking onto
-    // other members' profiles (it is display:none by default in markup).
-    const pwCard = document.getElementById('pwCard');
-    if (pwCard) pwCard.style.display = isOwn ? 'block' : 'none';
-
-    document.title = `Dungeon · @${p.screen_name}`;
+    document.title = 'Dungeon · @' + p.screen_name;
 
     document.getElementById('profileCard').innerHTML = `
-      <div class="avatar" style="background:${p.avatar_color}">
-        ${p.avatar_url ? `<img src="${p.avatar_url}" alt=""/>` : initials}
-      </div>
-      <div class="screen-name">@${pxName}</div>
-      <div class="tier-badge" style="background:${tier.color}22;color:${tier.color}">
-        <div class="tier-dot" style="background:${tier.color}"></div>
-        ${tier.label}
-      </div>
-      <div class="meta-row">
-        <div class="meta-item">
-          <div class="meta-label">Member Since</div>
-          <div class="meta-val">${joinDate}</div>
-        </div>
-      </div>
-      ${isOwn
-        ? `<div style="margin-top:20px"><a href="/setup.html?edit=1" style="font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--border2);padding:6px 14px;border-radius:6px">Edit Profile</a></div>`
-        : `<div style="margin-top:20px"><a href="/messages.html?to=${p.id}" style="font-size:12px;font-weight:600;color:#0b0f0e;text-decoration:none;background:var(--green);padding:7px 16px;border-radius:6px;display:inline-block">Message</a></div>`
-      }
-    `;
+      <div class="who">
+        <span class="avatar avatar-lg" style="background:${esc(p.avatar_color||'#60A5FA')}">
+          ${p.avatar_url ? `<img src="${esc(p.avatar_url)}" alt=""/>` : esc(initials)}
+        </span>
+        <h1>@${esc(p.screen_name)}</h1>
+        <span class="tier" style="color:${tier.color};background:${tier.color}1A"><i></i>${esc(tier.label)}</span>
+        <div class="since">Member since ${joined}</div>
+        <div class="act">${isOwn
+          ? '<a href="/account.html" class="btn btn-ghost btn-sm">Edit your account</a>'
+          : `<a href="/messages.html?to=${encodeURIComponent(p.id)}" class="btn btn-primary btn-sm">Send a message</a>`
+        }</div>
+      </div>`;
 
-    // Show sub status if own profile and is member+
+    // Your own subscription, on your own profile.
     if (isOwn && me.subscription_end) {
       const end = new Date(me.subscription_end);
       const daysLeft = Math.ceil((end - new Date()) / 86400000);
-      const fmt = dt => dt.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-      let cls = daysLeft <= 0 ? 'expired' : daysLeft <= 5 ? 'expiring' : 'active';
-      let label = daysLeft <= 0 ? 'Expired' : daysLeft <= 5 ? 'Expiring Soon' : 'Active';
+      const colour = daysLeft <= 0 ? 'var(--red)' : daysLeft <= 5 ? 'var(--amber)' : 'var(--accent)';
+      const label  = daysLeft <= 0 ? 'Expired' : daysLeft <= 5 ? 'Expiring soon' : 'Active';
       document.getElementById('subCard').innerHTML = `
-        <div class="sub-card" style="margin-bottom:24px">
-          <div>
-            <div class="sub-label">Subscription</div>
-            <div class="sub-status ${cls}">${label}</div>
-            <div style="font-size:12px;color:var(--muted2);margin-top:4px">Expires ${fmt(end)}</div>
-          </div>
-          <div>
-            <div class="sub-days">${Math.max(0,daysLeft)}</div>
-            <div class="sub-days-label">days left</div>
+        <div class="card mt-2">
+          <div class="sub-row">
+            <div class="grow">
+              <span class="label tight">Subscription</span>
+              <b style="font-size:15px;font-weight:600;color:${colour}">${label}</b>
+              <div class="figure-sub">Ends ${end.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</div>
+            </div>
+            <div class="days">
+              <b style="color:${colour}">${Math.max(0,daysLeft)}</b>
+              <span>${daysLeft === 1 ? 'day left' : 'days left'}</span>
+            </div>
           </div>
         </div>`;
     }
   }
 
-
-  // Dynamic footer links based on tier
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{
-    if(!d.authenticated) return;
-    const tier = d.member?.profile?.tier;
-    const footer = document.getElementById('pageFooter');
-    if(!footer) return;
-    if(['mod','admin','warden'].includes(tier)){
-      const span=document.createElement('span');
-      span.style.whiteSpace='nowrap';
-      let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
-      if(['admin','warden'].includes(tier)){
-        extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
-      }
-      span.innerHTML=extra;
-      footer.appendChild(span);
-    } else if(['admin','warden'].includes(tier)){
-      const span=document.createElement('span');
-      span.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
-      footer.appendChild(span);
-    }
-  }).catch(()=>{});
-
-  // Message unread badge in topbar
-  (function(){
-    fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
-      const badge = document.getElementById('msgIconBadge');
-      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
-    }).catch(()=>{});
-  })();
-
-  // Smart logo link - go to dashboard if logged in, home if not
-  (function(){
-    fetch('/api/member/me').then(r=>r.json()).then(d=>{
-      const logo = document.getElementById('logoLink');
-      if(logo && d.authenticated) logo.href = '/dashboard.html';
-    }).catch(()=>{});
-  })();
-
-  async function doSignOut(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html';}
-
-  async function changePassword() {
-    const current = document.getElementById('pw-current').value;
-    const newPw = document.getElementById('pw-new').value;
-    const err = document.getElementById('pw-err');
-    const ok = document.getElementById('pw-ok');
-    err.style.display='none'; ok.style.display='none';
-
-    if (!current) { err.textContent='Current password required'; err.style.display='block'; return; }
-    if (!newPw || newPw.length < 6) { err.textContent='New password must be at least 6 characters'; err.style.display='block'; return; }
-    const r = await fetch('/api/member/change-password', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ current_password: current, new_password: newPw })
-    }).then(r=>r.json()).catch(e=>({error:e.message}));
-
-    if (r.error) { err.textContent=r.error; err.style.display='block'; return; }
-    ok.style.display='block';
-    document.getElementById('pw-current').value='';
-    document.getElementById('pw-new').value='';
-  }
+  // Usernames and avatar colours are member-supplied.
+  function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 </script>
-
-
-  <footer id="pageFooter">
-    <a href="/dashboard.html">Dashboard</a><span class="sep"> · </span>
-    <a href="/guides.html">Guides</a><span class="sep"> · </span>
-    <a href="/forum.html">Forum</a><span class="sep"> · </span>
-    <a href="/support.html">Support</a>
-  </footer>
-  <script src="/notif-bell.js"></script>
+<script src="/notif-bell.js"></script>
 </body>
 </html>
