@@ -47,8 +47,9 @@ img{max-width:100%}
 .topnav a:hover,.topnav button:hover{color:var(--text)}
 .topnav a[aria-current]{color:var(--text)}
 /* A nav link that carries a count. The badge is absolute, so the link
-   has to establish the containing block itself. */
-.topnav .has-badge{position:relative;padding-right:4px}
+   has to establish the containing block itself - and reserve room, or
+   the badge sits on the last letter of the word. */
+.topnav .has-badge{position:relative;padding-right:15px}
 .back{font-size:14px;font-weight:500;color:var(--muted);white-space:nowrap;transition:color .18s}
 .back:hover{color:var(--text)}
 
@@ -194,6 +195,21 @@ h2{font-size:19px;font-weight:600;letter-spacing:-.016em;text-wrap:pretty}
 .code-row input:focus{border-color:var(--accent)}
 .copy-btn{font-family:var(--sans);font-size:12.5px;font-weight:600;padding:0 15px;background:var(--surface);border:1px solid var(--line2);border-radius:9px;color:var(--text2);cursor:pointer;white-space:nowrap;flex:none;transition:border-color .15s,color .15s}
 .copy-btn:hover{color:var(--accent);border-color:rgba(52,211,153,.45)}
+
+/* A labelled credential: name, value, and the buttons that act on it. */
+.cred-row{display:flex;align-items:center;gap:10px}
+.cred-row+.cred-row{margin-top:10px}
+.cred-row .k{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint);width:78px;flex:none}
+.cred-row .code-field{display:block}
+/* On a phone a 78px label column plus two buttons leaves the value
+   itself down to a few characters - "https://du…" is not a credential.
+   The label takes its own line so the value gets the width. */
+@media(max-width:560px){
+  .cred-row{flex-wrap:wrap;gap:7px 8px}
+  .cred-row .k{flex:1 0 100%;width:auto}
+  .cred-row .code-field{flex:1 1 120px;min-width:0}
+}
 
 /* ── Chips ───────────────────────────────────────────────── */
 .chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -378,14 +394,25 @@ footer{border-top:1px solid var(--line);margin-top:36px}
 @media(max-width:480px){
   .grid-2,.field-row{grid-template-columns:1fr}
 }
-/* Three nav items and the wordmark do not fit a 390px screen. Tighten
-   the rhythm, and let the nav scroll inside itself rather than pushing
-   the page sideways. */
-@media(max-width:430px){
-  .topbar .row{gap:10px}
-  .topnav{gap:12px;min-width:0;overflow-x:auto;scrollbar-width:none}
-  .topnav::-webkit-scrollbar{display:none}
+/* The wordmark and a full nav do not both fit a 360px screen, and a nav
+   that scrolls sideways is a nav whose last item nobody finds. Below
+   480px the mark carries the brand on its own - it is still the link
+   home - which buys back the ~90px the nav needs. */
+@media(max-width:480px){
+  .topbar .row{gap:12px}
+  /* Only where a nav is competing for the room. A header carrying just
+     the mark and a back link keeps its wordmark. */
+  .topbar .row:has(.topnav) .brand span{display:none}
+  .topnav{gap:11px;min-width:0}
   .topnav a,.topnav button{font-size:13px}
+  .topnav .has-badge{padding-right:13px}
+}
+/* Narrower still: the nav takes its own line. Scrolling it sideways
+   would hide its last item and clip anything it drops down, like the
+   notification panel. */
+@media(max-width:340px){
+  .topbar .row{flex-wrap:wrap;gap:6px 12px}
+  .topnav{width:100%;justify-content:flex-end}
 }
 
 /* ── Desktop ─────────────────────────────────────────────────

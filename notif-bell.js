@@ -44,20 +44,27 @@
       /* The bell floats over whatever page it lands on, so it carries its
          own rules - but every value comes from /dungeon.css, with a
          literal fallback for the few pages that do not load it. */
-      #dgBell{position:fixed;top:68px;right:16px;z-index:9000}
+      /* Docked in the top bar. .floating is the fallback for a page
+         with no .topnav to sit in. */
+      #dgBell{position:relative;display:flex;align-items:center}
+      #dgBell.floating{position:fixed;top:68px;right:16px;z-index:9000}
       #dgBellBtn{position:relative;display:flex;align-items:center;justify-content:center;
-        width:38px;height:38px;padding:0;border-radius:11px;
-        background:rgba(12,18,15,.92);border:1px solid var(--line2,rgba(255,255,255,.13));
-        backdrop-filter:blur(10px);cursor:pointer;color:var(--text2,#B9C8C2);
-        transition:color .18s,border-color .18s,transform .14s}
-      #dgBellBtn:hover{color:var(--text,#EAF1ED);border-color:rgba(255,255,255,.24);transform:translateY(-1px)}
-      #dgBellBtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;
+        width:32px;height:32px;flex:none;padding:0;border-radius:9px;
+        background:transparent;border:1px solid transparent;
+        cursor:pointer;color:var(--muted,#8A9A93);font:inherit;
+        transition:color .18s,border-color .18s,background .18s}
+      #dgBellBtn:hover{color:var(--text,#EAF1ED);border-color:var(--line,rgba(255,255,255,.07));
+        background:var(--surface,#0C120F)}
+      #dgBell.floating #dgBellBtn{width:38px;height:38px;border-radius:11px;
+        background:rgba(12,18,15,.92);border-color:var(--line2,rgba(255,255,255,.13));
+        backdrop-filter:blur(10px)}
+      #dgBellBtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;
         stroke-linecap:round;stroke-linejoin:round}
-      #dgBellBadge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;
+      #dgBellBadge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;padding:0 4px;
         border-radius:9px;background:var(--accent,#34D399);color:var(--accent-ink,#04150E);
         font-family:var(--mono,ui-monospace,monospace);font-size:9.5px;font-weight:600;line-height:16px;
         text-align:center;border:1.5px solid #0C120F;display:none}
-      #dgBellPanel{position:absolute;top:48px;right:0;width:344px;max-width:calc(100vw - 28px);
+      #dgBellPanel{position:absolute;top:calc(100% + 10px);right:0;width:344px;z-index:9000;max-width:calc(100vw - 28px);
         background:#0A100D;border:1px solid var(--line2,rgba(255,255,255,.13));border-radius:14px;
         box-shadow:0 16px 44px rgba(0,0,0,.55);overflow:hidden;display:none}
       #dgBellPanel.open{display:block}
@@ -102,7 +109,16 @@
         </div>
         <div class="dgb-list" id="dgbList"><div class="dgb-empty">Nothing new.</div></div>
       </div>`;
-    document.body.appendChild(wrap);
+    // Sit in the top bar if there is one, ahead of Sign out; otherwise
+    // fall back to floating over the page.
+    const nav = document.querySelector('.topnav');
+    if (nav) {
+      const signOut = nav.querySelector('button');
+      nav.insertBefore(wrap, signOut || null);
+    } else {
+      wrap.className = 'floating';
+      document.body.appendChild(wrap);
+    }
 
     const DOT = {application:'#34D399',support:'#FBBF24',demo:'#60A5FA',dealer:'#34D399',redemption:'#FBBF24',test:'#6B7F77',info:'#6B7F77'};
     let open = false;
