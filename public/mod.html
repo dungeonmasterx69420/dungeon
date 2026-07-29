@@ -149,7 +149,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     <span class="greeting" id="greeting"></span>
     <a href="/dashboard.html" class="topbar-link">Dashboard</a>
     <a href="/forum.html" class="topbar-link">Forum</a>
-    <button class="topbar-link" onclick="logout()">Sign out</button>
+    <button class="topbar-link" onclick="signOut()">Sign out</button>
   </div>
 </div>
 
@@ -221,7 +221,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     loadAll();
   });
 
-  async function logout(){await fetch('/api/member/logout',{method:'POST'});window.location.href='/login.html'}
 
   function switchTab(name,el){
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -392,53 +391,22 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     await fetch(`/api/support/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'open'})});
     loadSupport();loadStats();
   }
-
-
-  // Dynamic footer links based on tier
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{
-    if(!d.authenticated) return;
-    const tier = d.member?.profile?.tier;
-    const footer = document.getElementById('pageFooter');
-    if(!footer) return;
-    if(['mod','admin','warden'].includes(tier)){
-      const span=document.createElement('span');
-      span.style.whiteSpace='nowrap';
-      let extra=' &nbsp;·&nbsp; <a href="/mod.html" style="color:var(--green)">Mod Panel</a>';
-      if(['admin','warden'].includes(tier)){
-        extra+=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
-      }
-      span.innerHTML=extra;
-      footer.appendChild(span);
-    } else if(['admin','warden'].includes(tier)){
-      const span=document.createElement('span');
-      span.innerHTML=' &nbsp;·&nbsp; <a href="/admin.html" style="color:var(--red)">Dungeon Master</a>';
-      footer.appendChild(span);
-    }
-  }).catch(()=>{});
-
-  // Message unread badge in topbar
-  (function(){
-    fetch('/api/messages/unread').then(r=>r.json()).then(d=>{
-      const badge = document.getElementById('msgIconBadge');
-      if(badge && d.count>0){badge.textContent=d.count;badge.style.display='block';}
-    }).catch(()=>{});
-  })();
-
-  // Smart logo link - go to dashboard if logged in, home if not
-  (function(){
-    fetch('/api/member/me').then(r=>r.json()).then(d=>{
-      const logo = document.getElementById('logoLink');
-      if(logo && d.authenticated) logo.href = '/dashboard.html';
-    }).catch(()=>{});
-  })();
 </script>
 
-  <footer id="pageFooter">
-    <a href="/dashboard.html">Dashboard</a><span class="sep"> · </span>
-    <a href="/guides.html">Guides</a><span class="sep"> · </span>
-    <a href="/forum.html">Forum</a><span class="sep"> · </span>
-    <a href="/support.html">Support</a>
+  <footer>
+    <div class="wrap wrap-xl foot">
+      <div class="spread">
+        <span>© 2026 Dungeon</span>
+        <nav id="footNav">
+          <a href="/dashboard.html">Dashboard</a>
+          <a href="/guides.html">Guides</a>
+          <a href="/forum.html">Forum</a>
+          <a href="/support.html">Support</a>
+        </nav>
+      </div>
+    </div>
   </footer>
-  <script src="/notif-bell.js"></script>
+  <script src="/dungeon-nav.js" defer></script>
+<script src="/notif-bell.js"></script>
 </body>
 </html>
