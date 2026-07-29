@@ -45,6 +45,10 @@ img{max-width:100%}
 .topnav{display:flex;align-items:center;gap:14px}
 .topnav a,.topnav button{font-family:var(--sans);font-size:13.5px;font-weight:500;color:var(--muted);background:none;border:none;cursor:pointer;padding:4px 0;white-space:nowrap;transition:color .18s}
 .topnav a:hover,.topnav button:hover{color:var(--text)}
+.topnav a[aria-current]{color:var(--text)}
+/* A nav link that carries a count. The badge is absolute, so the link
+   has to establish the containing block itself. */
+.topnav .has-badge{position:relative;padding-right:4px}
 .back{font-size:14px;font-weight:500;color:var(--muted);white-space:nowrap;transition:color .18s}
 .back:hover{color:var(--text)}
 
@@ -65,6 +69,9 @@ h2{font-size:19px;font-weight:600;letter-spacing:-.016em;text-wrap:pretty}
 .lede,.page-sub{font-size:14.5px;line-height:1.65;color:var(--muted);max-width:46ch;text-wrap:pretty}
 .page-title+.page-sub{margin-top:8px}
 .page-head{margin-bottom:26px}
+
+.title-lg{font-size:clamp(28px,4.4vw,40px);line-height:1.08;font-weight:600;letter-spacing:-.03em;text-wrap:balance}
+.title-lg+.page-sub,.title-lg+.lede{margin-top:12px;font-size:15.5px}
 
 .label{display:block;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);padding-bottom:14px}
 .label.tight{padding-bottom:6px}
@@ -87,6 +94,44 @@ h2{font-size:19px;font-weight:600;letter-spacing:-.016em;text-wrap:pretty}
   -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 18%,#000 52%,transparent 100%);
   mask-image:linear-gradient(180deg,transparent 0,#000 18%,#000 52%,transparent 100%)}
 .rails-host>.wrap,.rails-host>.inner{position:relative;z-index:1}
+
+/* Bands: the horizontal rhythm of a long page. One hairline between
+   sections, and on desktop the section label sits out in the margin so
+   the content column stays a readable measure. */
+.band{border-top:1px solid var(--line);padding-block:38px}
+.band:first-child{border-top:none}
+.band .label{padding-bottom:18px}
+
+/* ── Long-form copy ──────────────────────────────────────── */
+/* Legal pages, policies, anything that is mostly paragraphs. Sized for
+   reading rather than scanning, so it runs looser than .lede. */
+.prose{font-size:14.5px;line-height:1.8;color:var(--text2);max-width:68ch}
+.prose>*+*{margin-top:14px}
+.prose h2{font-size:16px;font-weight:600;letter-spacing:-.01em;color:var(--text);margin-top:34px}
+.prose h3{font-size:14px;font-weight:600;color:var(--text);margin-top:22px}
+.prose h2:first-child,.prose h3:first-child{margin-top:0}
+.prose ul,.prose ol{padding-left:20px}
+.prose li+li{margin-top:6px}
+.prose a{color:var(--accent)}
+.prose a:hover{color:var(--accent-hi)}
+.prose strong,.prose b{color:var(--text);font-weight:600}
+.prose code{font-family:var(--mono);font-size:.9em;color:var(--text);background:var(--raise);border-radius:5px;padding:2px 5px}
+.prose hr{border:0;height:1px;background:var(--line);margin-block:28px}
+
+/* ── Disclosure list ─────────────────────────────────────── */
+.faq details{border-bottom:1px solid var(--line)}
+.faq details:last-child{border-bottom:0}
+.faq summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding-block:16px;cursor:pointer;font-size:14.5px;font-weight:500;color:var(--text2);transition:color .18s}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{color:var(--text)}
+.faq details:first-child summary{padding-top:0}
+.faq summary .pm{font-family:var(--mono);font-size:14px;color:var(--faint);flex:none}
+.faq summary .pm::before{content:'+'}
+.faq details[open] summary{color:var(--text);font-weight:600;padding-bottom:7px}
+.faq details[open] .pm{color:var(--accent)}
+.faq details[open] .pm::before{content:'\2212'}
+.faq p{font-size:13.5px;line-height:1.65;color:var(--muted);max-width:54ch;padding-bottom:18px}
 
 /* ── Cards ───────────────────────────────────────────────── */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}
@@ -310,6 +355,21 @@ footer{border-top:1px solid var(--line);margin-top:36px}
 
 @media(max-width:480px){
   .grid-2,.field-row{grid-template-columns:1fr}
+}
+
+/* ── Desktop ─────────────────────────────────────────────────
+   The site was laid out as a phone column and then shown on a
+   1440px screen. From here up it gets a composition: a wider
+   gutter, more air between sections, and section labels moved
+   out into the margin beside the content they name. */
+@media(min-width:880px){
+  .wrap{padding-inline:32px}
+  .page{padding-block:44px 80px}
+  .page-head{margin-bottom:34px}
+  .band{padding-block:54px}
+  .band-split{display:grid;grid-template-columns:190px 1fr;gap:50px;align-items:start}
+  .band-split .label{padding-bottom:0}
+  .head-split{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end}
 }
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
