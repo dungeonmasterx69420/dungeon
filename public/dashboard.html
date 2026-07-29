@@ -53,16 +53,11 @@
 .tile-sub{font-family:var(--mono);font-size:9.5px;letter-spacing:.03em;line-height:1.45;color:var(--faint);text-align:center;margin-top:-3px}
 .tile .live{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:middle}
 .tile-icon svg{width:32px;height:32px;display:block}
-/* The four live dashboards are other sites with their own marks, so the
+/* The live dashboards are other sites with their own marks, so the
    hover picks up each mark's colour rather than the house green. */
-.tile.dash-cupio:hover{border-color:rgba(227,185,79,.45)}
 .tile.dash-magico:hover{border-color:rgba(79,168,227,.45)}
 .tile.dash-csio:hover{border-color:rgba(227,154,59,.45)}
 .tile.dash-fightio:hover{border-color:rgba(255,46,68,.45)}
-
-/* ── Forum strip ───────────────────────────────────────────── */
-.forum-cat{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--faint);border:1px solid var(--line);border-radius:6px;padding:3px 7px;flex:none}
 
 .upload-drop{border:1px dashed var(--line2);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:border-color .18s}
 .upload-drop:hover{border-color:var(--accent)}
@@ -81,7 +76,7 @@
   .subs{border-top:none;margin-top:0;padding-top:0}
   .subs .sub-row:first-child{padding-top:0}
   .tiles{grid-template-columns:repeat(6,1fr)}
-  .dashboards{grid-template-columns:repeat(4,1fr)}
+  .dashboards{grid-template-columns:repeat(3,1fr)}
 }
 </style>
 </head>
@@ -94,10 +89,13 @@
       <span>DUNGEON</span>
     </a>
     <nav class="topnav">
-      <a href="/forum.html">Forum</a>
-      <a href="/guides.html">Guides</a>
-      <a href="/messages.html" class="has-badge">Messages<span class="count-badge" id="msgCount">0</span></a>
-      <button type="button" onclick="signOut()">Sign out</button>
+      <a href="/messages.html" class="icon-btn" title="Messages" aria-label="Messages">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6 8.5-6"/></svg>
+        <span class="count-badge" id="msgCount">0</span>
+      </a>
+      <button type="button" class="icon-btn" onclick="signOut()" title="Sign out" aria-label="Sign out">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.5V4a1.5 1.5 0 0 0-1.5-1.5h-8A1.5 1.5 0 0 0 4 4v16a1.5 1.5 0 0 0 1.5 1.5h8A1.5 1.5 0 0 0 15 20v-.5"/><path d="M19.5 12H9.5m6.5-3.5 3.5 3.5-3.5 3.5"/></svg>
+      </button>
     </nav>
   </div>
 </header>
@@ -166,32 +164,6 @@
 
     <div class="section-head">Live dashboards</div>
     <div class="tiles dashboards">
-      <a class="tile dash-cupio" href="https://cupio.enterdungeon.cc" target="_blank" rel="noopener">
-      <span class="tile-icon">
-      <svg viewBox="0 0 100 100" role="img" aria-label="Cupio hexagonal soccer ball mark">
-      <defs>
-      <filter id="cupio-glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="2.6" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <linearGradient id="cupio-gold" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#F3D27A"/><stop offset="1" stop-color="#C99A35"/>
-      </linearGradient>
-      </defs>
-      <g filter="url(#cupio-glow)" stroke="url(#cupio-gold)" fill="none" stroke-width="3" stroke-linejoin="round">
-      <polygon points="50,6 88.1,28 88.1,72 50,94 11.9,72 11.9,28"/>
-      <polygon points="50,35 35.7,45.4 41.2,62.1 58.8,62.1 64.3,45.4" fill="rgba(227,185,79,.16)"/>
-      <line x1="50" y1="35" x2="50" y2="6"/>
-      <line x1="35.7" y1="45.4" x2="11.9" y2="38"/>
-      <line x1="64.3" y1="45.4" x2="88.1" y2="38"/>
-      <line x1="41.2" y1="62.1" x2="30" y2="82.4"/>
-      <line x1="58.8" y1="62.1" x2="70" y2="82.4"/>
-      </g>
-      </svg>
-      </span>
-      <span><span class="live" aria-hidden="true"></span>CUPIO</span>
-      <span class="tile-sub">World Cup 26 · live scores &amp; bracket</span>
-      </a>
       <a class="tile dash-magico" href="https://magico.enterdungeon.cc" target="_blank" rel="noopener">
       <span class="tile-icon">
       <svg viewBox="0 0 100 100" role="img" aria-label="Magico star mark">
@@ -258,13 +230,6 @@
       </a>
     </div>
 
-    <div class="section-head">From the forum <a href="/forum.html" class="section-more">All threads →</a></div>
-    <div class="card">
-      <div class="rows" id="forumStrip">
-        <div class="empty" id="forumEmpty">Loading the latest…</div>
-      </div>
-    </div>
-
   </div>
 </main>
 
@@ -275,7 +240,6 @@
       <nav id="footNav">
         <a href="/dashboard.html">Dashboard</a>
         <a href="/guides.html">Guides</a>
-        <a href="/forum.html">Forum</a>
         <a href="/support.html">Support</a>
       </nav>
     </div>
@@ -535,41 +499,6 @@
     }
   }).catch(()=>{});
 
-  // ── Latest from the forum ──────────────────────────────────────────────────
-  function timeAgo(dt){
-    if(!dt)return'';
-    try{
-      if(!dt.endsWith('Z')&&!dt.includes('+'))dt=dt.replace(' ','T');
-      const s=Math.floor((Date.now()-new Date(dt))/1000);
-      if(s<60)return'just now';
-      if(s<3600)return Math.floor(s/60)+'m ago';
-      if(s<86400)return Math.floor(s/3600)+'h ago';
-      if(s<604800)return Math.floor(s/86400)+'d ago';
-      return Math.floor(s/604800)+'w ago';
-    }catch{return''}
-  }
-  fetch('/api/forum/recent?limit=4').then(r=>r.json()).then(rows=>{
-    const strip=document.getElementById('forumStrip');
-    if(!rows||!rows.length){
-      strip.innerHTML='<div class="empty">No threads yet. <a href="/new-thread.html">Start one →</a></div>';
-      return;
-    }
-    strip.innerHTML=rows.map(t=>{
-      const replies=t.reply_count||0;
-      const cat=t.category_name?`<span class="forum-cat">${esc(t.category_name)}</span>`:'';
-      return `<a class="row-item" href="/thread.html?id=${t.id}">
-        <div class="row-main">
-          <b>${esc(t.title||'Untitled')}</b>
-          <em>@${esc(t.screen_name||'unknown')} · ${timeAgo(t.created_at)}</em>
-        </div>
-        ${cat}
-        <span class="row-end">${replies} ${replies===1?'reply':'replies'}</span>
-      </a>`;
-    }).join('');
-  }).catch(()=>{
-    document.getElementById('forumStrip').innerHTML='<div class="empty">The forum is not answering right now.</div>';
-  });
-  function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
   // Close a sheet by clicking its backdrop.
   ['uploadVeil','demoModal'].forEach(id=>{
