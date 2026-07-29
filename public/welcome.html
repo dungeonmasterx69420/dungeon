@@ -3,349 +3,324 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="color-scheme" content="dark"/>
-<meta name="theme-color" content="#060908"/>
-<link rel="manifest" href="/site.webmanifest"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Dungeon · Welcome</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="manifest" href="/site.webmanifest"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/dungeon.css"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{--bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);--g:#34d399;--gb:rgba(52,211,153,.08);--txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;--amb:#fbbf24;--gold:#f59e0b;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif}
-html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans)}
-.topbar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 20px;display:flex;align-items:center}
-.logo{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;color:var(--g);text-decoration:none}
-.prog-wrap{background:var(--s1);border-bottom:1px solid var(--bdr);padding:10px 20px}
-.prog-lbl{font-size:10px;color:var(--t3);font-family:var(--mono);margin-bottom:6px}
-.prog-bar{height:3px;background:var(--bdr);border-radius:2px;overflow:hidden}
-.prog-fill{height:100%;background:var(--g);border-radius:2px;transition:width .4s ease}
-.page{max-width:560px;margin:0 auto;padding:28px 16px 80px}
-.step{display:none}.step.on{display:block}
-.step-eyebrow{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--g);font-family:var(--mono);margin-bottom:10px}
-.step-title{font-size:21px;font-weight:700;margin-bottom:8px;line-height:1.3}
-.step-sub{font-size:14px;color:var(--t2);margin-bottom:24px;line-height:1.7}
+/* .card, .steps, .chips, .chip, .linkrow, .notice, .track, .btn and the
+   page chrome all come from /dungeon.css. */
 
-/* DM Card */
-.dm-card{background:var(--s1);border:1px solid var(--bdr2);border-radius:14px;padding:20px;margin-bottom:20px}
-.dm-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bdr)}
-.dm-avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--g);flex-shrink:0}
-.dm-avatar-fallback{width:48px;height:48px;border-radius:50%;background:#a78bfa;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#000;border:2px solid var(--g);flex-shrink:0}
-.dm-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.25);font-family:var(--mono)}
-.dm-handle{font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:2px}
-.dm-body p{font-size:14px;color:var(--t2);line-height:1.8;margin-bottom:12px}
-.dm-body p:last-child{margin-bottom:0}
-.dm-body strong{color:var(--txt)}
-.dm-body .hl{color:var(--g)}
+.prog{border-bottom:1px solid var(--line);padding-block:12px}
+.prog .track{margin-top:7px}
+.prog .track i{transition:width .45s cubic-bezier(.22,.61,.36,1)}
 
-/* Info pills */
-.pill-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-.pill{background:var(--s2);border:1px solid var(--bdr);border-radius:10px;padding:14px}
-.pill-icon{font-size:20px;margin-bottom:7px}
-.pill-title{font-size:12px;font-weight:700;margin-bottom:3px}
-.pill-sub{font-size:11px;color:var(--t2);line-height:1.5}
+.step{display:none}
+.step.on{display:block}
 
-/* Device selector */
-.device-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-.dv-btn{background:var(--s1);border:1px solid var(--bdr2);border-radius:10px;padding:12px;cursor:pointer;text-align:left;transition:all .15s;display:flex;align-items:center;gap:10px}
-.dv-btn:hover{border-color:var(--g);background:var(--gb)}
-.dv-btn.on{border-color:var(--g);background:var(--gb)}
-.dv-icon{font-size:20px;flex-shrink:0}
-.dv-name{font-size:12px;font-weight:600;color:var(--txt)}
-.dv-sub{font-size:10px;color:var(--t2);margin-top:1px}
+h1{font-size:clamp(26px,4.6vw,34px);line-height:1.1;font-weight:600;letter-spacing:-.03em;
+  margin-bottom:10px;text-wrap:balance}
+.lede{margin-bottom:26px}
 
-.app-link{display:flex;align-items:center;gap:12px;background:var(--s2);border:1px solid var(--bdr2);border-radius:10px;padding:13px;text-decoration:none;margin-bottom:8px;transition:border-color .15s}
-.app-link:hover{border-color:var(--g)}
-.app-link-icon{font-size:22px;flex-shrink:0}
-.app-link-name{font-size:13px;font-weight:700;color:var(--txt)}
-.app-link-sub{font-size:11px;color:var(--t2);margin-top:2px}
-.app-link-arrow{margin-left:auto;color:var(--g);font-size:16px}
+/* The Dungeon Master's note. It reads as a letter, so it is set as one:
+   a name at the top, prose, a sign-off. */
+.dm{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px}
+.dm-head{display:flex;align-items:center;gap:12px;padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.dm-head .avatar{width:38px;height:38px;font-size:15px;background:var(--amber)}
+.dm-head b{display:block;font-size:14px;font-weight:600}
+.dm-head span{display:block;font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:2px}
+.dm p{font-size:14.5px;line-height:1.75;color:var(--text2);text-wrap:pretty}
+.dm p+p{margin-top:13px}
+.dm strong{color:var(--text);font-weight:600}
+.dm .sign{color:var(--accent);font-weight:500}
 
-.notice{background:var(--gb);border:1px solid var(--bdr);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--t2);line-height:1.7;margin-bottom:14px}
-.notice strong{color:var(--g)}
+.pick{font-size:13.5px;font-weight:500;color:var(--text2);margin-bottom:10px}
+.applinks{margin-top:12px}
+.applinks:empty{display:none}
 
-/* Step 3 - redeem */
-.redeem-card{background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;padding:20px;margin-bottom:14px}
-.redeem-step{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
-.redeem-step:last-child{margin-bottom:0}
-.rs-num{width:28px;height:28px;border-radius:50%;background:var(--gb);border:1px solid var(--bdr2);color:var(--g);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--mono);flex-shrink:0;margin-top:1px}
-.rs-text{font-size:13px;line-height:1.7;color:var(--txt)}
-.rs-text strong{color:var(--g)}
+.nav-btns{display:flex;gap:10px;margin-top:30px}
+.nav-btns .btn{flex:1}
 
-/* Nav */
-.nav-btns{display:flex;gap:10px;margin-top:24px}
-.btn{flex:1;padding:13px;border:none;border-radius:8px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s}
-.btn:disabled{opacity:.35;cursor:not-allowed}
-.btn:hover:not(:disabled){opacity:.85}
-.btn-g{background:var(--g);color:#000}
-.btn-b{background:var(--s2);border:1px solid var(--bdr2);color:var(--t2)}
-.btn-b:hover:not(:disabled){border-color:var(--g);color:var(--g);opacity:1}
-
-@media(max-width:480px){.pill-grid,.device-grid{grid-template-columns:1fr}}
+@media(min-width:880px){
+  .lede{font-size:16px}
+  .nav-btns .btn{flex:0 0 auto;min-width:170px}
+}
 </style>
-<style>/* unified header logo */.logo{font-family:'Press Start 2P',monospace!important;font-size:11px!important;font-weight:400!important;letter-spacing:.04em!important;color:#34d399!important;text-decoration:none!important;text-shadow:0 0 10px rgba(52,211,153,.5)!important;line-height:1.4!important}.logo svg{width:12px;height:12px;margin-right:7px;vertical-align:-1px;fill:none;stroke:currentColor;stroke-width:2.2;filter:drop-shadow(0 0 5px rgba(52,211,153,.5))}</style>
 </head>
 <body>
-<div class="topbar"><a href="#" class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 20.5 7.1v9.8L12 21.8 3.5 16.9V7.1Z"/></svg>DUNGEON</a></div>
-<div class="prog-wrap">
-  <div class="prog-lbl" id="prog-lbl">Step 1 of 4</div>
-  <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:25%"></div></div>
+
+<header class="topbar">
+  <div class="wrap wrap-md row">
+    <span class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </span>
+  </div>
+</header>
+
+<div class="prog" id="progWrap">
+  <div class="wrap wrap-md">
+    <span class="label tight" id="prog-lbl">Step 1 of 4</span>
+    <div class="track"><i id="prog-fill" style="width:25%"></i></div>
+  </div>
 </div>
 
-<div class="page">
+<main class="page">
+  <div class="wrap wrap-md">
 
-  <!-- Step 0: Subtle welcome for members with no active subscription -->
-  <div class="step" id="stepNoSub">
-    <div class="step-eyebrow">Welcome to the Dungeon</div>
-    <div class="step-title">You made it. 🏰</div>
-    <div class="dm-card">
-      <div class="dm-header">
-        <div id="dm-av2"><div class="dm-avatar-fallback" id="dm-fallback2">D</div></div>
-        <div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span class="dm-badge">⚔ Dungeon Master</span>
-          </div>
-          <div class="dm-handle">@dungeon_master</div>
+    <!-- Shown instead of the walkthrough when there is nothing to set up yet. -->
+    <section class="step" id="stepNoSub">
+      <span class="eyebrow">Welcome to the Dungeon</span>
+      <h1>You made it.</h1>
+
+      <div class="dm">
+        <div class="dm-head">
+          <span class="avatar" id="dm-av2"><span id="dm-fallback2">D</span></span>
+          <div><b>The Dungeon Master</b><span>@dungeon_master</span></div>
+        </div>
+        <p>Welcome to <strong>Dungeon</strong> — private, invitation only. You're here because somebody trusted you
+          with an invite, and that counts for something. We keep it small on purpose.</p>
+        <p>Have a look around. When you're curious, take the <strong>free demo</strong> and try the whole thing for
+          three days before you decide anything.</p>
+        <p>When you're ready to turn your access on, everything you need is on your dashboard.</p>
+        <p class="sign">— The Dungeon Master</p>
+      </div>
+
+      <div class="cards mt-3">
+        <a class="linkrow" href="/dashboard.html">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8.5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4Z"/><path d="M14 6.5v11"/></svg>
+          <div class="txt"><b>Try the demo</b><span>Free, 72 hours, everything included</span></div>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="linkrow" href="/redeem.html">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h3"/></svg>
+          <div class="txt"><b>Turn on your access</b><span>One credit, one month, both services</span></div>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <div class="nav-btns"><button class="btn btn-primary" onclick="finish()">Go to my dashboard</button></div>
+    </section>
+
+    <!-- 1. The letter -->
+    <section class="step on" id="step1">
+      <span class="eyebrow">Welcome to the Dungeon</span>
+      <h1>You made it.</h1>
+
+      <div class="dm">
+        <div class="dm-head">
+          <span class="avatar" id="dm-av"><span id="dm-fallback">D</span></span>
+          <div><b>The Dungeon Master</b><span>@dungeon_master</span></div>
+        </div>
+        <p>Welcome to <strong>Dungeon</strong> — a private streaming service, invitation only. You're here because
+          somebody trusted you with an invite, and that counts for something. We keep it small on purpose.</p>
+        <p>You get two things, and they use two apps:</p>
+        <p><strong>DungeonStream</strong> — films and series, through <strong>Stremio</strong>. Your account is made
+          and loaded already. Install the app and sign in.</p>
+        <p><strong>DungeonCast</strong> — live TV and sport, through <strong>Jellyfin</strong>. Same idea: install,
+          sign in with the account we made you.</p>
+        <p class="sign">— The Dungeon Master</p>
+      </div>
+
+      <div class="nav-btns"><button class="btn btn-primary" onclick="goStep(2)">Set them up</button></div>
+    </section>
+
+    <!-- 2. Stremio -->
+    <section class="step" id="step2">
+      <span class="eyebrow">DungeonStream — films and series</span>
+      <h1>Set up Stremio</h1>
+      <p class="lede">Your Stremio account exists and the Dungeon is already on it. You need the app and your login.</p>
+
+      <div class="card">
+        <div class="pick">1 · Pick your device</div>
+        <div class="chips">
+          <button type="button" class="chip" data-d="st-iphone" onclick="selStream('st-iphone')">iPhone / iPad</button>
+          <button type="button" class="chip" data-d="st-android" onclick="selStream('st-android')">Android</button>
+          <button type="button" class="chip" data-d="st-tv" onclick="selStream('st-tv')">TV / Fire Stick</button>
+          <button type="button" class="chip" data-d="st-browser" onclick="selStream('st-browser')">Computer</button>
+        </div>
+        <div class="applinks cards" id="st-app-links"></div>
+      </div>
+
+      <div class="card mt-2">
+        <div class="pick">2 · Sign in</div>
+        <div class="notice">
+          Open Stremio, tap <strong>Log in</strong>, and use the email and password on your
+          <a class="link" href="/dungeonstream.html">DungeonStream page</a>. The catalogue is already installed, so
+          everything appears straight away.
+        </div>
+        <a href="/dungeonstream.html" class="linkrow mt-2">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 3.5a5 5 0 1 1-4.2 7.6L3 18.4V21h2.6l.9-.9v-1.7h1.7l.9-.9v-1.7h1.7l1.5-1.5a5 5 0 1 0 4.2-9.8Z"/></svg>
+          <div class="txt"><b>Get your Stremio login</b><span>Email and password, on your DungeonStream page</span></div>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <div class="nav-btns">
+        <button class="btn btn-ghost" onclick="goStep(1)">Back</button>
+        <button class="btn btn-primary" onclick="goStep(3)">Next</button>
+      </div>
+    </section>
+
+    <!-- 3. Jellyfin -->
+    <section class="step" id="step3">
+      <span class="eyebrow">DungeonCast — live TV</span>
+      <h1>Set up Jellyfin</h1>
+      <p class="lede">Same again: pick your device, get the app, sign in with the account we made you.</p>
+
+      <div class="card">
+        <div class="pick">1 · Pick your device</div>
+        <div class="chips">
+          <button type="button" class="chip" data-d="iphone" onclick="selDev('iphone')">iPhone / iPad</button>
+          <button type="button" class="chip" data-d="android" onclick="selDev('android')">Android</button>
+          <button type="button" class="chip" data-d="firetv" onclick="selDev('firetv')">Fire TV</button>
+          <button type="button" class="chip" data-d="androidtv" onclick="selDev('androidtv')">Android / Google TV</button>
+          <button type="button" class="chip" data-d="appletv" onclick="selDev('appletv')">Apple TV</button>
+          <button type="button" class="chip" data-d="roku" onclick="selDev('roku')">Roku</button>
+          <button type="button" class="chip" data-d="browser" onclick="selDev('browser')">Computer</button>
+        </div>
+        <div class="applinks cards" id="app-links"></div>
+      </div>
+
+      <div class="card mt-2">
+        <div class="pick">2 · Sign in</div>
+        <div class="notice">
+          Add <strong>https://dungeoncast.cc</strong> as the server, then sign in with the DungeonCast username and
+          password on your <a class="link" href="/dungeoncast.html">DungeonCast page</a>.
+        </div>
+        <div class="notice mt-1">
+          <strong>On a TV:</strong> pick <strong>Quick Connect</strong> and type the code it shows into the phone app
+          under <strong>Settings → Quick Connect</strong>. No password typing with a remote.
         </div>
       </div>
-      <div class="dm-body">
-        <p>Welcome to <strong>Dungeon</strong> - a private, invite-only community. You're here because someone trusted you with an invite, and that means something. We keep this small and tight-knit on purpose.</p>
-        <p>Take a look around and get comfortable. When you're curious, you can <span class="hl">grab a free demo</span> to try things out before you decide anything - no commitment.</p>
-        <p>Whenever you're ready to unlock your access, everything you need is on your dashboard.</p>
-        <p style="color:var(--g);font-weight:600">- The Dungeon Master</p>
-      </div>
-    </div>
-    <div class="pill-grid">
-      <div class="pill"><div class="pill-icon">🎬</div><div class="pill-title">Try a Demo</div><div class="pill-sub">Free - see what's inside</div></div>
-      <div class="pill"><div class="pill-icon">🎟️</div><div class="pill-title">Unlock Access</div><div class="pill-sub">Whenever you're ready</div></div>
-    </div>
-    <div class="nav-btns"><button class="btn btn-g" onclick="finish()">Go to Dashboard →</button></div>
-  </div>
 
-  <!-- Step 1: Welcome -->
-  <div class="step on" id="step1">
-    <div class="step-eyebrow">Welcome to the Dungeon</div>
-    <div class="step-title">You made it. 🏰</div>
-    <div class="dm-card">
-      <div class="dm-header">
-        <div id="dm-av"><div class="dm-avatar-fallback" id="dm-fallback">D</div></div>
-        <div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span class="dm-badge">⚔ Dungeon Master</span>
+      <div class="nav-btns">
+        <button class="btn btn-ghost" onclick="goStep(2)">Back</button>
+        <button class="btn btn-primary" onclick="goStep(4)">Next</button>
+      </div>
+    </section>
+
+    <!-- 4. Done -->
+    <section class="step" id="step4">
+      <span class="eyebrow">That's everything</span>
+      <h1>Welcome in.</h1>
+      <p class="lede">Your dashboard has your logins, your credits and the setup guides, any time you need them.</p>
+
+      <div class="card">
+        <div class="steps">
+          <div class="step-item">
+            <span class="step-circle">1</span>
+            <div><h3>DungeonStream</h3><p>Open Stremio. Your films and series are there.</p></div>
           </div>
-          <div class="dm-handle">@dungeon_master</div>
+          <div class="step-item">
+            <span class="step-circle">2</span>
+            <div><h3>DungeonCast</h3><p>Open Jellyfin. Your live TV is there.</p></div>
+          </div>
+          <div class="step-item">
+            <span class="step-circle">3</span>
+            <div><h3>Stuck?</h3><p>Support is on your dashboard, and a person answers it.</p></div>
+          </div>
         </div>
       </div>
-      <div class="dm-body">
-        <p>Welcome to <strong>Dungeon</strong> - a private, invite-only streaming service. You're here because someone trusted you with an invite, and that means something. We keep this small and tight-knit on purpose.</p>
-        <p>You get <span class="hl">two things</span>, and they use two different apps:</p>
-        <p>🌊 <strong>DungeonStream</strong> - movies &amp; TV shows, on <strong>Stremio</strong>. We've already made your account and loaded it up. Just install the app and sign in.</p>
-        <p>📡 <strong>DungeonCast</strong> - live TV channels, on <strong>Jellyfin</strong>. Same idea: install the app, sign in with the account we made you.</p>
-        <p style="color:var(--g);font-weight:600">- The Dungeon Master</p>
+
+      <div class="nav-btns">
+        <button class="btn btn-ghost" onclick="goStep(3)">Back</button>
+        <button class="btn btn-primary" onclick="finish()">Go to my dashboard</button>
       </div>
-    </div>
-    <div class="pill-grid">
-      <div class="pill"><div class="pill-icon">🌊</div><div class="pill-title">DungeonStream</div><div class="pill-sub">Movies &amp; shows via Stremio</div></div>
-      <div class="pill"><div class="pill-icon">📡</div><div class="pill-title">DungeonCast</div><div class="pill-sub">Live TV via Jellyfin</div></div>
-    </div>
-    <div class="nav-btns"><button class="btn btn-g" onclick="goStep(2)">Continue →</button></div>
+    </section>
+
   </div>
-
-  <!-- Step 2: DungeonStream (Stremio) -->
-  <div class="step" id="step2">
-    <div class="step-eyebrow">🌊 DungeonStream - Movies &amp; Shows</div>
-    <div class="step-title">Set up Stremio</div>
-    <div class="step-sub">DungeonStream runs on Stremio. We already created your Stremio account and installed the Dungeon on it - you just need the app and your login.</div>
-
-    <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">1. Pick your device to get the app:</div>
-    <div class="device-grid">
-      <div class="dv-btn" data-d="st-iphone" onclick="selStream('st-iphone')"><div class="dv-icon">📱</div><div><div class="dv-name">iPhone / iPad</div><div class="dv-sub">App Store</div></div></div>
-      <div class="dv-btn" data-d="st-android" onclick="selStream('st-android')"><div class="dv-icon">🤖</div><div><div class="dv-name">Android</div><div class="dv-sub">Play Store</div></div></div>
-      <div class="dv-btn" data-d="st-tv" onclick="selStream('st-tv')"><div class="dv-icon">📺</div><div><div class="dv-name">TV / Fire Stick</div><div class="dv-sub">Downloader app</div></div></div>
-      <div class="dv-btn" data-d="st-browser" onclick="selStream('st-browser')"><div class="dv-icon">🌐</div><div><div class="dv-name">Computer / Web</div><div class="dv-sub">No download</div></div></div>
-    </div>
-    <div id="st-app-links" style="display:none;margin-bottom:16px"></div>
-
-    <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">2. Sign in with your account:</div>
-    <div class="notice">
-      Open the Stremio app, tap <strong>Log in</strong>, and enter the email &amp; password shown on your <strong>DungeonStream page</strong>. That's it - the Dungeon's already installed, so your movies and shows appear right away.
-    </div>
-    <a href="/dungeonstream.html" class="app-link" style="margin-bottom:0">
-      <div class="app-link-icon">🔑</div>
-      <div><div class="app-link-name">Open my DungeonStream page</div><div class="app-link-sub">Get your Stremio login here</div></div>
-      <div class="app-link-arrow">→</div>
-    </a>
-
-    <div class="nav-btns">
-      <button class="btn btn-b" onclick="goStep(1)">← Back</button>
-      <button class="btn btn-g" onclick="goStep(3)">Next →</button>
-    </div>
-  </div>
-
-  <!-- Step 3: DungeonCast (Jellyfin) -->
-  <div class="step" id="step3">
-    <div class="step-eyebrow">📡 DungeonCast - Live TV</div>
-    <div class="step-title">Set up Jellyfin</div>
-    <div class="step-sub">DungeonCast is live TV, and it runs on Jellyfin. Pick your device to get the app, then sign in with the account we made you.</div>
-
-    <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">1. Pick your device:</div>
-    <div class="device-grid">
-      <div class="dv-btn" data-d="iphone" onclick="selDev('iphone')"><div class="dv-icon">📱</div><div><div class="dv-name">iPhone / iPad</div><div class="dv-sub">App Store</div></div></div>
-      <div class="dv-btn" data-d="android" onclick="selDev('android')"><div class="dv-icon">🤖</div><div><div class="dv-name">Android</div><div class="dv-sub">Play Store</div></div></div>
-      <div class="dv-btn" data-d="firetv" onclick="selDev('firetv')"><div class="dv-icon">🔥</div><div><div class="dv-name">Fire TV / Stick</div><div class="dv-sub">Amazon Appstore</div></div></div>
-      <div class="dv-btn" data-d="androidtv" onclick="selDev('androidtv')"><div class="dv-icon">📺</div><div><div class="dv-name">Android / Google TV</div><div class="dv-sub">Play Store</div></div></div>
-      <div class="dv-btn" data-d="appletv" onclick="selDev('appletv')"><div class="dv-icon">🍎</div><div><div class="dv-name">Apple TV</div><div class="dv-sub">App Store</div></div></div>
-      <div class="dv-btn" data-d="roku" onclick="selDev('roku')"><div class="dv-icon">🟣</div><div><div class="dv-name">Roku</div><div class="dv-sub">Channel Store</div></div></div>
-      <div class="dv-btn" data-d="browser" onclick="selDev('browser')"><div class="dv-icon">🌐</div><div><div class="dv-name">Computer / Web</div><div class="dv-sub">No download</div></div></div>
-    </div>
-    <div id="app-links" style="display:none;margin-bottom:16px"></div>
-
-    <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">2. Sign in:</div>
-    <div class="notice">
-      Open the app, add <strong>https://dungeoncast.cc</strong> as the server, and sign in with the <strong>DungeonCast username &amp; password</strong> shown on your dashboard.<br/><br/>
-      <strong>Quick Connect</strong> - on a TV, open Jellyfin → Quick Connect and enter the code into the app on your phone under Settings → Quick Connect. No typing passwords on the TV.
-    </div>
-
-    <div class="nav-btns">
-      <button class="btn btn-b" onclick="goStep(2)">← Back</button>
-      <button class="btn btn-g" onclick="goStep(4)">Next →</button>
-    </div>
-  </div>
-
-  <!-- Step 4: Done -->
-  <div class="step" id="step4">
-    <div class="step-eyebrow">You're all set</div>
-    <div class="step-title">Welcome in. 🎉</div>
-    <div class="step-sub">Both apps installed and signed in? You're ready. Your dashboard has your credentials, credits, and everything else any time you need it.</div>
-
-    <div class="redeem-card">
-      <div class="redeem-step"><div class="rs-num">🌊</div><div class="rs-text"><strong>DungeonStream</strong> - open Stremio, your movies &amp; shows are there.</div></div>
-      <div class="redeem-step"><div class="rs-num">📡</div><div class="rs-text"><strong>DungeonCast</strong> - open Jellyfin, your live TV is there.</div></div>
-      <div class="redeem-step"><div class="rs-num">💬</div><div class="rs-text">Need help? Hit <strong>Support</strong> from your dashboard and the Dungeon Master will sort you out.</div></div>
-    </div>
-
-    <div class="nav-btns">
-      <button class="btn btn-b" onclick="goStep(3)">← Back</button>
-      <button class="btn btn-g" onclick="finish()">Go to Dashboard →</button>
-    </div>
-  </div>
-
-
-</div>
+</main>
 
 <script>
 let currentStep = 1;
-
-const APPS = {
-  android: {
-    label: 'Android Phone / Tablet',
-    apps: [
-      {icon:'🪼',name:'Jellyfin for Android',sub:'Official · Google Play Store',url:'https://play.google.com/store/apps/details?id=org.jellyfin.mobile'},
-      {icon:'📱',name:'Streamyfin',sub:'Modern client · Google Play Store',url:'https://play.google.com/store/apps/details?id=com.fredrikburmester.streamyfin'},
-    ]
-  },
-  iphone: {
-    label: 'iPhone / iPad',
-    apps: [
-      {icon:'🪼',name:'Swiftfin',sub:'Best iOS client · App Store',url:'https://apps.apple.com/app/swiftfin/id1604098728'},
-      {icon:'🪼',name:'Jellyfin Mobile',sub:'Official · App Store',url:'https://apps.apple.com/app/jellyfin-mobile/id1480192618'},
-      {icon:'📱',name:'Streamyfin',sub:'Modern client · App Store',url:'https://apps.apple.com/app/streamyfin/id6593660679'},
-    ]
-  },
-  firetv: {
-    label: 'Fire TV / Fire Stick',
-    apps: [
-      {icon:'🪼',name:'Jellyfin for Fire TV',sub:'Official · Amazon Appstore',url:'https://www.amazon.com/Jellyfin-for-Fire-TV/dp/B07TX7Z725'},
-    ],
-    sideload: true
-  },
-  androidtv: {
-    label: 'Android TV / Google TV',
-    apps: [
-      {icon:'🪼',name:'Jellyfin for Android TV',sub:'Official · Google Play Store',url:'https://play.google.com/store/apps/details?id=org.jellyfin.androidtv'},
-    ]
-  },
-  appletv: {
-    label: 'Apple TV',
-    apps: [
-      {icon:'🪼',name:'Swiftfin',sub:'Best tvOS client · App Store',url:'https://apps.apple.com/app/swiftfin/id1604098728'},
-      {icon:'🪼',name:'Jellyfin Mobile',sub:'Official · App Store',url:'https://apps.apple.com/app/jellyfin-mobile/id1480192618'},
-    ]
-  },
-  roku: {
-    label: 'Roku',
-    apps: [
-      {icon:'🪼',name:'Jellyfin for Roku',sub:'Official · Roku Channel Store',url:'https://channelstore.roku.com/search#q=jellyfin'},
-    ]
-  },
-  browser: {
-    label: 'Windows / Mac / Browser',
-    apps: [
-      {icon:'🌐',name:'Open dungeoncast.cc',sub:'No download needed · any browser',url:'https://dungeoncast.cc'},
-    ]
-  },
-};
-
 const TOTAL_STEPS = 4;
+
 function goStep(n) {
   document.getElementById('step'+currentStep).classList.remove('on');
   currentStep = n;
   document.getElementById('step'+n).classList.add('on');
   document.getElementById('prog-fill').style.width = ((n/TOTAL_STEPS)*100)+'%';
-  document.getElementById('prog-lbl').textContent = n < TOTAL_STEPS ? 'Step '+n+' of '+TOTAL_STEPS : 'Almost done';
+  document.getElementById('prog-lbl').textContent = n < TOTAL_STEPS ? 'Step '+n+' of '+TOTAL_STEPS : 'Done';
   window.scrollTo(0,0);
 }
 
-// Stremio apps for DungeonStream
-const STREMIO_APPS = {
-  'st-iphone': [
-    {icon:'📱',name:'iPhone Setup Guide',sub:'Add Stremio to your Home Screen - full walkthrough',url:'/stream-setup.html',internal:true},
+// Jellyfin clients, by device.
+const APPS = {
+  android: [
+    {name:'Jellyfin for Android',sub:'Official · Google Play',url:'https://play.google.com/store/apps/details?id=org.jellyfin.mobile'},
+    {name:'Streamyfin',sub:'Modern client · Google Play',url:'https://play.google.com/store/apps/details?id=com.fredrikburmester.streamyfin'},
   ],
-  'st-android': [
-    {icon:'🎬',name:'Stremio for Android',sub:'Google Play Store',url:'https://play.google.com/store/apps/details?id=com.stremio.one'},
+  iphone: [
+    {name:'Swiftfin',sub:'Best on iOS · App Store',url:'https://apps.apple.com/app/swiftfin/id1604098728'},
+    {name:'Jellyfin Mobile',sub:'Official · App Store',url:'https://apps.apple.com/app/jellyfin-mobile/id1480192618'},
+    {name:'Streamyfin',sub:'Modern client · App Store',url:'https://apps.apple.com/app/streamyfin/id6593660679'},
   ],
-  'st-tv': [
-    {icon:'🎬',name:'Stremio downloads',sub:'Fire TV, Android TV - see all platforms',url:'https://www.stremio.com/downloads'},
+  firetv: [
+    {name:'Jellyfin for Fire TV',sub:'Official · Amazon Appstore',url:'https://www.amazon.com/Jellyfin-for-Fire-TV/dp/B07TX7Z725'},
   ],
-  'st-browser': [
-    {icon:'🌐',name:'Open web.stremio.com',sub:'No download - any browser',url:'https://web.stremio.com'},
+  androidtv: [
+    {name:'Jellyfin for Android TV',sub:'Official · Google Play',url:'https://play.google.com/store/apps/details?id=org.jellyfin.androidtv'},
+  ],
+  appletv: [
+    {name:'Swiftfin',sub:'Best on tvOS · App Store',url:'https://apps.apple.com/app/swiftfin/id1604098728'},
+    {name:'Jellyfin Mobile',sub:'Official · App Store',url:'https://apps.apple.com/app/jellyfin-mobile/id1480192618'},
+  ],
+  roku: [
+    {name:'Jellyfin for Roku',sub:'Official · Roku Channel Store',url:'https://channelstore.roku.com/search#q=jellyfin'},
+  ],
+  browser: [
+    {name:'dungeoncast.cc',sub:'Any browser, nothing to install',url:'https://dungeoncast.cc'},
   ],
 };
+
+// Fire TV is the one that sometimes hides the app.
+const SIDELOAD = `<div class="notice mt-1">
+  <strong>Not in the Appstore?</strong> Some Fire TVs hide it. You can sideload instead:
+  <ol>
+    <li>Install <strong>Downloader</strong> from the Amazon Appstore.</li>
+    <li>In <strong>Settings → My Fire TV → Developer Options</strong>, allow Downloader to install unknown apps.</li>
+    <li>Open Downloader and go to <strong>jellyfin.org/downloads</strong>.</li>
+    <li>Install the Android TV APK.</li>
+  </ol>
+  <p style="margin-top:8px;color:var(--amber)">The Fire TV Stick 4K Select (Vega OS) cannot sideload at all.</p>
+</div>`;
+
+// Stremio, by device.
+const STREMIO_APPS = {
+  'st-iphone': [{name:'iPhone setup guide',sub:'Stremio runs from Safari — full walkthrough',url:'/stream-setup.html',internal:true}],
+  'st-android': [{name:'Stremio for Android',sub:'Google Play',url:'https://play.google.com/store/apps/details?id=com.stremio.one'}],
+  'st-tv': [{name:'Stremio downloads',sub:'Fire TV, Android TV and the rest',url:'https://www.stremio.com/downloads'}],
+  'st-browser': [{name:'web.stremio.com',sub:'Any browser, nothing to install',url:'https://web.stremio.com'}],
+};
+
+const APP_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18.5h2"/></svg>';
+
+function appRow(a){
+  return `<a class="linkrow" href="${a.url}"${a.internal?'':' target="_blank" rel="noopener"'}>
+    ${APP_ICON}
+    <div class="txt"><b>${a.name}</b><span>${a.sub}</span></div>
+    <span class="arrow" aria-hidden="true">${a.internal?'→':'↗'}</span>
+  </a>`;
+}
+
 function selStream(key) {
-  document.querySelectorAll('#step2 .dv-btn').forEach(b=>b.classList.toggle('on',b.dataset.d===key));
-  const apps = STREMIO_APPS[key];
-  const box = document.getElementById('st-app-links');
-  box.style.display='block';
-  box.innerHTML = apps.map(a=>
-    `<a href="${a.url}"${a.internal?'':' target="_blank"'} class="app-link">
-      <div class="app-link-icon">${a.icon}</div>
-      <div><div class="app-link-name">${a.name}</div><div class="app-link-sub">${a.sub}</div></div>
-      <div class="app-link-arrow">${a.internal?'→':'↗'}</div>
-    </a>`
-  ).join('');
+  document.querySelectorAll('#step2 .chip').forEach(b=>b.classList.toggle('on', b.dataset.d===key));
+  document.getElementById('st-app-links').innerHTML = STREMIO_APPS[key].map(appRow).join('');
 }
 
 function selDev(key) {
-  document.querySelectorAll('.dv-btn').forEach(b=>b.classList.toggle('on',b.dataset.d===key));
-  const d = APPS[key];
-  document.getElementById('app-links').style.display='block';
-  let html = d.apps.map(a=>
-    `<a href="${a.url}" target="_blank" class="app-link">
-      <div class="app-link-icon">${a.icon}</div>
-      <div><div class="app-link-name">${a.name}</div><div class="app-link-sub">${a.sub}</div></div>
-      <div class="app-link-arrow">↗</div>
-    </a>`
-  ).join('');
-  if(d.sideload){
-    html += `<div class="notice" style="margin-top:10px">
-      <strong>Don't see it?</strong> If Jellyfin doesn't show in your Fire TV's Appstore, you can sideload it:
-      <ol style="margin-top:8px;padding-left:16px;line-height:2">
-        <li>Install the <strong>Downloader</strong> app from the Amazon Appstore</li>
-        <li>Go to <strong>Settings → My Fire TV → Developer Options</strong> → enable <strong>Install Unknown Apps</strong> for Downloader</li>
-        <li>Open Downloader and go to <strong>jellyfin.org/downloads</strong></li>
-        <li>Download and install the Android TV APK</li>
-      </ol>
-      <div style="margin-top:8px;color:var(--red);font-size:11px">⚠️ Note: Fire TV Stick 4K Select (Vega OS) does not support sideloading.</div>
-    </div>`;
-  }
+  document.querySelectorAll('#step3 .chip').forEach(b=>b.classList.toggle('on', b.dataset.d===key));
+  let html = APPS[key].map(appRow).join('');
+  if(key === 'firetv') html += SIDELOAD;
   document.getElementById('app-links').innerHTML = html;
 }
 
@@ -358,10 +333,12 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
   if(!d.authenticated){window.location.href='/login.html';return;}
   const tier = d.member?.profile?.tier;
   if(['mod','admin','warden','dealer'].includes(tier)){
+    // Staff do not need the walkthrough.
     fetch('/api/member/welcome-done',{method:'POST'}).then(()=>window.location.href='/dashboard.html');
     return;
   }
-  // Subscription-aware: staff/family tiers always have access; otherwise check active dates.
+
+  // Permanent tiers always have access; everyone else is checked by date.
   const m = d.member || {};
   const now = new Date();
   const parseEnd = v => v ? new Date(String(v).includes('T') ? v : v + 'T00:00:00Z') : null;
@@ -370,24 +347,27 @@ fetch('/api/member/me').then(r=>r.json()).then(d=>{
   const hasAccess = isPerm || (streamEnd && streamEnd > now) || (castEnd && castEnd > now);
 
   if(!hasAccess){
-    // Show the subtle welcome; hide the detailed app-setup flow entirely.
+    // Nothing to set up yet, so show the short welcome instead.
     document.getElementById('step1').classList.remove('on');
     document.getElementById('stepNoSub').classList.add('on');
-    const pb = document.querySelector('.prog-wrap');
-    if(pb) pb.style.display='none';
+    document.getElementById('progWrap').classList.add('hidden');
   }
 });
 
 fetch('/api/dungeon-master').then(r=>r.json()).then(dm=>{
   if(dm?.avatar_url){
-    document.getElementById('dm-av').innerHTML=`<img src="${dm.avatar_url}" class="dm-avatar" alt="@one"/>`;
-    const av2=document.getElementById('dm-av2'); if(av2) av2.innerHTML=`<img src="${dm.avatar_url}" class="dm-avatar" alt="dm"/>`;
+    ['dm-av','dm-av2'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.innerHTML = '<img src="'+dm.avatar_url+'" alt=""/>';
+    });
   } else if(dm?.avatar_color){
-    document.getElementById('dm-fallback').style.background=dm.avatar_color;
-    const fb2=document.getElementById('dm-fallback2'); if(fb2) fb2.style.background=dm.avatar_color;
+    ['dm-av','dm-av2'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.style.background = dm.avatar_color;
+    });
   }
 }).catch(()=>{});
 </script>
-  <script src="/notif-bell.js"></script>
+<script src="/notif-bell.js"></script>
 </body>
 </html>
