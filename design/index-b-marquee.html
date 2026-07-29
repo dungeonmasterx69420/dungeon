@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="color-scheme" content="dark"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="A private, invitation-only streaming membership."/>
+<title>Dungeon — Marquee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ── Tokens (mirrors /dungeon.css, plus a display face) ────── */
+:root{
+  --bg:#050807;--surface:#0C120F;
+  --line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.13);
+  --accent:#34D399;--accent-hi:#4CE0A0;--accent-ink:#04150E;
+  --text:#EAF1ED;--text2:#B9C8C2;--muted:#8A9A93;--faint:#6B7F77;
+  --sans:'Instrument Sans',system-ui,-apple-system,sans-serif;
+  --serif:'Instrument Serif',Georgia,serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --pixel:'Press Start 2P',monospace;
+  --shell:1120px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{position:relative;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+/* House lights: a neutral wash from above, not a coloured blob. */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(110% 62% at 50% -8%,rgba(255,255,255,.045),transparent 62%)}
+body>*{position:relative;z-index:1}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+
+.shell{max-width:var(--shell);margin:0 auto;padding-inline:20px;width:100%}
+.kicker{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--faint)}
+
+/* ── Top bar ───────────────────────────────────────────────── */
+.topbar .row{display:flex;align-items:center;justify-content:space-between;padding-block:20px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand svg{width:15px;height:15px;fill:none;stroke:var(--accent);stroke-width:2}
+.brand span{font-family:var(--pixel);font-size:11px;line-height:1.4;letter-spacing:.02em}
+.signin{font-size:14px;font-weight:500;color:var(--muted);transition:color .18s}
+.signin:hover{color:var(--text)}
+
+/* ── Hero ──────────────────────────────────────────────────── */
+.hero{padding-block:60px 56px}
+.hero .kicker{display:block;margin-bottom:22px}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(48px,13vw,124px);line-height:.94;
+  letter-spacing:-.022em;text-wrap:balance;margin-bottom:24px}
+h1 em{font-style:italic;color:var(--text2)}
+.lede{font-size:16.5px;line-height:1.6;color:var(--muted);max-width:42ch;text-wrap:pretty}
+.cta{display:flex;flex-direction:column;gap:10px;margin-top:32px;max-width:440px}
+.btn{display:block;text-align:center;font-family:var(--sans);font-size:15px;font-weight:600;padding:14px 28px;
+  border-radius:10px;border:1px solid transparent;cursor:pointer;transition:transform .14s,background .18s,border-color .18s,color .18s}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{background:var(--accent-hi);transform:translateY(-1px)}
+.btn-ghost{border-color:var(--line2);color:var(--text2);font-weight:500}
+.btn-ghost:hover{border-color:rgba(255,255,255,.26);color:var(--text)}
+
+/* ── The bill: the two apps set like a cinema programme ────── */
+.bill{padding-block:8px 44px}
+.bill .kicker{display:block;padding-bottom:6px}
+.act{display:block;border-top:1px solid var(--line);padding-block:22px;transition:padding-left .22s ease}
+.act:last-of-type{border-bottom:1px solid var(--line)}
+.act:hover,.act:focus-visible{padding-left:10px}
+.act-top{display:flex;align-items:baseline;justify-content:space-between;gap:18px}
+.act-name{font-family:var(--serif);font-weight:400;font-size:clamp(28px,7vw,46px);line-height:1.05;letter-spacing:-.015em}
+.act-meta{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--faint);text-align:right;flex:none;transition:color .2s}
+.act:hover .act-meta{color:var(--accent)}
+.act-desc{font-size:14px;line-height:1.55;color:var(--muted);margin-top:8px;max-width:52ch}
+
+.terms{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 18px;padding-block:20px 4px;
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.terms b{color:var(--text2);font-weight:600}
+.terms span{color:var(--line2)}
+
+/* ── Lower sections ────────────────────────────────────────── */
+.band{padding-block:46px;border-top:1px solid var(--line)}
+.band .kicker{display:block;padding-bottom:24px}
+.process{display:grid;gap:26px}
+.process article p:first-child{font-family:var(--serif);font-size:34px;line-height:1;color:var(--faint);margin-bottom:12px}
+.process h3{font-size:15.5px;font-weight:600;margin-bottom:6px}
+.process p.body{font-size:13.5px;line-height:1.6;color:var(--muted);max-width:38ch}
+
+.faq{max-width:840px}
+.faq details{border-top:1px solid var(--line)}
+.faq details:first-child{border-top:0}
+.faq summary{list-style:none;display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+  padding-block:18px;cursor:pointer;font-family:var(--serif);font-size:21px;color:var(--text2);transition:color .18s}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{color:var(--text)}
+.faq summary .pm{font-family:var(--mono);font-size:14px;color:var(--faint);flex:none}
+.faq summary .pm::before{content:'+'}
+.faq details[open] summary{color:var(--text)}
+.faq details[open] .pm{color:var(--accent)}
+.faq details[open] .pm::before{content:'\2212'}
+.faq p{font-size:14px;line-height:1.65;color:var(--muted);max-width:56ch;padding-bottom:20px}
+
+footer{border-top:1px solid var(--line)}
+.foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;
+  padding-block:24px 36px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.foot nav{display:flex;gap:18px}
+.foot nav a{transition:color .18s}
+.foot nav a:hover{color:var(--text2)}
+
+/* ── Desktop ───────────────────────────────────────────────── */
+@media(min-width:860px){
+  .shell{padding-inline:36px}
+  .hero{padding-block:104px 76px}
+  .hero-inner{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,360px);gap:56px;align-items:end}
+  .cta{margin-top:0;max-width:none}
+  .btn{white-space:nowrap}
+  .lede{font-size:17px}
+  .act{padding-block:28px}
+  .band{padding-block:70px}
+  .process{grid-template-columns:repeat(3,1fr);gap:44px}
+}
+
+/* ── Curtain up: one orchestrated entrance, then nothing ───── */
+.up{opacity:0;transform:translateY(14px);animation:up .7s cubic-bezier(.22,.61,.36,1) forwards}
+.d1{animation-delay:.05s}.d2{animation-delay:.13s}.d3{animation-delay:.21s}.d4{animation-delay:.29s}
+@keyframes up{to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .up{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="shell row">
+    <a href="/" class="brand" id="logoLink">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </a>
+    <a href="/login.html" class="signin">Sign in</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="shell">
+      <span class="kicker up d1">Private membership · By referral</span>
+      <div class="hero-inner">
+        <div>
+          <h1 class="up d2">Everything's on <em>tonight.</em></h1>
+          <p class="lede up d3">Films, series and live sport under one membership, on the devices you already own.</p>
+        </div>
+        <div class="cta up d4">
+          <a href="/apply.html" class="btn btn-primary">Request an invite</a>
+          <a href="/login.html" class="btn btn-ghost">I have an account</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bill">
+    <div class="shell">
+      <span class="kicker">On the bill</span>
+      <a class="act" href="/dungeonstream.html">
+        <span class="act-top">
+          <span class="act-name">DungeonStream</span>
+          <span class="act-meta">Phone · TV</span>
+        </span>
+        <span class="act-desc">Films and series, the full catalogue, ready the day your account opens.</span>
+      </a>
+      <a class="act" href="/dungeoncast.html">
+        <span class="act-top">
+          <span class="act-name">DungeonCast</span>
+          <span class="act-meta">Phone · TV · Browser</span>
+        </span>
+        <span class="act-desc">Films, series and live sport. Runs anywhere, including a browser tab.</span>
+      </a>
+      <p class="terms">
+        <b>One credit</b><span>/</span>One month<span>/</span>Everything on this bill<span>/</span>No tiers, no add-ons
+      </p>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="shell">
+      <span class="kicker">Getting in</span>
+      <div class="process">
+        <article>
+          <p aria-hidden="true">1</p>
+          <h3>Request an invite</h3>
+          <p class="body">Your name, a way to reach you, and who referred you.</p>
+        </article>
+        <article>
+          <p aria-hidden="true">2</p>
+          <h3>We read it</h3>
+          <p class="body">Every application is reviewed by a person, usually within a day.</p>
+        </article>
+        <article>
+          <p aria-hidden="true">3</p>
+          <h3>You're set up</h3>
+          <p class="body">Accounts are created for you. There is nothing to configure.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="shell">
+      <span class="kicker">Questions</span>
+      <div class="faq">
+        <details>
+          <summary>Why invitation only?<span class="pm" aria-hidden="true"></span></summary>
+          <p>Small, quiet and stable. The Dungeon grows by referral, not by signup.</p>
+        </details>
+        <details>
+          <summary>What does it cost?<span class="pm" aria-hidden="true"></span></summary>
+          <p>Credits. One credit is one month, and it covers every service at once.</p>
+        </details>
+        <details>
+          <summary>Which devices work?<span class="pm" aria-hidden="true"></span></summary>
+          <p>Phone, TV and browser. Setup guides are included once you're in.</p>
+        </details>
+        <details>
+          <summary>Can I refer someone?<span class="pm" aria-hidden="true"></span></summary>
+          <p>Members can refer. Every referral is still reviewed by hand.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="shell foot">
+    <span>© 2026 Dungeon</span>
+    <nav>
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/support.html">Support</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  // Signed-in members get the logo pointed at their dashboard
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if(d && d.authenticated){ document.getElementById('logoLink').setAttribute('href','/dashboard.html'); }
+  }).catch(()=>{});
+</script>
+</body>
+</html>

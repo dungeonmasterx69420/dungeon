@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="color-scheme" content="dark"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="A private, invitation-only streaming membership."/>
+<title>Dungeon — Keyholder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ── Tokens (mirrors /dungeon.css) ─────────────────────────── */
+:root{
+  --bg:#050807;--surface:#0C120F;--raise:#141C19;
+  --line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.13);
+  --accent:#34D399;--accent-hi:#4CE0A0;--accent-ink:#04150E;
+  --text:#EAF1ED;--text2:#B9C8C2;--muted:#8A9A93;--faint:#6B7F77;
+  --sans:'Instrument Sans',system-ui,-apple-system,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --pixel:'Press Start 2P',monospace;
+  --shell:1060px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+
+.shell{max-width:var(--shell);margin:0 auto;padding-inline:20px;width:100%}
+.label{display:block;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--faint)}
+
+/* ── Top bar ───────────────────────────────────────────────── */
+.topbar{border-bottom:1px solid var(--line)}
+.topbar .row{display:flex;align-items:center;justify-content:space-between;padding-block:18px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand svg{width:15px;height:15px;fill:none;stroke:var(--accent);stroke-width:2}
+.brand span{font-family:var(--pixel);font-size:11px;line-height:1.4;letter-spacing:.02em}
+.signin{font-size:14px;font-weight:500;color:var(--muted);transition:color .18s}
+.signin:hover{color:var(--text)}
+
+/* ── Hero ──────────────────────────────────────────────────── */
+.hero{padding-block:52px 56px}
+.hero-grid{display:grid;gap:48px;align-items:center}
+.hero .label{margin-bottom:18px}
+h1{font-size:clamp(33px,6.4vw,54px);line-height:1.06;font-weight:600;letter-spacing:-.034em;text-wrap:balance;margin-bottom:16px}
+.lede{font-size:16.5px;line-height:1.6;color:var(--muted);max-width:36ch;text-wrap:pretty}
+.cta{display:flex;flex-direction:column;gap:10px;margin-top:28px}
+.btn{display:block;text-align:center;font-family:var(--sans);font-size:15px;font-weight:600;padding:14px 26px;
+  border-radius:10px;border:1px solid transparent;cursor:pointer;transition:transform .14s,background .18s,border-color .18s,color .18s}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{background:var(--accent-hi);transform:translateY(-1px)}
+.btn-ghost{border-color:var(--line2);color:var(--text2);font-weight:500}
+.btn-ghost:hover{border-color:rgba(255,255,255,.26);color:var(--text)}
+
+/* ── Signature: the membership key ─────────────────────────── */
+.key-stage{perspective:1100px;display:flex;justify-content:center}
+.key{position:relative;width:100%;max-width:376px;aspect-ratio:1.586;border-radius:16px;
+  border:1px solid var(--line2);background:var(--surface);padding:20px;
+  display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;
+  transition:transform .35s cubic-bezier(.22,.61,.36,1);will-change:transform}
+/* One sheen, not a gradient pile. */
+.key::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(118deg,rgba(255,255,255,.07),rgba(255,255,255,.015) 38%,transparent 62%)}
+/* Milled edge, the way a real card catches light along its top rim. */
+.key::after{content:'';position:absolute;left:20px;right:20px;top:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent)}
+.key>*{position:relative}
+.key-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.key-mark{font-family:var(--pixel);font-size:10px;line-height:1.5;color:var(--text2);letter-spacing:.02em}
+.key-chip{position:relative;width:34px;height:25px;border-radius:5px;flex:none;
+  background:linear-gradient(150deg,var(--accent-hi),var(--accent) 52%,#1B8F68);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+.key-chip::before{content:'';position:absolute;inset:5px 8px;border:1px solid rgba(4,21,14,.3);border-radius:2px}
+.key-chip::after{content:'';position:absolute;top:3px;bottom:3px;left:50%;width:1px;background:rgba(4,21,14,.3)}
+/* The house mark, pressed into the card rather than printed on it. */
+.key svg.key-hex{position:absolute;right:-52px;bottom:-64px;width:216px;height:216px;
+  fill:none;stroke:rgba(255,255,255,.05);stroke-width:1.4;pointer-events:none}
+.key-rate{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.key-rate b{display:block;font-family:var(--sans);font-size:19px;font-weight:600;letter-spacing:-.02em;
+  text-transform:none;color:var(--text);margin-top:5px}
+.key-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+.key-serial{color:var(--text2);letter-spacing:.18em}
+.key-serial u{text-decoration:none;color:var(--accent)}
+
+/* ── Quiet sections ────────────────────────────────────────── */
+.band{border-top:1px solid var(--line);padding-block:42px}
+.band .label{padding-bottom:20px}
+
+.apps{display:grid;gap:0}
+.app{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:14px;padding-block:17px;
+  border-bottom:1px solid var(--line)}
+.app:first-child{padding-top:0}
+.app h3{font-size:15.5px;font-weight:600;letter-spacing:-.01em;margin-bottom:4px}
+.app p{font-size:13.5px;line-height:1.55;color:var(--muted)}
+.app span{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);flex:none}
+.apps-note{font-size:13px;line-height:1.65;color:var(--faint);max-width:56ch;padding-top:16px;text-wrap:pretty}
+
+.steps{list-style:none;counter-reset:s}
+.steps li{display:grid;grid-template-columns:auto 1fr;gap:15px;padding-block:15px;border-bottom:1px solid var(--line)}
+.steps li:last-child{border-bottom:0;padding-bottom:0}
+.steps li:first-child{padding-top:0}
+.steps li::before{counter-increment:s;content:counter(s,decimal-leading-zero);
+  font-family:var(--mono);font-size:11.5px;color:var(--accent);padding-top:3px}
+.steps h3{font-size:15px;font-weight:600;margin-bottom:3px}
+.steps p{font-size:13.5px;line-height:1.55;color:var(--muted);max-width:46ch}
+
+.faq details{border-bottom:1px solid var(--line)}
+.faq details:last-child{border-bottom:0}
+.faq summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding-block:16px;cursor:pointer;font-size:14.5px;font-weight:500;color:var(--text2);transition:color .18s}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{color:var(--text)}
+.faq details:first-child summary{padding-top:0}
+.faq summary .pm{font-family:var(--mono);font-size:14px;color:var(--faint);flex:none}
+.faq summary .pm::before{content:'+'}
+.faq details[open] summary{color:var(--text);font-weight:600;padding-bottom:7px}
+.faq details[open] .pm{color:var(--accent)}
+.faq details[open] .pm::before{content:'\2212'}
+.faq p{font-size:13.5px;line-height:1.65;color:var(--muted);max-width:54ch;padding-bottom:18px}
+
+footer{border-top:1px solid var(--line)}
+.foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;
+  padding-block:24px 34px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.foot nav{display:flex;gap:18px}
+.foot nav a{transition:color .18s}
+.foot nav a:hover{color:var(--text2)}
+
+/* ── Desktop ───────────────────────────────────────────────── */
+@media(min-width:880px){
+  .shell{padding-inline:32px}
+  .hero{padding-block:92px 84px}
+  .hero-grid{grid-template-columns:1fr 400px;gap:72px}
+  .cta{flex-direction:row}
+  .lede{font-size:17px}
+  .band{padding-block:60px}
+  .band-split{display:grid;grid-template-columns:190px 1fr;gap:50px}
+  .band-split .label{padding-bottom:0}
+}
+@media(min-width:1000px){
+  .key{max-width:400px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="shell row">
+    <a href="/" class="brand" id="logoLink">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </a>
+    <a href="/login.html" class="signin">Sign in</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="shell hero-grid">
+      <div>
+        <span class="label">Invitation only</span>
+        <h1>One key. Everything worth watching.</h1>
+        <p class="lede">Films, series and live TV under a single membership, set up for you on the devices you already own.</p>
+        <div class="cta">
+          <a href="/apply.html" class="btn btn-primary">Request an invite</a>
+          <a href="/login.html" class="btn btn-ghost">I have an account</a>
+        </div>
+      </div>
+
+      <div class="key-stage">
+        <div class="key" id="key" aria-hidden="true">
+          <svg class="key-hex" viewBox="0 0 24 24"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+          <div class="key-top">
+            <span class="key-mark">DUNGEON</span>
+            <span class="key-chip"></span>
+          </div>
+          <div class="key-rate">
+            One credit
+            <b>A month of everything</b>
+          </div>
+          <div class="key-foot">
+            <span class="key-serial"><u>DGN</u> 0000 0000</span>
+            <span>Member</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="shell band-split">
+      <span class="label">What it opens</span>
+      <div>
+        <div class="apps">
+          <div class="app">
+            <div>
+              <h3>DungeonStream</h3>
+              <p>Films and series</p>
+            </div>
+            <span>Phone · TV</span>
+          </div>
+          <div class="app">
+            <div>
+              <h3>DungeonCast</h3>
+              <p>Films, series and live sport</p>
+            </div>
+            <span>Phone · TV · Browser</span>
+          </div>
+        </div>
+        <p class="apps-note">Two apps so every device is covered. If one won't run on yours, the other will, and DungeonCast plays in any browser.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="shell band-split">
+      <span class="label">How it works</span>
+      <ol class="steps">
+        <li><div><h3>Request an invite</h3><p>Your name, a way to reach you, and who referred you.</p></div></li>
+        <li><div><h3>We read it</h3><p>Every application is reviewed by a person, usually within a day.</p></div></li>
+        <li><div><h3>You're set up</h3><p>Accounts are created for you. There is nothing to configure.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="shell band-split">
+      <span class="label">Questions</span>
+      <div class="faq">
+        <details>
+          <summary>Why invitation only?<span class="pm" aria-hidden="true"></span></summary>
+          <p>Small, quiet and stable. The Dungeon grows by referral, not by signup.</p>
+        </details>
+        <details>
+          <summary>What does it cost?<span class="pm" aria-hidden="true"></span></summary>
+          <p>Credits. One credit is one month, and it covers every service at once. No tiers, no add-ons, no per-service billing.</p>
+        </details>
+        <details>
+          <summary>Which devices work?<span class="pm" aria-hidden="true"></span></summary>
+          <p>Phone, TV and browser. Setup guides are included once you're in.</p>
+        </details>
+        <details>
+          <summary>Can I refer someone?<span class="pm" aria-hidden="true"></span></summary>
+          <p>Members can refer. Every referral is still reviewed by hand.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="shell foot">
+    <span>© 2026 Dungeon</span>
+    <nav>
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/support.html">Support</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  // Signed-in members get the logo pointed at their dashboard
+  fetch('/api/member/me').then(r=>r.json()).then(d=>{
+    if(d && d.authenticated){ document.getElementById('logoLink').setAttribute('href','/dashboard.html'); }
+  }).catch(()=>{});
+
+  // The key tilts to the pointer. Fine pointers only, and never when
+  // the visitor has asked for reduced motion.
+  (function(){
+    var key = document.getElementById('key');
+    var stage = key && key.parentElement;
+    if(!stage) return;
+    if(!window.matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+    if(window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+
+    stage.addEventListener('pointermove', function(e){
+      var r = key.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width - .5;
+      var y = (e.clientY - r.top) / r.height - .5;
+      key.style.transition = 'transform .12s linear';
+      key.style.transform = 'rotateY(' + (x * 9).toFixed(2) + 'deg) rotateX(' + (-y * 9).toFixed(2) + 'deg)';
+    });
+    stage.addEventListener('pointerleave', function(){
+      key.style.transition = '';
+      key.style.transform = '';
+    });
+  })();
+</script>
+</body>
+</html>
