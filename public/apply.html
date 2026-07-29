@@ -26,9 +26,7 @@
 .back:hover,.back:focus-visible{color:var(--text);outline:none}
 
 main{flex:1;position:relative;padding:34px 0 56px;overflow-x:clip}
-.glow{position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:120vw;max-width:720px;height:400px;pointer-events:none;z-index:0;
-  background:radial-gradient(50% 50% at 50% 50%,rgba(52,211,153,.12),transparent 70%)}
-main>*{position:relative;z-index:1}
+main>*{position:relative;z-index:1}   /* .rails comes from /dungeon.css */
 
 h1{font-size:30px;line-height:1.14;font-weight:600;letter-spacing:-.026em;margin-bottom:12px;text-wrap:pretty}
 .lede{font-size:15px;line-height:1.6;color:var(--muted);margin-bottom:28px;max-width:36ch;text-wrap:pretty}
@@ -93,7 +91,7 @@ footer{border-top:1px solid var(--line)}
 </header>
 
 <main>
-  <div class="glow" aria-hidden="true"></div>
+  <div class="rails" aria-hidden="true"></div>
   <div class="wrap">
 
     <div id="introView">

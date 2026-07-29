@@ -16,7 +16,7 @@
     :root{--void:#060908;--stone:#0d1311;--moss:#141c19;--raise:#172019;--ember:#34d399;--ember-soft:rgba(52,211,153,.14);--border:rgba(52,211,153,.12);--border2:rgba(52,211,153,.28);--ash:#6f8f84;--ash2:#94a3a0;--bone:#dce8e3;--red:#f87171;--amber:#fbbf24;--display:'Press Start 2P',monospace;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace}
     html,body{min-height:100vh}
     body{background:var(--void);color:var(--bone);font-family:var(--sans);position:relative}
-    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(90% 40% at 50% -5%, rgba(52,211,153,.08), transparent 55%)}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,transparent 1px 92px);-webkit-mask-image:linear-gradient(180deg,#000 0,#000 30%,transparent 74%);mask-image:linear-gradient(180deg,#000 0,#000 30%,transparent 74%)}
     .topbar{position:sticky;top:0;z-index:3;background:rgba(13,19,17,.85);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(8px)}
     .logo{font-family:var(--display);font-size:11px;color:var(--ember);letter-spacing:.04em;text-decoration:none;text-shadow:0 0 10px rgba(52,211,153,.5)}
     .back-link{font-size:13px;color:var(--ash);text-decoration:none;font-weight:500;transition:color .2s}

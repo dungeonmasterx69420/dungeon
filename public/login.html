@@ -26,9 +26,7 @@
 .back:hover,.back:focus-visible{color:var(--text);outline:none}
 
 main{flex:1;display:flex;align-items:center;justify-content:center;position:relative;padding:40px 0 60px;overflow-x:clip}
-.glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120vw;max-width:680px;height:420px;pointer-events:none;z-index:0;
-  background:radial-gradient(50% 50% at 50% 50%,rgba(52,211,153,.11),transparent 70%)}
-.wrap.form{position:relative;z-index:1}
+.wrap.form{position:relative;z-index:1}   /* .rails comes from /dungeon.css */
 
 h1{font-size:30px;line-height:1.14;font-weight:600;letter-spacing:-.026em;margin-bottom:10px}
 .lede{font-size:15px;line-height:1.6;color:var(--muted);margin-bottom:28px}
@@ -72,7 +70,7 @@ footer{border-top:1px solid var(--line)}
 </header>
 
 <main>
-  <div class="glow" aria-hidden="true"></div>
+  <div class="rails" aria-hidden="true"></div>
   <div class="wrap form">
     <h1>Sign in</h1>
     <p class="lede">Welcome back.</p>
