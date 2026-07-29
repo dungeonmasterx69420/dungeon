@@ -1,230 +1,210 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <meta charset="UTF-8"/>
-  <meta name="color-scheme" content="dark"/>
-<meta name="theme-color" content="#060908"/>
+<meta charset="UTF-8"/>
+<meta name="color-scheme" content="dark"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="A private, invitation-only streaming membership."/>
+<title>Dungeon</title>
 <link rel="manifest" href="/site.webmanifest"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    :root{
-      --void:#060908;--stone:#0d1311;--ember:#34d399;
-      --ember-soft:rgba(52,211,153,.14);--ember-line:rgba(52,211,153,.22);
-      --ash:#6f8f84;--bone:#dce8e3;
-      --display:'Press Start 2P',monospace;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
-    }
-    html,body{height:100%}
-    body{
-      background:var(--void);color:var(--bone);font-family:var(--sans);
-      min-height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden;
-    }
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/dungeon.css"/>
+<style>
+.wrap{max-width:520px;margin:0 auto;padding-inline:22px}
+.label{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
 
-    /* Torch-lit pool of light in the center, darkness at the edges */
-    .lightpool{
-      position:fixed;inset:0;z-index:0;pointer-events:none;
-      background:
-        radial-gradient(60% 50% at 50% 42%, rgba(52,211,153,.13), rgba(52,211,153,.04) 45%, transparent 70%),
-        radial-gradient(40% 35% at 50% 40%, rgba(52,211,153,.10), transparent 65%);
-    }
-    @media (prefers-reduced-motion: no-preference){
-      .lightpool{animation:flicker 6s ease-in-out infinite}
-    }
-    @keyframes flicker{
-      0%,100%{opacity:1}
-      42%{opacity:.86}
-      45%{opacity:1}
-      48%{opacity:.92}
-      70%{opacity:1}
-      73%{opacity:.8}
-      76%{opacity:.97}
-    }
-    /* Vignette to deepen the corners */
-    .vignette{
-      position:fixed;inset:0;z-index:0;pointer-events:none;
-      background:radial-gradient(120% 100% at 50% 45%, transparent 40%, rgba(0,0,0,.55) 100%);
-    }
+/* Header */
+header{position:relative;z-index:2}
+.bar{display:flex;align-items:center;justify-content:space-between;padding-block:16px}
+.brand{display:flex;align-items:center;gap:9px}
+.brand svg{width:15px;height:15px;fill:none;stroke:var(--accent);stroke-width:2}
+.brand span{font-family:'Press Start 2P',monospace;font-size:11px;font-weight:400;letter-spacing:.02em;line-height:1.4}
+.bar a.signin{font-size:14px;font-weight:500;color:var(--muted);padding:6px 2px;transition:color .18s}
+.bar a.signin:hover,.bar a.signin:focus-visible{color:var(--text);outline:none}
 
-    /* Rising embers */
-    .embers{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
-    .ember{
-      position:absolute;bottom:-12px;width:3px;height:3px;border-radius:50%;
-      background:var(--ember);box-shadow:0 0 6px var(--ember),0 0 12px rgba(52,211,153,.5);
-      opacity:0;
-    }
-    @media (prefers-reduced-motion: no-preference){
-      .ember{animation:rise linear infinite}
-    }
-    @keyframes rise{
-      0%{transform:translateY(0) translateX(0);opacity:0}
-      8%{opacity:.8}
-      80%{opacity:.5}
-      100%{transform:translateY(-92vh) translateX(var(--drift,10px));opacity:0}
-    }
+/* Hero */
+.hero{position:relative;padding:38px 0 34px;overflow-x:clip}
+.glow{position:absolute;top:-90px;left:50%;transform:translateX(-50%);width:120vw;max-width:760px;height:420px;pointer-events:none;z-index:0;
+  background:radial-gradient(50% 50% at 50% 50%,rgba(52,211,153,.15),transparent 70%)}
+.hero>.wrap{position:relative;z-index:1}
+h1{font-size:clamp(32px,9vw,40px);line-height:1.1;font-weight:600;letter-spacing:-.028em;text-wrap:pretty;margin-bottom:14px}
+.lede{font-size:16px;line-height:1.6;color:var(--muted);max-width:30ch;margin-bottom:26px;text-wrap:pretty}
+.cta{display:flex;flex-direction:column;gap:12px}
+.btn{display:block;text-align:center;font-family:var(--sans);font-size:15px;font-weight:600;padding:15px;border-radius:11px;border:1px solid transparent;cursor:pointer;transition:transform .14s,background .18s,border-color .18s}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{transform:translateY(-1px);background:#4CE0A0}
+.btn-ghost{border-color:var(--line2);color:var(--text2);font-weight:500}
+.btn-ghost:hover{border-color:rgba(255,255,255,.24);color:var(--text)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
-    /* Topbar */
-    .topbar{
-      position:relative;z-index:3;
-      padding:16px 22px;display:flex;align-items:center;justify-content:space-between;
-    }
-    .logo{
-      font-family:var(--display);font-size:11px;color:var(--ember);
-      letter-spacing:.04em;text-decoration:none;line-height:1.4;
-      text-shadow:0 0 10px rgba(52,211,153,.5);
-    }
-    .signin{
-      font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
-      color:var(--ash);text-decoration:none;transition:color .2s;
-      padding:8px 4px;
-    }
-    .signin:hover,.signin:focus-visible{color:var(--bone);outline:none}
+/* Sections */
+section{padding-bottom:34px}
+.label{padding-bottom:14px;display:block}
+.label.tight{padding-bottom:6px}
 
-    /* Stage */
-    .stage{
-      position:relative;z-index:2;flex:1;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      text-align:center;padding:32px 24px 56px;
-    }
+.card{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.cards{display:flex;flex-direction:column;gap:10px}
+.card svg{width:20px;height:20px;flex:none;margin-top:2px;fill:none;stroke:var(--accent);stroke-width:1.6;color:var(--accent)}
+.card h3{font-size:15px;font-weight:600;margin-bottom:3px}
+.card p{font-size:13.5px;line-height:1.55;color:var(--muted)}
+.cards-note{font-size:13px;line-height:1.65;color:var(--muted);margin-top:14px;max-width:46ch;text-wrap:pretty}
 
-    .sigil{
-      font-size:26px;color:var(--ember);line-height:1;margin-bottom:30px;
-      text-shadow:0 0 14px rgba(52,211,153,.7),0 0 28px rgba(52,211,153,.35);
-    }
-    @media (prefers-reduced-motion: no-preference){
-      .sigil{animation:pulse 4.5s ease-in-out infinite}
-    }
-    @keyframes pulse{
-      0%,100%{text-shadow:0 0 14px rgba(52,211,153,.7),0 0 28px rgba(52,211,153,.35)}
-      50%{text-shadow:0 0 18px rgba(52,211,153,.9),0 0 40px rgba(52,211,153,.5)}
-    }
+.steps{display:flex;flex-direction:column}
+.step{display:flex;gap:16px;padding:17px 0;border-bottom:1px solid var(--line)}
+.step:last-child{border-bottom:0}
+.step .n{font-family:var(--mono);font-size:12px;color:var(--accent);padding-top:2px}
+.step h3{font-size:15px;font-weight:600;margin-bottom:2px}
+.step p{font-size:13.5px;line-height:1.5;color:var(--muted)}
 
-    .wordmark{
-      font-family:var(--display);
-      font-size:clamp(22px,7.5vw,46px);
-      color:var(--bone);letter-spacing:.04em;line-height:1.25;
-      text-shadow:0 0 18px rgba(52,211,153,.45),0 0 2px rgba(52,211,153,.6);
-      margin-bottom:26px;
-    }
+.note{background:var(--surface);border:1px solid rgba(52,211,153,.22);border-radius:14px;padding:18px;margin-bottom:34px}
+.note strong{display:block;font-size:15px;font-weight:600;margin-bottom:4px}
+.note span{font-size:13.5px;line-height:1.55;color:var(--muted)}
 
-    .eyebrow{
-      font-family:var(--mono);font-size:10px;font-weight:600;
-      letter-spacing:.28em;text-transform:uppercase;color:var(--ember);
-      margin-bottom:16px;
-      display:flex;align-items:center;gap:12px;
-    }
-    .eyebrow::before,.eyebrow::after{
-      content:'';width:26px;height:1px;background:var(--ember-line);
-    }
+/* FAQ */
+details{border-bottom:1px solid var(--line)}
+details summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 0;font-size:14.5px;font-weight:500;color:var(--text2);transition:color .18s}
+details summary::-webkit-details-marker{display:none}
+details summary:hover{color:var(--text)}
+details summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+details summary .pm{font-size:18px;line-height:1;color:var(--faint);flex:none}
+details[open] summary{color:var(--text);font-weight:600;padding-bottom:9px}
+details[open] summary .pm{color:var(--accent)}
+details[open] summary .pm::before{content:'−'}
+details summary .pm::before{content:'+'}
+details p{font-size:13.5px;line-height:1.6;color:var(--muted);max-width:36ch;padding-bottom:17px}
 
-    .headline{
-      font-size:clamp(15px,4.2vw,19px);font-weight:500;color:var(--ash);
-      line-height:1.6;max-width:34ch;margin-bottom:38px;
-    }
-    .headline b{color:var(--bone);font-weight:600}
+footer{border-top:1px solid var(--line);margin-top:10px}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-block:24px 36px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.foot svg{width:12px;height:12px;fill:none;stroke:var(--faint);stroke-width:2;vertical-align:-1px;margin-right:7px}
+.foot nav{display:flex;gap:16px}
+.foot nav a:hover{color:var(--muted)}
 
-    .actions{display:flex;flex-direction:column;align-items:center;gap:18px}
-    .knock{
-      font-family:var(--sans);font-size:14px;font-weight:700;letter-spacing:.04em;
-      text-transform:uppercase;text-decoration:none;
-      color:var(--void);background:var(--ember);
-      padding:15px 46px;border-radius:9px;
-      box-shadow:0 0 22px rgba(52,211,153,.35),inset 0 0 0 1px rgba(255,255,255,.1);
-      transition:transform .15s ease,box-shadow .2s ease;
-    }
-    .knock:hover,.knock:focus-visible{
-      transform:translateY(-2px);
-      box-shadow:0 0 34px rgba(52,211,153,.55),inset 0 0 0 1px rgba(255,255,255,.15);
-      outline:none;
-    }
-    .knock:focus-visible{outline:2px solid var(--bone);outline-offset:3px}
-
-    .key{
-      font-family:var(--mono);font-size:12px;letter-spacing:.06em;
-      color:var(--ash);text-decoration:none;transition:color .2s;
-      border-bottom:1px solid transparent;padding-bottom:2px;
-    }
-    .key:hover,.key:focus-visible{color:var(--ember);border-bottom-color:var(--ember-line);outline:none}
-
-    /* Footer */
-    .foot{
-      position:relative;z-index:3;text-align:center;
-      padding:18px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;
-      color:#3c5249;
-    }
-    .foot a{color:#3c5249;text-decoration:none;transition:color .2s}
-    .foot a:hover{color:var(--ash)}
-    .foot .dot{margin:0 8px;opacity:.5}
-
-    @media(max-width:520px){
-      .topbar{padding:14px 18px}
-      .sigil{margin-bottom:24px;font-size:23px}
-      .wordmark{margin-bottom:22px}
-    }
-  </style>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
-<style>/* unified header logo */.logo{font-family:'Press Start 2P',monospace!important;font-size:11px!important;font-weight:400!important;letter-spacing:.04em!important;color:#34d399!important;text-decoration:none!important;text-shadow:0 0 10px rgba(52,211,153,.5)!important;line-height:1.4!important}.logo svg{width:12px;height:12px;margin-right:7px;vertical-align:-1px;fill:none;stroke:currentColor;stroke-width:2.2;filter:drop-shadow(0 0 5px rgba(52,211,153,.5))}</style>
+@media(min-width:680px){
+  .wrap{max-width:600px}
+  .hero{padding:70px 0 50px}
+  .cta{flex-direction:row}
+  .btn{flex:1}
+  .cards{flex-direction:row}
+  .card{flex:1;flex-direction:column}
+}
+</style>
 </head>
 <body>
 
-  <div class="lightpool"></div>
-  <div class="vignette"></div>
+<header>
+  <div class="wrap bar">
+    <a href="/" class="brand" id="logoLink">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </a>
+    <a href="/login.html" class="signin">Sign in</a>
+  </div>
+</header>
 
-  <div class="embers" id="embers" aria-hidden="true"></div>
-
-  <div class="topbar">
-    <a href="/" class="logo" id="logoLink"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 20.5 7.1v9.8L12 21.8 3.5 16.9V7.1Z"/></svg>DUNGEON</a>
-    <a href="/login.html" class="signin">Sign In</a>
+<main>
+  <div class="hero">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="wrap">
+      <h1>Private streaming, without the mess.</h1>
+      <p class="lede">Movies, series and live TV under one membership.</p>
+      <div class="cta">
+        <a href="/apply.html" class="btn btn-primary">Request an invite</a>
+        <a href="/login.html" class="btn btn-ghost">I have an account</a>
+      </div>
+    </div>
   </div>
 
-  <main class="stage">
-    <div class="sigil" aria-hidden="true">⬡</div>
-    <div class="wordmark">DUNGEON</div>
-    <div class="actions">
-      <a href="/apply.html" class="knock">Apply to Enter</a>
-      <a href="/login.html" class="key">I have a key →</a>
+  <section class="wrap">
+    <span class="label">Inside</span>
+    <div class="cards">
+      <div class="card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10.2 8.6 16 12l-5.8 3.4Z" fill="currentColor" stroke="none"/></svg>
+        <div>
+          <h3>DungeonStream</h3>
+          <p>Films and series</p>
+        </div>
+      </div>
+      <div class="card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M7.6 7.6a6.3 6.3 0 0 0 0 8.8M16.4 7.6a6.3 6.3 0 0 1 0 8.8"/></svg>
+        <div>
+          <h3>DungeonCast</h3>
+          <p>Films, series and live sports</p>
+        </div>
+      </div>
     </div>
-  </main>
+    <p class="cards-note">Two apps so every device is covered. If one won’t run on yours, the other will, and DungeonCast also plays in any browser.</p>
+  </section>
 
-  <footer class="foot">
-    <a href="/terms.html">Terms</a><span class="dot">·</span><a href="/privacy.html">Privacy</a>
-  </footer>
+  <section class="wrap">
+    <span class="label tight">How it works</span>
+    <div class="steps">
+      <div class="step">
+        <span class="n">01</span>
+        <div><h3>Request an invite</h3><p>Name, contact, and who referred you.</p></div>
+      </div>
+      <div class="step">
+        <span class="n">02</span>
+        <div><h3>We review it</h3><p>Every application is read by a person.</p></div>
+      </div>
+      <div class="step">
+        <span class="n">03</span>
+        <div><h3>You're set up</h3><p>Accounts are created automatically. Nothing to configure.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="note">
+      <strong>One credit covers a month of everything.</strong>
+      <span>No tiers, no add-ons, no per-service billing.</span>
+    </div>
+  </div>
+
+  <section class="wrap">
+    <span class="label tight">Questions</span>
+    <details>
+      <summary>Why invitation only?<span class="pm" aria-hidden="true"></span></summary>
+      <p>Small, quiet and stable. The Dungeon grows by referral, not by signup.</p>
+    </details>
+    <details open>
+      <summary>What does it cost?<span class="pm" aria-hidden="true"></span></summary>
+      <p>Credits. One credit is one month, and it covers every service at once.</p>
+    </details>
+    <details>
+      <summary>Which devices work?<span class="pm" aria-hidden="true"></span></summary>
+      <p>Phone, TV and browser. Setup guides are included once you're in.</p>
+    </details>
+    <details>
+      <summary>Can I refer someone?<span class="pm" aria-hidden="true"></span></summary>
+      <p>Members can refer. Every referral is still reviewed manually.</p>
+    </details>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>© 2026
+    </span>
+    <nav>
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/support.html">Support</a>
+    </nav>
+  </div>
+</footer>
 
 <script>
-  // Scatter embers with varied positions, sizes, timing
-  (function(){
-    const wrap = document.getElementById('embers');
-    if(!wrap) return;
-    const n = 8;
-    for(let i=0;i<n;i++){
-      const e = document.createElement('span');
-      e.className = 'ember';
-      const left = 8 + Math.random()*84;          // vw
-      const size = 2 + Math.random()*2.5;         // px
-      const dur  = 7 + Math.random()*7;           // s
-      const delay= Math.random()*8;               // s
-      const drift= (Math.random()*40 - 20).toFixed(0)+'px';
-      e.style.left = left+'vw';
-      e.style.width = size+'px';
-      e.style.height = size+'px';
-      e.style.setProperty('--drift', drift);
-      e.style.animationDuration = dur+'s';
-      e.style.animationDelay = delay+'s';
-      wrap.appendChild(e);
-    }
-  })();
-
-  // Send signed-in members straight to their dashboard from the logo
+  // Signed-in members get the logo pointed at their dashboard
   fetch('/api/member/me').then(r=>r.json()).then(d=>{
-    if(d && d.authenticated){
-      document.getElementById('logoLink').setAttribute('href','/dashboard.html');
-    }
+    if(d && d.authenticated){ document.getElementById('logoLink').setAttribute('href','/dashboard.html'); }
   }).catch(()=>{});
 </script>
 </body>

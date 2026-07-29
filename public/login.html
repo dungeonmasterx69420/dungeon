@@ -1,160 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <meta charset="UTF-8"/>
-  <meta name="color-scheme" content="dark"/>
-<meta name="theme-color" content="#060908"/>
+<meta charset="UTF-8"/>
+<meta name="color-scheme" content="dark"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dungeon · Sign in</title>
 <link rel="manifest" href="/site.webmanifest"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-  <title>Dungeon · Sign In</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    :root{
-      --void:#060908;--stone:#0d1311;--moss:#141c19;
-      --ember:#34d399;--ember-soft:rgba(52,211,153,.14);--ember-line:rgba(52,211,153,.22);
-      --border:rgba(52,211,153,.12);--border2:rgba(52,211,153,.28);
-      --ash:#6f8f84;--ash2:#94a3a0;--bone:#dce8e3;--red:#f87171;
-      --display:'Press Start 2P',monospace;--sans:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
-    }
-    html,body{min-height:100vh}
-    body{background:var(--void);color:var(--bone);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden}
-    .lightpool{position:fixed;inset:0;z-index:0;pointer-events:none;
-      background:radial-gradient(55% 45% at 50% 44%, rgba(52,211,153,.11), transparent 68%)}
-    @media (prefers-reduced-motion: no-preference){.lightpool{animation:flicker 6s ease-in-out infinite}}
-    @keyframes flicker{0%,100%{opacity:1}43%{opacity:.85}46%{opacity:1}72%{opacity:.82}75%{opacity:.97}}
-    .vignette{position:fixed;inset:0;z-index:0;pointer-events:none;
-      background:radial-gradient(120% 100% at 50% 45%, transparent 42%, rgba(0,0,0,.55) 100%)}
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/dungeon.css"/>
+<style>
+.wrap{max-width:420px;margin:0 auto;padding-inline:22px;width:100%}
 
-    .topbar{position:relative;z-index:3;padding:16px 22px;display:flex;align-items:center;justify-content:space-between}
-    .logo{font-family:var(--display);font-size:11px;color:var(--ember);letter-spacing:.04em;text-decoration:none;text-shadow:0 0 10px rgba(52,211,153,.5)}
-    .back{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ash);text-decoration:none;transition:color .2s;padding:8px 4px}
-    .back:hover,.back:focus-visible{color:var(--bone);outline:none}
+.bar{display:flex;align-items:center;justify-content:space-between;padding-block:16px;position:relative;z-index:2}
+.brand{display:flex;align-items:center;gap:9px}
+.brand svg{width:15px;height:15px;fill:none;stroke:var(--accent);stroke-width:2}
+.brand span{font-family:'Press Start 2P',monospace;font-size:11px;font-weight:400;letter-spacing:.02em;line-height:1.4}
+.back{font-size:14px;font-weight:500;color:var(--muted);padding:6px 2px;transition:color .18s}
+.back:hover,.back:focus-visible{color:var(--text);outline:none}
 
-    .center{position:relative;z-index:2;flex:1;display:flex;align-items:center;justify-content:center;padding:32px 24px}
-    .card{width:100%;max-width:380px;text-align:center}
+main{flex:1;display:flex;align-items:center;justify-content:center;position:relative;padding:40px 0 60px;overflow-x:clip}
+.glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120vw;max-width:680px;height:420px;pointer-events:none;z-index:0;
+  background:radial-gradient(50% 50% at 50% 50%,rgba(52,211,153,.11),transparent 70%)}
+.wrap.form{position:relative;z-index:1}
 
-    .sigil{font-size:22px;color:var(--ember);margin-bottom:18px;text-shadow:0 0 14px rgba(52,211,153,.6)}
-    @media (prefers-reduced-motion: no-preference){.sigil{animation:pulse 4.5s ease-in-out infinite}}
-    @keyframes pulse{0%,100%{text-shadow:0 0 14px rgba(52,211,153,.6)}50%{text-shadow:0 0 20px rgba(52,211,153,.85),0 0 36px rgba(52,211,153,.4)}}
+h1{font-size:30px;line-height:1.14;font-weight:600;letter-spacing:-.026em;margin-bottom:10px}
+.lede{font-size:15px;line-height:1.6;color:var(--muted);margin-bottom:28px}
 
-    .eyebrow{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:var(--ember);margin-bottom:10px}
-    .title{font-family:var(--display);font-size:15px;color:var(--bone);letter-spacing:.03em;line-height:1.5;margin-bottom:10px;text-shadow:0 0 16px rgba(52,211,153,.35)}
-    .sub{font-size:13px;color:var(--ash);margin-bottom:30px;line-height:1.6}
+.field{margin-bottom:15px}
+.field label{display:block;font-size:12.5px;font-weight:500;color:var(--text2);margin-bottom:7px}
+.field input{width:100%;background:var(--raise);border:1px solid var(--line2);border-radius:10px;color:var(--text);font-family:var(--sans);font-size:15px;padding:12px 13px;outline:none;transition:border-color .18s,box-shadow .18s}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,211,153,.12)}
+.field input::placeholder{color:var(--faint)}
+.forgot{text-align:right;margin-top:9px}
+.forgot a{font-size:12.5px;color:var(--muted);transition:color .18s}
+.forgot a:hover,.forgot a:focus-visible{color:var(--accent);outline:none}
 
-    .field{margin-bottom:16px;text-align:left}
-    label{display:block;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--ash);margin-bottom:7px;letter-spacing:.1em;text-transform:uppercase}
-    input{width:100%;background:var(--stone);border:1px solid var(--border2);border-radius:9px;color:var(--bone);font-family:var(--sans);font-size:14px;padding:12px 14px;outline:none;transition:border-color .2s,box-shadow .2s}
-    input:focus{border-color:var(--ember);box-shadow:0 0 0 3px var(--ember-soft)}
-    input::placeholder{color:#4d6b62}
+.btn{width:100%;margin-top:8px;padding:14px;background:var(--accent);border:1px solid transparent;border-radius:10px;color:var(--accent-ink);font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;transition:transform .14s,background .18s}
+.btn:hover:not(:disabled){transform:translateY(-1px);background:#4CE0A0}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
 
-    .forgot{text-align:right;margin-top:8px}
-    .forgot a{font-family:var(--mono);font-size:11px;color:var(--ash);text-decoration:none;transition:color .2s}
-    .forgot a:hover,.forgot a:focus-visible{color:var(--ember);outline:none}
+.err{display:none;margin-top:16px;font-size:13px;line-height:1.5;color:var(--red);background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.24);border-radius:10px;padding:11px 13px}
 
-    .btn{width:100%;margin-top:10px;padding:14px;background:var(--ember);border:none;border-radius:9px;color:var(--void);font-family:var(--sans);font-size:14px;font-weight:700;letter-spacing:.03em;cursor:pointer;
-      box-shadow:0 0 20px rgba(52,211,153,.3),inset 0 0 0 1px rgba(255,255,255,.1);transition:transform .15s,box-shadow .2s}
-    .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 0 30px rgba(52,211,153,.5),inset 0 0 0 1px rgba(255,255,255,.15)}
-    .btn:focus-visible{outline:2px solid var(--bone);outline-offset:3px}
-    .btn:disabled{opacity:.45;cursor:not-allowed}
+.alt{text-align:center;margin-top:26px;font-size:13.5px;color:var(--muted)}
+.alt a{color:var(--accent);font-weight:500}
+.alt a:hover{color:#6EE7B7}
 
-    .error-msg{display:none;margin-top:16px;font-size:13px;color:var(--red);text-align:center;line-height:1.5}
-
-    .apply-line{margin-top:26px;font-size:12px;color:var(--ash);font-family:var(--mono);letter-spacing:.02em}
-    .apply-line a{color:var(--ember);text-decoration:none;border-bottom:1px solid var(--ember-line);padding-bottom:1px;transition:opacity .2s}
-    .apply-line a:hover,.apply-line a:focus-visible{opacity:.8;outline:none}
-
-    .foot{position:relative;z-index:3;text-align:center;padding:20px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:#3c5249}
-    .foot a{color:#3c5249;text-decoration:none;transition:color .2s}
-    .foot a:hover{color:var(--ash)}
-    .foot .dot{margin:0 7px;opacity:.5}
-
-    @media(max-width:520px){.topbar{padding:14px 18px}.title{font-size:13px}}
-  </style>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
-<style>/* unified header logo */.logo{font-family:'Press Start 2P',monospace!important;font-size:11px!important;font-weight:400!important;letter-spacing:.04em!important;color:#34d399!important;text-decoration:none!important;text-shadow:0 0 10px rgba(52,211,153,.5)!important;line-height:1.4!important}.logo svg{width:12px;height:12px;margin-right:7px;vertical-align:-1px;fill:none;stroke:currentColor;stroke-width:2.2;filter:drop-shadow(0 0 5px rgba(52,211,153,.5))}</style>
+footer{border-top:1px solid var(--line)}
+.foot{display:flex;align-items:center;justify-content:space-between;padding-block:22px 34px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.foot nav{display:flex;gap:16px}
+.foot a:hover{color:var(--muted)}
+</style>
 </head>
 <body>
-  <div class="lightpool"></div>
-  <div class="vignette"></div>
 
-  <div class="topbar">
-    <a href="/" class="logo" id="logoLink"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 20.5 7.1v9.8L12 21.8 3.5 16.9V7.1Z"/></svg>DUNGEON</a>
-    <a href="/" class="back">← Door</a>
+<header>
+  <div class="wrap bar">
+    <a href="/" class="brand" id="logoLink">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </a>
+    <a href="/" class="back">← Back</a>
   </div>
+</header>
 
-  <div class="center">
-    <div class="card">
-      <div class="sigil" aria-hidden="true">⬡</div>
-      <div class="eyebrow">Members Only</div>
-      <div class="title">Use Your Key</div>
-      <div class="sub">Sign in to step back inside.</div>
+<main>
+  <div class="glow" aria-hidden="true"></div>
+  <div class="wrap form">
+    <h1>Sign in</h1>
+    <p class="lede">Welcome back.</p>
 
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')login()"/>
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"/>
-        <div class="forgot"><a href="/reset-password">Forgot password?</a></div>
-      </div>
-      <button class="btn" id="loginBtn" onclick="login()">Unlock</button>
-      <div class="error-msg" id="errorMsg"></div>
-
-      <div class="apply-line">No key yet? <a href="/apply.html">Apply to enter →</a></div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')login()"/>
     </div>
-  </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"/>
+      <div class="forgot"><a href="/reset-password">Forgot password?</a></div>
+    </div>
 
-  <footer class="foot">
-    <a href="/terms.html">Terms</a><span class="dot">·</span><a href="/privacy.html">Privacy</a>
-  </footer>
+    <button class="btn" id="loginBtn" onclick="login()">Sign in</button>
+    <div class="err" id="errorMsg"></div>
+
+    <div class="alt">No account yet? <a href="/apply.html">Request an invite</a></div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>© 2026 Dungeon</span>
+    <nav><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a></nav>
+  </div>
+</footer>
 
 <script>
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{if(d.authenticated){if(!d.member?.profile?.welcome_done){window.location.href='/welcome';}else{window.location.href='/dashboard.html';}}});
-
-  async function login(){
-    const email=document.getElementById('email').value.trim();
-    const password=document.getElementById('password').value.trim();
-    const btn=document.getElementById('loginBtn');
-    const err=document.getElementById('errorMsg');
-    if(!email||!password){err.textContent='Both fields are required.';err.style.display='block';return}
-    btn.disabled=true;btn.textContent='Unlocking…';err.style.display='none';
-    try{
-      const res=await fetch('/api/member/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-      const data=await res.json();
-      if(res.ok){
-        const me = await fetch('/api/member/me').then(r=>r.json()).catch(()=>({}));
-        if(!me.member?.profile?.welcome_done){
-          window.location.href='/welcome';
-        } else {
-          window.location.href='/dashboard.html';
-        }
-      }
-      else{
-        err.textContent=data.error||'Incorrect email or password.';
-        err.style.display='block';
-        btn.disabled=false;
-        btn.textContent='Unlock';
-        if(data.error && data.error.includes('locked')) {
-          btn.disabled=true;
-          btn.textContent='Locked - try again in 5 min';
-          setTimeout(()=>{btn.disabled=false;btn.textContent='Unlock';err.style.display='none';},5*60*1000);
-        }
-      }
-    }catch{err.textContent='Connection error. Please try again.';err.style.display='block';btn.disabled=false;btn.textContent='Unlock'}
+fetch('/api/member/me').then(r=>r.json()).then(d=>{
+  if(d.authenticated){
+    document.getElementById('logoLink').href='/dashboard.html';
+    location.href = d.member?.profile?.welcome_done ? '/dashboard.html' : '/welcome';
   }
+}).catch(()=>{});
 
-  // Smart logo link - go to dashboard if logged in
-  fetch('/api/member/me').then(r=>r.json()).then(d=>{
-    const logo=document.getElementById('logoLink');
-    if(logo && d.authenticated) logo.href='/dashboard.html';
-  }).catch(()=>{});
+async function login(){
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value.trim();
+  const btn=document.getElementById('loginBtn');
+  const err=document.getElementById('errorMsg');
+
+  if(!email||!password){err.textContent='Enter your email and password.';err.style.display='block';return}
+  btn.disabled=true;btn.textContent='Signing in…';err.style.display='none';
+
+  try{
+    const res=await fetch('/api/member/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const data=await res.json();
+    if(res.ok){
+      const me=await fetch('/api/member/me').then(r=>r.json()).catch(()=>({}));
+      location.href = me.member?.profile?.welcome_done ? '/dashboard.html' : '/welcome';
+      return;
+    }
+    err.textContent=data.error||'Incorrect email or password.';
+    err.style.display='block';
+    btn.disabled=false;btn.textContent='Sign in';
+    if(data.error && data.error.includes('locked')){
+      btn.disabled=true;btn.textContent='Locked. Try again in 5 minutes';
+      setTimeout(()=>{btn.disabled=false;btn.textContent='Sign in';err.style.display='none'},5*60*1000);
+    }
+  }catch{
+    err.textContent='Connection error. Try again.';err.style.display='block';
+    btn.disabled=false;btn.textContent='Sign in';
+  }
+}
 </script>
 </body>
 </html>
