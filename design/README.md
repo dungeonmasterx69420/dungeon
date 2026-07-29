@@ -4,6 +4,12 @@ Three candidate treatments for `public/index.html`, built with the
 `frontend-design` plugin. Open any file directly in a browser — each one is a
 complete, standalone page.
 
+**Direction C shipped.** `public/index.html` is now the Keyholder direction,
+rebuilt against `/dungeon.css` so it reuses `.wrap`, `.topbar`, `.brand`,
+`.topnav`, `.label`, `.btn`, `.steps`, `.rows` and the footer rather than
+redefining them. These three files stay as a record of the exploration; A and
+B were not shipped.
+
 | File | Direction | Signature |
 |---|---|---|
 | `index-a-doorplate.html` | Door plate | Status plate + spec-sheet ledger, hairlines only |
