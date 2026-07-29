@@ -80,7 +80,12 @@ h2{font-size:19px;font-weight:600;letter-spacing:-.016em;text-wrap:pretty}
 .label-row a:hover{color:var(--accent)}
 .eyebrow{display:block;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
 .section-head{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin:32px 0 14px}
-.section-head::after{content:'';flex:1;height:1px;background:var(--line)}
+.section-head::after{content:'';order:1;flex:1;height:1px;background:var(--line)}
+/* A link in a section head belongs on the far side of the rule, not
+   crowded against the label. */
+.section-head .section-more{order:2;font-family:var(--sans);font-size:12.5px;font-weight:500;
+  letter-spacing:0;text-transform:none;color:var(--muted);transition:color .18s}
+.section-head .section-more:hover{color:var(--accent)}
 .rule{height:1px;background:var(--line);margin-block:20px}
 
 /* Register rails: the guides a card gets printed against. Structure
@@ -283,7 +288,9 @@ a.row-item:hover{padding-left:4px}
 /* ── Tiles ───────────────────────────────────────────────── */
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px 10px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:border-color .18s,transform .14s}
 .tile:hover{border-color:var(--line2);transform:translateY(-2px)}
-.tile svg{width:21px;height:21px;fill:none;stroke:var(--text2);stroke-width:1.5;color:var(--text2)}
+/* Direct child only: a tile may carry someone else's mark, and that mark
+   brings its own fill and stroke. */
+.tile>svg{width:21px;height:21px;fill:none;stroke:var(--text2);stroke-width:1.5;color:var(--text2)}
 .tile span{font-size:12px;font-weight:500;color:var(--text);text-align:center}
 
 /* Link row with leading icon and trailing arrow */
@@ -353,7 +360,9 @@ footer{border-top:1px solid var(--line);margin-top:36px}
 .accent{color:var(--accent)}
 .center{text-align:center}
 .nowrap{white-space:nowrap}
-.hidden{display:none}
+/* Page CSS loads after this file, so a page rule that sets display would
+   otherwise win over .hidden and leave the element on screen. */
+.hidden{display:none !important}
 .mt-0{margin-top:0}.mt-1{margin-top:8px}.mt-2{margin-top:16px}.mt-3{margin-top:24px}.mt-4{margin-top:32px}
 .mb-0{margin-bottom:0}.mb-1{margin-bottom:8px}.mb-2{margin-bottom:16px}.mb-3{margin-bottom:24px}.mb-4{margin-bottom:32px}
 .stack{display:flex;flex-direction:column}
