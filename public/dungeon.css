@@ -76,11 +76,17 @@ h2{font-size:19px;font-weight:600;letter-spacing:-.016em;text-wrap:pretty}
 .section-head::after{content:'';flex:1;height:1px;background:var(--line)}
 .rule{height:1px;background:var(--line);margin-block:20px}
 
-/* Ambient wash. Parent needs overflow-x:clip so the oversize glow
-   cannot create a horizontal scrollbar on a phone. */
-.glow-host{position:relative;overflow-x:clip}
-.glow{position:absolute;top:-90px;left:50%;transform:translateX(-50%);width:120vw;max-width:760px;height:420px;pointer-events:none;z-index:0;background:radial-gradient(50% 50% at 50% 50%,rgba(52,211,153,.14),transparent 70%)}
-.glow-host>.wrap,.glow-host>.inner{position:relative;z-index:1}
+/* Register rails: the guides a card gets printed against. Structure
+   rather than atmosphere, and no accent colour, so it can never read as
+   a wash sitting on top of the page. Anchored to the top of the host and
+   faded at both ends, so it behaves the same whatever the host's height.
+   Parent needs overflow-x:clip. */
+.rails-host{position:relative;overflow-x:clip}
+.rails{position:absolute;top:0;left:0;right:0;height:560px;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 92px);
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 18%,#000 52%,transparent 100%);
+  mask-image:linear-gradient(180deg,transparent 0,#000 18%,#000 52%,transparent 100%)}
+.rails-host>.wrap,.rails-host>.inner{position:relative;z-index:1}
 
 /* ── Cards ───────────────────────────────────────────────── */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}

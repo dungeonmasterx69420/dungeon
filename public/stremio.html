@@ -71,7 +71,7 @@
   
 /* torchlight ambience */
 body{position:relative}
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(90% 38% at 50% -6%, rgba(52,211,153,.07), transparent 55%)}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,transparent 1px 92px);-webkit-mask-image:linear-gradient(180deg,#000 0,#000 30%,transparent 74%);mask-image:linear-gradient(180deg,#000 0,#000 30%,transparent 74%)}
 .topbar,.page,.center,footer{position:relative;z-index:1}
 .logo{text-shadow:0 0 10px rgba(52,211,153,.5)}
 .page-title{text-shadow:0 0 16px rgba(52,211,153,.3)}

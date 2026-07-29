@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#050807;--surface:#0C120F;
+  --line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.13);
+  --accent:#34D399;--accent-hi:#4CE0A0;
+  --text:#EAF1ED;--text2:#B9C8C2;--muted:#8A9A93;--faint:#6B7F77;
+  --sans:'Instrument Sans',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --pixel:'Press Start 2P',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1200px;height:630px;overflow:hidden;background:var(--bg);color:var(--text);
+  font-family:var(--sans);-webkit-font-smoothing:antialiased}
+
+.card-bg{position:relative;width:1200px;height:630px;padding:64px 72px;
+  display:grid;grid-template-columns:1fr 390px;gap:64px;align-items:center}
+/* Same register rails as the site. */
+.card-bg::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 92px);
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 20%,#000 60%,transparent 100%)}
+.card-bg>*{position:relative}
+
+.mark{position:absolute;top:52px;left:72px;display:flex;align-items:center;gap:11px;z-index:2}
+.mark svg{width:17px;height:17px;fill:none;stroke:var(--accent);stroke-width:2}
+.mark span{font-family:var(--pixel);font-size:13px;letter-spacing:.02em;line-height:1.4}
+
+.copy{padding-top:18px}
+.eyebrow{display:block;font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:22px}
+h1{font-size:54px;line-height:1.08;font-weight:600;letter-spacing:-.034em;margin-bottom:20px}
+.sub{font-size:21px;line-height:1.5;color:var(--muted);max-width:26ch}
+
+/* The key, exactly as it is on the page. */
+.key{position:relative;width:390px;aspect-ratio:1.586;border-radius:18px;
+  border:1px solid var(--line2);background:var(--surface);padding:22px;
+  display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;
+  transform:rotate(-3deg)}
+.key::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(118deg,rgba(255,255,255,.07),rgba(255,255,255,.015) 38%,transparent 62%)}
+.key::after{content:'';position:absolute;left:22px;right:22px;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent)}
+.key>*{position:relative}
+.key svg.hex{position:absolute;right:-54px;bottom:-66px;width:224px;height:224px;
+  fill:none;stroke:rgba(255,255,255,.05);stroke-width:1.4}
+.key-top{display:flex;align-items:flex-start;justify-content:space-between}
+.key-mark{font-family:var(--pixel);font-size:10px;line-height:1.5;color:var(--text2);letter-spacing:.02em}
+.chip{position:relative;width:36px;height:26px;border-radius:5px;
+  background:linear-gradient(150deg,var(--accent-hi),var(--accent) 52%,#1B8F68);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+.chip::before{content:'';position:absolute;inset:5px 8px;border:1px solid rgba(4,21,14,.3);border-radius:2px}
+.chip::after{content:'';position:absolute;top:3px;bottom:3px;left:50%;width:1px;background:rgba(4,21,14,.3)}
+.rate{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.rate b{display:block;font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.02em;
+  text-transform:none;color:var(--text);margin-top:6px}
+.foot{display:flex;align-items:flex-end;justify-content:space-between;
+  font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+.serial{color:var(--text2);letter-spacing:.18em}
+.serial u{text-decoration:none;color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="card-bg">
+  <div class="mark">
+    <svg viewBox="0 0 24 24"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+    <span>DUNGEON</span>
+  </div>
+
+  <div class="copy">
+    <span class="eyebrow">Invitation only</span>
+    <h1>One key.<br/>Everything worth watching.</h1>
+    <p class="sub">Films, series and live TV under a single membership.</p>
+  </div>
+
+  <div class="key">
+    <svg class="hex" viewBox="0 0 24 24"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+    <div class="key-top">
+      <span class="key-mark">DUNGEON</span>
+      <span class="chip"></span>
+    </div>
+    <div class="rate">One credit<b>A month of everything</b></div>
+    <div class="foot">
+      <span class="serial"><u>DGN</u> 0117 3049</span>
+      <span>Member</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

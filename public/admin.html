@@ -37,7 +37,9 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
 /* ── Layout ── */
 .layout{display:flex;height:100vh;overflow:hidden}
 .sidebar{width:220px;background:var(--s1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;flex-shrink:0;transition:transform .25s;position:relative;overflow:hidden;max-height:100%}
-.sidebar::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 20% at 50% 0%, rgba(52,211,153,.07), transparent 60%)}
+/* Neutral light down the top edge. Rails would only fit two or three
+   lines in a column this narrow, so the sidebar takes the plainer form. */
+.sidebar::before{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 140px)}
 .main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
 
 /* ── Sidebar ── */
