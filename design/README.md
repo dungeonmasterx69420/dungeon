@@ -1,62 +1,59 @@
-# Index page design directions
+# Index page design
 
-Three candidate treatments for `public/index.html`, built with the
-`frontend-design` plugin. Open any file directly in a browser — each one is a
-complete, standalone page.
+`public/index.html` is the Keyholder direction, built against `/dungeon.css` so
+it reuses `.wrap`, `.topbar`, `.brand`, `.topnav`, `.label`, `.btn`, `.steps`,
+`.rows`, `.rails` and the footer rather than redefining them. Page CSS is only
+what is genuinely specific to the landing page: the hero grid, the key card,
+the reveal and the FAQ.
 
-**Direction C shipped.** `public/index.html` is now the Keyholder direction,
-rebuilt against `/dungeon.css` so it reuses `.wrap`, `.topbar`, `.brand`,
-`.topnav`, `.label`, `.btn`, `.steps`, `.rows` and the footer rather than
-redefining them. These three files stay as a record of the exploration; A and
-B were not shipped.
+`index-c-keyholder.html` is the standalone candidate the page came from. It
+inlines its own copy of the tokens so it opens in a browser without a server,
+which also means it will drift — read `public/index.html` for the truth. Two
+other directions, Door plate and Marquee, were explored and dropped.
 
-| File | Direction | Signature |
-|---|---|---|
-| `index-a-doorplate.html` | Door plate | Status plate + spec-sheet ledger, hairlines only |
-| `index-b-marquee.html` | Marquee | Instrument Serif display, apps set as a cinema bill |
-| `index-c-keyholder.html` | Keyholder | The membership as a physical key card |
+## What changed from the old page
 
-All three share the same baseline fixes over the current page:
+- The radial glow is gone, here and everywhere else on the site. See below.
+- A real desktop composition. The old page was a 600px column centred on a
+  1440px screen, the clearest tell that it was never laid out for desktop.
+- A type scale with a display size, rather than a 40px cap at every viewport.
+- Page CSS no longer redefines `.btn`, `.card`, `.label` and `.steps` on top of
+  the design system.
+- Copy in active voice, and no FAQ entry open on load.
 
-- The radial `.glow` blob is gone. Nothing replaces it in A; B uses a neutral
-  wash from above; C puts the light on the card instead of the background.
-- A real desktop composition. The current page is a 600px column centred on a
-  1440px screen, which is the clearest tell that it was never laid out for
-  desktop.
-- A type scale with a display size, rather than a 40px cap on every viewport.
-- Page CSS no longer redefines `.btn`, `.card`, `.label`, `.steps` and `.glow`
-  on top of `/dungeon.css`.
-- Keyboard focus is visible, `prefers-reduced-motion` is respected, and no FAQ
-  entry is arbitrarily open on load.
+## The signature: the key is issued
 
-Each file inlines its own copy of the `/dungeon.css` tokens so it can be opened
-without a server. When a direction is chosen, that block comes out and the page
-links `/dungeon.css` again, as the rest of the site does.
+The membership is drawn as a physical key card rather than described. It is
+placed onto the page rather than already sitting there — it rises, a foil band
+crosses it once, and the serial rolls into place. The pointer tilt carries the
+house mark with it at a lag, which is what sells the card as a solid object
+instead of a rectangle that rotates.
 
-## Art and motion
+Everything around it stays quiet. That is the whole idea: one memorable thing,
+nothing competing with it.
 
-Each direction gets one piece of generated art and one orchestrated moment,
-rather than effects scattered across the page.
+Motion is off under `prefers-reduced-motion`, the card is `aria-hidden`
+decoration, and reveals are applied from script so the page reads in full
+without JavaScript.
 
-**A — guilloché engraving.** Three nested hypotrochoids, the curve family a
-rose engine cuts into a share certificate or a banknote, drawn on canvas
-behind the hero. It cuts itself over 2.4s on load and then holds still. Drawn
-incrementally — each frame strokes only the newly cut span, so the cost is the
-length of that span rather than the whole figure. Ledger rows light their rule
-from the left on hover.
+## Register rails, site-wide
 
-**B — projector.** A 140px noise tile redrawn at 12fps over the hero with the
-lamp brightness wandering on the same clock, so grain and flicker read as one
-projector rather than two effects. The headline comes up through the gate word
-by word; titles on the bill strike their rule across on hover. The loop stops
-when the hero scrolls out of view or the tab is hidden.
+The emerald radial wash used to appear under two names: a `.glow` component in
+`dungeon.css` used by three pages, and the same gradient copy-pasted as
+`body::before` into twenty self-contained pages.
 
-**C — the key is issued.** The card is placed onto the page rather than
-already sitting there: it rises, a foil band crosses it, and the serial rolls
-into place. The pointer tilt now carries the hex watermark with it at a lag,
-which is what sells the card as a solid object. Faint register rails give the
-empty half of the hero structure.
+It is replaced everywhere by `.rails` — vertical hairlines at a 92px pitch,
+masked at both ends. Structure rather than atmosphere, and no accent colour, so
+it cannot read as a wash sitting on top of the page. It also carries the
+printing-plate idea behind the key card, so the site shares one ambient
+treatment.
 
-Everything is off under `prefers-reduced-motion`, the canvases are decorative
-and `aria-hidden`, and every reveal is applied from script so the page reads
-in full without JavaScript.
+`admin.html` is the exception: its sidebar is too narrow to fit more than two
+rails, so it takes neutral light down its top edge instead.
+
+## Link preview
+
+`public/og.png` is generated, not hand-made. The source is
+`design/og-card.html` — open it at exactly 1200×630 and screenshot at 2x. Both
+`index.html` and `apply.html` point at it. Regenerate it whenever the hero copy
+changes, or the preview will quietly describe a page that no longer exists.
