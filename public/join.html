@@ -3,130 +3,151 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="color-scheme" content="dark"/>
-<meta name="theme-color" content="#060908"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex"/>
+<title>Dungeon · Claim your invite</title>
 <link rel="manifest" href="/site.webmanifest"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
-<title>Dungeon · Join</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/dungeon.css"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#080c0b;--s1:#0e1412;--s2:#141c1a;--bdr:rgba(52,211,153,.1);--bdr2:rgba(52,211,153,.2);--g:#34d399;--gb:rgba(52,211,153,.08);--txt:#dce8e3;--t2:#8fa89e;--t3:#4d6b62;--red:#f87171;--amb:#fbbf24;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif}
-html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;align-items:center;justify-content:center;padding:20px}
-.box{width:100%;max-width:440px}
-.logo{font-family:'Press Start 2P','Minecraft',monospace;font-size:11px;color:var(--g);text-align:center;margin-bottom:32px;letter-spacing:.06em}
-.card{background:var(--s1);border:1px solid var(--bdr2);border-radius:12px;padding:24px}
-.title{font-size:18px;font-weight:700;margin-bottom:6px}
-.sub{font-size:13px;color:var(--t2);margin-bottom:20px;line-height:1.6}
-.field{margin-bottom:14px}
-.field label{display:block;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:5px}
-.field input{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:14px;padding:11px 13px;outline:none;transition:border-color .15s}
-.field input:focus{border-color:var(--g)}
-.field input::placeholder{color:var(--t3)}
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btn{width:100%;padding:13px;background:var(--g);border:none;border-radius:8px;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);margin-top:6px;transition:opacity .2s}
-.btn:hover{opacity:.85}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.err{font-size:12px;color:var(--red);background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;display:none;line-height:1.5}
-.paid-badge{display:inline-flex;align-items:center;gap:6px;background:var(--gb);border:1px solid var(--bdr);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--g);font-weight:600;margin-bottom:16px}
-.amount-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--amb);font-weight:600;margin-bottom:16px;margin-left:8px}
-.loading{text-align:center;padding:40px;color:var(--t2);font-size:13px}
-.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--bdr2);border-top-color:var(--g);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:12px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.devices{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
-.dv{background:var(--s2);border:1px solid var(--bdr);border-radius:7px;padding:8px 10px;cursor:pointer;font-size:12px;color:var(--t2);transition:all .15s;display:flex;align-items:center;gap:6px;user-select:none}
-.dv:hover{border-color:var(--bdr2);color:var(--txt)}
-.dv.on{background:var(--gb);border-color:var(--g);color:var(--g)}
-.sn-hint{font-size:10px;color:var(--t3);margin-top:4px}
-.sn-hint.ok{color:var(--g)}
-.sn-hint.err{color:var(--red)}
-.select-wrap{position:relative}
-.select-wrap select{width:100%;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:14px;padding:11px 13px;outline:none;transition:border-color .15s;appearance:none;cursor:pointer}
-.select-wrap select:focus{border-color:var(--g)}
-.select-wrap::after{content:'▾';position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none}
-@media(max-width:400px){.frow{grid-template-columns:1fr}.devices{grid-template-columns:1fr}}
+/* One card that changes state, on the same narrow measure as the other
+   auth pages. .card, .field, .hint, .btn, .banner, .pill, .loading and
+   .state all come from /dungeon.css. */
+.bar{display:flex;align-items:center;justify-content:space-between;padding-block:16px;position:relative;z-index:2}
+main{flex:1;display:flex;align-items:center;justify-content:center;position:relative;padding:40px 0 60px;overflow-x:clip}
+.form{position:relative;z-index:1}   /* .rails comes from /dungeon.css */
+
+h1{font-size:26px;line-height:1.16;font-weight:600;letter-spacing:-.024em;margin-bottom:8px;text-wrap:pretty}
+.sub{font-size:14.5px;line-height:1.6;color:var(--muted);margin-bottom:22px;text-wrap:pretty}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
 </style>
-<style>/* unified header logo */.logo{font-family:'Press Start 2P',monospace!important;font-size:11px!important;font-weight:400!important;letter-spacing:.04em!important;color:#34d399!important;text-decoration:none!important;text-shadow:0 0 10px rgba(52,211,153,.5)!important;line-height:1.4!important}.logo svg{width:12px;height:12px;margin-right:7px;vertical-align:-1px;fill:none;stroke:currentColor;stroke-width:2.2;filter:drop-shadow(0 0 5px rgba(52,211,153,.5))}</style>
 </head>
 <body>
-<div class="box">
-  <div class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 20.5 7.1v9.8L12 21.8 3.5 16.9V7.1Z"/></svg>DUNGEON</div>
 
-  <!-- Loading -->
-  <div id="card-loading" class="card">
-    <div class="loading"><div class="spinner"></div><br/>Verifying your invite…</div>
+<header>
+  <div class="wrap wrap-sm bar">
+    <a href="/" class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </a>
   </div>
+</header>
 
-  <!-- Payment pending (race condition) -->
-  <div id="card-pending" class="card" style="display:none">
-    <div class="title" style="color:var(--amb)">⏳ Confirming Payment</div>
-    <div class="sub">Your payment is being confirmed. This usually takes just a few seconds.</div>
-    <div class="loading"><div class="spinner"></div><br/><span id="pending-count">Checking…</span></div>
-  </div>
+<main>
+  <div class="rails" aria-hidden="true"></div>
+  <div class="wrap wrap-sm form">
 
-  <!-- Signup form -->
-  <div id="card-form" class="card" style="display:none">
-    <div id="payment-badges">
-      <span class="paid-badge" id="paid-badge">✓ Payment Confirmed</span>
-      <span class="amount-badge" id="amount-badge"></span>
+    <!-- Checking the token. -->
+    <div id="card-loading" class="card">
+      <div class="loading"><span class="spin" aria-hidden="true"></span>Checking your invite…</div>
     </div>
-    <div class="title" id="form-title">Complete Your Account</div>
-    <div class="sub" id="form-sub">Welcome to Dungeon. Set up your account below to get started.</div>
-    <div class="err" id="err"></div>
-    <div class="field" id="email-field" style="display:none">
-      <label>Your Email <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">- where we send your login</span></label>
-      <input type="email" id="join-email" placeholder="you@email.com" autocomplete="email"/>
+
+    <!-- The payment webhook has not landed yet. -->
+    <div id="card-pending" class="card hidden">
+      <h1>Confirming your payment</h1>
+      <p class="sub">This usually takes a few seconds.</p>
+      <div class="loading"><span class="spin" aria-hidden="true"></span><span id="pending-count">Checking…</span></div>
     </div>
-    <div class="frow">
-      <div class="field"><label>First Name</label><input type="text" id="fn" placeholder="Seymour" autocomplete="given-name"/></div>
-      <div class="field"><label>Last Name</label><input type="text" id="ln" placeholder="Buttocks" autocomplete="family-name"/></div>
+
+    <!-- Make the account. -->
+    <div id="card-form" class="card hidden">
+      <div class="badges" id="payment-badges">
+        <span class="pill pill-ok" id="paid-badge"><i></i>Payment confirmed</span>
+        <span class="pill pill-warn" id="amount-badge"></span>
+      </div>
+
+      <h1 id="form-title">Set up your account</h1>
+      <p class="sub" id="form-sub">Welcome to the Dungeon. This is the last step.</p>
+
+      <div class="banner banner-err" id="err"></div>
+
+      <div class="field hidden" id="email-field">
+        <label for="join-email">Email <span class="opt">where your login is sent</span></label>
+        <input type="email" id="join-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="fn">First name</label>
+          <input type="text" id="fn" placeholder="Alex" autocomplete="given-name"/>
+        </div>
+        <div class="field">
+          <label for="ln">Last name <span class="opt">optional</span></label>
+          <input type="text" id="ln" placeholder="Mercer" autocomplete="family-name"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="sn">Username <span class="opt">how members see you</span></label>
+        <input type="text" id="sn" placeholder="alexmercer" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
+        <div class="hint" id="sn-hint">Letters, numbers and underscores. 2–20 characters.</div>
+      </div>
+
+      <div class="field">
+        <label for="phone">Phone <span class="opt">optional</span></label>
+        <input type="tel" id="phone" placeholder="+1 (555) 000-0000" autocomplete="tel"/>
+      </div>
+
+      <button class="btn btn-primary btn-wide mt-1" id="submit-btn" onclick="submit()">Create my account</button>
     </div>
-    <div class="field">
-      <label>Screen Name <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">- your @username</span></label>
-      <input type="text" id="sn" placeholder="yourcoolname" oninput="validateSn(this)" autocomplete="off" maxlength="20"/>
-      <div class="sn-hint" id="sn-hint">Letters, numbers and underscores only. 2-20 characters.</div>
+
+    <!-- Bad or spent token. -->
+    <div id="card-error" class="card hidden">
+      <h1>That link didn't work</h1>
+      <p class="sub" id="error-msg">This invite is invalid or has already been used.</p>
+      <a href="/apply.html" class="btn btn-ghost btn-wide">Request an invite</a>
     </div>
-    <div class="field"><label>Phone <span style="color:var(--t3);font-size:8px;text-transform:none;letter-spacing:0">optional</span></label><input type="tel" id="phone" placeholder="+1 (555) 000-0000" autocomplete="tel"/></div>
-    <button class="btn" id="submit-btn" onclick="submit()">Create My Account →</button>
-  </div>
 
-  <!-- Error -->
-  <div id="card-error" class="card" style="display:none">
-    <div class="title" style="color:var(--red)">Something went wrong</div>
-    <div class="sub" id="error-msg">This invite link is invalid or has already been used.</div>
-  </div>
+    <!-- Done. -->
+    <div id="card-done" class="card hidden">
+      <div class="state">
+        <span class="mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+        <b>You're in</b>
+        <p>Your login is on its way to your email. Everything else is set up already.</p>
+      </div>
+      <a href="/welcome" class="btn btn-primary btn-wide mt-3">Get started</a>
+    </div>
 
-  <!-- Done -->
-  <div id="card-done" class="card" style="display:none">
-    <div style="font-size:32px;text-align:center;margin-bottom:16px">🎉</div>
-    <div class="title" style="color:var(--g);text-align:center">Welcome to Dungeon!</div>
-    <div class="sub" style="text-align:center;margin-top:8px">Your account is ready. Check your email for your login credentials, then head to your dashboard to get started.</div>
-    <a href="/welcome" style="display:block;margin-top:20px;padding:13px;background:var(--g);border-radius:8px;color:#000;font-size:14px;font-weight:700;text-align:center;text-decoration:none">Get Started →</a>
-  </div>
+    <!-- Came back from a cancelled checkout. -->
+    <div id="card-cancelled" class="card hidden">
+      <h1>Payment cancelled</h1>
+      <p class="sub">Nothing was charged. To try again, ask whoever sent you this invite for a fresh link.</p>
+    </div>
 
-  <!-- Cancelled -->
-  <div id="card-cancelled" class="card" style="display:none">
-    <div class="title" style="color:var(--amb)">Payment Cancelled</div>
-    <div class="sub">No charge was made. If you'd like to try again, contact the person who sent you this invite.</div>
   </div>
+</main>
 
-</div>
+<footer>
+  <div class="wrap wrap-sm foot">
+    <div class="spread">
+      <span>© 2026 Dungeon</span>
+      <nav><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a></nav>
+    </div>
+  </div>
+</footer>
 
 <script>
 let _token = null;
 let _pollCount = 0;
 const MAX_POLLS = 12; // 12 x 5s = 60 seconds
 
+const CARDS = ['card-loading','card-pending','card-form','card-error','card-done','card-cancelled'];
+
 function show(id) {
-  ['card-loading','card-pending','card-form','card-error','card-done','card-cancelled']
-    .forEach(c => document.getElementById(c).style.display = c===id ? 'block' : 'none');
+  CARDS.forEach(c => document.getElementById(c).classList.toggle('hidden', c !== id));
 }
 
 function showError(msg) {
   document.getElementById('error-msg').textContent = msg;
   show('card-error');
 }
-
-function toggleDev(el) { el.classList.toggle('on'); }
 
 let _snTimer = null;
 let _snValid = false;
@@ -137,49 +158,30 @@ function validateSn(input) {
   const hint = document.getElementById('sn-hint');
   _snValid = false;
 
-  if (!val) {
-    hint.textContent = 'Letters, numbers and underscores only. 2-20 characters.';
-    hint.className = 'sn-hint';
-    return;
-  }
-  if (val.length < 2) {
-    hint.textContent = 'Too short - minimum 2 characters';
-    hint.className = 'sn-hint err';
-    return;
-  }
-  if (val.length > 20) {
-    hint.textContent = 'Too long - maximum 20 characters';
-    hint.className = 'sn-hint err';
-    return;
-  }
+  if (!val) { return setHint(hint, 'Letters, numbers and underscores. 2–20 characters.', ''); }
+  if (val.length < 2) { return setHint(hint, 'Too short. Minimum 2 characters.', 'bad'); }
+  if (val.length > 20) { return setHint(hint, 'Too long. Maximum 20 characters.', 'bad'); }
 
-  hint.textContent = 'Checking availability…';
-  hint.className = 'sn-hint';
-
+  setHint(hint, 'Checking availability…', '');
   clearTimeout(_snTimer);
   _snTimer = setTimeout(async () => {
     const r = await fetch('/api/check/screen-name/' + encodeURIComponent(val)).then(r => r.json()).catch(() => ({ available: false }));
-    if (r.available) {
-      hint.textContent = '@' + val + ' is available ✓';
-      hint.className = 'sn-hint ok';
-      _snValid = true;
-    } else {
-      hint.textContent = '@' + val + ' is already taken - try another';
-      hint.className = 'sn-hint err';
-      _snValid = false;
-    }
+    if (r.available) { setHint(hint, '@' + val + ' is available', 'ok'); _snValid = true; }
+    else { setHint(hint, '@' + val + ' is taken. Try another.', 'bad'); _snValid = false; }
   }, 500);
 }
+
+function setHint(el, text, kind) { el.textContent = text; el.className = 'hint' + (kind ? ' ' + kind : ''); }
 
 async function checkInvite() {
   const r = await fetch('/api/invite/' + _token).then(r => ({ status: r.status, data: r.json() }));
   const data = await r.data;
 
   if (r.status === 402) {
-    // Payment pending - poll
+    // Payment still settling - poll until it lands or we give up.
     _pollCount++;
     if (_pollCount >= MAX_POLLS) {
-      showError('Payment confirmation is taking longer than expected. Please refresh the page in a minute, or contact support if this persists.');
+      showError('The payment is taking longer than usual to confirm. Refresh in a minute, or write to support if it stays this way.');
       return;
     }
     show('card-pending');
@@ -190,42 +192,34 @@ async function checkInvite() {
 
   if (data.error) { showError(data.error); return; }
 
-  // Payment confirmed (or free invite)
+  const paid = document.getElementById('paid-badge');
+  const amount = document.getElementById('amount-badge');
   if (data.amount > 0) {
-    document.getElementById('paid-badge').textContent = '✓ Payment Confirmed';
-    document.getElementById('amount-badge').textContent = '$' + (data.amount/100).toFixed(2) + ' paid';
+    paid.innerHTML = '<i></i>Payment confirmed';
+    amount.textContent = '$' + (data.amount / 100).toFixed(2) + ' paid';
   } else {
-    document.getElementById('paid-badge').textContent = "✓ You're In";
-    document.getElementById('amount-badge').style.display = 'none';
+    paid.innerHTML = "<i></i>You're in";
+    amount.classList.add('hidden');
   }
-  // First-month-included invite theming ('fathers_day' is the legacy promo id)
+
+  // First-month-included invite ('fathers_day' is the legacy promo id)
   if (data.promo === 'first_month' || data.promo === 'fathers_day') {
-    document.getElementById('paid-badge').textContent = '🎁 First Month Included';
-    document.getElementById('form-title').textContent = "You're All Set";
-    document.getElementById('form-sub').innerHTML = "Your first month of <strong>DungeonStream</strong> and <strong>DungeonCast</strong> is included. Set up your account below to start watching.";
+    paid.innerHTML = '<i></i>First month included';
+    document.getElementById('form-title').textContent = "You're all set";
+    document.getElementById('form-sub').innerHTML = 'Your first month of <strong>DungeonStream</strong> and <strong>DungeonCast</strong> is included. Set up your account and start watching.';
   }
-  // If the invite has no email on file (shared link), collect it here
-  if (data.needsEmail) {
-    document.getElementById('email-field').style.display = 'block';
-  }
+
+  // A shared invite link carries no email, so ask for one here.
+  if (data.needsEmail) document.getElementById('email-field').classList.remove('hidden');
+
   show('card-form');
-  // Load referral dropdown
-  fetch('/api/members/list').then(r=>r.json()).then(members => {
-    const sel = document.getElementById('referred-by');
-    members.forEach(sn => {
-      const opt = document.createElement('option');
-      opt.value = sn;
-      opt.textContent = '@' + sn;
-      sel.appendChild(opt);
-    });
-  }).catch(()=>{});
 }
 
 async function init() {
   const params = new URLSearchParams(window.location.search);
   _token = params.get('token');
 
-  if (!_token) { showError('No invite token found in this link.'); return; }
+  if (!_token) { showError('This link has no invite token in it.'); return; }
   if (params.get('cancelled') === '1') { show('card-cancelled'); return; }
 
   show('card-loading');
@@ -239,38 +233,41 @@ async function submit() {
   const phone = document.getElementById('phone').value.trim();
   const err = document.getElementById('err');
 
-  if (!fn) { err.textContent = 'First name is required'; err.style.display = 'block'; return; }
-  if (!sn || sn.length < 2) { err.textContent = 'Screen name must be at least 2 characters'; err.style.display = 'block'; return; }
-  if (!/^[a-zA-Z0-9_]+$/.test(sn)) { err.textContent = 'Screen name can only contain letters, numbers and underscores'; err.style.display = 'block'; return; }
-  if (!_snValid) { err.textContent = 'Please choose an available screen name'; err.style.display = 'block'; return; }
+  if (!fn) return fail(err, 'Enter your first name.');
+  if (!sn || sn.length < 2) return fail(err, 'Your username needs at least 2 characters.');
+  if (!/^[a-zA-Z0-9_]+$/.test(sn)) return fail(err, 'Usernames take letters, numbers and underscores only.');
+  if (!_snValid) return fail(err, 'Choose an available username.');
 
-  // If the email field is showing (shared-link invite), validate it
+  // Only a shared-link invite shows the email field.
   const emailField = document.getElementById('email-field');
   let joinEmail = '';
-  if (emailField && emailField.style.display !== 'none') {
+  if (!emailField.classList.contains('hidden')) {
     joinEmail = document.getElementById('join-email').value.trim();
-    if (!joinEmail) { err.textContent = 'Email is required'; err.style.display = 'block'; return; }
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(joinEmail)) { err.textContent = 'Please enter a valid email'; err.style.display = 'block'; return; }
+    if (!joinEmail) return fail(err, 'Enter your email address.');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(joinEmail)) return fail(err, 'That email address does not look right.');
   }
 
   err.style.display = 'none';
-  const selectedDevices = [];
-
   const btn = document.getElementById('submit-btn');
   btn.disabled = true; btn.textContent = 'Creating your account…';
 
   const r = await fetch('/api/invite/' + _token + '/complete', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ first_name: fn, last_name: ln, screen_name: sn, phone, email: joinEmail, devices: selectedDevices, referred_by: document.getElementById('referred-by')?.value || null, tier: new URLSearchParams(location.search).get('tier') || '' })
+    body: JSON.stringify({
+      first_name: fn, last_name: ln, screen_name: sn, phone, email: joinEmail,
+      devices: [], referred_by: null,
+      tier: new URLSearchParams(location.search).get('tier') || ''
+    })
   }).then(async r => ({ ok: r.ok, data: await r.json() }));
 
-  btn.disabled = false; btn.textContent = 'Create My Account →';
+  btn.disabled = false; btn.textContent = 'Create my account';
 
-  if (!r.ok) { err.textContent = r.data.error || 'Something went wrong'; err.style.display = 'block'; return; }
-
+  if (!r.ok) return fail(err, r.data.error || 'Something went wrong. Try again.');
   show('card-done');
 }
+
+function fail(el, msg) { el.textContent = msg; el.style.display = 'block'; }
 
 init();
 </script>

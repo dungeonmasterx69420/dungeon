@@ -139,7 +139,10 @@ h2{font-size:19px;font-weight:600;letter-spacing:-.016em;text-wrap:pretty}
 .card-sm{border-radius:14px;padding:16px}
 .card-accent{border-color:rgba(52,211,153,.22)}
 .card-title{display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:16px}
+/* .cards owns the spacing, so the .card+.card margin must not stack on
+   top of the gap. */
 .cards{display:flex;flex-direction:column;gap:10px}
+.cards>.card+.card{margin-top:0}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .grid-auto{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px}
@@ -322,6 +325,14 @@ table.dt td.num{font-family:var(--mono);text-align:right;white-space:nowrap}
 .state .mark svg{width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:2}
 .state b{display:block;font-size:16px;font-weight:600;margin-bottom:6px}
 .state p{font-size:13.5px;line-height:1.6;color:var(--muted);max-width:34ch;margin:0 auto}
+
+/* ── Waiting ─────────────────────────────────────────────── */
+.loading{display:flex;flex-direction:column;align-items:center;gap:13px;padding-block:40px;font-size:13.5px;color:var(--muted);text-align:center}
+.spin{width:20px;height:20px;flex:none;border:2px solid var(--line2);border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Placeholder blocks for content that has not arrived yet. */
+.skel{background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.08),rgba(255,255,255,.04));background-size:200% 100%;border-radius:8px;animation:skel 1.4s ease-in-out infinite}
+@keyframes skel{to{background-position:-200% 0}}
 
 /* ── Toast ───────────────────────────────────────────────── */
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:#0A100D;border:1px solid var(--line2);border-radius:10px;padding:12px 20px;font-size:13.5px;color:var(--text);z-index:200;transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:0 12px 30px rgba(0,0,0,.5);max-width:calc(100vw - 44px);text-align:center}
