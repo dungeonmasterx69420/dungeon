@@ -43,8 +43,13 @@
       <span>DUNGEON</span>
     </a>
     <nav class="topnav">
-      <a href="/messages.html" class="has-badge">Messages<span class="count-badge" id="msgCount">0</span></a>
-      <button type="button" onclick="signOut()">Sign out</button>
+      <a href="/messages.html" class="icon-btn" title="Messages" aria-label="Messages">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6 8.5-6"/></svg>
+        <span class="count-badge" id="msgCount">0</span>
+      </a>
+      <button type="button" class="icon-btn" onclick="signOut()" title="Sign out" aria-label="Sign out">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.5V4a1.5 1.5 0 0 0-1.5-1.5h-8A1.5 1.5 0 0 0 4 4v16a1.5 1.5 0 0 0 1.5 1.5h8A1.5 1.5 0 0 0 15 20v-.5"/><path d="M19.5 12H9.5m6.5-3.5 3.5 3.5-3.5 3.5"/></svg>
+      </button>
     </nav>
   </div>
 </header>
@@ -167,7 +172,6 @@
       <nav id="footNav">
         <a href="/dashboard.html">Dashboard</a>
         <a href="/guides.html">Guides</a>
-        <a href="/forum.html">Forum</a>
         <a href="/support.html">Support</a>
       </nav>
     </div>

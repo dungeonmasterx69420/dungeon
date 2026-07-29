@@ -231,7 +231,6 @@
       <nav id="footNav">
         <a href="/dashboard.html">Dashboard</a>
         <a href="/guides.html">Guides</a>
-        <a href="/forum.html">Forum</a>
         <a href="/support.html">Support</a>
       </nav>
     </div>
@@ -278,15 +277,20 @@ document.getElementById('doneBtn').addEventListener('click', async (e) => {
       numberExternalPlayer(5);
     }else if(d&&d.active===false){
       // Not entitled - show a clean panel, hide the whole flow.
-      showState('🔒', 'No active subscription', 'You don\u2019t have DungeonStream access yet. Redeem a credit to unlock it, then come back here to finish setup.',
+      showState('No active subscription', 'You don\u2019t have DungeonStream access yet. Redeem a credit to unlock it, then come back here to finish setup.',
         {label:'Redeem a credit', href:'/redeem.html'});
+    }else if(d && d.error === 'provision_failed'){
+      // The add-on service refused or never answered. Waiting will not fix
+      // this on its own, so do not tell the member it is nearly ready.
+      showState('Something is down', 'Your access is fine, but the add-on service is not answering, so there is no link to give you yet. This one is on us - the Dungeon Master has to look at it.',
+        {label:'Contact support', href:'/support.html'});
     }else{
-      // Entitled but link not ready (StremGate unreachable / provisioning hiccup).
-      showState('⏳', 'Almost ready', 'Your access is still being set up. Give it a moment, then tap Retry.',
+      // Entitled and no error reported - the link is genuinely still coming.
+      showState('Almost ready', 'Your access is still being set up. Give it a moment, then tap Retry.',
         {label:'Retry', onclick:()=>location.reload()});
     }
   }catch(e){
-    showState('⚠️', 'Connection error', 'We couldn\u2019t reach the server. Check your connection and try again.',
+    showState('Connection error', 'We couldn\u2019t reach the server. Check your connection and try again.',
       {label:'Retry', onclick:()=>location.reload()});
   }
 })();
@@ -301,7 +305,7 @@ function numberExternalPlayer(n){
   document.querySelector('#externalPlayerStep .step-num').textContent = n;
 }
 
-function showState(icon, title, msg, action){
+function showState(title, msg, action){
   document.getElementById('stepFlow').classList.add('hidden');
   document.getElementById('pageSub').classList.add('hidden');
   document.getElementById('statePanel').classList.remove('hidden');
