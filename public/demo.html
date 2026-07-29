@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="/dungeon.css"/>
 <style>
 /* A three-step walkthrough. .card, .steps, .linkrow, .code-row, .notice,
-   .track, .btn and .state all come from /dungeon.css. Amber is reserved
+   .track, .btn and .state all come from /dungeon.css, .cred-row included. Amber is reserved
    for the one thing that makes a demo a demo: it runs out. */
 
 .prog{border-bottom:1px solid var(--line);padding-block:12px}
@@ -39,11 +39,6 @@ h1{font-size:clamp(25px,4.6vw,32px);line-height:1.12;font-weight:600;letter-spac
   padding:13px 16px;margin-bottom:26px;font-size:13.5px;color:var(--amber)}
 .clock b{font-family:var(--mono);font-size:17px;font-weight:600;letter-spacing:.02em;font-variant-numeric:tabular-nums}
 
-.cred-row{display:flex;align-items:center;gap:10px}
-.cred-row+.cred-row{margin-top:10px}
-.cred-row .k{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--faint);width:74px;flex:none}
-.cred-row .code-field{display:block}
 
 .nav-btns{display:flex;gap:10px;margin-top:28px}
 .nav-btns .btn{flex:1}

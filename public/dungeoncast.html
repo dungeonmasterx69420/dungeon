@@ -17,13 +17,8 @@
 <link rel="stylesheet" href="/dungeon.css"/>
 <style>
 /* .card, .code-row, .copy-btn, .pill, .linkrow, .section-head and the
-   page chrome all come from /dungeon.css. */
+   page chrome all come from /dungeon.css, .cred-row included. */
 
-.cred-row{display:flex;align-items:center;gap:10px}
-.cred-row+.cred-row{margin-top:10px}
-.cred-row .k{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--faint);width:82px;flex:none}
-.cred-row .code-field{display:block}
 .cred-note{font-size:12.5px;line-height:1.65;color:var(--faint);margin-top:14px;text-wrap:pretty}
 .cred-note a{color:var(--accent)}
 
@@ -46,7 +41,6 @@
       <span>DUNGEON</span>
     </a>
     <nav class="topnav">
-      <a href="/dashboard.html">Dashboard</a>
       <a href="/messages.html" class="has-badge">Messages<span class="count-badge" id="msgCount">0</span></a>
       <button type="button" onclick="signOut()">Sign out</button>
     </nav>
