@@ -76,11 +76,39 @@ The emerald radial wash used to appear under two names: a `.glow`
 component in `dungeon.css` used by three pages, and the same gradient
 copy-pasted as `body::before` into twenty self-contained pages.
 
-It is replaced everywhere by `.rails` — vertical hairlines at a 92px
-pitch, masked at both ends. Structure rather than atmosphere, and no
-accent colour, so it cannot read as a wash sitting on top of the page. It
-also carries the printing-plate idea behind the key card, so the site
-shares one ambient treatment.
+It is replaced everywhere by `.rails` — hairlines at a 92px pitch, masked
+at both ends. Structure rather than atmosphere, and no accent colour, so
+it cannot read as a wash sitting on top of the page.
+
+The guides are drawn from the thing the site is for. Three treatments
+live in `dungeon.css`, all on that same pitch and that same weight, so a
+page swaps one for another with a single class and nothing else moves:
+
+- **The strip**, `.rails` — 35mm stock standing on end. Perforations ride
+  the rails and a frame line crosses every fourth one, which is how film
+  is actually pulled. This is the default, and the smallest step from the
+  plain hairlines it replaces: the rhythm of the page does not change,
+  only what the rhythm is made of. The perfs are an inline SVG because a
+  rounded rectangle is not a shape a gradient can draw — two half-perfs
+  per tile, so the one straddling the rail comes out whole.
+- **The aperture**, `.rails--aperture` — the same spacing bent round a
+  lens. Rings out from the iris, six blades closing on it, and the blades
+  masked to the iris itself, because a spoke that runs to the edge of the
+  page is a starburst rather than a lens. It carries its own falloff; the
+  default one cuts the top off the lens. A page moves the lens off centre
+  with `--iris-x`/`--iris-y`.
+- **The gate**, `.rails--gate` — the ground glass. Thirds, crop marks at
+  the corners, a focus bracket in the middle, and the frame counter
+  ticking along the top edge at the house pitch. Inset to the content
+  column and unmasked, because a frame that runs off the screen is not a
+  frame, and a fade would take the counter and the top two crop marks
+  with it. It reads as a composition rather than a texture, which suits a
+  hero and would be too loud behind a form.
+
+`design/rails-film.html` is the specimen sheet: each treatment on its own,
+then behind the landing hero, with the plain hairlines at the foot to
+compare against. It links `../public/dungeon.css` by relative path, so it
+can only ever show what the site actually renders — open it off disk.
 
 `admin.html` is the exception: its sidebar is too narrow to fit more than
 two rails, so it takes neutral light down its top edge instead.

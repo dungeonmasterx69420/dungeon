@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="color-scheme" content="dark"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="Three film-derived treatments for the register rails."/>
+<title>Dungeon — Rails, three film treatments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+<!-- The real stylesheet, by relative path, so this page can only ever
+     show what the site actually renders. Open it straight off disk. -->
+<link rel="stylesheet" href="../public/dungeon.css"/>
+
+<style>
+/* Specimen sheet only. Everything the hero mockups use - .wrap, .label,
+   .btn, .rails - comes from ../public/dungeon.css. */
+
+.sheet-head{padding-block:44px 8px}
+.sheet-head h1{font-size:clamp(26px,4vw,34px)}
+.sheet-head .lede{max-width:60ch;margin-top:12px}
+
+/* A specimen is the hero at full bleed with a caption pinned above it,
+   because these patterns are rhythm - you cannot judge them in a tile. */
+.spec{border-top:1px solid var(--line)}
+.spec-cap{padding-block:26px 0}
+.spec-cap .name{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.spec-cap h2{font-size:17px}
+.spec-cap code{font-family:var(--mono);font-size:11.5px;color:var(--faint);
+  border:1px solid var(--line);border-radius:6px;padding:3px 7px}
+.spec-cap p{font-size:13.5px;line-height:1.7;color:var(--muted);max-width:58ch;margin-top:9px;text-wrap:pretty}
+.spec-cap .old{color:var(--faint)}
+
+/* The mockup: the landing hero, trimmed to what the background sits behind. */
+.hero{padding-block:46px 54px}
+.hero-grid{display:grid;gap:40px;align-items:center}
+.hero h1{font-size:clamp(30px,5vw,44px);line-height:1.07;font-weight:600;letter-spacing:-.032em;
+  text-wrap:balance;margin-bottom:14px}
+.hero .lede{font-size:16px;max-width:34ch}
+.hero .cta{display:flex;flex-direction:column;gap:10px;margin-top:24px}
+.hero .btn{font-size:14.5px;padding:13px 24px}
+
+.key-stage{display:flex;justify-content:center}
+.key{position:relative;width:100%;max-width:352px;aspect-ratio:1.586;border-radius:16px;
+  border:1px solid var(--line2);background:var(--surface);padding:19px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:space-between}
+.key::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(118deg,rgba(255,255,255,.07),rgba(255,255,255,.015) 38%,transparent 62%)}
+.key::after{content:'';position:absolute;left:19px;right:19px;top:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent)}
+.key>*{position:relative}
+.key-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.key-mark{font-family:var(--pixel);font-size:10px;line-height:1.5;color:var(--text2);letter-spacing:.02em}
+.key-chip{position:relative;width:34px;height:25px;border-radius:5px;flex:none;
+  background:linear-gradient(150deg,var(--accent-hi),var(--accent) 52%,#1B8F68);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+.key-chip::before{content:'';position:absolute;inset:5px 8px;border:1px solid rgba(4,21,14,.3);border-radius:2px}
+.key-chip::after{content:'';position:absolute;top:3px;bottom:3px;left:50%;width:1px;background:rgba(4,21,14,.3)}
+.key-rate{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.key-rate b{display:block;font-family:var(--sans);font-size:18px;font-weight:600;letter-spacing:-.02em;
+  text-transform:none;color:var(--text);margin-top:5px}
+.key-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+.key-serial{color:var(--text2);letter-spacing:.18em;font-variant-numeric:tabular-nums}
+.key-serial u{text-decoration:none;color:var(--accent)}
+.key svg.key-hex{position:absolute;right:-50px;bottom:-60px;width:206px;height:206px;
+  fill:none;stroke:rgba(255,255,255,.05);stroke-width:1.4;pointer-events:none}
+
+/* The pattern on its own, at full strength, so the drawing is legible
+   away from the copy that will sit on top of it. */
+.swatch{position:relative;height:150px;border:1px solid var(--line);border-radius:12px;
+  overflow:hidden;background:var(--bg);margin-bottom:22px}
+.swatch .rails{position:absolute;inset:0;height:auto;
+  -webkit-mask-image:none;mask-image:none}
+.swatch .rails--gate{left:0;right:0;width:auto;transform:none}
+
+/* The previous treatment, kept at the foot of the sheet for comparison. */
+.rails--plain{background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 92px);
+  background-size:auto}
+.rails--plain::before,.rails--plain::after{content:none}
+
+.sheet-foot{border-top:1px solid var(--line);padding-block:30px 60px}
+.sheet-foot p{font-size:13px;line-height:1.75;color:var(--faint);max-width:62ch;text-wrap:pretty}
+
+@media(min-width:880px){
+  .hero{padding-block:78px 74px}
+  .hero-grid{grid-template-columns:1fr 384px;gap:64px}
+  .hero .cta{flex-direction:row}
+  .spec-cap{padding-block:34px 0}
+  .swatch{height:180px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap wrap-xl row">
+    <a href="#" class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </a>
+    <nav class="topnav"><span class="label" style="padding:0">Specimen sheet</span></nav>
+  </div>
+</header>
+
+<main>
+
+  <div class="wrap wrap-xl sheet-head">
+    <span class="eyebrow">Register rails</span>
+    <h1>Three film treatments</h1>
+    <p class="lede">The rails were plain vertical hairlines at a 92px pitch. Each of these
+      keeps that pitch and that weight and draws it out of the thing the site is for.
+      Same mask, same z-index, no accent colour — a page swaps one for another with a
+      single class and nothing else moves.</p>
+  </div>
+
+  <!-- 1 ─────────────────────────────────────────────────────── -->
+  <section class="spec">
+    <div class="wrap wrap-xl spec-cap">
+      <div class="name"><h2>The strip</h2><code>.rails</code></div>
+      <p>35mm stock standing on end. Perforations ride the rails at the existing pitch and a
+        frame line crosses every fourth one, which is how film is actually pulled. It is the
+        smallest possible step from what is there now — the rhythm of the page does not change,
+        only what the rhythm is made of.</p>
+    </div>
+    <div class="wrap wrap-xl" style="padding-top:22px">
+      <div class="swatch"><div class="rails" aria-hidden="true"></div></div>
+    </div>
+    <div class="hero rails-host">
+      <div class="rails" aria-hidden="true"></div>
+      <div class="wrap wrap-xl hero-grid">
+        <div>
+          <span class="label">Invitation only</span>
+          <h1>One key. Everything worth watching.</h1>
+          <p class="lede">Films, series and live TV under a single membership, set up for you on the devices you already own.</p>
+          <div class="cta">
+            <a href="#" class="btn btn-primary">Request an invite</a>
+            <a href="#" class="btn btn-ghost">I have an account</a>
+          </div>
+        </div>
+        <div class="key-stage">
+          <div class="key" aria-hidden="true">
+            <svg class="key-hex" viewBox="0 0 24 24"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+            <div class="key-top"><span class="key-mark">DUNGEON</span><span class="key-chip"></span></div>
+            <div class="key-rate">One credit<b>A month of everything</b></div>
+            <div class="key-foot"><span class="key-serial"><u>DGN</u> 0117 3049</span><span>Member</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 ─────────────────────────────────────────────────────── -->
+  <section class="spec">
+    <div class="wrap wrap-xl spec-cap">
+      <div class="name"><h2>The aperture</h2><code>.rails .rails--aperture</code></div>
+      <p>The same 92px spacing bent round a lens: rings out from the iris, six blades closing
+        on it, and the blades masked to the iris itself — a spoke that runs to the edge of the
+        page is a starburst, not a lens. The centre is a variable, so the lens can sit behind
+        the key card on a wide screen and stay centred on a phone.</p>
+    </div>
+    <div class="wrap wrap-xl" style="padding-top:22px">
+      <div class="swatch"><div class="rails rails--aperture" style="--iris-y:50%" aria-hidden="true"></div></div>
+    </div>
+    <div class="hero rails-host">
+      <div class="rails rails--aperture" aria-hidden="true"></div>
+      <div class="wrap wrap-xl hero-grid">
+        <div>
+          <span class="label">Invitation only</span>
+          <h1>One key. Everything worth watching.</h1>
+          <p class="lede">Films, series and live TV under a single membership, set up for you on the devices you already own.</p>
+          <div class="cta">
+            <a href="#" class="btn btn-primary">Request an invite</a>
+            <a href="#" class="btn btn-ghost">I have an account</a>
+          </div>
+        </div>
+        <div class="key-stage">
+          <div class="key" aria-hidden="true">
+            <svg class="key-hex" viewBox="0 0 24 24"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+            <div class="key-top"><span class="key-mark">DUNGEON</span><span class="key-chip"></span></div>
+            <div class="key-rate">One credit<b>A month of everything</b></div>
+            <div class="key-foot"><span class="key-serial"><u>DGN</u> 0117 3049</span><span>Member</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 ─────────────────────────────────────────────────────── -->
+  <section class="spec">
+    <div class="wrap wrap-xl spec-cap">
+      <div class="name"><h2>The gate</h2><code>.rails .rails--gate</code></div>
+      <p>What the camera shows you: thirds, crop marks at the corners, a focus bracket in the
+        middle, and the frame counter ticking along the top edge at the house pitch. This one is
+        inset to the content column and closed at the bottom rather than faded, because a frame
+        that runs off the screen is not a frame. It reads as a composition rather than a texture,
+        which suits a hero and would be too loud on a form.</p>
+    </div>
+    <div class="wrap wrap-xl" style="padding-top:22px">
+      <div class="swatch"><div class="rails rails--gate" aria-hidden="true"></div></div>
+    </div>
+    <div class="hero rails-host">
+      <div class="rails rails--gate" aria-hidden="true"></div>
+      <div class="wrap wrap-xl hero-grid">
+        <div>
+          <span class="label">Invitation only</span>
+          <h1>One key. Everything worth watching.</h1>
+          <p class="lede">Films, series and live TV under a single membership, set up for you on the devices you already own.</p>
+          <div class="cta">
+            <a href="#" class="btn btn-primary">Request an invite</a>
+            <a href="#" class="btn btn-ghost">I have an account</a>
+          </div>
+        </div>
+        <div class="key-stage">
+          <div class="key" aria-hidden="true">
+            <svg class="key-hex" viewBox="0 0 24 24"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+            <div class="key-top"><span class="key-mark">DUNGEON</span><span class="key-chip"></span></div>
+            <div class="key-rate">One credit<b>A month of everything</b></div>
+            <div class="key-foot"><span class="key-serial"><u>DGN</u> 0117 3049</span><span>Member</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Before ─────────────────────────────────────────────────── -->
+  <section class="spec">
+    <div class="wrap wrap-xl spec-cap">
+      <div class="name"><h2 class="old">What it was</h2><code>plain hairlines, 92px</code></div>
+      <p class="old">Kept here to compare against. Nothing wrong with it — it just says
+        printing plate rather than film.</p>
+    </div>
+    <div class="wrap wrap-xl" style="padding-top:22px">
+      <div class="swatch"><div class="rails rails--plain" aria-hidden="true"></div></div>
+    </div>
+  </section>
+
+  <div class="wrap wrap-xl sheet-foot">
+    <p>Check every one of these at 390px and at 1440px. The two things a static read will not
+      catch are horizontal overflow and console errors, and a background that is positioned off
+      the centre of the viewport is exactly where overflow comes from.</p>
+  </div>
+
+</main>
+
+</body>
+</html>
