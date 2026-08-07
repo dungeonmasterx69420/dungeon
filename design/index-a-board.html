@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="color-scheme" content="dark"/>
+<meta name="theme-color" content="#050807"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dungeon — candidate A, Board</title>
+
+<!-- Standalone candidate. Like index-c-keyholder.html it inlines its own copy
+     of the tokens so it opens in a browser without a server, and it carries a
+     fixture so the board has something to draw when /api/gate is not there.
+     Served from public/ it uses the real endpoint instead. -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --bg:#050807;--surface:#0C120F;--raise:#141C19;
+  --line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.13);
+  --accent:#34D399;--accent-hi:#4CE0A0;--accent-ink:#04150E;
+  --text:#EAF1ED;--text2:#B9C8C2;--muted:#8A9A93;--faint:#6B7F77;
+  --amber:#FBBF24;
+  --sans:'Instrument Sans',system-ui,-apple-system,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --pixel:'Press Start 2P',monospace;
+  --wrap:1100px;
+}
+
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;line-height:1.5;min-height:100vh}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding-inline:22px;width:100%}
+
+/* ── Chrome ─────────────────────────────────────────────────── */
+.topbar{border-bottom:1px solid var(--line)}
+.topbar .row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:14px}
+.brand{display:flex;align-items:center;gap:9px;flex:none}
+.brand svg{width:15px;height:15px;fill:none;stroke:var(--accent);stroke-width:2;flex:none}
+.brand span{font-family:var(--pixel);font-size:11px;letter-spacing:.02em;line-height:1.4;white-space:nowrap}
+.topnav a{font-size:13.5px;font-weight:500;color:var(--muted);transition:color .18s}
+.topnav a:hover{color:var(--text)}
+
+.label{display:block;font-family:var(--mono);font-size:10px;font-weight:600;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--faint);padding-bottom:14px}
+
+/* ── Hero ───────────────────────────────────────────────────────
+   The headline is deliberately smaller than a landing-page headline
+   usually is. The board underneath it is the loudest thing on the
+   page, and two loud things is none. */
+.hero{padding-block:44px 0}
+h1{font-size:clamp(28px,4.2vw,40px);line-height:1.1;font-weight:600;
+  letter-spacing:-.03em;text-wrap:balance;margin-bottom:14px}
+.lede{font-size:15.5px;line-height:1.6;color:var(--muted);max-width:40ch;text-wrap:pretty}
+.cta{display:flex;flex-direction:column;gap:10px;margin-top:26px}
+.btn{display:block;text-align:center;font-family:var(--sans);font-size:15px;font-weight:600;
+  padding:14px 26px;border-radius:10px;border:1px solid transparent;cursor:pointer;
+  transition:transform .14s,background .18s,border-color .18s,color .18s;white-space:nowrap}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{background:var(--accent-hi)}
+.btn-ghost{background:transparent;border-color:var(--line2);color:var(--text2);font-weight:500}
+.btn-ghost:hover{border-color:rgba(255,255,255,.24);color:var(--text)}
+
+/* ── Signature: the board ───────────────────────────────────────
+   A departure board. Mono is the display face here: a schedule set
+   in a display sans is a schedule pretending to be a headline.
+   The first row is the gate's own state, so the board still reads
+   with an empty events table. */
+.board{margin-top:40px;border:1px solid var(--line2);border-radius:14px;
+  background:var(--surface);overflow:hidden}
+
+.board-head{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:14px 18px;border-bottom:1px solid var(--line2);background:rgba(255,255,255,.018)}
+.gate-state{display:flex;align-items:center;gap:9px;font-family:var(--mono);
+  font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.gate-state i{width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none}
+.board-meta{display:flex;align-items:center;gap:16px;font-family:var(--mono);
+  font-size:11px;letter-spacing:.08em;color:var(--faint);white-space:nowrap}
+.clock{color:var(--text2);font-variant-numeric:tabular-nums}
+.clock .c{opacity:1}
+.ticking .clock .c{animation:blink 2s steps(1,end) infinite}
+@keyframes blink{0%,50%{opacity:1}50.01%,100%{opacity:.25}}
+
+.board-row{display:grid;grid-template-columns:76px 1fr auto;gap:16px;align-items:center;
+  padding:15px 18px;border-bottom:1px solid var(--line);position:relative}
+.board-row:last-child{border-bottom:none}
+.board-time{font-family:var(--mono);font-size:20px;font-weight:500;letter-spacing:.01em;
+  color:var(--text2);font-variant-numeric:tabular-nums}
+.board-title{font-size:15px;font-weight:500;color:var(--text);min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.board-sport{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--faint);margin-top:3px}
+.board-app{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--faint);flex:none}
+
+/* On air. The one place amber appears, and it always means the same
+   thing: this is happening now. */
+.board-row.live::before{content:'';position:absolute;left:0;top:-1px;bottom:-1px;width:2px;background:var(--amber)}
+.board-row.live .board-time{color:var(--amber);font-weight:600}
+.board-row.live .board-app{color:var(--amber)}
+.live-tag{display:inline-flex;align-items:center;gap:6px;color:var(--amber)}
+.live-tag i{width:6px;height:6px;border-radius:50%;background:var(--amber);flex:none}
+.ticking .live-tag i{animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+
+.board-empty{padding:26px 18px}
+.board-empty b{display:block;font-size:14.5px;font-weight:600;margin-bottom:5px}
+.board-empty p{font-size:13.5px;line-height:1.65;color:var(--muted);max-width:52ch;text-wrap:pretty}
+
+/* Split-flap. Each time scrambles briefly and settles, the way a
+   board does when it updates. Applied from script, so a page without
+   JavaScript simply shows the settled board. */
+.js .board-row{opacity:0}
+.js .board-row.set{opacity:1;transition:opacity .3s ease}
+
+/* ── Bands ──────────────────────────────────────────────────── */
+.band{border-top:1px solid var(--line);padding-block:38px}
+.band .label{padding-bottom:18px}
+
+.rows{display:flex;flex-direction:column}
+.row-item{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+  padding-block:15px;border-bottom:1px solid var(--line)}
+.row-item:last-child{border-bottom:none}
+.row-main b{display:block;font-size:15.5px;font-weight:600;letter-spacing:-.01em;margin-bottom:4px}
+.row-main em{font-style:normal;font-size:13.5px;line-height:1.55;color:var(--muted)}
+.row-end{font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);flex:none;text-align:right}
+.rows-note{font-size:13px;line-height:1.65;color:var(--faint);max-width:56ch;
+  padding-top:16px;text-wrap:pretty}
+
+.steps{display:flex;flex-direction:column}
+.step-item{display:flex;gap:16px;align-items:flex-start;padding-block:17px;border-bottom:1px solid var(--line)}
+.step-item:first-child{padding-top:0}
+.step-item:last-child{border-bottom:none}
+.step-n{font-family:var(--mono);font-size:12px;color:var(--accent);padding-top:2px;flex:none}
+.step-item h3{font-size:15px;font-weight:600;margin-bottom:3px}
+.step-item p{font-size:13.5px;line-height:1.6;color:var(--muted);max-width:46ch;text-wrap:pretty}
+
+.faq details{border-bottom:1px solid var(--line)}
+.faq details:last-child{border-bottom:0}
+.faq summary{list-style:none;display:flex;align-items:center;justify-content:space-between;
+  gap:16px;padding-block:16px;cursor:pointer;font-size:14.5px;font-weight:500;
+  color:var(--text2);transition:color .18s}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{color:var(--text)}
+.faq details:first-child summary{padding-top:0}
+.faq .pm{font-family:var(--mono);font-size:14px;color:var(--faint);flex:none}
+.faq .pm::before{content:'+'}
+.faq details[open] summary{color:var(--text);font-weight:600;padding-bottom:7px}
+.faq details[open] .pm{color:var(--accent)}
+.faq details[open] .pm::before{content:'\2212'}
+.faq p{font-size:13.5px;line-height:1.65;color:var(--muted);max-width:54ch;padding-bottom:18px}
+
+/* ── Closing ────────────────────────────────────────────────────
+   The page used to stop on an accordion. It ends on the action now. */
+.close-band{border-top:1px solid var(--line);padding-block:52px 56px}
+.close-inner{display:flex;flex-direction:column;gap:22px;align-items:flex-start}
+.close-inner h2{font-size:clamp(24px,3.4vw,32px);font-weight:600;letter-spacing:-.028em;
+  line-height:1.14;text-wrap:balance;max-width:20ch}
+.close-inner .btn{align-self:stretch}
+
+footer{border-top:1px solid var(--line)}
+.foot{display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding-block:22px 40px;
+  font-family:var(--mono);font-size:11px;color:var(--faint)}
+.foot .spread{display:flex;align-items:center;justify-content:space-between;width:100%;gap:14px}
+.foot nav{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:flex-end}
+.foot a{transition:color .18s}
+.foot a:hover{color:var(--muted)}
+
+/* ── Reveal ─────────────────────────────────────────────────── */
+.js [data-reveal]{opacity:0;transform:translateY(14px);
+  transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1);
+  transition-delay:calc(var(--i,0)*70ms)}
+.js [data-reveal].in{opacity:1;transform:none}
+
+/* ── Desktop ────────────────────────────────────────────────── */
+@media(min-width:880px){
+  .wrap{padding-inline:32px}
+  .hero{padding-block:76px 0}
+  .hero-grid{display:grid;grid-template-columns:1fr 300px;gap:64px;align-items:end}
+  .cta{flex-direction:row;margin-top:0}
+  .btn{display:inline-block}
+  .lede{font-size:16.5px}
+  .band{padding-block:54px}
+  .band-split{display:grid;grid-template-columns:190px 1fr;gap:50px;align-items:start}
+  .band-split .label{padding-bottom:0}
+  .board{margin-top:56px}
+  .board-row{grid-template-columns:110px 1fr 130px;padding:18px 22px}
+  .board-time{font-size:26px}
+  .board-head{padding:16px 22px}
+  .close-band{padding-block:76px 84px}
+  .close-inner{flex-direction:row;align-items:center;justify-content:space-between;gap:40px}
+  .close-inner .btn{align-self:auto}
+}
+
+/* Below the phone breakpoint the app column is the first thing to go:
+   it is the least useful of the three and the title needs the width. */
+@media(max-width:479px){
+  .board-row{grid-template-columns:58px 1fr;gap:13px}
+  .board-app{display:none}
+  .board-row.live .board-app{display:block;grid-column:2;margin-top:2px}
+  .board-time{font-size:17px}
+  .board-meta .sep{display:none}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important}
+  .js [data-reveal],.js .board-row{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap row">
+    <a href="/" class="brand" id="logoLink">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.1 7.3v9.4L12 21.4 3.9 16.7V7.3Z"/></svg>
+      <span>DUNGEON</span>
+    </a>
+    <nav class="topnav"><a href="/login.html">Sign in</a></nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <span class="label">Invitation only</span>
+          <h1>One key. Everything worth watching.</h1>
+          <p class="lede">Films, series and live sport under a single membership, set up for you on the devices you already own.</p>
+        </div>
+        <div class="cta">
+          <a href="/apply.html" class="btn btn-primary">Request an invite</a>
+          <a href="/login.html" class="btn btn-ghost">I have an account</a>
+        </div>
+      </div>
+
+      <div class="board" id="board">
+        <div class="board-head">
+          <span class="gate-state"><i></i> The gate is open</span>
+          <span class="board-meta">
+            <span id="memberCount">118 members</span>
+            <span class="sep">·</span>
+            <span class="clock" id="clock">--<span class="c">:</span>--</span>
+          </span>
+        </div>
+        <div id="boardRows"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap band-split">
+      <span class="label">What it opens</span>
+      <div>
+        <div class="rows">
+          <div class="row-item">
+            <div class="row-main">
+              <b>DungeonStream</b>
+              <em>Films and series</em>
+            </div>
+            <span class="row-end">Phone · TV</span>
+          </div>
+          <div class="row-item">
+            <div class="row-main">
+              <b>DungeonCast</b>
+              <em>Films, series and live sport</em>
+            </div>
+            <span class="row-end">Phone · TV · Browser</span>
+          </div>
+        </div>
+        <p class="rows-note">Two apps so every device is covered. If one won't run on yours, the other will, and DungeonCast plays in any browser.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap band-split">
+      <span class="label">How it works</span>
+      <div class="steps">
+        <div class="step-item">
+          <span class="step-n">01</span>
+          <div><h3>Request an invite</h3><p>Your name, a way to reach you, and who referred you.</p></div>
+        </div>
+        <div class="step-item">
+          <span class="step-n">02</span>
+          <div><h3>We read it</h3><p>Every application is reviewed by a person, usually within a day.</p></div>
+        </div>
+        <div class="step-item">
+          <span class="step-n">03</span>
+          <div><h3>You're set up</h3><p>Accounts are created for you. There is nothing to configure.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap band-split">
+      <span class="label">Questions</span>
+      <div class="faq">
+        <details>
+          <summary>Why invitation only?<span class="pm" aria-hidden="true"></span></summary>
+          <p>Small, quiet and stable. The Dungeon grows by referral, not by signup.</p>
+        </details>
+        <details>
+          <summary>What does it cost?<span class="pm" aria-hidden="true"></span></summary>
+          <p>Credits. One credit is one month, and it covers every service at once. No tiers, no add-ons, no per-service billing.</p>
+        </details>
+        <details>
+          <summary>Can I look before I apply?<span class="pm" aria-hidden="true"></span></summary>
+          <p>Ask a member for a demo link. It opens DungeonCast for a few hours, on the same board you can see above.</p>
+        </details>
+        <details>
+          <summary>Which devices work?<span class="pm" aria-hidden="true"></span></summary>
+          <p>Phone, TV and browser. Setup guides are included once you're in.</p>
+        </details>
+        <details>
+          <summary>Can I refer someone?<span class="pm" aria-hidden="true"></span></summary>
+          <p>Members can refer. Every referral is still reviewed by hand.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="close-band">
+    <div class="wrap close-inner">
+      <h2>The gate is open. Someone reads every application.</h2>
+      <a href="/apply.html" class="btn btn-primary">Request an invite</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div class="spread">
+      <span>© 2026 Dungeon</span>
+      <nav>
+        <a href="/terms.html">Terms</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/support.html">Support</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var still = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var root  = document.documentElement;
+
+  /* Fixture. Only used when /api/gate is not reachable, which is the
+     case when this file is opened straight off disk. */
+  var FIXTURE = {
+    members: 118,
+    events: [
+      { title:'Arsenal v Chelsea',        sport:'football',   start_time:offset(-24), end_time:offset(70) },
+      { title:'Dune: Part Two',           sport:'film',       start_time:offset(48) },
+      { title:'Celtics v Knicks',         sport:'basketball', start_time:offset(78) },
+      { title:'The Bear  S3E1',           sport:'series',     start_time:offset(183) }
+    ]
+  };
+  function offset(min){ return new Date(Date.now() + min*60000).toISOString(); }
+
+  /* Live sport is what DungeonCast is for; everything else is on demand,
+     which is DungeonStream. The board says which app opens the row. */
+  var LIVE_SPORTS = { football:1, basketball:1, soccer:1, nfl:1, nba:1, mma:1, boxing:1, f1:1, tennis:1, cricket:1, hockey:1, baseball:1, rugby:1, golf:1, other:1 };
+
+  function hhmm(d){
+    return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
+  /* ── Clock ─────────────────────────────────────────────────── */
+  var clock = document.getElementById('clock');
+  function tick(){
+    var d = new Date();
+    clock.innerHTML = String(d.getHours()).padStart(2,'0') +
+      '<span class="c">:</span>' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tick();
+  if(!still){ root.classList.add('ticking'); setInterval(tick, 15000); }
+
+  /* ── Draw the board ────────────────────────────────────────── */
+  function draw(data){
+    var host = document.getElementById('boardRows');
+    var count = document.getElementById('memberCount');
+    if(typeof data.members === 'number'){
+      count.textContent = data.members + (data.members === 1 ? ' member' : ' members');
+    } else {
+      count.textContent = '';
+    }
+
+    var evs = (data.events || []).slice(0, 5);
+    if(!evs.length){
+      /* No invented listings. The gap is the point: DungeonStream has
+         no schedule because it does not need one. */
+      host.innerHTML = '<div class="board-empty">' +
+        '<b>Nothing on the live board right now.</b>' +
+        '<p>DungeonStream has no schedule — it is on whenever you are. ' +
+        'The board fills up when there is sport.</p></div>';
+      return;
+    }
+
+    var now = Date.now();
+    host.innerHTML = evs.map(function(e){
+      var start = new Date(e.start_time);
+      var end   = e.end_time ? new Date(e.end_time) : null;
+      var live  = start.getTime() <= now && (!end || end.getTime() >= now);
+      var sport = (e.sport || 'other').toLowerCase();
+      var app   = LIVE_SPORTS[sport] && sport !== 'film' && sport !== 'series' ? 'DungeonCast' : 'DungeonStream';
+      return '<div class="board-row' + (live ? ' live' : '') + '">' +
+        '<span class="board-time" data-t="' + hhmm(start) + '">' + hhmm(start) + '</span>' +
+        '<span class="board-title">' + esc(e.title) +
+          '<span class="board-sport">' + esc(sport) + '</span></span>' +
+        '<span class="board-app">' + (live
+          ? '<span class="live-tag"><i></i>Live</span>'
+          : app.replace('Dungeon','')) + '</span>' +
+      '</div>';
+    }).join('');
+
+    flap(host);
+  }
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+  }
+
+  /* ── Split-flap ──────────────────────────────────────────────
+     Each row lands in turn and its time settles out of a scramble,
+     the way a board does when it updates. This is the signature:
+     the board is not a picture of a board. */
+  function flap(host){
+    var rows = host.querySelectorAll('.board-row');
+    if(!rows.length) return;
+    if(still){ rows.forEach(function(r){ r.classList.add('set'); }); return; }
+    root.classList.add('js');
+    rows.forEach(function(row, i){
+      setTimeout(function(){
+        row.classList.add('set');
+        var cell = row.querySelector('.board-time');
+        var target = cell.getAttribute('data-t');
+        var end = performance.now() + 460;
+        (function roll(now){
+          if(now >= end){ cell.textContent = target; return; }
+          cell.textContent = target.replace(/\d/g, function(){ return (Math.random()*10)|0; });
+          setTimeout(function(){ requestAnimationFrame(roll); }, 55);
+        })(performance.now());
+      }, 140 + i*110);
+    });
+  }
+
+  fetch('/api/gate')
+    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(draw)
+    .catch(function(){ draw(FIXTURE); });
+
+  /* Signed-in members get the logo pointed at their dashboard. */
+  fetch('/api/member/me').then(function(r){ return r.json(); }).then(function(d){
+    if(d && d.authenticated) document.getElementById('logoLink').setAttribute('href','/dashboard.html');
+  }).catch(function(){});
+
+  /* ── Reveal on scroll ────────────────────────────────────────
+     Applied from script so the page reads in full without JS. */
+  var targets = document.querySelectorAll('.band .label, .row-item, .rows-note, .step-item, .faq details');
+  if(targets.length && 'IntersectionObserver' in window){
+    root.classList.add('js');
+    var group = null, i = 0;
+    targets.forEach(function(el){
+      var section = el.closest('section');
+      if(section !== group){ group = section; i = 0; }
+      el.setAttribute('data-reveal','');
+      el.style.setProperty('--i', i++);
+    });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(!e.isIntersecting) return;
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      });
+    },{rootMargin:'0px 0px -10% 0px'});
+    targets.forEach(function(el){ io.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1022,6 +1022,31 @@ app.get('/api/events', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── The gate, as seen from outside ───────────────────────────────────────────
+// Public and read-only: what is on tonight, and how big the room is. No names,
+// no emails, nothing a member would mind a stranger seeing. index.html is also
+// the 404 handler (see the catch-all at the bottom of this file), so every
+// mistyped URL renders the landing page and calls this - hence the cache.
+let gateCache = { at: 0, body: null };
+app.get('/api/gate', (req, res) => {
+  const now = Date.now();
+  if (gateCache.body && now - gateCache.at < 60000) return res.json(gateCache.body);
+  try {
+    const events = db.prepare(`
+      SELECT title, sport, start_time, end_time
+      FROM events
+      WHERE approved=1 AND (
+        datetime(start_time) >= datetime('now','-4 hours')
+        OR (end_time IS NOT NULL AND datetime(end_time) >= datetime('now'))
+      )
+      ORDER BY start_time ASC LIMIT 6
+    `).all();
+    const members = db.prepare('SELECT COUNT(*) as n FROM members').get().n;
+    gateCache = { at: now, body: { events, members } };
+    res.json(gateCache.body);
+  } catch(e) { res.json({ events: [], members: null }); }
+});
+
 // GET current month events (members only) - for the schedule page
 app.get('/api/events/schedule', requireMember, (req, res) => {
   try {
