@@ -48,27 +48,32 @@ with it.
 
 ## The index page
 
-`public/index.html` is the Keyholder direction. `index-c-keyholder.html`
-is the standalone candidate it came from; it inlines its own copy of the
-tokens so it opens in a browser without a server, which also means it
-will drift — read `public/index.html` for the truth. Two other
-directions, Door plate and Marquee, were explored and dropped.
+`public/index.html` is the Sealed Gate direction: an ominous, minimal
+threshold rather than a sales page. It supersedes the earlier Keyholder
+direction, whose standalone candidate still sits here as
+`index-c-keyholder.html` for reference (it inlines its own tokens, so it
+will drift — read `public/index.html` for the truth). Keyholder came from
+two dropped explorations, Door plate and Marquee.
 
-### The signature: the key is issued
+### The signature: the seal
 
-The membership is drawn as a physical key card rather than described. It
-is placed onto the page rather than already sitting there — it rises, a
-foil band crosses it once, and the serial rolls into place. The pointer
-tilt carries the house mark with it at a lag, which is what sells the card
-as a solid object instead of a rectangle that rotates.
+The house hexagon is rebuilt as a seal — three concentric hexagon rings,
+cold grey on the outside, warming to emerald at the core, with a lit ember
+at the centre that breathes. It reads as a sealed door with something alive
+behind it. On load the seal *ignites*: the rings fade in from the core
+outward and the hero copy rises under them, one orchestrated moment; after
+that the ember just breathes.
 
-Everything around it stays quiet. That is the whole idea: one memorable
-thing, nothing competing with it. No other page has a signature; interior
-pages are meant to be got through, not admired.
+Everything else stays quiet and greyscale. Emerald appears only in the
+ember and the single primary button — the lit way in — so the accent is
+withheld rather than sprayed around. That restraint is the point: one
+memorable thing, nothing competing with it. No interior page has a
+signature; they are meant to be got through, not admired.
 
-Motion is off under `prefers-reduced-motion`, the card is `aria-hidden`
-decoration, and reveals are applied from script so the page reads in full
-without JavaScript.
+The seal is `aria-hidden` decoration, motion is off under
+`prefers-reduced-motion` (rings, ember and copy all resolve to their
+resting state), and the questions below the fold reveal from script so the
+page reads in full without JavaScript.
 
 ## Register rails, site-wide
 
@@ -82,8 +87,11 @@ accent colour, so it cannot read as a wash sitting on top of the page. It
 also carries the printing-plate idea behind the key card, so the site
 shares one ambient treatment.
 
-`admin.html` is the exception: its sidebar is too narrow to fit more than
-two rails, so it takes neutral light down its top edge instead.
+Two pages are exceptions. `admin.html`'s sidebar is too narrow to fit more
+than two rails, so it takes neutral light down its top edge instead.
+`index.html` drops the rails for its own atmosphere — an edge vignette that
+pulls the corners into black around the seal, plus a faint grain — since
+the landing is the one page allowed a signature of its own.
 
 ## Link preview
 
@@ -92,6 +100,12 @@ two rails, so it takes neutral light down its top edge instead.
 Both `index.html` and `apply.html` point at it. Regenerate it whenever the
 hero copy changes, or the preview will quietly describe a page that no
 longer exists.
+
+The Sealed Gate redesign kept the landing's headline built around "one
+key, everything worth watching," so the existing key-card preview still
+reads true and the OG tags are unchanged. The card art no longer matches
+the on-page seal, though; when `og-card.html` is next redrawn it should
+carry the seal instead.
 
 ## Checking a change
 
